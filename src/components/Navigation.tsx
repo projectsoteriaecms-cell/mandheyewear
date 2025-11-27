@@ -32,7 +32,7 @@ export const Navigation = () => {
             <img 
               src={soteriaLogo} 
               alt="Soteria Eye Clinic"
-              className="h-12 w-auto max-w-[160px] dark:brightness-0 dark:invert transition-all"
+              className="h-12 w-auto max-w-[160px] dark:invert dark:brightness-[1.2] transition-all"
             />
             <div className="h-8 w-px bg-border" />
             <img 
