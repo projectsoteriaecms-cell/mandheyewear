@@ -17,9 +17,10 @@ const Booking = () => {
   const [selectedTime, setSelectedTime] = useState("");
 
   const branches = [
-    "Downtown Medical Center",
-    "Eastside Vision Hub",
-    "Westgate Eye Care"
+    "Soteria Eye Clinic – Lagos (Lekki)",
+    "Soteria Eye Clinic – Warri (Head Office)",
+    "Soteria Eye Clinic – Effurun (Delta Mall)",
+    "Soteria Eye Clinic – Uyo (Tropicana Mall)"
   ];
 
   const services = [
@@ -133,7 +134,7 @@ const Booking = () => {
                       >
                         <CardContent className="p-4">
                           <p className="font-medium">{branch}</p>
-                          <p className="text-sm text-muted-foreground">Metropolitan City</p>
+                          <p className="text-sm text-muted-foreground">Nigeria</p>
                         </CardContent>
                       </Card>
                     ))}
@@ -225,7 +226,7 @@ const Booking = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" placeholder="+1 (234) 567-890" />
+                    <Input id="phone" type="tel" placeholder="08012345678" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="notes">Additional Notes (Optional)</Label>

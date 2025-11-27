@@ -53,22 +53,28 @@ const Index = () => {
 
   const branches = [
     {
-      name: "Downtown Medical Center",
-      city: "Metropolitan City",
-      address: "123 Healthcare Avenue",
-      distance: "2.5 km away"
+      name: "Soteria Eye Clinic – Lagos (Lekki)",
+      city: "Lagos State",
+      address: "Atlantic Shopping & Entertainment Centre, Chevron Drive, Lekki",
+      region: "Lagos"
     },
     {
-      name: "Eastside Vision Hub",
-      city: "Metropolitan City",
-      address: "456 Wellness Street",
-      distance: "4.1 km away"
+      name: "Soteria Eye Clinic – Warri (Head Office)",
+      city: "Delta State",
+      address: "28 Kotie Street, off Okumagba Avenue, Warri",
+      region: "Delta"
     },
     {
-      name: "Westgate Eye Care",
-      city: "Metropolitan City",
-      address: "789 Medical Plaza",
-      distance: "3.8 km away"
+      name: "Soteria Eye Clinic – Effurun (Delta Mall)",
+      city: "Delta State",
+      address: "Shop 53A, Delta Mall (Shoprite), Effurun",
+      region: "Delta"
+    },
+    {
+      name: "Soteria Eye Clinic – Uyo (Tropicana Mall)",
+      city: "Akwa Ibom State",
+      address: "Tropicana Mall, Shop GBA, Udo Udoma Avenue, Uyo",
+      region: "Akwa Ibom"
     }
   ];
 
@@ -323,7 +329,7 @@ const Index = () => {
               Visit Our Branches
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Find a Soteria Eye Clinic & M&H Eyewear location near you
+              Find a Soteria Eye Clinic & M&H Eyewear location in Lagos, Delta or Uyo
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -338,7 +344,7 @@ const Index = () => {
                       <h3 className="font-semibold text-foreground mb-1">{branch.name}</h3>
                       <p className="text-sm text-muted-foreground">{branch.city}</p>
                       <p className="text-sm text-muted-foreground">{branch.address}</p>
-                      <p className="text-xs text-accent font-medium mt-2">{branch.distance}</p>
+                      <p className="text-xs text-accent font-medium mt-2">{branch.region} Region</p>
                     </div>
                   </div>
                   <Button variant="outline" size="sm" className="w-full">
