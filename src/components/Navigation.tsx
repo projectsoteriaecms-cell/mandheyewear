@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import soteriaLogo from "@/assets/soteria-logo.png";
+import mhLogo from "@/assets/mh-logo.png";
 
 export const Navigation = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -26,16 +28,18 @@ export const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo Section */}
-          <Link to="/" className="flex items-center gap-6">
-            <div className="flex flex-col">
-              <span className="text-sm font-display font-semibold text-primary">Soteria</span>
-              <span className="text-xs text-muted-foreground">Eye Clinic</span>
-            </div>
+          <Link to="/" className="flex items-center gap-4">
+            <img 
+              src={soteriaLogo} 
+              alt="Soteria Eye Clinic"
+              className="h-10 w-auto max-w-[140px] dark:brightness-0 dark:invert transition-all"
+            />
             <div className="h-8 w-px bg-border" />
-            <div className="flex flex-col">
-              <span className="text-sm font-display font-semibold text-accent">M & H</span>
-              <span className="text-xs text-muted-foreground">Eyewear</span>
-            </div>
+            <img 
+              src={mhLogo} 
+              alt="M&H Eyewear"
+              className="h-10 w-auto max-w-[140px] dark:brightness-110 transition-all"
+            />
           </Link>
 
           {/* Desktop Navigation */}
