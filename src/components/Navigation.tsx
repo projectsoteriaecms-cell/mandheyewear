@@ -38,7 +38,7 @@ export const Navigation = () => {
             <img 
               src={mhLogo} 
               alt="M&H Eyewear"
-              className="h-10 w-auto max-w-[140px] dark:brightness-110 transition-all"
+              className="h-12 w-auto max-w-[160px] dark:brightness-110 transition-all"
             />
           </Link>
 
