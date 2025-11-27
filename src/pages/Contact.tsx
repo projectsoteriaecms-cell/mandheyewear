@@ -33,7 +33,7 @@ const Contact = () => {
     {
       icon: MapPin,
       title: "Visit Us",
-      detail: "4 Locations Available",
+      detail: "5 Locations Available",
       action: "/branches",
       color: "text-primary"
     }
