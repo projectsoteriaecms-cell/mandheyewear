@@ -7,52 +7,68 @@ import { MapPin, Phone, Mail, Clock, Navigation as NavIcon } from "lucide-react"
 const Branches = () => {
   const branches = [
     {
-      name: "Downtown Medical Center",
-      address: "123 Healthcare Avenue",
-      city: "Metropolitan City",
-      state: "State",
-      zip: "12345",
-      phone: "+1 (234) 567-8901",
-      email: "downtown@soteria-mh.com",
+      name: "Soteria Eye Clinic – Warri (Head Office)",
+      address: "28 Kotie Street, off Okumagba Avenue",
+      city: "Warri",
+      state: "Delta State",
+      phone: "08063363506",
+      email: "info@soteriaeyeclinic.com",
       hours: {
-        weekdays: "8:00 AM - 6:00 PM",
-        saturday: "9:00 AM - 4:00 PM",
+        weekdays: "9:00am – 6:00pm",
+        saturday: "9:00am – 6:00pm",
         sunday: "Closed"
       },
-      distance: "2.5 km away",
-      features: ["Full Eye Exam Suite", "Designer Eyewear Showroom", "Contact Lens Fitting", "Emergency Eye Care"]
+      region: "Delta State",
+      isHeadOffice: true,
+      features: ["Full Eye Exam Suite", "M&H Eyewear Boutique", "Diabetic Eye Screening", "Glaucoma Testing", "Emergency Eye Care", "Corporate Office"]
     },
     {
-      name: "Eastside Vision Hub",
-      address: "456 Wellness Street",
-      city: "Metropolitan City",
-      state: "State",
-      zip: "12346",
-      phone: "+1 (234) 567-8902",
-      email: "eastside@soteria-mh.com",
+      name: "Soteria Eye Clinic – Lagos (Lekki)",
+      address: "Atlantic Shopping & Entertainment Centre, Chevron Drive",
+      city: "Lekki, Lagos",
+      state: "Lagos State",
+      phone: "08063363506",
+      email: "info@soteriaeyeclinic.com",
       hours: {
-        weekdays: "9:00 AM - 7:00 PM",
-        saturday: "10:00 AM - 5:00 PM",
-        sunday: "11:00 AM - 3:00 PM"
-      },
-      distance: "4.1 km away",
-      features: ["Pediatric Eye Care", "Premium Frame Collection", "AI Try-On Studio", "Same-Day Repairs"]
-    },
-    {
-      name: "Westgate Eye Care",
-      address: "789 Medical Plaza",
-      city: "Metropolitan City",
-      state: "State",
-      zip: "12347",
-      phone: "+1 (234) 567-8903",
-      email: "westgate@soteria-mh.com",
-      hours: {
-        weekdays: "8:30 AM - 5:30 PM",
-        saturday: "9:00 AM - 3:00 PM",
+        weekdays: "9:00am – 6:00pm",
+        saturday: "9:00am – 6:00pm",
         sunday: "Closed"
       },
-      distance: "3.8 km away",
-      features: ["Diabetic Eye Screening", "Luxury Eyewear Boutique", "Glaucoma Testing", "Optical Coherence Tomography"]
+      region: "Lagos State",
+      isHeadOffice: false,
+      features: ["Comprehensive Eye Exams", "M&H Eyewear Showroom", "Contact Lens Fitting", "AI Try-On Studio"]
+    },
+    {
+      name: "Soteria Eye Clinic – Effurun (Delta Mall)",
+      address: "Shop 53A, Delta Mall (Shoprite)",
+      city: "Effurun",
+      state: "Delta State",
+      phone: "08063363506",
+      email: "info@soteriaeyeclinic.com",
+      hours: {
+        weekdays: "9:00am – 6:00pm",
+        saturday: "9:00am – 6:00pm",
+        sunday: "Closed"
+      },
+      region: "Delta State",
+      isHeadOffice: false,
+      features: ["Eye Examinations", "M&H Eyewear Collection", "Premium Frame Selection", "Same-Day Repairs"]
+    },
+    {
+      name: "Soteria Eye Clinic – Uyo (Tropicana Mall)",
+      address: "Tropicana Mall, Shop GBA, Udo Udoma Avenue",
+      city: "Uyo",
+      state: "Akwa Ibom State",
+      phone: "08063363506",
+      email: "info@soteriaeyeclinic.com",
+      hours: {
+        weekdays: "9:00am – 6:00pm",
+        saturday: "9:00am – 6:00pm",
+        sunday: "Closed"
+      },
+      region: "Akwa Ibom State",
+      isHeadOffice: false,
+      features: ["Pediatric Eye Care", "M&H Designer Frames", "Contact Lens Services", "Optical Coherence Tomography"]
     }
   ];
 
@@ -67,7 +83,10 @@ const Branches = () => {
               Our Locations
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Find a Soteria Eye Clinic & M&H Eyewear location convenient for you
+              Find a Soteria Eye Clinic & M&H Eyewear location across Lagos, Delta and Uyo
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              M&H Eyewear is available at all Soteria Eye Clinic locations
             </p>
           </div>
 
@@ -90,10 +109,17 @@ const Branches = () => {
                   {/* Location Info */}
                   <div className="md:col-span-2 space-y-4">
                     <div>
-                      <h2 className="text-2xl font-display font-bold text-foreground mb-2">
-                        {branch.name}
-                      </h2>
-                      <p className="text-sm text-accent font-medium">{branch.distance}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h2 className="text-2xl font-display font-bold text-foreground">
+                          {branch.name}
+                        </h2>
+                        {branch.isHeadOffice && (
+                          <span className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded-full">
+                            Head Office
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-accent font-medium">{branch.region}</p>
                     </div>
 
                     <div className="space-y-3">
@@ -102,7 +128,7 @@ const Branches = () => {
                         <div>
                           <p className="text-foreground">{branch.address}</p>
                           <p className="text-sm text-muted-foreground">
-                            {branch.city}, {branch.state} {branch.zip}
+                            {branch.city}, {branch.state}, Nigeria
                           </p>
                         </div>
                       </div>
@@ -130,9 +156,9 @@ const Branches = () => {
                       <div className="flex items-start gap-3">
                         <Clock className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                         <div className="text-sm">
-                          <p className="text-foreground">Mon-Fri: {branch.hours.weekdays}</p>
-                          <p className="text-foreground">Saturday: {branch.hours.saturday}</p>
+                          <p className="text-foreground">Mon-Sat: {branch.hours.weekdays}</p>
                           <p className="text-foreground">Sunday: {branch.hours.sunday}</p>
+                          <p className="text-xs text-muted-foreground mt-1">(Hours to be confirmed)</p>
                         </div>
                       </div>
                     </div>

@@ -12,28 +12,28 @@ const Contact = () => {
     {
       icon: Phone,
       title: "Call Us",
-      detail: "+1 (234) 567-890",
-      action: "tel:+1234567890",
+      detail: "08063363506",
+      action: "tel:08063363506",
       color: "text-primary"
     },
     {
       icon: Mail,
       title: "Email Us",
-      detail: "info@soteria-mh.com",
-      action: "mailto:info@soteria-mh.com",
+      detail: "info@soteriaeyeclinic.com",
+      action: "mailto:info@soteriaeyeclinic.com",
       color: "text-primary"
     },
     {
       icon: MessageCircle,
       title: "Live Chat",
-      detail: "Available 9 AM - 6 PM",
+      detail: "Available 9am - 6pm",
       action: "#",
       color: "text-accent"
     },
     {
       icon: MapPin,
       title: "Visit Us",
-      detail: "3 Locations Available",
+      detail: "4 Locations Available",
       action: "/branches",
       color: "text-primary"
     }
@@ -99,7 +99,7 @@ const Contact = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number (Optional)</Label>
-                    <Input id="phone" type="tel" placeholder="+1 (234) 567-890" />
+                    <Input id="phone" type="tel" placeholder="08012345678" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject</Label>
@@ -139,9 +139,9 @@ const Contact = () => {
                       <Clock className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-medium text-foreground mb-1">Office Hours</p>
-                        <p className="text-sm text-muted-foreground">Monday - Friday: 8:00 AM - 6:00 PM</p>
-                        <p className="text-sm text-muted-foreground">Saturday: 9:00 AM - 4:00 PM</p>
+                        <p className="text-sm text-muted-foreground">Monday - Saturday: 9:00am – 6:00pm</p>
                         <p className="text-sm text-muted-foreground">Sunday: Closed</p>
+                        <p className="text-xs text-muted-foreground mt-1">(Hours to be confirmed)</p>
                       </div>
                     </div>
 
@@ -151,10 +151,10 @@ const Contact = () => {
                         <p className="font-medium text-foreground mb-1">Phone Support</p>
                         <p className="text-sm text-muted-foreground">Available during office hours</p>
                         <a 
-                          href="tel:+1234567890" 
+                          href="tel:08063363506" 
                           className="text-sm text-primary hover:underline"
                         >
-                          +1 (234) 567-890
+                          08063363506
                         </a>
                       </div>
                     </div>
@@ -165,10 +165,10 @@ const Contact = () => {
                         <p className="font-medium text-foreground mb-1">Email Response</p>
                         <p className="text-sm text-muted-foreground">We respond within 24 hours</p>
                         <a 
-                          href="mailto:info@soteria-mh.com" 
+                          href="mailto:info@soteriaeyeclinic.com" 
                           className="text-sm text-primary hover:underline"
                         >
-                          info@soteria-mh.com
+                          info@soteriaeyeclinic.com
                         </a>
                       </div>
                     </div>

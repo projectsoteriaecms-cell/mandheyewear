@@ -99,18 +99,18 @@ export const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-                <span>123 Healthcare Ave, Medical District</span>
+                <span>28 Kotie Street, off Okumagba Avenue, Warri, Delta State, Nigeria</span>
               </li>
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4 text-primary flex-shrink-0" />
-                <a href="tel:+1234567890" className="hover:text-foreground transition-smooth">
-                  +1 (234) 567-890
+                <a href="tel:08063363506" className="hover:text-foreground transition-smooth">
+                  08063363506
                 </a>
               </li>
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4 text-primary flex-shrink-0" />
-                <a href="mailto:info@soteria-mh.com" className="hover:text-foreground transition-smooth">
-                  info@soteria-mh.com
+                <a href="mailto:info@soteriaeyeclinic.com" className="hover:text-foreground transition-smooth">
+                  info@soteriaeyeclinic.com
                 </a>
               </li>
             </ul>
