@@ -20,6 +20,7 @@ const Branches = () => {
       },
       region: "Delta State",
       isHeadOffice: true,
+      isMH: false,
       features: ["Full Eye Exam Suite", "M&H Eyewear Boutique", "Diabetic Eye Screening", "Glaucoma Testing", "Emergency Eye Care", "Corporate Office"]
     },
     {
@@ -36,6 +37,7 @@ const Branches = () => {
       },
       region: "Lagos State",
       isHeadOffice: false,
+      isMH: false,
       features: ["Comprehensive Eye Exams", "M&H Eyewear Showroom", "Contact Lens Fitting", "AI Try-On Studio"]
     },
     {
@@ -52,6 +54,7 @@ const Branches = () => {
       },
       region: "Delta State",
       isHeadOffice: false,
+      isMH: false,
       features: ["Eye Examinations", "M&H Eyewear Collection", "Premium Frame Selection", "Same-Day Repairs"]
     },
     {
@@ -68,7 +71,25 @@ const Branches = () => {
       },
       region: "Akwa Ibom State",
       isHeadOffice: false,
+      isMH: false,
       features: ["Pediatric Eye Care", "M&H Designer Frames", "Contact Lens Services", "Optical Coherence Tomography"]
+    },
+    {
+      name: "M&H Eyewear – Lagos (Lekki Flagship)",
+      address: "Shop TM4 Talea Mall 1, Alternative Route Junction, Chevron Dr, off Lekki Epe Expressway",
+      city: "Eti-Osa, Lekki",
+      state: "Lagos State",
+      phone: "08063363506",
+      email: "info@soteriaeyeclinic.com",
+      hours: {
+        weekdays: "9:00am – 6:00pm",
+        saturday: "9:00am – 6:00pm",
+        sunday: "Closed"
+      },
+      region: "Lagos State",
+      isHeadOffice: false,
+      isMH: true,
+      features: ["Designer Eyewear Collection", "AI Virtual Try-On", "Luxury Frame Boutique", "Custom Fittings", "Premium Sunglasses", "Fashion Consultation"]
     }
   ];
 
@@ -86,7 +107,7 @@ const Branches = () => {
               Find a Soteria Eye Clinic & M&H Eyewear location across Lagos, Delta and Uyo
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              M&H Eyewear is available at all Soteria Eye Clinic locations
+              M&H Eyewear has a flagship boutique in Lekki and is also available at all Soteria Eye Clinic locations
             </p>
           </div>
 
@@ -116,6 +137,11 @@ const Branches = () => {
                         {branch.isHeadOffice && (
                           <span className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded-full">
                             Head Office
+                          </span>
+                        )}
+                        {branch.isMH && (
+                          <span className="px-2 py-1 bg-accent text-accent-foreground text-xs rounded-full">
+                            Flagship Store
                           </span>
                         )}
                       </div>
@@ -179,15 +205,22 @@ const Branches = () => {
                   <div className="flex flex-col gap-3">
                     <Button variant="hero" className="w-full">
                       <Phone className="mr-2 h-4 w-4" />
-                      Call Branch
+                      Call {branch.isMH ? "Store" : "Branch"}
                     </Button>
                     <Button variant="gold" className="w-full">
                       <NavIcon className="mr-2 h-4 w-4" />
                       Get Directions
                     </Button>
-                    <Button variant="outline" className="w-full">
-                      Book Appointment
-                    </Button>
+                    {!branch.isMH && (
+                      <Button variant="outline" className="w-full">
+                        Book Appointment
+                      </Button>
+                    )}
+                    {branch.isMH && (
+                      <Button variant="outline" className="w-full">
+                        Shop Eyewear
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Card>

@@ -27,6 +27,9 @@ export const Footer = () => {
             <p className="text-sm text-muted-foreground">
               See Better. Look Better. One unified experience.
             </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              M&H Eyewear flagship: Talea Mall, Lekki
+            </p>
           </div>
 
           {/* Quick Links */}
