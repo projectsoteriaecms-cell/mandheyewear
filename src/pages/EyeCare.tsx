@@ -1,0 +1,212 @@
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Eye, Activity, Droplet, Glasses, Stethoscope, Users, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
+
+const EyeCare = () => {
+  const services = [
+    {
+      icon: Eye,
+      title: "Comprehensive Eye Exams",
+      description: "Complete evaluation of your eye health and vision, including refraction, eye pressure testing, and retinal examination. Recommended annually for adults.",
+      duration: "45-60 minutes",
+      price: "From $150"
+    },
+    {
+      icon: Activity,
+      title: "Diabetic Eye Screening",
+      description: "Specialized screening to detect diabetic retinopathy and other diabetes-related eye conditions. Essential for managing long-term eye health.",
+      duration: "30-45 minutes",
+      price: "From $120"
+    },
+    {
+      icon: Droplet,
+      title: "Glaucoma Testing",
+      description: "Advanced diagnostic testing to detect glaucoma early, including tonometry, visual field testing, and optic nerve imaging.",
+      duration: "30 minutes",
+      price: "From $100"
+    },
+    {
+      icon: Glasses,
+      title: "Contact Lens Fitting",
+      description: "Professional fitting and training for contact lenses, including measurement of corneal curvature and personalized lens selection.",
+      duration: "60 minutes",
+      price: "From $180"
+    },
+    {
+      icon: Users,
+      title: "Pediatric Eye Care",
+      description: "Specialized eye exams for children, including vision development assessment, amblyopia screening, and school-readiness evaluations.",
+      duration: "45 minutes",
+      price: "From $130"
+    },
+    {
+      icon: Stethoscope,
+      title: "Specialty Consultations",
+      description: "Expert consultations for complex eye conditions, including cataracts, macular degeneration, dry eye syndrome, and more.",
+      duration: "60-90 minutes",
+      price: "From $200"
+    }
+  ];
+
+  const features = [
+    "Board-Certified Ophthalmologists & Optometrists",
+    "State-of-the-Art Diagnostic Equipment",
+    "Same-Day Emergency Eye Care",
+    "Comprehensive Health Insurance Accepted",
+    "Convenient Online Booking",
+    "Flexible Appointment Scheduling"
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      
+      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Hero */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">
+              Soteria Eye Care Services
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              Comprehensive eye health services backed by clinical excellence and advanced technology
+            </p>
+            <Button variant="hero" size="lg" asChild>
+              <Link to="/booking">
+                <Calendar className="mr-2 h-5 w-5" />
+                Book an Appointment
+              </Link>
+            </Button>
+          </div>
+
+          {/* Services Grid */}
+          <div className="grid md:grid-cols-2 gap-6 mb-16">
+            {services.map((service, index) => {
+              const Icon = service.icon;
+              return (
+                <Card key={index} className="hover:shadow-lg transition-all">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
+                        <Icon className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-foreground mb-2">
+                          {service.title}
+                        </h3>
+                        <p className="text-muted-foreground text-sm leading-relaxed mb-3">
+                          {service.description}
+                        </p>
+                        <div className="flex flex-wrap gap-4 text-sm">
+                          <span className="text-muted-foreground">
+                            <strong className="text-foreground">Duration:</strong> {service.duration}
+                          </span>
+                          <span className="text-accent font-semibold">{service.price}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button variant="outline" className="w-full">
+                      Learn More & Book
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Features */}
+          <Card className="mb-16 bg-gradient-subtle">
+            <CardContent className="p-8 sm:p-12">
+              <h2 className="text-3xl font-display font-bold text-center text-foreground mb-8">
+                Why Choose Soteria Eye Clinic
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {features.map((feature, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />
+                    <p className="text-foreground">{feature}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Insurance Info */}
+          <div className="grid md:grid-cols-2 gap-6 mb-16">
+            <Card>
+              <CardContent className="p-8 space-y-4">
+                <h3 className="text-2xl font-display font-bold text-foreground">
+                  Insurance & Payment
+                </h3>
+                <p className="text-muted-foreground">
+                  We accept most major health insurance plans, including Medicare and Medicaid. 
+                  Our team will work with you to maximize your benefits and minimize out-of-pocket costs.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• Flexible payment plans available</li>
+                  <li>• FSA and HSA accepted</li>
+                  <li>• Transparent pricing with no hidden fees</li>
+                  <li>• Insurance verification before your visit</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-8 space-y-4">
+                <h3 className="text-2xl font-display font-bold text-foreground">
+                  What to Expect
+                </h3>
+                <p className="text-muted-foreground">
+                  Your visit begins with a thorough assessment of your vision and eye health. 
+                  Our specialists use advanced diagnostic technology to ensure accurate results.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• Detailed patient history review</li>
+                  <li>• Comprehensive eye examination</li>
+                  <li>• Personalized treatment recommendations</li>
+                  <li>• Prescription updates when needed</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* CTA */}
+          <Card className="gradient-hero overflow-hidden">
+            <CardContent className="p-8 sm:p-12 text-center space-y-6">
+              <h2 className="text-3xl sm:text-4xl font-display font-bold text-white">
+                Ready to Schedule Your Visit?
+              </h2>
+              <p className="text-white/90 max-w-2xl mx-auto">
+                Book your comprehensive eye exam today and take the first step toward optimal eye health
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                <Button variant="secondary" size="lg" asChild>
+                  <Link to="/booking">
+                    Book Appointment
+                  </Link>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="bg-white/10 border-white text-white hover:bg-white hover:text-primary"
+                  asChild
+                >
+                  <Link to="/contact">
+                    Contact Us
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default EyeCare;

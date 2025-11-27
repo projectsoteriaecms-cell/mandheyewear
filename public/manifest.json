@@ -1,0 +1,20 @@
+{
+  "name": "Soteria Eye Clinic | M & H Eyewear",
+  "short_name": "Soteria | M&H",
+  "description": "See Better. Look Better. Premium eye care services and designer eyewear in one unified experience.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "medical", "lifestyle", "shopping"],
+  "screenshots": []
+}
