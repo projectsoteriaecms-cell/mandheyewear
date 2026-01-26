@@ -28,6 +28,7 @@ import {
   Mail,
   MoreHorizontal,
   Edit,
+  Building2,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +37,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -47,8 +49,9 @@ import {
 import { toast } from "sonner";
 import { InviteUserDialog } from "@/components/admin/users/InviteUserDialog";
 import { PendingInvitationsList } from "@/components/admin/users/PendingInvitationsList";
+import { BranchAssignmentDialog } from "@/components/admin/users/BranchAssignmentDialog";
 import { useUserRole } from "@/hooks/useUserRole";
-import { getInvitableRoles, canChangeUserRole, getRoleLabel } from "@/lib/permissions";
+import { getInvitableRoles, canChangeUserRole, getRoleLabel, isAtLeast } from "@/lib/permissions";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -75,6 +78,11 @@ const AdminUsers = () => {
   const [editingUser, setEditingUser] = useState<{ id: string; email: string; role: AppRole } | null>(null);
   const [newRole, setNewRole] = useState<AppRole>("customer");
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [branchAssignmentUser, setBranchAssignmentUser] = useState<{
+    userId: string;
+    email: string;
+    name: string;
+  } | null>(null);
 
   // Get roles the current user can assign
   const assignableRoles = getInvitableRoles(currentUserRole ?? null);
@@ -312,6 +320,23 @@ const AdminUsers = () => {
                                     <Edit className="mr-2 h-4 w-4" />
                                     Change Role
                                   </DropdownMenuItem>
+                                  {isAtLeast(user.role, "branch_staff") && user.role !== "super_admin" && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          setBranchAssignmentUser({
+                                            userId: user.user_id,
+                                            email: profile?.email || "",
+                                            name: profile?.full_name || "",
+                                          });
+                                        }}
+                                      >
+                                        <Building2 className="mr-2 h-4 w-4" />
+                                        Manage Branches
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             )}
@@ -370,6 +395,14 @@ const AdminUsers = () => {
       <InviteUserDialog 
         open={inviteDialogOpen} 
         onOpenChange={setInviteDialogOpen} 
+      />
+
+      <BranchAssignmentDialog
+        open={!!branchAssignmentUser}
+        onOpenChange={(open) => !open && setBranchAssignmentUser(null)}
+        userId={branchAssignmentUser?.userId || ""}
+        userEmail={branchAssignmentUser?.email || ""}
+        userName={branchAssignmentUser?.name || ""}
       />
       </AdminLayout>
     </RoleGuard>
