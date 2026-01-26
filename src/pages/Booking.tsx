@@ -1,64 +1,142 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  CheckCircle,
+  ArrowLeft,
+  ArrowRight,
+  MapPin,
+  Loader2,
+  LogIn,
+} from "lucide-react";
+import { useBranches } from "@/hooks/useBranches";
+import { useCreateAppointment, type Appointment } from "@/hooks/useAppointments";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { format } from "date-fns";
+
+const SERVICES = [
+  { value: "comprehensive_eye_exam", label: "Comprehensive Eye Exam", duration: 45 },
+  { value: "contact_lens_fitting", label: "Contact Lens Fitting", duration: 30 },
+  { value: "pediatric_eye_exam", label: "Pediatric Eye Exam", duration: 45 },
+  { value: "diabetic_eye_screening", label: "Diabetic Eye Screening", duration: 30 },
+  { value: "glaucoma_testing", label: "Glaucoma Testing", duration: 30 },
+  { value: "specialty_consultation", label: "Specialty Consultation", duration: 60 },
+];
+
+const TIME_SLOTS = [
+  "09:00",
+  "10:00",
+  "11:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+];
+
+const formatTimeSlot = (time: string) => {
+  const [hours] = time.split(":");
+  const hour = parseInt(hours, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour > 12 ? hour - 12 : hour;
+  return `${displayHour}:00 ${ampm}`;
+};
 
 const Booking = () => {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { data: profile } = useProfile(user?.id);
+  const { data: branches, isLoading: branchesLoading } = useBranches();
+  const createAppointment = useCreateAppointment();
+
   const [step, setStep] = useState(1);
-  const [date, setDate] = useState<Date>();
-  const [selectedBranch, setSelectedBranch] = useState("");
+  const [selectedBranchId, setSelectedBranchId] = useState("");
   const [selectedService, setSelectedService] = useState("");
+  const [date, setDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("");
+  const [notes, setNotes] = useState("");
+  const [confirmedAppointment, setConfirmedAppointment] = useState<Appointment | null>(null);
 
-  const branches = [
-    "Soteria Eye Clinic – Lagos (Lekki)",
-    "Soteria Eye Clinic – Warri (Head Office)",
-    "Soteria Eye Clinic – Effurun (Delta Mall)",
-    "Soteria Eye Clinic – Uyo (Tropicana Mall)"
-  ];
-
-  const services = [
-    "Comprehensive Eye Exam",
-    "Contact Lens Fitting",
-    "Pediatric Eye Exam",
-    "Diabetic Eye Screening",
-    "Glaucoma Testing",
-    "Specialty Consultation"
-  ];
-
-  const timeSlots = [
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM"
-  ];
+  const selectedBranch = branches?.find((b) => b.id === selectedBranchId);
+  const selectedServiceData = SERVICES.find((s) => s.value === selectedService);
 
   const handleNext = () => {
-    if (step < 5) setStep(step + 1);
+    if (step < 4) setStep(step + 1);
   };
 
   const handleBack = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = () => {
-    // Mock submission
+  const handleSubmit = async () => {
+    if (!date || !selectedTime || !selectedBranchId || !selectedService) return;
+
+    const appointment = await createAppointment.mutateAsync({
+      branch_id: selectedBranchId,
+      service_type: selectedService,
+      scheduled_date: format(date, "yyyy-MM-dd"),
+      scheduled_time: selectedTime,
+      duration_minutes: selectedServiceData?.duration || 30,
+      notes: notes || null,
+    });
+
+    setConfirmedAppointment(appointment);
     setStep(5);
   };
+
+  // Loading state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="pt-24 pb-16 px-4 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Not authenticated - show sign in prompt
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md mx-auto text-center">
+            <LogIn className="h-16 w-16 mx-auto text-primary mb-4" />
+            <h1 className="text-2xl font-bold mb-4">Sign In Required</h1>
+            <p className="text-muted-foreground mb-8">
+              Please sign in to book an appointment. Your booking will be saved to your account.
+            </p>
+            <Button variant="hero" size="lg" asChild>
+              <Link to="/login?redirect=/booking">Sign In to Book</Link>
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
+
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
@@ -100,7 +178,7 @@ const Booking = () => {
                 {step === 1 && "Select Branch"}
                 {step === 2 && "Choose Service"}
                 {step === 3 && "Pick Date & Time"}
-                {step === 4 && "Your Details"}
+                {step === 4 && "Review & Confirm"}
                 {step === 5 && "Confirmation"}
               </CardTitle>
             </CardHeader>
@@ -108,69 +186,90 @@ const Booking = () => {
               {/* Step 1: Select Branch */}
               {step === 1 && (
                 <div className="space-y-4">
-                  <Label htmlFor="branch">Select a branch location</Label>
-                  <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                    <SelectTrigger id="branch">
-                      <SelectValue placeholder="Choose your preferred location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {branches.map((branch) => (
-                        <SelectItem key={branch} value={branch}>
-                          {branch}
-                        </SelectItem>
+                  <Label>Select a branch location</Label>
+                  {branchesLoading ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4].map((i) => (
+                        <Skeleton key={i} className="h-24 w-full" />
                       ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="grid gap-3 mt-4">
-                    {branches.map((branch) => (
-                      <Card
-                        key={branch}
-                        className={`cursor-pointer transition-all ${
-                          selectedBranch === branch
-                            ? "border-primary border-2"
-                            : "hover:border-primary/50"
-                        }`}
-                        onClick={() => setSelectedBranch(branch)}
-                      >
-                        <CardContent className="p-4">
-                          <p className="font-medium">{branch}</p>
-                          <p className="text-sm text-muted-foreground">Nigeria</p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="grid gap-3">
+                      {branches?.map((branch) => (
+                        <Card
+                          key={branch.id}
+                          className={`cursor-pointer transition-all ${
+                            selectedBranchId === branch.id
+                              ? "border-primary border-2 bg-primary/5"
+                              : "hover:border-primary/50"
+                          }`}
+                          onClick={() => setSelectedBranchId(branch.id)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <MapPin className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="font-medium">
+                                  {branch.name}
+                                  {branch.is_head_office && (
+                                    <span className="ml-2 text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded">
+                                      Head Office
+                                    </span>
+                                  )}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {branch.address}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {branch.city}, {branch.state}
+                                </p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Step 2: Choose Service */}
               {step === 2 && (
                 <div className="space-y-4">
-                  <Label htmlFor="service">What service do you need?</Label>
+                  <Label>What service do you need?</Label>
                   <Select value={selectedService} onValueChange={setSelectedService}>
-                    <SelectTrigger id="service">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select a service" />
                     </SelectTrigger>
                     <SelectContent>
-                      {services.map((service) => (
-                        <SelectItem key={service} value={service}>
-                          {service}
+                      {SERVICES.map((service) => (
+                        <SelectItem key={service.value} value={service.value}>
+                          {service.label} ({service.duration} min)
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <div className="grid gap-3 mt-4">
-                    {services.map((service) => (
+                    {SERVICES.map((service) => (
                       <Card
-                        key={service}
+                        key={service.value}
                         className={`cursor-pointer transition-all ${
-                          selectedService === service
-                            ? "border-primary border-2"
+                          selectedService === service.value
+                            ? "border-primary border-2 bg-primary/5"
                             : "hover:border-primary/50"
                         }`}
-                        onClick={() => setSelectedService(service)}
+                        onClick={() => setSelectedService(service.value)}
                       >
-                        <CardContent className="p-4">
-                          <p className="font-medium">{service}</p>
+                        <CardContent className="p-4 flex justify-between items-center">
+                          <div>
+                            <p className="font-medium">{service.label}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Duration: {service.duration} minutes
+                            </p>
+                          </div>
+                          {selectedService === service.value && (
+                            <CheckCircle className="h-5 w-5 text-primary" />
+                          )}
                         </CardContent>
                       </Card>
                     ))}
@@ -188,23 +287,26 @@ const Booking = () => {
                       selected={date}
                       onSelect={setDate}
                       className="rounded-md border pointer-events-auto mx-auto"
-                      disabled={(date) =>
-                        date < new Date() || date < new Date(new Date().setHours(0, 0, 0, 0))
-                      }
+                      disabled={(d) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        // Disable past dates and Sundays
+                        return d < today || d.getDay() === 0;
+                      }}
                     />
                   </div>
                   {date && (
                     <div>
                       <Label className="mb-2 block">Available time slots</Label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {timeSlots.map((time) => (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                        {TIME_SLOTS.map((time) => (
                           <Button
                             key={time}
                             variant={selectedTime === time ? "default" : "outline"}
                             onClick={() => setSelectedTime(time)}
                             className="w-full"
                           >
-                            {time}
+                            {formatTimeSlot(time)}
                           </Button>
                         ))}
                       </div>
@@ -213,30 +315,79 @@ const Booking = () => {
                 </div>
               )}
 
-              {/* Step 4: User Details */}
+              {/* Step 4: Review & Confirm */}
               {step === 4 && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="John Doe" />
+                <div className="space-y-6">
+                  <div className="bg-secondary/30 rounded-lg p-4 space-y-3">
+                    <h3 className="font-semibold">Booking Summary</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Branch:</span>
+                        <span className="font-medium text-right">
+                          {selectedBranch?.name}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Service:</span>
+                        <span className="font-medium">
+                          {selectedServiceData?.label}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Date:</span>
+                        <span className="font-medium">
+                          {date && format(date, "EEEE, MMMM d, yyyy")}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Time:</span>
+                        <span className="font-medium">
+                          {formatTimeSlot(selectedTime)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Duration:</span>
+                        <span className="font-medium">
+                          {selectedServiceData?.duration} minutes
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="john@example.com" />
+
+                  <div className="bg-secondary/30 rounded-lg p-4 space-y-2">
+                    <h3 className="font-semibold">Patient Information</h3>
+                    <div className="text-sm space-y-1">
+                      <p>
+                        <span className="text-muted-foreground">Name: </span>
+                        {profile?.full_name || "Not provided"}
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">Email: </span>
+                        {profile?.email || user?.email}
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">Phone: </span>
+                        {profile?.phone_number || "Not provided"}
+                      </p>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" placeholder="08012345678" />
-                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="notes">Additional Notes (Optional)</Label>
-                    <Input id="notes" placeholder="Any specific concerns or requests?" />
+                    <Textarea
+                      id="notes"
+                      placeholder="Any specific concerns, allergies, or requests?"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="resize-none"
+                      maxLength={500}
+                    />
                   </div>
                 </div>
               )}
 
               {/* Step 5: Confirmation */}
-              {step === 5 && (
+              {step === 5 && confirmedAppointment && (
                 <div className="text-center space-y-6 py-8">
                   <div className="inline-flex p-4 rounded-full bg-primary/10">
                     <CheckCircle className="h-16 w-16 text-primary" />
@@ -246,32 +397,50 @@ const Booking = () => {
                       Appointment Confirmed!
                     </h3>
                     <p className="text-muted-foreground">
-                      We've sent a confirmation email with all the details
+                      A confirmation has been saved to your account
                     </p>
                   </div>
                   <Card className="bg-muted/50">
                     <CardContent className="p-6 space-y-3 text-left">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Branch:</span>
-                        <span className="font-medium">{selectedBranch}</span>
+                        <span className="font-medium text-right">
+                          {confirmedAppointment.branch?.name}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Service:</span>
-                        <span className="font-medium">{selectedService}</span>
+                        <span className="font-medium">
+                          {SERVICES.find(
+                            (s) => s.value === confirmedAppointment.service_type
+                          )?.label}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Date:</span>
-                        <span className="font-medium">{date?.toDateString()}</span>
+                        <span className="font-medium">
+                          {format(
+                            new Date(confirmedAppointment.scheduled_date),
+                            "EEEE, MMMM d, yyyy"
+                          )}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Time:</span>
-                        <span className="font-medium">{selectedTime}</span>
+                        <span className="font-medium">
+                          {formatTimeSlot(confirmedAppointment.scheduled_time)}
+                        </span>
                       </div>
                     </CardContent>
                   </Card>
-                  <Button variant="hero" size="lg" onClick={() => (window.location.href = "/")}>
-                    Back to Home
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button variant="hero" size="lg" asChild>
+                      <Link to="/dashboard">View My Appointments</Link>
+                    </Button>
+                    <Button variant="outline" size="lg" asChild>
+                      <Link to="/">Back to Home</Link>
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -287,15 +456,26 @@ const Booking = () => {
                     Back
                   </Button>
                   {step === 4 ? (
-                    <Button variant="hero" onClick={handleSubmit}>
-                      Confirm Booking
+                    <Button
+                      variant="hero"
+                      onClick={handleSubmit}
+                      disabled={createAppointment.isPending}
+                    >
+                      {createAppointment.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Booking...
+                        </>
+                      ) : (
+                        "Confirm Booking"
+                      )}
                     </Button>
                   ) : (
                     <Button
                       variant="hero"
                       onClick={handleNext}
                       disabled={
-                        (step === 1 && !selectedBranch) ||
+                        (step === 1 && !selectedBranchId) ||
                         (step === 2 && !selectedService) ||
                         (step === 3 && (!date || !selectedTime))
                       }

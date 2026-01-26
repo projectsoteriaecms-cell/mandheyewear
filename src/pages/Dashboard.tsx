@@ -7,16 +7,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSection } from "@/components/dashboard/ProfileSection";
 import { OrderHistorySection } from "@/components/dashboard/OrderHistorySection";
 import { WishlistSection } from "@/components/dashboard/WishlistSection";
+import { AppointmentsSection } from "@/components/dashboard/AppointmentsSection";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useAppointments } from "@/hooks/useAppointments";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LogOut, User, ShoppingBag, Calendar, Heart } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const { wishlistCount } = useWishlist();
+  const { data: appointments } = useAppointments();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const upcomingAppointments = appointments?.filter(
+    (a) => a.status !== "cancelled" && a.status !== "completed" && new Date(a.scheduled_date) >= new Date()
+  ).length || 0;
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -93,7 +100,7 @@ const Dashboard = () => {
             </div>
             <div className="p-4 rounded-lg border bg-card">
               <Calendar className="h-5 w-5 text-primary mb-2" />
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-2xl font-bold">{upcomingAppointments}</p>
               <p className="text-sm text-muted-foreground">Appointments</p>
             </div>
             <div className="p-4 rounded-lg border bg-card">
@@ -105,17 +112,21 @@ const Dashboard = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="profile">
-                <User className="mr-2 h-4 w-4" />
+                <User className="mr-2 h-4 w-4 hidden sm:inline" />
                 Profile
               </TabsTrigger>
               <TabsTrigger value="orders">
-                <ShoppingBag className="mr-2 h-4 w-4" />
+                <ShoppingBag className="mr-2 h-4 w-4 hidden sm:inline" />
                 Orders
               </TabsTrigger>
+              <TabsTrigger value="appointments">
+                <Calendar className="mr-2 h-4 w-4 hidden sm:inline" />
+                Appointments
+              </TabsTrigger>
               <TabsTrigger value="wishlist">
-                <Heart className="mr-2 h-4 w-4" />
+                <Heart className="mr-2 h-4 w-4 hidden sm:inline" />
                 Wishlist
               </TabsTrigger>
             </TabsList>
@@ -126,6 +137,10 @@ const Dashboard = () => {
 
             <TabsContent value="orders">
               <OrderHistorySection userId={user.id} />
+            </TabsContent>
+
+            <TabsContent value="appointments">
+              <AppointmentsSection />
             </TabsContent>
 
             <TabsContent value="wishlist">
