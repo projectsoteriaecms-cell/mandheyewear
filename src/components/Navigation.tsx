@@ -1,17 +1,47 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import soteriaLogo from "@/assets/soteria-logo.png";
 import mhLogo from "@/assets/mh-logo.png";
 
 export const Navigation = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const { user, loading, signOut, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const toggleTheme = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle("dark");
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Signed Out",
+        description: "You have been signed out.",
+      });
+      navigate("/");
+    }
   };
 
   const navLinks = [
@@ -65,6 +95,37 @@ export const Navigation = () => {
             >
               {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
+            
+            {!loading && (
+              isAuthenticated ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <User className="h-4 w-4 mr-2" />
+                      Account
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard" className="cursor-pointer">
+                        <User className="h-4 w-4 mr-2" />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/login">Sign In</Link>
+                </Button>
+              )
+            )}
+            
             <Button variant="hero" size="sm" asChild>
               <Link to="/booking">Book Appointment</Link>
             </Button>
@@ -97,11 +158,45 @@ export const Navigation = () => {
                 </Link>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
+                {!loading && (
+                  isAuthenticated ? (
+                    <>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                          <User className="h-4 w-4 mr-2" />
+                          Dashboard
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          handleSignOut();
+                          setMobileMenuOpen(false);
+                        }}
+                        className="justify-start text-destructive"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
+                      </Button>
+                    </>
+                  ) : (
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                        Sign In
+                      </Link>
+                    </Button>
+                  )
+                )}
                 <Button variant="hero" size="sm" asChild>
-                  <Link to="/booking">Book Appointment</Link>
+                  <Link to="/booking" onClick={() => setMobileMenuOpen(false)}>
+                    Book Appointment
+                  </Link>
                 </Button>
                 <Button variant="gold" size="sm" asChild>
-                  <Link to="/eyewear">Shop Frames</Link>
+                  <Link to="/eyewear" onClick={() => setMobileMenuOpen(false)}>
+                    Shop Frames
+                  </Link>
                 </Button>
                 <Button
                   variant="ghost"
