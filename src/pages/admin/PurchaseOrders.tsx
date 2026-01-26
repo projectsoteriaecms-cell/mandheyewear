@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { usePurchaseOrders, useUpdatePurchaseOrderStatus } from "@/hooks/admin/usePurchaseOrders";
-import { useIsManager } from "@/hooks/useUserRole";
+import { useUserRole } from "@/hooks/useUserRole";
+import { canApprovePurchaseOrder, canReceivePurchaseOrder } from "@/lib/permissions";
 import {
   Table,
   TableBody,
@@ -63,7 +64,7 @@ const PurchaseOrders = () => {
   const { data: orders, isLoading } = usePurchaseOrders(
     statusFilter === "all" ? undefined : (statusFilter as PurchaseOrderStatus)
   );
-  const { isManager } = useIsManager();
+  const { data: role } = useUserRole();
   const updateStatus = useUpdatePurchaseOrderStatus();
 
   const handleStatusChange = (id: string, status: PurchaseOrderStatus) => {
@@ -193,7 +194,7 @@ const PurchaseOrders = () => {
                                 Submit for Approval
                               </DropdownMenuItem>
                             )}
-                            {order.status === "submitted" && isManager && (
+                            {order.status === "submitted" && canApprovePurchaseOrder(role) && (
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -216,7 +217,7 @@ const PurchaseOrders = () => {
                               </>
                             )}
                             {(order.status === "approved" ||
-                              order.status === "partially_received") && (
+                              order.status === "partially_received") && canReceivePurchaseOrder(role) && (
                               <DropdownMenuItem asChild>
                                 <Link
                                   to={`/admin/inventory/purchase-orders/${order.id}/receive`}

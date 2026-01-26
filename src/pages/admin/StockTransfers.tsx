@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useStockTransfers, useUpdateTransferStatus } from "@/hooks/admin/useStockTransfers";
-import { useIsManager } from "@/hooks/useUserRole";
+import { useUserRole } from "@/hooks/useUserRole";
+import { canApproveStockTransfer, canCompleteStockTransfer } from "@/lib/permissions";
 import {
   Table,
   TableBody,
@@ -62,7 +63,7 @@ const StockTransfers = () => {
   const { data: transfers, isLoading } = useStockTransfers(
     statusFilter === "all" ? undefined : (statusFilter as TransferStatus)
   );
-  const { isManager } = useIsManager();
+  const { data: role } = useUserRole();
   const updateStatus = useUpdateTransferStatus();
 
   const handleStatusChange = (id: string, status: TransferStatus) => {
@@ -186,7 +187,7 @@ const StockTransfers = () => {
                                 View Details
                               </Link>
                             </DropdownMenuItem>
-                            {transfer.status === "pending" && isManager && (
+                            {transfer.status === "pending" && canApproveStockTransfer(role) && (
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -208,7 +209,7 @@ const StockTransfers = () => {
                                 </DropdownMenuItem>
                               </>
                             )}
-                            {transfer.status === "in_transit" && (
+                            {transfer.status === "in_transit" && canCompleteStockTransfer(role) && (
                               <DropdownMenuItem
                                 onClick={() =>
                                   handleStatusChange(transfer.id, "received")
