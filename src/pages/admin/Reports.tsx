@@ -1,4 +1,5 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { RoleGuard } from "@/components/admin/RoleGuard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart3,
@@ -78,7 +79,8 @@ const Reports = () => {
   ];
 
   return (
-    <AdminLayout>
+    <RoleGuard allowedRoles={["branch_manager", "super_admin"]}>
+      <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -192,7 +194,8 @@ const Reports = () => {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+      </AdminLayout>
+    </RoleGuard>
   );
 };
 

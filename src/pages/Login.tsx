@@ -9,6 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { hasAdminAccess } from "@/lib/permissions";
+import type { Database } from "@/integrations/supabase/types";
+
+type AppRole = Database["public"]["Enums"]["app_role"];
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -32,21 +37,43 @@ const Login = () => {
     }
 
     setIsLoading(true);
-    const { error } = await signIn(email, password);
-    setIsLoading(false);
-
+    const { error, data } = await signIn(email, password);
+    
     if (error) {
+      setIsLoading(false);
       toast({
         title: "Login Failed",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
-      navigate("/dashboard");
+      // Fetch user role to determine redirect
+      const userId = data?.user?.id;
+      if (userId) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        const role = roleData?.role as AppRole | null;
+        
+        setIsLoading(false);
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
+        });
+
+        // Redirect based on role
+        if (hasAdminAccess(role)) {
+          navigate("/admin");
+        } else {
+          navigate("/dashboard");
+        }
+      } else {
+        setIsLoading(false);
+        navigate("/dashboard");
+      }
     }
   };
 

@@ -67,6 +67,41 @@ export type Database = {
           },
         ]
       }
+      branch_assignments: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          branch_id: string
+          id: string
+          is_primary: boolean | null
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          branch_id: string
+          id?: string
+          is_primary?: boolean | null
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          branch_id?: string
+          id?: string
+          is_primary?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branch_assignments_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branches: {
         Row: {
           address: string
