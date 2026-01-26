@@ -21,6 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, AlertTriangle, PackageMinus, RotateCcw, Trash2, HelpCircle } from "lucide-react";
 import { useStockAdjustments } from "@/hooks/admin/useStockAdjustments";
 import { useBranches } from "@/hooks/useBranches";
+import { useUserRole } from "@/hooks/useUserRole";
+import { canCreateStockAdjustment } from "@/lib/permissions";
 import { CreateAdjustmentDialog } from "@/components/admin/adjustments/CreateAdjustmentDialog";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -58,6 +60,7 @@ const StockAdjustments = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const { data: branches = [] } = useBranches();
+  const { data: role } = useUserRole();
   const { adjustments, isLoading } = useStockAdjustments(
     selectedBranch !== "all" ? selectedBranch : undefined
   );
@@ -83,10 +86,12 @@ const StockAdjustments = () => {
               Manual inventory corrections for damage, write-offs, and count discrepancies
             </p>
           </div>
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Adjustment
-          </Button>
+          {canCreateStockAdjustment(role) && (
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Adjustment
+            </Button>
+          )}
         </div>
 
         {/* Filters */}
