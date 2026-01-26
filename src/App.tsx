@@ -27,7 +27,13 @@ import Inventory from "./pages/admin/Inventory";
 import PurchaseOrders from "./pages/admin/PurchaseOrders";
 import StockTransfers from "./pages/admin/StockTransfers";
 import StockAdjustments from "./pages/admin/StockAdjustments";
+import InventoryTransactions from "./pages/admin/InventoryTransactions";
 import Suppliers from "./pages/admin/Suppliers";
+import Products from "./pages/admin/Products";
+import AdminBranches from "./pages/admin/AdminBranches";
+import AdminUsers from "./pages/admin/AdminUsers";
+import Reports from "./pages/admin/Reports";
+import Settings from "./pages/admin/Settings";
 
 const queryClient = new QueryClient();
 
@@ -61,7 +67,13 @@ const App = () => (
           <Route path="/admin/inventory/purchase-orders" element={<PurchaseOrders />} />
           <Route path="/admin/inventory/transfers" element={<StockTransfers />} />
           <Route path="/admin/inventory/adjustments" element={<StockAdjustments />} />
+          <Route path="/admin/inventory/transactions" element={<InventoryTransactions />} />
           <Route path="/admin/suppliers" element={<Suppliers />} />
+          <Route path="/admin/products" element={<Products />} />
+          <Route path="/admin/branches" element={<AdminBranches />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/reports" element={<Reports />} />
+          <Route path="/admin/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
