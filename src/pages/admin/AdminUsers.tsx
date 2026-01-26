@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { InviteUserDialog } from "@/components/admin/users/InviteUserDialog";
+import { PendingInvitationsList } from "@/components/admin/users/PendingInvitationsList";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -314,6 +315,9 @@ const AdminUsers = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Pending Invitations */}
+        <PendingInvitationsList />
       </div>
 
       {/* Edit Role Dialog */}
