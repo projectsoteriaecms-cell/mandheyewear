@@ -5,6 +5,7 @@ import { Camera, ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import type { Product } from "@/hooks/useProducts";
 
 // Import placeholder images for products without images
@@ -64,6 +65,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all" />
           <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity space-y-2">
+            <WishlistButton productId={product.id} />
             <Button size="icon" variant="secondary" className="shadow-lg">
               <Camera className="h-4 w-4" />
             </Button>

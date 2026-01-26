@@ -6,12 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSection } from "@/components/dashboard/ProfileSection";
 import { OrderHistorySection } from "@/components/dashboard/OrderHistorySection";
+import { WishlistSection } from "@/components/dashboard/WishlistSection";
 import { useAuth } from "@/hooks/useAuth";
+import { useWishlist } from "@/hooks/useWishlist";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LogOut, User, ShoppingBag, Calendar, Heart } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
+  const { wishlistCount } = useWishlist();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -95,14 +98,14 @@ const Dashboard = () => {
             </div>
             <div className="p-4 rounded-lg border bg-card">
               <Heart className="h-5 w-5 text-destructive mb-2" />
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-2xl font-bold">{wishlistCount}</p>
               <p className="text-sm text-muted-foreground">Wishlist</p>
             </div>
           </div>
 
           {/* Tabs */}
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="profile">
                 <User className="mr-2 h-4 w-4" />
                 Profile
@@ -110,6 +113,10 @@ const Dashboard = () => {
               <TabsTrigger value="orders">
                 <ShoppingBag className="mr-2 h-4 w-4" />
                 Orders
+              </TabsTrigger>
+              <TabsTrigger value="wishlist">
+                <Heart className="mr-2 h-4 w-4" />
+                Wishlist
               </TabsTrigger>
             </TabsList>
 
@@ -119,6 +126,10 @@ const Dashboard = () => {
 
             <TabsContent value="orders">
               <OrderHistorySection userId={user.id} />
+            </TabsContent>
+
+            <TabsContent value="wishlist">
+              <WishlistSection />
             </TabsContent>
           </Tabs>
         </div>

@@ -8,6 +8,7 @@ import { ProductImageGallery } from "@/components/product/ProductImageGallery";
 import { ProductSpecifications } from "@/components/product/ProductSpecifications";
 import { AddToCartSection } from "@/components/product/AddToCartSection";
 import { ProductCard } from "@/components/eyewear/ProductCard";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { ArrowLeft, Star } from "lucide-react";
 
@@ -157,8 +158,11 @@ const ProductDetail = () => {
                 </p>
               )}
 
-              {/* Add to Cart */}
-              <AddToCartSection product={product} />
+              {/* Add to Cart & Wishlist */}
+              <div className="space-y-4">
+                <AddToCartSection product={product} />
+                <WishlistButton productId={product.id} variant="full" className="w-full" />
+              </div>
             </div>
           </div>
 
