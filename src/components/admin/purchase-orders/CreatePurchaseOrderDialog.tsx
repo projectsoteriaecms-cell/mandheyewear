@@ -118,7 +118,11 @@ export const CreatePurchaseOrderDialog = ({
         branch_id: data.branch_id,
         expected_delivery_date: data.expected_delivery_date,
         notes: data.notes,
-        items: data.items,
+        items: data.items.map((item) => ({
+          product_id: item.product_id,
+          quantity_ordered: item.quantity_ordered,
+          unit_cost: item.unit_cost,
+        })),
       });
       onOpenChange(false);
       form.reset();
