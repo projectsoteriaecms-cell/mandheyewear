@@ -28,6 +28,7 @@ import { useCreateAppointment, type Appointment } from "@/hooks/useAppointments"
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
 const SERVICES = [
   { value: "comprehensive_eye_exam", label: "Comprehensive Eye Exam", duration: 45 },
@@ -93,6 +94,24 @@ const Booking = () => {
       duration_minutes: selectedServiceData?.duration || 30,
       notes: notes || null,
     });
+
+    // Send confirmation email (fire and forget - don't block the UI)
+    const emailAddress = profile?.email || user?.email;
+    if (emailAddress && appointment.branch) {
+      supabase.functions.invoke("send-appointment-confirmation", {
+        body: {
+          email: emailAddress,
+          patientName: profile?.full_name || "Valued Patient",
+          serviceType: selectedService,
+          scheduledDate: format(date, "yyyy-MM-dd"),
+          scheduledTime: selectedTime,
+          branchName: appointment.branch.name,
+          branchAddress: appointment.branch.address,
+          branchCity: appointment.branch.city,
+          notes: notes || undefined,
+        },
+      }).catch((err) => console.error("Email notification failed:", err));
+    }
 
     setConfirmedAppointment(appointment);
     setStep(5);
@@ -397,7 +416,7 @@ const Booking = () => {
                       Appointment Confirmed!
                     </h3>
                     <p className="text-muted-foreground">
-                      A confirmation has been saved to your account
+                      A confirmation email has been sent to your email address
                     </p>
                   </div>
                   <Card className="bg-muted/50">
