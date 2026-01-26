@@ -168,8 +168,8 @@ export const CartDrawer = () => {
             <p className="text-sm text-muted-foreground">
               Shipping and taxes calculated at checkout
             </p>
-            <Button variant="hero" className="w-full" size="lg">
-              Proceed to Checkout
+            <Button variant="hero" className="w-full" size="lg" asChild>
+              <Link to="/checkout">Proceed to Checkout</Link>
             </Button>
             <Button variant="outline" className="w-full" asChild>
               <Link to="/eyewear">Continue Shopping</Link>
