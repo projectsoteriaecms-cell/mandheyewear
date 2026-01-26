@@ -11,11 +11,14 @@ import { AppointmentsSection } from "@/components/dashboard/AppointmentsSection"
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAppointments } from "@/hooks/useAppointments";
+import { useUserRole } from "@/hooks/useUserRole";
+import { hasAdminAccess } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LogOut, User, ShoppingBag, Calendar, Heart } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
+  const { data: role, isLoading: roleLoading } = useUserRole();
   const { wishlistCount } = useWishlist();
   const { data: appointments } = useAppointments();
   const { toast } = useToast();
@@ -24,6 +27,13 @@ const Dashboard = () => {
   const upcomingAppointments = appointments?.filter(
     (a) => a.status !== "cancelled" && a.status !== "completed" && new Date(a.scheduled_date) >= new Date()
   ).length || 0;
+
+  // Redirect staff users to admin panel
+  useEffect(() => {
+    if (!roleLoading && role && hasAdminAccess(role)) {
+      navigate("/admin");
+    }
+  }, [role, roleLoading, navigate]);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -48,7 +58,7 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
