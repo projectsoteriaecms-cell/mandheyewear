@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Sun, Moon, User, LogOut } from "lucide-react";
+import { Menu, X, Sun, Moon, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+import { hasAdminAccess } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import soteriaLogo from "@/assets/soteria-logo.png";
@@ -20,8 +22,11 @@ export const Navigation = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const { user, loading, signOut, isAuthenticated } = useAuth();
+  const { data: role } = useUserRole();
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  const isStaff = hasAdminAccess(role ?? null);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -115,6 +120,14 @@ export const Navigation = () => {
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
+                    {isStaff && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="cursor-pointer">
+                          <Settings className="h-4 w-4 mr-2" />
+                          Admin Panel
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                       <LogOut className="h-4 w-4 mr-2" />
@@ -170,6 +183,14 @@ export const Navigation = () => {
                           Dashboard
                         </Link>
                       </Button>
+                      {isStaff && (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                            <Settings className="h-4 w-4 mr-2" />
+                            Admin Panel
+                          </Link>
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
