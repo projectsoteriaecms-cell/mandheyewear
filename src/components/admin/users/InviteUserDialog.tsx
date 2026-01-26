@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, Send } from "lucide-react";
+import { getInvitableRoles, getRoleLabel } from "@/lib/permissions";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -30,18 +32,15 @@ interface InviteUserDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const roleLabels: Record<AppRole, string> = {
-  customer: "Customer",
-  branch_staff: "Branch Staff",
-  branch_manager: "Branch Manager",
-  super_admin: "Super Admin",
-};
-
 export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) => {
   const { user } = useAuth();
+  const { data: currentUserRole } = useUserRole();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<AppRole>("customer");
+
+  // Get roles the current user can invite
+  const invitableRoles = getInvitableRoles(currentUserRole ?? null);
 
   const inviteUser = useMutation({
     mutationFn: async ({ email, role }: { email: string; role: AppRole }) => {
@@ -156,9 +155,9 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(roleLabels).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
+                {invitableRoles.map((roleValue) => (
+                  <SelectItem key={roleValue} value={roleValue}>
+                    {getRoleLabel(roleValue)}
                   </SelectItem>
                 ))}
               </SelectContent>

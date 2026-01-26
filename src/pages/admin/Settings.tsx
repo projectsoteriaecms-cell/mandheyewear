@@ -1,4 +1,5 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { RoleGuard } from "@/components/admin/RoleGuard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,8 @@ import {
 
 const Settings = () => {
   return (
-    <AdminLayout>
+    <RoleGuard allowedRoles={["super_admin"]}>
+      <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -199,7 +201,8 @@ const Settings = () => {
           </Card>
         </div>
       </div>
-    </AdminLayout>
+      </AdminLayout>
+    </RoleGuard>
   );
 };
 

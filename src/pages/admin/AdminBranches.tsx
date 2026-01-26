@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { RoleGuard } from "@/components/admin/RoleGuard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,7 +42,8 @@ const AdminBranches = () => {
   );
 
   return (
-    <AdminLayout>
+    <RoleGuard allowedRoles={["super_admin"]}>
+      <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -222,7 +224,8 @@ const AdminBranches = () => {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+      </AdminLayout>
+    </RoleGuard>
   );
 };
 

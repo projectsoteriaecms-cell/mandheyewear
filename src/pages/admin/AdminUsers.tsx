@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { RoleGuard } from "@/components/admin/RoleGuard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +47,8 @@ import {
 import { toast } from "sonner";
 import { InviteUserDialog } from "@/components/admin/users/InviteUserDialog";
 import { PendingInvitationsList } from "@/components/admin/users/PendingInvitationsList";
+import { useUserRole } from "@/hooks/useUserRole";
+import { getInvitableRoles, canChangeUserRole, getRoleLabel } from "@/lib/permissions";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -66,11 +69,15 @@ const roleBadgeVariants: Record<AppRole, "default" | "secondary" | "destructive"
 
 const AdminUsers = () => {
   const queryClient = useQueryClient();
+  const { data: currentUserRole } = useUserRole();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [editingUser, setEditingUser] = useState<{ id: string; email: string; role: AppRole } | null>(null);
   const [newRole, setNewRole] = useState<AppRole>("customer");
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+
+  // Get roles the current user can assign
+  const assignableRoles = getInvitableRoles(currentUserRole ?? null);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users"],
@@ -126,7 +133,8 @@ const AdminUsers = () => {
   };
 
   return (
-    <AdminLayout>
+    <RoleGuard allowedRoles={["super_admin"]}>
+      <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -283,28 +291,30 @@ const AdminUsers = () => {
                             {new Date(user.created_at).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setEditingUser({
-                                      id: user.user_id,
-                                      email: profile?.email || "",
-                                      role: user.role,
-                                    });
-                                    setNewRole(user.role);
-                                  }}
-                                >
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Change Role
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            {canChangeUserRole(currentUserRole ?? null, user.role, user.role) && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setEditingUser({
+                                        id: user.user_id,
+                                        email: profile?.email || "",
+                                        role: user.role,
+                                      });
+                                      setNewRole(user.role);
+                                    }}
+                                  >
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Change Role
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
                           </TableCell>
                         </TableRow>
                       );
@@ -335,17 +345,21 @@ const AdminUsers = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="customer">Customer</SelectItem>
-                <SelectItem value="branch_staff">Branch Staff</SelectItem>
-                <SelectItem value="branch_manager">Branch Manager</SelectItem>
-                <SelectItem value="super_admin">Super Admin</SelectItem>
+                {assignableRoles.map((role) => (
+                  <SelectItem key={role} value={role}>
+                    {getRoleLabel(role)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setEditingUser(null)}>
                 Cancel
               </Button>
-              <Button onClick={handleUpdateRole} disabled={updateRole.isPending}>
+              <Button 
+                onClick={handleUpdateRole} 
+                disabled={updateRole.isPending || !canChangeUserRole(currentUserRole ?? null, editingUser?.role ?? "customer", newRole)}
+              >
                 Update Role
               </Button>
             </div>
@@ -357,7 +371,8 @@ const AdminUsers = () => {
         open={inviteDialogOpen} 
         onOpenChange={setInviteDialogOpen} 
       />
-    </AdminLayout>
+      </AdminLayout>
+    </RoleGuard>
   );
 };
 
