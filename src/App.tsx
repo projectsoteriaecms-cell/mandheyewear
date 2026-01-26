@@ -26,6 +26,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import Inventory from "./pages/admin/Inventory";
 import PurchaseOrders from "./pages/admin/PurchaseOrders";
 import StockTransfers from "./pages/admin/StockTransfers";
+import StockAdjustments from "./pages/admin/StockAdjustments";
 import Suppliers from "./pages/admin/Suppliers";
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
           <Route path="/admin/inventory" element={<Inventory />} />
           <Route path="/admin/inventory/purchase-orders" element={<PurchaseOrders />} />
           <Route path="/admin/inventory/transfers" element={<StockTransfers />} />
+          <Route path="/admin/inventory/adjustments" element={<StockAdjustments />} />
           <Route path="/admin/suppliers" element={<Suppliers />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
