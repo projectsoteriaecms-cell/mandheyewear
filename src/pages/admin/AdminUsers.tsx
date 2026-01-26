@@ -44,6 +44,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { InviteUserDialog } from "@/components/admin/users/InviteUserDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -68,6 +69,7 @@ const AdminUsers = () => {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [editingUser, setEditingUser] = useState<{ id: string; email: string; role: AppRole } | null>(null);
   const [newRole, setNewRole] = useState<AppRole>("customer");
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users"],
@@ -133,7 +135,7 @@ const AdminUsers = () => {
               Manage user roles and permissions
             </p>
           </div>
-          <Button>
+          <Button onClick={() => setInviteDialogOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" />
             Invite User
           </Button>
@@ -346,6 +348,11 @@ const AdminUsers = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <InviteUserDialog 
+        open={inviteDialogOpen} 
+        onOpenChange={setInviteDialogOpen} 
+      />
     </AdminLayout>
   );
 };
