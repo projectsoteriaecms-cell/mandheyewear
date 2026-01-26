@@ -99,7 +99,10 @@ export const CreateStockTransferDialog = ({
         from_branch_id: data.from_branch_id,
         to_branch_id: data.to_branch_id,
         notes: data.notes,
-        items: data.items,
+        items: data.items.map((item) => ({
+          product_id: item.product_id,
+          quantity_requested: item.quantity_requested,
+        })),
       });
       onOpenChange(false);
       form.reset();
