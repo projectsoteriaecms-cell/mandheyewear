@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 const Signup = () => {
+  const [searchParams] = useSearchParams();
+  const invitedEmail = searchParams.get("email");
+  
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(invitedEmail || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +23,13 @@ const Signup = () => {
   const { signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Update email if invitation email is provided
+  useEffect(() => {
+    if (invitedEmail) {
+      setEmail(invitedEmail);
+    }
+  }, [invitedEmail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,9 +88,14 @@ const Signup = () => {
         <div className="max-w-md mx-auto">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-display">Create Account</CardTitle>
+              <CardTitle className="text-2xl font-display">
+                {invitedEmail ? "Complete Your Registration" : "Create Account"}
+              </CardTitle>
               <CardDescription>
-                Join us for premium eye care and designer eyewear
+                {invitedEmail 
+                  ? "You've been invited to join the team. Complete your registration below."
+                  : "Join us for premium eye care and designer eyewear"
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -106,8 +121,10 @@ const Signup = () => {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isLoading || !!invitedEmail}
+                    readOnly={!!invitedEmail}
                     required
+                    className={invitedEmail ? "bg-muted" : ""}
                   />
                 </div>
 
