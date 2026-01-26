@@ -180,7 +180,7 @@ const Eyewear = () => {
                 <CardContent className="p-4 space-y-2">
                   <p className="text-xs text-accent font-medium">{product.category}</p>
                   <h3 className="font-semibold text-foreground">{product.name}</h3>
-                  <p className="text-lg font-bold text-accent">${product.price}</p>
+                  <p className="text-lg font-bold text-accent">₦{product.price.toLocaleString()}</p>
                   <div className="flex gap-2 pt-2">
                     <Button variant="outline" size="sm" className="flex-1">
                       Details
