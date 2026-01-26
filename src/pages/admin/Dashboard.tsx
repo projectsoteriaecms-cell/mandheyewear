@@ -1,8 +1,13 @@
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useInventoryStats, useLowStockAlerts } from "@/hooks/admin/useInventoryOverview";
 import { usePurchaseOrders } from "@/hooks/admin/usePurchaseOrders";
 import { useStockTransfers } from "@/hooks/admin/useStockTransfers";
+import { useBranchAssignments } from "@/hooks/admin/useBranchContext";
+import { useUserRole } from "@/hooks/useUserRole";
+import { isAtLeast } from "@/lib/permissions";
+import { StaffOnboardingWizard } from "@/components/admin/onboarding/StaffOnboardingWizard";
 import {
   Package,
   AlertTriangle,
@@ -62,6 +67,22 @@ const AdminDashboard = () => {
   const { data: lowStockItems, isLoading: alertsLoading } = useLowStockAlerts();
   const { data: pendingPOs } = usePurchaseOrders("submitted");
   const { data: pendingTransfers } = useStockTransfers("pending");
+  const { data: branchAssignments, isLoading: assignmentsLoading } = useBranchAssignments();
+  const { data: role, isLoading: roleLoading } = useUserRole();
+  
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  
+  // Check if staff user needs onboarding (no branch assignments)
+  useEffect(() => {
+    if (!assignmentsLoading && !roleLoading && role) {
+      const isStaffOrManager = isAtLeast(role, "branch_staff") && role !== "super_admin";
+      const noBranchAssigned = !branchAssignments || branchAssignments.length === 0;
+      
+      if (isStaffOrManager && noBranchAssigned) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [branchAssignments, assignmentsLoading, role, roleLoading]);
 
   return (
     <AdminLayout>
@@ -249,6 +270,12 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Staff Onboarding Wizard */}
+      <StaffOnboardingWizard
+        open={showOnboarding}
+        onComplete={() => setShowOnboarding(false)}
+      />
     </AdminLayout>
   );
 };
