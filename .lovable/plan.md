@@ -1,262 +1,281 @@
 
-
-# Icon System Migration Plan
-## From Lucide to Phosphor Icons - Minimalist Geometric Design
+# Phosphor Icons Migration - Phase 2
+## Continue Migration for Admin, Dashboard, and Remaining Components
 
 ---
 
 ## Overview
 
-This plan migrates the project from **Lucide React** icons to **Phosphor Icons** - a more flexible icon family that supports multiple weights including the minimalist, geometric aesthetic you're looking for. Phosphor offers 6 distinct weights (thin, light, regular, bold, fill, duotone) that align perfectly with Dieter Rams' principles of clean, professional design.
+This phase completes the migration from Lucide React to Phosphor Icons across all remaining admin pages, dialogs, dashboard components, and public pages. The search revealed **90 files** still importing from `lucide-react`. This plan systematically migrates each category of components.
 
 ---
 
-## Why Phosphor Icons?
+## Migration Summary
 
-| Feature | Lucide | Phosphor |
-|---------|--------|----------|
-| Weights | 1 (stroke only) | 6 (thin, light, regular, bold, fill, duotone) |
-| Style | Rounded, friendly | Geometric, professional |
-| Customization | Limited | High (weight, color, size, mirroring) |
-| Bundle Size | ~50kb | ~60kb (tree-shakeable) |
-| Design Philosophy | Playful, casual | Technical, architectural |
+| Category | Files to Update | Est. Icon Changes |
+|----------|-----------------|-------------------|
+| Admin Pages | 15 files | ~120 icons |
+| Admin Dialogs & Components | 20+ files | ~80 icons |
+| Dashboard Components | 8 files | ~40 icons |
+| Public Pages | 10 files | ~50 icons |
+| UI Primitives | 5 files | ~15 icons |
+| **Total** | ~58 files | ~305 icons |
 
-### Phosphor Weight Options
+---
+
+## Phase 1: Admin Pages
+
+### Files to Update
+
+| File | Icons to Replace |
+|------|------------------|
+| `src/pages/admin/Dashboard.tsx` | Package, AlertTriangle, TrendingUp, Users |
+| `src/pages/admin/Products.tsx` | Plus, Upload, Search, MoreHorizontal, Edit, Trash2, ShoppingBag, ImagePlus, FileSpreadsheet |
+| `src/pages/admin/Services.tsx` | Plus, Search, MoreHorizontal, Pencil, Trash2, Clock, Calendar |
+| `src/pages/admin/Inventory.tsx` | Search, Download, AlertTriangle, Package |
+| `src/pages/admin/PurchaseOrders.tsx` | Plus, MoreHorizontal, Eye, CheckCircle, XCircle, Package, Truck |
+| `src/pages/admin/StockTransfers.tsx` | Plus, MoreHorizontal, Eye, Truck, CheckCircle, XCircle, ArrowLeftRight, ArrowRight |
+| `src/pages/admin/StockAdjustments.tsx` | Plus, AlertTriangle, PackageMinus, RotateCcw, Trash2, HelpCircle |
+| `src/pages/admin/Categories.tsx` | Loader2 |
+| `src/pages/admin/Suppliers.tsx` | Plus, Edit, Trash2, Truck, Mail, Phone, MapPin |
+| `src/pages/admin/AdminBranches.tsx` | Building2, MapPin, Phone, Mail, Plus, Search, Edit, MoreHorizontal |
+| `src/pages/admin/AdminUsers.tsx` | Users, Search, UserPlus, Shield, Mail, MoreHorizontal, Edit, Building2 |
+| `src/pages/admin/Reports.tsx` | BarChart3, TrendingUp, Package, ShoppingCart, Users, DollarSign, ArrowUpRight, ArrowDownRight |
+| `src/pages/admin/InventoryTransactions.tsx` | ArrowDownLeft, ArrowUpRight, RefreshCw, History |
+
+### Icon Mappings for Admin
 
 ```text
-thin     ─────────────  Ultra minimal, 1px strokes
-light    ─────────────  Subtle, refined appearance  
-regular  ─────────────  Balanced, professional (DEFAULT)
-bold     ─────────────  Strong emphasis
-fill     ─────────────  Solid, active states
-duotone  ─────────────  Two-tone depth (non-playful 3D feel)
+Lucide                  → Phosphor
+Package                 → Package
+AlertTriangle           → Warning
+TrendingUp              → TrendingUp (or ChartLineUp)
+Users                   → Users
+Plus                    → Plus
+Upload                  → Upload
+Search                  → MagnifyingGlass
+MoreHorizontal          → DotsThree
+Edit                    → PencilSimple
+Trash2                  → Trash
+ShoppingBag             → ShoppingBag
+ImagePlus               → ImageSquare (with Plus overlay)
+FileSpreadsheet         → FileXls
+Pencil                  → PencilSimple
+Clock                   → Clock
+Calendar                → Calendar
+Download                → Download
+Eye                     → Eye
+CheckCircle             → CheckCircle
+XCircle                 → XCircle
+Truck                   → Truck
+ArrowLeftRight          → ArrowsLeftRight
+ArrowRight              → ArrowRight
+ArrowDownLeft           → ArrowDownLeft
+ArrowUpRight            → ArrowUpRight
+RefreshCw               → ArrowsClockwise
+History                 → ClockCounterClockwise
+PackageMinus            → Package (with minus)
+RotateCcw               → ArrowCounterClockwise
+HelpCircle              → Question
+Loader2                 → CircleNotch
+Mail                    → Envelope
+Phone                   → Phone
+MapPin                  → MapPin
+Building2               → Buildings
+UserPlus                → UserPlus
+Shield                  → Shield
+BarChart3               → ChartBar
+ShoppingCart            → ShoppingCart
+DollarSign              → CurrencyDollar
 ```
 
 ---
 
-## Recommended Style Configuration
+## Phase 2: Admin Dashboard Components
 
-Based on your design requirements for "Minimalist Geometric + Negative Space" and "Isometric 3D (Non-Playful)":
+### Files to Update
 
-### Primary Style: `light` weight
-- Clean, sharp 1.5px strokes
-- Maximum negative space
-- Professional, medical/tech feel
-
-### Active/Selected States: `regular` or `bold` weight
-- Slightly heavier for emphasis
-- Clear visual hierarchy
-
-### Feature Highlights: `duotone` weight
-- Two-tone rendering creates subtle depth
-- Technical, architectural feel without being cute
-- Perfect for hero sections and key CTAs
+| File | Icons to Replace |
+|------|------------------|
+| `src/shared/components/admin/AdminHeader.tsx` | Bell, LogOut, User |
+| `src/shared/components/admin/dashboard/QuickActionsCard.tsx` | Truck, ArrowLeftRight, Package |
+| `src/shared/components/admin/dashboard/PendingApprovalsCard.tsx` | Truck |
+| `src/shared/components/admin/dashboard/PendingTransfersCard.tsx` | ArrowLeftRight |
+| `src/shared/components/admin/dashboard/LowStockAlertsCard.tsx` | AlertTriangle |
 
 ---
 
-## Implementation Phases
+## Phase 3: Admin Dialog Components
 
-### Phase 1: Install and Configure Phosphor
+### Files to Update
 
-**Package Installation**
-```bash
-npm install @phosphor-icons/react
+| File | Icons to Replace |
+|------|------------------|
+| `src/components/admin/products/ECMSImportDialog.tsx` | FileSpreadsheet, ArrowLeft, ArrowRight |
+| `src/components/admin/products/FrameAttributesForm.tsx` | Loader2 |
+| `src/components/admin/products/ImportHistoryPanel.tsx` | Clock, CheckCircle2, XCircle, FileSpreadsheet, ChevronDown |
+| `src/components/admin/products/BulkUploadDialog.tsx` | Upload, FileSpreadsheet |
+| `src/components/admin/products/BulkImageUploadDialog.tsx` | Upload, Image |
+| `src/components/admin/products/CreateProductDialog.tsx` | Plus, Loader2 |
+| `src/components/admin/products/EditProductDialog.tsx` | Loader2 |
+| `src/components/admin/products/ecms-import/UploadStep.tsx` | Upload, Download |
+| `src/components/admin/products/ecms-import/MappingStep.tsx` | AlertTriangle |
+| `src/components/admin/products/ecms-import/ProgressStep.tsx` | Loader2, X |
+| `src/components/admin/categories/SortableCategoryRow.tsx` | GripVertical, Pencil, Trash2, ChevronRight |
+| `src/components/admin/categories/CreateCategoryDialog.tsx` | Plus |
+| `src/components/admin/categories/EditCategoryDialog.tsx` | Loader2 |
+| `src/components/admin/services/CreateServiceDialog.tsx` | Plus, Loader2 |
+| `src/components/admin/services/EditServiceDialog.tsx` | Loader2 |
+| `src/components/admin/users/InviteUserDialog.tsx` | Mail, Loader2 |
+| `src/components/admin/users/PendingInvitationsList.tsx` | Mail, Trash2, Loader2 |
+| `src/components/admin/users/BranchAssignmentDialog.tsx` | Building2, Star, Loader2 |
+| `src/components/admin/adjustments/CreateAdjustmentDialog.tsx` | Plus, Loader2 |
+| `src/components/admin/transfers/CreateStockTransferDialog.tsx` | ArrowRight, Loader2 |
+| `src/components/admin/purchase-orders/CreatePurchaseOrderDialog.tsx` | Plus, Trash2, Loader2 |
+
+---
+
+## Phase 4: Customer Dashboard & Pages
+
+### Files to Update
+
+| File | Icons to Replace |
+|------|------------------|
+| `src/pages/Dashboard.tsx` | Loader2, LogOut, User, ShoppingBag, Calendar, Heart, MapPin, Sparkles, Settings |
+| `src/pages/Login.tsx` | Eye, EyeOff, Loader2 |
+| `src/pages/Signup.tsx` | Eye, EyeOff, Loader2 |
+| `src/pages/OrderConfirmation.tsx` | CheckCircle, Package, Truck, MapPin, ArrowRight, ShoppingBag, Calendar, Copy, Check |
+| `src/components/dashboard/AppointmentsSection.tsx` | Calendar, Clock, MapPin, Loader2, X |
+| `src/components/dashboard/OrderHistorySection.tsx` | ShoppingBag, Loader2 |
+| `src/components/dashboard/AddressesSection.tsx` | MapPin, Plus, Loader2, Edit, Trash2 |
+| `src/components/dashboard/ProfileSection.tsx` | User, Loader2 |
+| `src/components/dashboard/SettingsSection.tsx` | Settings, Loader2 |
+| `src/components/eyewear/VirtualTryOnBanner.tsx` | Camera |
+
+---
+
+## Phase 5: UI Primitives
+
+### Files to Update
+
+| File | Icons to Replace |
+|------|------------------|
+| `src/components/ui/menubar.tsx` | Check, ChevronRight, Circle |
+| `src/components/ui/context-menu.tsx` | Check, ChevronRight, Circle |
+| `src/components/ui/radio-group.tsx` | Circle |
+
+---
+
+## Phase 6: Update Icon Exports
+
+### Add Missing Icons to `src/lib/icons.ts`
+
+New icons needed for this migration phase:
+
+```typescript
+export {
+  // Additional icons for admin
+  Bell,
+  ClockCounterClockwise,
+  ArrowsClockwise,
+  ArrowDownLeft,
+  ImageSquare,
+  CurrencyDollar,
+  ShoppingCart,
+  ChartLineUp,
+  UserPlus,
+  Star,
+  
+  // For UI primitives
+  Dot,
+  
+  // Already added in phase 1...
+} from "@phosphor-icons/react";
 ```
 
-**Create Icon Wrapper Component** for consistent styling across the app.
+---
 
-### Phase 2: Create Icon Mapping
+## Implementation Order
 
-Map all Lucide icons currently in use to their Phosphor equivalents.
-
-| Lucide Icon | Phosphor Equivalent | Usage Context |
-|-------------|---------------------|---------------|
-| `Home` | `House` | Bottom nav, home links |
-| `ShoppingBag` | `Bag` | Cart, shop navigation |
-| `Calendar` | `Calendar` | Booking, appointments |
-| `Search` | `MagnifyingGlass` | Search functionality |
-| `User` | `User` | Account, profile |
-| `Heart` | `Heart` | Wishlist, favorites |
-| `Menu` | `List` | Hamburger menu |
-| `X` | `X` | Close buttons |
-| `Moon` | `Moon` | Dark mode toggle |
-| `Sun` | `Sun` | Light mode toggle |
-| `MapPin` | `MapPin` | Location, branches |
-| `Phone` | `Phone` | Contact |
-| `Info` | `Info` | About |
-| `HelpCircle` | `Question` | FAQ, help |
-| `Sparkles` | `Sparkle` | Style quiz, special features |
-| `Settings` | `Gear` | Settings |
-| `LogOut` | `SignOut` | Sign out |
-| `Eye` | `Eye` | Eye care, visibility |
-| `Camera` | `Camera` | Virtual try-on |
-| `Truck` | `Truck` | Shipping, suppliers |
-| `RotateCcw` | `ArrowCounterClockwise` | Returns |
-| `ArrowRight` | `ArrowRight` | Navigation arrows |
-| `ArrowLeft` | `ArrowLeft` | Back navigation |
-| `Check` | `Check` | Checkmarks |
-| `ChevronRight` | `CaretRight` | Expand indicators |
-| `ChevronDown` | `CaretDown` | Dropdowns |
-| `Plus` | `Plus` | Add actions |
-| `Minus` | `Minus` | Remove actions |
-| `Loader2` | `CircleNotch` | Loading states |
-| `Package` | `Package` | Inventory |
-| `LayoutDashboard` | `SquaresFour` | Dashboard |
-| `BarChart3` | `ChartBar` | Reports |
-| `Building2` | `Buildings` | Branches |
-| `Wrench` | `Wrench` | Services |
-| `FolderTree` | `FolderSimple` | Categories |
-| `Users` | `Users` | User management |
-
-### Phase 3: Update Navigation Components
-
-**Files to Update:**
-
-| File | Icon Changes |
-|------|--------------|
-| `src/components/navigation/MobileBottomNav.tsx` | 5 icons |
-| `src/components/navigation/MobileTopBar.tsx` | 15+ icons |
-| `src/components/navigation/MainNav.tsx` | 8+ icons |
-| `src/components/navigation/TopBar.tsx` | 4 icons |
-
-### Phase 4: Update Home Components
-
-| File | Icon Changes |
-|------|--------------|
-| `src/components/home/HeroSection.tsx` | 3 icons |
-| `src/components/home/TrustBadges.tsx` | 4 icons |
-| `src/components/home/QuizPromo.tsx` | 2 icons |
-| `src/components/home/VirtualTryOn.tsx` | 2 icons |
-
-### Phase 5: Update UI Components
-
-| File | Icon Changes |
-|------|--------------|
-| `src/components/ui/checkbox.tsx` | 1 icon (Check) |
-| `src/components/ui/dropdown-menu.tsx` | 3 icons |
-| `src/components/ui/toast.tsx` | 1 icon (X) |
-| `src/components/ui/carousel.tsx` | 2 icons |
-| `src/components/ui/input-otp.tsx` | 1 icon |
-
-### Phase 6: Update Admin Components
-
-| File | Icon Changes |
-|------|--------------|
-| `src/shared/components/admin/sidebar/nav-config.ts` | 11 icons |
-| `src/components/admin/` (all files) | 50+ icons |
-
-### Phase 7: Update Page Components
-
-| File | Icon Changes |
-|------|--------------|
-| `src/pages/Dashboard.tsx` | 10+ icons |
-| `src/pages/Eyewear.tsx` | 3+ icons |
-| `src/pages/EyeCare.tsx` | 7 icons |
-| `src/pages/TryOn.tsx` | 3 icons |
-| `src/pages/Login.tsx` | 3 icons |
-| `src/pages/Signup.tsx` | 3 icons |
-| Other pages | Various |
+1. **Update `src/lib/icons.ts`** - Add all new icons needed
+2. **Admin Pages** - Migrate all 13 admin page files
+3. **Admin Dashboard Components** - Migrate 5 shared dashboard component files
+4. **Admin Dialogs** - Migrate ~21 dialog and form component files
+5. **Customer Dashboard** - Migrate 10 customer-facing files
+6. **UI Primitives** - Migrate 3 UI component files
+7. **Verify & Test** - Build verification, no Lucide imports remain
 
 ---
 
 ## Technical Details
 
-### New Files to Create
-
-| File | Purpose |
-|------|---------|
-| `src/components/ui/icon.tsx` | Centralized icon wrapper component |
-| `src/lib/icons.ts` | Icon mapping and re-exports for easy imports |
-
-### Icon Wrapper Component
-
-Creates a consistent interface for all icons with default weight and size settings:
-
-```text
-<Icon name="House" />           → Light weight, 20px (default)
-<Icon name="House" active />    → Bold weight (for active states)
-<Icon name="House" featured />  → Duotone weight (for highlights)
-```
-
 ### Import Pattern Change
 
-**Before (Lucide):**
+**Before:**
 ```tsx
-import { Home, ShoppingBag, Calendar } from "lucide-react";
+import { Package, AlertTriangle, Users } from "lucide-react";
 ```
 
-**After (Phosphor):**
+**After:**
 ```tsx
-import { House, Bag, Calendar } from "@phosphor-icons/react";
+import { Package, Warning, Users } from "@phosphor-icons/react";
+```
+
+### Weight Application
+
+For consistency with Phase 1:
+- **Default state**: `weight="light"` (minimal, professional)
+- **Active/selected**: `weight="bold"` or `weight="regular"`
+- **Featured items**: `weight="duotone"` (technical depth)
+
+### Example Transformation
+
+```tsx
+// Before (Lucide)
+<Loader2 className="h-4 w-4 animate-spin" />
+
+// After (Phosphor)
+<CircleNotch className="h-4 w-4 animate-spin" weight="light" />
 ```
 
 ---
 
-## Visual Examples
+## Files Summary
 
-### Bottom Navigation (Mobile)
+### Total Files to Modify: ~58
 
-```text
-Current (Lucide - rounded strokes):
-  ⌂     🛍️     📅     🔍     👤
- Home   Shop   Book  Search  Account
-
-New (Phosphor - light weight, geometric):
-  ⌂     ⊡     ☐     ○     ○
- Home   Shop   Book  Search  Account
-```
-
-### Active State Transition
-
-```text
-Inactive: light weight (thin strokes)
-Active:   bold weight + duotone background
-```
+| Category | Count |
+|----------|-------|
+| Admin Pages | 13 |
+| Admin Dashboard Components | 5 |
+| Admin Dialogs/Components | 21 |
+| Customer Dashboard/Pages | 10 |
+| UI Primitives | 3 |
+| Icon Exports (`icons.ts`) | 1 |
+| **Remaining Misc Files** | ~5 |
 
 ---
 
-## Package.json Changes
+## Post-Migration Cleanup
 
-```json
-{
-  "dependencies": {
-    "@phosphor-icons/react": "^2.1.7",
-    // Remove after migration:
-    // "lucide-react": "^0.462.0"  
-  }
-}
-```
+After all files are migrated:
 
----
+1. **Remove lucide-react from package.json**
+   ```bash
+   npm uninstall lucide-react
+   ```
 
-## Cleanup Phase
+2. **Build verification** - Ensure no compilation errors
 
-After all components are migrated:
+3. **Visual QA** - Check all icon states render correctly
 
-1. Remove `lucide-react` from dependencies
-2. Run final build to verify no Lucide imports remain
-3. Test all icon states (default, hover, active, disabled)
-
----
-
-## File Changes Summary
-
-### New Files (2)
-- `src/components/ui/icon.tsx`
-- `src/lib/icons.ts`
-
-### Modified Files (~115 files)
-All files currently importing from `lucide-react` will be updated to use Phosphor equivalents with the appropriate weight settings.
-
-### Deleted Dependencies (1)
-- `lucide-react` (after full migration)
+4. **Bundle size check** - Verify tree-shaking is effective
 
 ---
 
 ## Estimated Impact
 
-- **Bundle Size**: Similar (~60kb tree-shaken)
-- **Visual Consistency**: Significantly improved with weight system
-- **Brand Alignment**: Professional, medical-tech aesthetic
-- **Maintenance**: Easier with centralized icon component
-
+- **Visual consistency**: Unified weight-based icon system
+- **Brand alignment**: Professional, medical-tech aesthetic
+- **Bundle size**: Similar to Lucide (~60kb tree-shaken)
+- **Maintenance**: Single source of truth for all icons in `src/lib/icons.ts`
