@@ -24,24 +24,27 @@ export const QuizPromo = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-medium">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-medium animate-fade-in-up">
               <Sparkle weight="duotone" className="h-4 w-4" />
               AI-Powered Style Quiz
             </div>
             
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-foreground leading-tight">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-foreground leading-tight animate-fade-in-up stagger-delay-1">
               Find your perfect frame in{" "}
               <span className="text-primary">60 seconds</span>
             </h2>
             
-            <p className="text-lg text-muted-foreground max-w-lg">
+            <p className="text-lg text-muted-foreground max-w-lg animate-fade-in-up stagger-delay-2">
               Answer a few questions about your style preferences, face shape, and lifestyle. 
               We'll recommend frames that fit you perfectly.
             </p>
 
             <ul className="space-y-4">
-              {benefits.map((benefit) => (
-                <li key={benefit} className="flex items-center gap-4">
+              {benefits.map((benefit, index) => (
+                <li 
+                  key={benefit} 
+                  className={`flex items-center gap-4 animate-fade-in-left stagger-delay-${index + 1}`}
+                >
                   <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                     <CheckCircle weight="fill" className="h-5 w-5 text-primary" />
                   </div>
@@ -53,11 +56,12 @@ export const QuizPromo = () => {
             <Button 
               size="lg" 
               asChild 
-              className="group h-14 px-8 text-base shadow-float hover:shadow-card-hover transition-all"
+              className="group h-14 px-8 text-base shadow-float hover:shadow-card-hover transition-all relative overflow-hidden animate-fade-in-up stagger-delay-4"
             >
               <Link to="/style-quiz" className="flex items-center gap-3">
-                Start the Style Quiz
-                <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <span className="absolute inset-0 shimmer-bg" />
+                <span className="relative z-10">Start the Style Quiz</span>
+                <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-1 relative z-10" />
               </Link>
             </Button>
           </div>
@@ -68,7 +72,7 @@ export const QuizPromo = () => {
               {frameStyles.map((style, index) => (
                 <div 
                   key={style.name}
-                  className={`bg-card rounded-2xl p-6 border border-border hover:border-primary/30 hover:shadow-float transition-all duration-300 cursor-pointer ${
+                  className={`bg-card rounded-2xl p-6 border border-border hover:border-primary/30 hover-lift cursor-pointer animate-fade-in-up stagger-delay-${index + 1} ${
                     index === 1 || index === 2 ? 'mt-8' : ''
                   }`}
                 >
@@ -80,8 +84,8 @@ export const QuizPromo = () => {
             </div>
 
             {/* Floating accent element */}
-            <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-accent/20 blur-2xl" />
-            <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-full bg-primary/10 blur-3xl" />
+            <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-accent/20 blur-2xl animate-float-slow" />
+            <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-full bg-primary/10 blur-3xl animate-float" style={{ animationDelay: '1s' }} />
           </div>
         </div>
       </div>
