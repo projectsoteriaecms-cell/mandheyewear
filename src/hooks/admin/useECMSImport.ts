@@ -26,6 +26,8 @@ export interface ImportProgress {
   currentBatch: number;
   totalBatches: number;
   errors: ValidationError[];
+  startTime: number;
+  estimatedTimeRemaining: number | null;
 }
 
 export interface ImportResult {
@@ -105,6 +107,8 @@ export const useECMSImport = () => {
         errors: [],
       };
 
+      const startTime = Date.now();
+
       setProgress({
         total: products.length,
         processed: 0,
@@ -115,6 +119,8 @@ export const useECMSImport = () => {
         currentBatch: 0,
         totalBatches,
         errors: [],
+        startTime,
+        estimatedTimeRemaining: null,
       });
 
       try {
@@ -313,6 +319,12 @@ export const useECMSImport = () => {
             }
           }
 
+          // Calculate time estimate
+          const elapsedMs = Date.now() - startTime;
+          const avgMsPerProduct = elapsedMs / end;
+          const remainingProducts = products.length - end;
+          const estimatedTimeRemaining = Math.round((avgMsPerProduct * remainingProducts) / 1000);
+
           // Update progress after each batch
           setProgress((prev) =>
             prev
@@ -324,6 +336,7 @@ export const useECMSImport = () => {
                   skipped: result.skipped,
                   failed: result.failed,
                   errors: result.errors,
+                  estimatedTimeRemaining,
                 }
               : null
           );
