@@ -31,7 +31,7 @@ export const FeaturedFrames = () => {
             <p className="text-accent font-medium uppercase tracking-widest text-sm mb-4">
               M&H Eyewear Collection
             </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-foreground mb-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-foreground mb-4">
               Featured Frames
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
@@ -64,14 +64,14 @@ export const FeaturedFrames = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14">
           <div>
-            <p className="text-accent font-medium uppercase tracking-widest text-sm mb-3">
+            <p className="text-accent font-medium uppercase tracking-widest text-sm mb-3 animate-fade-in-up">
               M&H Eyewear Collection
             </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-foreground">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-foreground animate-fade-in-up stagger-delay-1">
               Featured Frames
             </h2>
           </div>
-          <Button variant="outline" asChild className="group border-2 rounded-full px-6">
+          <Button variant="outline" asChild className="group border-2 rounded-full px-6 hover-glow animate-fade-in-up stagger-delay-2">
             <Link to="/eyewear" className="flex items-center gap-2">
               View All
               <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -81,8 +81,12 @@ export const FeaturedFrames = () => {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {featuredProducts.map((product, index) => (
-            <Link key={product.id} to={`/product/${product.id}`}>
-              <Card className="group overflow-hidden rounded-2xl border-border hover:border-primary/30 hover:shadow-float transition-all duration-300 cursor-pointer h-full bg-card">
+            <Link 
+              key={product.id} 
+              to={`/product/${product.id}`}
+              className={`animate-fade-in-up stagger-delay-${index + 1}`}
+            >
+              <Card className="group overflow-hidden rounded-2xl border-border hover:border-primary/30 hover-lift cursor-pointer h-full bg-card">
                 <div className="relative h-72 overflow-hidden bg-secondary/50">
                   <img 
                     src={product.image_url || getPlaceholderImage(index)} 
@@ -93,12 +97,15 @@ export const FeaturedFrames = () => {
                   {/* Hover overlay with actions */}
                   <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/10 transition-colors duration-300" />
                   
+                  {/* Shimmer effect on hover */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
+                  
                   {/* Quick action buttons */}
-                  <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button className="w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
+                    <button className="w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-all hover:scale-110">
                       <Heart weight="bold" className="h-5 w-5" />
                     </button>
-                    <button className="w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
+                    <button className="w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110">
                       <Eye weight="bold" className="h-5 w-5" />
                     </button>
                   </div>
