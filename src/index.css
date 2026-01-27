@@ -50,16 +50,25 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
+    /* Navy Feature Section */
+    --feature-bg: 220 45% 12%;
+    --feature-card: 220 40% 18%;
+    --feature-border: 220 30% 25%;
+
     /* Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(210 85% 40%) 0%, hsl(210 85% 25%) 100%);
     --gradient-gold: linear-gradient(135deg, hsl(45 100% 45%) 0%, hsl(45 100% 32%) 100%);
     --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 85% 98%) 100%);
+    --gradient-navy: linear-gradient(135deg, hsl(220 45% 12%) 0%, hsl(220 50% 8%) 100%);
+    --gradient-navy-radial: radial-gradient(ellipse at top right, hsl(220 40% 18%) 0%, hsl(220 45% 10%) 100%);
 
     /* Shadows */
     --shadow-sm: 0 2px 8px -2px hsl(210 85% 40% / 0.1);
     --shadow-md: 0 4px 16px -4px hsl(210 85% 40% / 0.15);
     --shadow-lg: 0 12px 32px -8px hsl(210 85% 40% / 0.2);
     --shadow-gold: 0 8px 24px -4px hsl(45 100% 45% / 0.3);
+    --shadow-float: 0 20px 40px -12px hsl(220 50% 10% / 0.4);
+    --shadow-card-hover: 0 24px 48px -12px hsl(220 50% 10% / 0.25);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -159,6 +168,14 @@ All colors MUST be HSL.
     background: var(--gradient-subtle);
   }
 
+  .gradient-navy {
+    background: var(--gradient-navy);
+  }
+
+  .gradient-navy-radial {
+    background: var(--gradient-navy-radial);
+  }
+
   .shadow-elegant {
     box-shadow: var(--shadow-lg);
   }
@@ -167,11 +184,29 @@ All colors MUST be HSL.
     box-shadow: var(--shadow-gold);
   }
 
+  .shadow-float {
+    box-shadow: var(--shadow-float);
+  }
+
+  .shadow-card-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
   .transition-smooth {
     transition: var(--transition-smooth);
   }
 
   .transition-bounce {
     transition: var(--transition-bounce);
+  }
+
+  /* Feature section on navy background */
+  .feature-navy {
+    background: hsl(var(--feature-bg));
+  }
+
+  .feature-card {
+    background: hsl(var(--feature-card));
+    border-color: hsl(var(--feature-border));
   }
 }

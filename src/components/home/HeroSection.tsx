@@ -1,84 +1,126 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkle, Bag, ArrowRight } from "@phosphor-icons/react";
+import { Sparkle, Bag, ArrowRight, Eye } from "@phosphor-icons/react";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
 
 export const HeroSection = () => {
   return (
-    <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid lg:grid-cols-2 gap-12 items-center py-16 lg:py-24">
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 opacity-[0.02]" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+      }} />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 items-center py-20 lg:py-28">
           {/* Content */}
-          <div className="space-y-8 order-2 lg:order-1">
-            <div className="space-y-4">
-              <p className="text-sm font-medium text-primary uppercase tracking-wider">
-                Precision Eyecare • Premium Eyewear
-              </p>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-foreground leading-tight">
-                Your path to{" "}
-                <span className="text-primary">clearer vision</span>{" "}
-                begins with us
+          <div className="space-y-10 order-2 lg:order-1">
+            {/* Tagline badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 text-sm font-medium text-primary">
+              <Eye weight="duotone" className="h-4 w-4" />
+              Precision Eyecare • Premium Eyewear
+            </div>
+
+            <div className="space-y-6">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-bold text-foreground leading-[1.1] tracking-tight">
+                Transforming vision with{" "}
+                <span className="text-primary relative">
+                  clarity
+                  <svg className="absolute -bottom-2 left-0 w-full h-3 text-accent/30" viewBox="0 0 200 12" preserveAspectRatio="none">
+                    <path d="M0 9c50-6 100-6 200 0" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round"/>
+                  </svg>
+                </span>{" "}
+                & confidence
               </h1>
-              <p className="text-lg text-muted-foreground max-w-lg">
-                Experience the perfect blend of medical expertise and fashion-forward eyewear. 
-                Find frames that fit your style and vision needs.
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-lg leading-relaxed">
+                Not just eyewear — a unique blend of elegance, cutting-edge tech, and affordability that defines your style.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" asChild className="group">
-                <Link to="/style-quiz" className="flex items-center gap-2">
+              <Button size="lg" asChild className="group h-14 px-8 text-base shadow-float hover:shadow-card-hover transition-all">
+                <Link to="/style-quiz" className="flex items-center gap-3">
                   <Sparkle weight="duotone" className="h-5 w-5" />
-                  Take the Style Quiz
+                  Find Your Frame
                   <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/eyewear" className="flex items-center gap-2">
+              <Button size="lg" variant="outline" asChild className="h-14 px-8 text-base border-2 hover:bg-primary/5">
+                <Link to="/eyewear" className="flex items-center gap-3">
                   <Bag weight="light" className="h-5 w-5" />
-                  Shop Eyeglasses
+                  Shop Collection
                 </Link>
               </Button>
             </div>
 
             {/* Trust indicators */}
-            <div className="flex flex-wrap items-center gap-6 pt-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                <span>Free Eye Exams</span>
+            <div className="flex flex-wrap items-center gap-8 pt-6 border-t border-border/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                  <span className="text-green-600 text-lg">✓</span>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground text-sm">Free Eye Exams</p>
+                  <p className="text-xs text-muted-foreground">At all locations</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary" />
-                <span>Virtual Try-On</span>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <span className="text-primary text-lg">📷</span>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground text-sm">Virtual Try-On</p>
+                  <p className="text-xs text-muted-foreground">AI-powered</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-accent" />
-                <span>Free Shipping</span>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                  <span className="text-accent text-lg">🚚</span>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground text-sm">Free Shipping</p>
+                  <p className="text-xs text-muted-foreground">Orders over ₦50k</p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Hero Image */}
+          {/* Hero Image with floating elements */}
           <div className="relative order-1 lg:order-2">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+            {/* Main image container */}
+            <div className="relative rounded-3xl overflow-hidden shadow-float">
               <img
                 src={heroEyewear}
                 alt="Person wearing stylish eyeglasses"
-                className="w-full h-[350px] sm:h-[400px] lg:h-[500px] object-cover"
+                className="w-full h-[400px] sm:h-[500px] lg:h-[600px] object-cover"
               />
-              {/* Overlay gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
+              {/* Elegant overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 via-transparent to-transparent" />
             </div>
             
-            {/* Floating card */}
-            <div className="absolute -bottom-6 -left-6 bg-card p-4 rounded-xl shadow-lg border border-border hidden lg:block">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-2xl">👓</span>
+            {/* Floating testimonial card */}
+            <div className="absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 hidden lg:block backdrop-blur-sm max-w-[280px]">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground font-bold text-lg shrink-0">
+                  50K+
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">50K+ Happy Customers</p>
-                  <p className="text-sm text-muted-foreground">Trusted across Nigeria</p>
+                  <p className="font-semibold text-foreground">Happy Customers</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">Trusted across Nigeria for quality eyecare</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating product card - top right */}
+            <div className="absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-float border border-border/50 hidden lg:block backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-2xl">
+                  👓
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">New Arrival</p>
+                  <p className="font-semibold text-foreground">Classic Aviator</p>
+                  <p className="text-sm font-bold text-accent">₦45,000</p>
                 </div>
               </div>
             </div>
