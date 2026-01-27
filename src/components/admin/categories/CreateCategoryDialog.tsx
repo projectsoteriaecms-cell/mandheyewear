@@ -35,6 +35,7 @@ const categorySchema = z.object({
   name: z.string().min(1, "Name is required"),
   slug: z.string().min(1, "Slug is required").regex(/^[a-z0-9-]+$/, "Slug must be lowercase with hyphens only"),
   brand_line: z.enum(["soteria_medical", "m_and_h_fashion"]),
+  parent_id: z.string().nullable(),
   description: z.string().optional(),
   image_url: z.string().url().optional().or(z.literal("")),
   is_active: z.boolean(),
@@ -47,12 +48,16 @@ export const CreateCategoryDialog = () => {
   const [open, setOpen] = useState(false);
   const { createCategory, categories } = useCategories();
 
+  // Only show root categories as potential parents
+  const parentOptions = categories.filter((c) => !c.parent_id);
+
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: "",
       slug: "",
       brand_line: "soteria_medical",
+      parent_id: null,
       description: "",
       image_url: "",
       is_active: true,
@@ -65,6 +70,7 @@ export const CreateCategoryDialog = () => {
       name: data.name,
       slug: data.slug,
       brand_line: data.brand_line,
+      parent_id: data.parent_id,
       is_active: data.is_active,
       display_order: data.display_order,
       description: data.description || null,
@@ -126,6 +132,35 @@ export const CreateCategoryDialog = () => {
                   <FormControl>
                     <Input {...field} placeholder="category-slug" />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="parent_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Parent Category</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(value === "none" ? null : value)}
+                    value={field.value ?? "none"}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="No parent (root category)" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">No parent (root category)</SelectItem>
+                      {parentOptions.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
