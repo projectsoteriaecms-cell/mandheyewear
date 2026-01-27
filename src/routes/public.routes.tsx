@@ -20,6 +20,8 @@ const Signup = lazy(() => import("@/pages/Signup"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
 const Checkout = lazy(() => import("@/pages/Checkout"));
+const OrderConfirmation = lazy(() => import("@/pages/OrderConfirmation"));
+const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const PageLoader = () => (
@@ -52,5 +54,7 @@ export const publicRoutes = [
   <Route key="/dashboard" path="/dashboard" element={withSuspense(Dashboard)} />,
   <Route key="/product" path="/product/:productId" element={withSuspense(ProductDetail)} />,
   <Route key="/checkout" path="/checkout" element={withSuspense(Checkout)} />,
+  <Route key="/order-confirmation" path="/order/:orderId" element={withSuspense(OrderConfirmation)} />,
+  <Route key="/track-order" path="/track-order" element={withSuspense(OrderTracking)} />,
   <Route key="*" path="*" element={withSuspense(NotFound)} />,
 ];

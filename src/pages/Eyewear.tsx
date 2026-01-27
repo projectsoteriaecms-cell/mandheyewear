@@ -6,11 +6,26 @@ import { ProductFilters } from "@/components/eyewear/ProductFilters";
 import { VirtualTryOnBanner } from "@/components/eyewear/VirtualTryOnBanner";
 import { useProducts } from "@/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState, Pagination, ProductQuickView } from "@/components/storefront";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Home, Eye } from "lucide-react";
+import { Link } from "react-router-dom";
+
+const PRODUCTS_PER_PAGE = 12;
 
 const Eyewear = () => {
   const [genderFilter, setGenderFilter] = useState("all");
   const [styleFilter, setStyleFilter] = useState("all");
   const [priceSort, setPriceSort] = useState("featured");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
 
   // Fetch M&H Fashion products for the eyewear page
   const { data: products, isLoading, error } = useProducts("m_and_h_fashion");
@@ -34,12 +49,51 @@ const Eyewear = () => {
       });
   }, [products, genderFilter, styleFilter, priceSort]);
 
+  // Pagination
+  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    return filteredProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
+  const handleQuickView = (productId: string) => {
+    setQuickViewProductId(productId);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
 
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
+          {/* Breadcrumb */}
+          <Breadcrumb className="mb-6">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/" className="flex items-center gap-1">
+                    <Home className="h-4 w-4" />
+                    Home
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="flex items-center gap-1">
+                  <Eye className="h-4 w-4" />
+                  Eyewear
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+
+          {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">
               M & H Eyewear Collection
@@ -47,15 +101,20 @@ const Eyewear = () => {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Designer frames that combine style, comfort, and precision
             </p>
+            {filteredProducts.length > 0 && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Showing {paginatedProducts.length} of {filteredProducts.length} products
+              </p>
+            )}
           </div>
 
           <ProductFilters
             genderFilter={genderFilter}
             styleFilter={styleFilter}
             priceSort={priceSort}
-            onGenderChange={setGenderFilter}
-            onStyleChange={setStyleFilter}
-            onPriceSortChange={setPriceSort}
+            onGenderChange={handleFilterChange(setGenderFilter)}
+            onStyleChange={handleFilterChange(setStyleFilter)}
+            onPriceSortChange={handleFilterChange(setPriceSort)}
           />
 
           {/* Products Grid */}
@@ -71,28 +130,56 @@ const Eyewear = () => {
               ))}
             </div>
           ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-destructive">
-                Failed to load products. Please try again later.
-              </p>
-            </div>
+            <EmptyState
+              type="products"
+              title="Failed to load products"
+              description="We couldn't load the eyewear collection. Please try again later."
+              actionLabel="Refresh Page"
+              onAction={() => window.location.reload()}
+            />
           ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                No products match your filters. Try adjusting your selection.
-              </p>
-            </div>
+            <EmptyState
+              type="search"
+              title="No products match your filters"
+              description="Try adjusting your selection or clear filters to see all products."
+              actionLabel="Clear All Filters"
+              onAction={() => {
+                setGenderFilter("all");
+                setStyleFilter("all");
+                setPriceSort("featured");
+              }}
+            />
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {paginatedProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    onDoubleClick={() => handleQuickView(product.id)}
+                  >
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
+
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </>
           )}
 
           <VirtualTryOnBanner />
         </div>
       </div>
+
+      {/* Quick View Modal */}
+      <ProductQuickView
+        productId={quickViewProductId}
+        isOpen={!!quickViewProductId}
+        onClose={() => setQuickViewProductId(null)}
+      />
 
       <Footer />
     </div>

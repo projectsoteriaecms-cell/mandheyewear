@@ -51,10 +51,13 @@ export const CartDrawer = () => {
 
         <div className="flex-1 overflow-y-auto py-4">
           {!isAuthenticated ? (
-            <div className="text-center py-12">
-              <ShoppingBag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground mb-4">
-                Sign in to view your cart
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="h-16 w-16 rounded-full bg-accent/10 flex items-center justify-center mb-4">
+                <ShoppingBag className="h-8 w-8 text-accent" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Sign in to view your cart</h3>
+              <p className="text-muted-foreground text-sm mb-4 max-w-[200px]">
+                Create an account or sign in to start shopping
               </p>
               <Button variant="hero" asChild>
                 <Link to="/login">Sign In</Link>
@@ -65,9 +68,18 @@ export const CartDrawer = () => {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : cartItems.length === 0 ? (
-            <div className="text-center py-12">
-              <ShoppingBag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground mb-4">Your cart is empty</p>
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="relative mb-4">
+                <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
+                  <ShoppingBag className="h-10 w-10 text-muted-foreground" />
+                </div>
+                <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent/30" />
+                <div className="absolute -bottom-1 -left-2 h-3 w-3 rounded-full bg-primary/30" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Your cart is empty</h3>
+              <p className="text-muted-foreground text-sm mb-4 max-w-[220px]">
+                Discover our premium eyewear collection and find your perfect frames
+              </p>
               <Button variant="hero" asChild>
                 <Link to="/eyewear">Shop Eyewear</Link>
               </Button>
