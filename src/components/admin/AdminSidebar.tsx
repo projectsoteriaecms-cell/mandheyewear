@@ -12,6 +12,7 @@ import {
   BarChart3,
   ChevronDown,
   Building2,
+  Wrench,
 } from "lucide-react";
 import { useIsManager, useIsSuperAdmin } from "@/hooks/useUserRole";
 import {
@@ -58,6 +59,12 @@ const navItems: NavItem[] = [
     title: "Products",
     href: "/admin/products",
     icon: ShoppingBag,
+    requiresManager: true,
+  },
+  {
+    title: "Services",
+    href: "/admin/services",
+    icon: Wrench,
     requiresManager: true,
   },
   {

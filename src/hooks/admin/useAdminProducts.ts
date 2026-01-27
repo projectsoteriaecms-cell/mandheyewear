@@ -17,7 +17,9 @@ export const useAdminProducts = () => {
         .select(`
           *,
           category:categories(id, name),
-          supplier:suppliers(id, name)
+          supplier:suppliers(id, name),
+          frame_attributes(*),
+          lens_attributes(*)
         `)
         .order("created_at", { ascending: false });
 

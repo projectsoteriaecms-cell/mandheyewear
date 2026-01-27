@@ -211,6 +211,7 @@ export type Database = {
           brand_line: Database["public"]["Enums"]["brand_line"]
           created_at: string
           description: string | null
+          display_order: number | null
           id: string
           image_url: string | null
           is_active: boolean | null
@@ -222,6 +223,7 @@ export type Database = {
           brand_line: Database["public"]["Enums"]["brand_line"]
           created_at?: string
           description?: string | null
+          display_order?: number | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
@@ -233,6 +235,7 @@ export type Database = {
           brand_line?: Database["public"]["Enums"]["brand_line"]
           created_at?: string
           description?: string | null
+          display_order?: number | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
@@ -246,6 +249,59 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      frame_attributes: {
+        Row: {
+          bridge_size: number | null
+          created_at: string
+          frame_material: string | null
+          frame_shape: string | null
+          front_color: string | null
+          has_clip_on: boolean | null
+          id: string
+          lens_width: number | null
+          model_code: string | null
+          product_id: string
+          temple_color: string | null
+          temple_length: number | null
+        }
+        Insert: {
+          bridge_size?: number | null
+          created_at?: string
+          frame_material?: string | null
+          frame_shape?: string | null
+          front_color?: string | null
+          has_clip_on?: boolean | null
+          id?: string
+          lens_width?: number | null
+          model_code?: string | null
+          product_id: string
+          temple_color?: string | null
+          temple_length?: number | null
+        }
+        Update: {
+          bridge_size?: number | null
+          created_at?: string
+          frame_material?: string | null
+          frame_shape?: string | null
+          front_color?: string | null
+          has_clip_on?: boolean | null
+          id?: string
+          lens_width?: number | null
+          model_code?: string | null
+          product_id?: string
+          temple_color?: string | null
+          temple_length?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "frame_attributes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -362,6 +418,50 @@ export type Database = {
             foreignKeyName: "inventory_transactions_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lens_attributes: {
+        Row: {
+          axis: number | null
+          coating: string | null
+          created_at: string
+          cyl: number | null
+          id: string
+          lens_material: string | null
+          lens_type: string | null
+          product_id: string
+          sph: number | null
+        }
+        Insert: {
+          axis?: number | null
+          coating?: string | null
+          created_at?: string
+          cyl?: number | null
+          id?: string
+          lens_material?: string | null
+          lens_type?: string | null
+          product_id: string
+          sph?: number | null
+        }
+        Update: {
+          axis?: number | null
+          coating?: string | null
+          created_at?: string
+          cyl?: number | null
+          id?: string
+          lens_material?: string | null
+          lens_type?: string | null
+          product_id?: string
+          sph?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lens_attributes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -510,6 +610,7 @@ export type Database = {
       products: {
         Row: {
           additional_images: string[] | null
+          brand: string | null
           brand_line: Database["public"]["Enums"]["brand_line"]
           bridge_size: string | null
           category_id: string | null
@@ -518,6 +619,8 @@ export type Database = {
           created_at: string
           currency: string | null
           description: string | null
+          description_raw: string | null
+          external_id: string | null
           frame_width: string | null
           gender: string | null
           id: string
@@ -529,16 +632,20 @@ export type Database = {
           material: string | null
           name: string
           price: number
+          price_tier: Database["public"]["Enums"]["price_tier"] | null
+          record_type: Database["public"]["Enums"]["record_type"] | null
           reorder_level: number | null
           reorder_quantity: number | null
           sku: string
           style: string | null
           supplier_id: string | null
           temple_length: string | null
+          unit: string | null
           updated_at: string
         }
         Insert: {
           additional_images?: string[] | null
+          brand?: string | null
           brand_line: Database["public"]["Enums"]["brand_line"]
           bridge_size?: string | null
           category_id?: string | null
@@ -547,6 +654,8 @@ export type Database = {
           created_at?: string
           currency?: string | null
           description?: string | null
+          description_raw?: string | null
+          external_id?: string | null
           frame_width?: string | null
           gender?: string | null
           id?: string
@@ -558,16 +667,20 @@ export type Database = {
           material?: string | null
           name: string
           price: number
+          price_tier?: Database["public"]["Enums"]["price_tier"] | null
+          record_type?: Database["public"]["Enums"]["record_type"] | null
           reorder_level?: number | null
           reorder_quantity?: number | null
           sku: string
           style?: string | null
           supplier_id?: string | null
           temple_length?: string | null
+          unit?: string | null
           updated_at?: string
         }
         Update: {
           additional_images?: string[] | null
+          brand?: string | null
           brand_line?: Database["public"]["Enums"]["brand_line"]
           bridge_size?: string | null
           category_id?: string | null
@@ -576,6 +689,8 @@ export type Database = {
           created_at?: string
           currency?: string | null
           description?: string | null
+          description_raw?: string | null
+          external_id?: string | null
           frame_width?: string | null
           gender?: string | null
           id?: string
@@ -587,12 +702,15 @@ export type Database = {
           material?: string | null
           name?: string
           price?: number
+          price_tier?: Database["public"]["Enums"]["price_tier"] | null
+          record_type?: Database["public"]["Enums"]["record_type"] | null
           reorder_level?: number | null
           reorder_quantity?: number | null
           sku?: string
           style?: string | null
           supplier_id?: string | null
           temple_length?: string | null
+          unit?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -782,6 +900,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      services: {
+        Row: {
+          created_at: string
+          currency: string | null
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price: number | null
+          requires_appointment: boolean | null
+          service_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price?: number | null
+          requires_appointment?: boolean | null
+          service_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price?: number | null
+          requires_appointment?: boolean | null
+          service_type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       stock_adjustments: {
         Row: {
@@ -1124,6 +1284,8 @@ export type Database = {
         | "medications"
         | "accessories"
         | "other"
+        | "cleanser"
+        | "packaging"
       order_status:
         | "pending"
         | "confirmed"
@@ -1133,6 +1295,7 @@ export type Database = {
         | "delivered"
         | "cancelled"
       payment_status: "pending" | "paid" | "failed" | "refunded"
+      price_tier: "budget" | "standard" | "premium" | "luxury"
       purchase_order_status:
         | "draft"
         | "submitted"
@@ -1140,6 +1303,7 @@ export type Database = {
         | "partially_received"
         | "received"
         | "cancelled"
+      record_type: "inventory_item" | "service"
       transaction_type:
         | "purchase_received"
         | "sale"
@@ -1305,6 +1469,8 @@ export const Constants = {
         "medications",
         "accessories",
         "other",
+        "cleanser",
+        "packaging",
       ],
       order_status: [
         "pending",
@@ -1316,6 +1482,7 @@ export const Constants = {
         "cancelled",
       ],
       payment_status: ["pending", "paid", "failed", "refunded"],
+      price_tier: ["budget", "standard", "premium", "luxury"],
       purchase_order_status: [
         "draft",
         "submitted",
@@ -1324,6 +1491,7 @@ export const Constants = {
         "received",
         "cancelled",
       ],
+      record_type: ["inventory_item", "service"],
       transaction_type: [
         "purchase_received",
         "sale",
