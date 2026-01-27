@@ -168,9 +168,9 @@ export const ECMSImportDialog = ({ open, onOpenChange }: ECMSImportDialogProps) 
       createFrameAttributes,
     };
 
-    await importProducts(parsedProducts, options);
+    await importProducts(parsedProducts, options, file?.name);
     setStep("summary");
-  }, [batchSize, duplicateHandling, createFrameAttributes, parsedProducts, importProducts]);
+  }, [batchSize, duplicateHandling, createFrameAttributes, parsedProducts, importProducts, file]);
 
   const downloadTemplate = useCallback(() => {
     const csv = generateECMSTemplate();

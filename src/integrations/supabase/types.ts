@@ -306,6 +306,48 @@ export type Database = {
           },
         ]
       }
+      import_history: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          error_details: Json | null
+          failed_records: number
+          file_name: string | null
+          id: string
+          import_type: string
+          new_products: number
+          performed_by: string
+          total_records: number
+          updated_products: number
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          error_details?: Json | null
+          failed_records?: number
+          file_name?: string | null
+          id?: string
+          import_type?: string
+          new_products?: number
+          performed_by: string
+          total_records?: number
+          updated_products?: number
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          error_details?: Json | null
+          failed_records?: number
+          file_name?: string | null
+          id?: string
+          import_type?: string
+          new_products?: number
+          performed_by?: string
+          total_records?: number
+          updated_products?: number
+        }
+        Relationships: []
+      }
       inventory: {
         Row: {
           bin_location: string | null

@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 import type { ParsedProduct, ValidationError } from "@/lib/ecms-parser";
-
+import { saveImportHistory } from "./useImportHistory";
 type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
 type FrameAttributesInsert = Database["public"]["Tables"]["frame_attributes"]["Insert"];
 
@@ -90,7 +90,8 @@ export const useECMSImport = () => {
   const importProducts = useCallback(
     async (
       products: ParsedProduct[],
-      options: ImportOptions
+      options: ImportOptions,
+      fileName?: string
     ): Promise<ImportResult> => {
       setIsImporting(true);
       setIsCancelled(false);
@@ -352,6 +353,25 @@ export const useECMSImport = () => {
         queryClient.invalidateQueries({ queryKey: ["products"] });
 
         result.success = result.failed === 0;
+
+        // Save import history
+        const durationSeconds = (Date.now() - startTime) / 1000;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await saveImportHistory({
+            import_type: "ecms",
+            file_name: fileName,
+            total_records: products.length,
+            new_products: result.inserted,
+            updated_products: result.updated,
+            failed_records: result.failed,
+            duration_seconds: durationSeconds,
+            performed_by: user.id,
+            error_details: result.errors.slice(0, 50), // Limit stored errors
+          });
+          queryClient.invalidateQueries({ queryKey: ["import-history"] });
+        }
+
         return result;
       } catch (error) {
         result.success = false;

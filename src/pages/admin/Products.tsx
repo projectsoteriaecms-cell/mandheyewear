@@ -43,6 +43,7 @@ import { BulkUploadDialog } from "@/components/admin/products/BulkUploadDialog";
 import { EditProductDialog } from "@/components/admin/products/EditProductDialog";
 import { BulkImageUploadDialog } from "@/components/admin/products/BulkImageUploadDialog";
 import { ECMSImportDialog } from "@/components/admin/products/ECMSImportDialog";
+import { ImportHistoryPanel } from "@/components/admin/products/ImportHistoryPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -167,6 +168,9 @@ const Products = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Import History */}
+        <ImportHistoryPanel />
 
         {/* Products Table */}
         <Card>
