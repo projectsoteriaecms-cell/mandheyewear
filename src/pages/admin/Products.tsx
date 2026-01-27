@@ -35,12 +35,14 @@ import {
   Trash2,
   ShoppingBag,
   ImagePlus,
+  FileSpreadsheet,
 } from "lucide-react";
 import { useAdminProducts } from "@/hooks/admin/useAdminProducts";
 import { CreateProductDialog } from "@/components/admin/products/CreateProductDialog";
 import { BulkUploadDialog } from "@/components/admin/products/BulkUploadDialog";
 import { EditProductDialog } from "@/components/admin/products/EditProductDialog";
 import { BulkImageUploadDialog } from "@/components/admin/products/BulkImageUploadDialog";
+import { ECMSImportDialog } from "@/components/admin/products/ECMSImportDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -64,6 +66,7 @@ const Products = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [isBulkImageUploadOpen, setIsBulkImageUploadOpen] = useState(false);
+  const [isECMSImportOpen, setIsECMSImportOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
 
@@ -108,7 +111,7 @@ const Products = () => {
               Manage your product catalog
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => setIsBulkImageUploadOpen(true)}>
               <ImagePlus className="mr-2 h-4 w-4" />
               Upload Images
@@ -116,6 +119,10 @@ const Products = () => {
             <Button variant="outline" onClick={() => setIsBulkUploadOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
               Bulk Upload
+            </Button>
+            <Button variant="outline" onClick={() => setIsECMSImportOpen(true)}>
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              ECMS Import
             </Button>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
@@ -316,6 +323,11 @@ const Products = () => {
       <BulkImageUploadDialog
         open={isBulkImageUploadOpen}
         onOpenChange={setIsBulkImageUploadOpen}
+      />
+
+      <ECMSImportDialog
+        open={isECMSImportOpen}
+        onOpenChange={setIsECMSImportOpen}
       />
 
       <AlertDialog
