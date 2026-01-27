@@ -71,7 +71,7 @@ export const ECMSImportDialog = ({ open, onOpenChange }: ECMSImportDialogProps) 
   const [showOnlyErrors, setShowOnlyErrors] = useState(false);
 
   // Import options
-  const [batchSize, setBatchSize] = useState(50);
+  const [batchSize, setBatchSize] = useState(100);
   const [duplicateHandling, setDuplicateHandling] = useState<DuplicateHandling>("skip");
   const [createFrameAttributes, setCreateFrameAttributes] = useState(true);
 
@@ -87,7 +87,7 @@ export const ECMSImportDialog = ({ open, onOpenChange }: ECMSImportDialogProps) 
     setAllErrors([]);
     setAllWarnings([]);
     setShowOnlyErrors(false);
-    setBatchSize(50);
+    setBatchSize(100);
     setDuplicateHandling("skip");
     setCreateFrameAttributes(true);
     resetProgress();
@@ -504,6 +504,17 @@ export const ECMSImportDialog = ({ open, onOpenChange }: ECMSImportDialogProps) 
               </div>
 
               <Progress value={(progress.processed / progress.total) * 100} className="h-3" />
+
+              <div className="text-center text-sm text-muted-foreground">
+                {progress.processed} of {progress.total} products processed
+                {progress.estimatedTimeRemaining !== null && progress.estimatedTimeRemaining > 0 && (
+                  <span className="ml-2">
+                    • ~{progress.estimatedTimeRemaining < 60 
+                      ? `${progress.estimatedTimeRemaining}s` 
+                      : `${Math.floor(progress.estimatedTimeRemaining / 60)}m ${progress.estimatedTimeRemaining % 60}s`} remaining
+                  </span>
+                )}
+              </div>
 
               <div className="grid grid-cols-4 gap-4 text-center">
                 <div>
