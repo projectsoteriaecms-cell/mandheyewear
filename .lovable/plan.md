@@ -1,281 +1,231 @@
 
-# Phosphor Icons Migration - Phase 2
-## Continue Migration for Admin, Dashboard, and Remaining Components
 
----
+# Enhanced Animations & Sophisticated Typography Upgrade
 
 ## Overview
 
-This phase completes the migration from Lucide React to Phosphor Icons across all remaining admin pages, dialogs, dashboard components, and public pages. The search revealed **90 files** still importing from `lucide-react`. This plan systematically migrates each category of components.
+This plan adds sophisticated micro-animations across all homepage sections and upgrades the typography system to a more refined, luxury-grade font pairing. The goal is to create a premium, boutique eyewear experience with smooth, polished interactions.
 
 ---
 
-## Migration Summary
+## Typography Upgrade
 
-| Category | Files to Update | Est. Icon Changes |
-|----------|-----------------|-------------------|
-| Admin Pages | 15 files | ~120 icons |
-| Admin Dialogs & Components | 20+ files | ~80 icons |
-| Dashboard Components | 8 files | ~40 icons |
-| Public Pages | 10 files | ~50 icons |
-| UI Primitives | 5 files | ~15 icons |
-| **Total** | ~58 files | ~305 icons |
+### Current Fonts
+- **Display**: Playfair Display (serif)
+- **Body**: Outfit (sans-serif)
+
+### Proposed Font Pairing
+
+| Role | New Font | Why |
+|------|----------|-----|
+| **Display** | **Cormorant Garamond** | Ultra-elegant, high-contrast serifs with a luxurious French feel. More refined than Playfair, with beautiful italics. Popular with luxury fashion and eyewear brands. |
+| **Body** | **Inter** | Clean, modern geometric sans-serif with excellent readability. Better letter-spacing and optical adjustments than Outfit. |
+
+### Alternative Options (if you prefer)
+- **DM Serif Display** - Bold, high-impact display font
+- **Libre Baskerville** - Classic book typography
+- **Lora** - Warm, balanced contemporary serif
+
+### File Changes
+
+**index.html**
+- Update Google Fonts import to include `Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700`
+
+**tailwind.config.ts**
+- Update `fontFamily.display` to `['Cormorant Garamond', 'serif']`
+- Update `fontFamily.body` to `['Inter', 'sans-serif']`
 
 ---
 
-## Phase 1: Admin Pages
+## Animation System Expansion
 
-### Files to Update
-
-| File | Icons to Replace |
-|------|------------------|
-| `src/pages/admin/Dashboard.tsx` | Package, AlertTriangle, TrendingUp, Users |
-| `src/pages/admin/Products.tsx` | Plus, Upload, Search, MoreHorizontal, Edit, Trash2, ShoppingBag, ImagePlus, FileSpreadsheet |
-| `src/pages/admin/Services.tsx` | Plus, Search, MoreHorizontal, Pencil, Trash2, Clock, Calendar |
-| `src/pages/admin/Inventory.tsx` | Search, Download, AlertTriangle, Package |
-| `src/pages/admin/PurchaseOrders.tsx` | Plus, MoreHorizontal, Eye, CheckCircle, XCircle, Package, Truck |
-| `src/pages/admin/StockTransfers.tsx` | Plus, MoreHorizontal, Eye, Truck, CheckCircle, XCircle, ArrowLeftRight, ArrowRight |
-| `src/pages/admin/StockAdjustments.tsx` | Plus, AlertTriangle, PackageMinus, RotateCcw, Trash2, HelpCircle |
-| `src/pages/admin/Categories.tsx` | Loader2 |
-| `src/pages/admin/Suppliers.tsx` | Plus, Edit, Trash2, Truck, Mail, Phone, MapPin |
-| `src/pages/admin/AdminBranches.tsx` | Building2, MapPin, Phone, Mail, Plus, Search, Edit, MoreHorizontal |
-| `src/pages/admin/AdminUsers.tsx` | Users, Search, UserPlus, Shield, Mail, MoreHorizontal, Edit, Building2 |
-| `src/pages/admin/Reports.tsx` | BarChart3, TrendingUp, Package, ShoppingCart, Users, DollarSign, ArrowUpRight, ArrowDownRight |
-| `src/pages/admin/InventoryTransactions.tsx` | ArrowDownLeft, ArrowUpRight, RefreshCw, History |
-
-### Icon Mappings for Admin
+### New Keyframe Animations
 
 ```text
-Lucide                  → Phosphor
-Package                 → Package
-AlertTriangle           → Warning
-TrendingUp              → TrendingUp (or ChartLineUp)
-Users                   → Users
-Plus                    → Plus
-Upload                  → Upload
-Search                  → MagnifyingGlass
-MoreHorizontal          → DotsThree
-Edit                    → PencilSimple
-Trash2                  → Trash
-ShoppingBag             → ShoppingBag
-ImagePlus               → ImageSquare (with Plus overlay)
-FileSpreadsheet         → FileXls
-Pencil                  → PencilSimple
-Clock                   → Clock
-Calendar                → Calendar
-Download                → Download
-Eye                     → Eye
-CheckCircle             → CheckCircle
-XCircle                 → XCircle
-Truck                   → Truck
-ArrowLeftRight          → ArrowsLeftRight
-ArrowRight              → ArrowRight
-ArrowDownLeft           → ArrowDownLeft
-ArrowUpRight            → ArrowUpRight
-RefreshCw               → ArrowsClockwise
-History                 → ClockCounterClockwise
-PackageMinus            → Package (with minus)
-RotateCcw               → ArrowCounterClockwise
-HelpCircle              → Question
-Loader2                 → CircleNotch
-Mail                    → Envelope
-Phone                   → Phone
-MapPin                  → MapPin
-Building2               → Buildings
-UserPlus                → UserPlus
-Shield                  → Shield
-BarChart3               → ChartBar
-ShoppingCart            → ShoppingCart
-DollarSign              → CurrencyDollar
+┌─────────────────────────────────────────────────────────────┐
+│                    ANIMATION LIBRARY                        │
+├─────────────────┬───────────────────────────────────────────┤
+│ fade-in-up      │ Slide up + fade (sections on scroll)     │
+│ fade-in-down    │ Slide down + fade (dropdowns/modals)     │
+│ fade-in-left    │ Slide from left + fade                   │
+│ fade-in-right   │ Slide from right + fade                  │
+│ scale-in        │ Zoom in gently (cards on hover)          │
+│ float           │ Subtle floating (hero decorative cards)  │
+│ shimmer         │ Shine effect (CTA buttons)               │
+│ pulse-soft      │ Gentle pulse (badges/highlights)         │
+│ stagger-in      │ Sequential entrance for lists            │
+│ blur-in         │ Blur-to-sharp reveal                     │
+└─────────────────┴───────────────────────────────────────────┘
+```
+
+### Animation Utility Classes
+
+| Class | Effect |
+|-------|--------|
+| `.animate-fade-in-up` | Slide up 20px + fade in |
+| `.animate-float` | Continuous gentle floating |
+| `.animate-shimmer` | Gold/light shimmer on buttons |
+| `.animate-pulse-soft` | Subtle pulse for badges |
+| `.hover-lift` | Lift + shadow on hover |
+| `.hover-glow` | Soft glow effect on hover |
+| `.stagger-delay-1` to `.stagger-delay-5` | Staggered entrance delays |
+
+---
+
+## Component Animation Updates
+
+### HeroSection.tsx
+- Add `animate-fade-in-up` to main headline with staggered delays
+- Add `animate-float` to floating testimonial and product cards
+- Add `animate-shimmer` effect to primary CTA button
+- Animate trust indicators with staggered fade-in
+- Add subtle parallax effect to background pattern
+
+### CategoryCards.tsx
+- Add staggered `animate-fade-in-up` to category cards
+- Enhanced hover: lift + shadow + scale
+- Add shimmer overlay on image hover
+- Animate badges with `animate-pulse-soft`
+
+### QuizPromo.tsx
+- Animate benefit list items with staggered entrance
+- Add `hover-lift` to frame style cards
+- Float animation on decorative blur elements
+- CTA button shimmer effect
+
+### FeaturedFrames.tsx
+- Product cards: staggered entrance animation
+- Hover state: image zoom + shadow lift + quick action buttons slide-in
+- Price tag shimmer effect
+- Heart/Eye buttons scale on hover
+
+### VirtualTryOn.tsx
+- Float animation on detection badge and measurement card
+- Pulse animation on "Face detected" indicator
+- Feature pills: hover lift effect
+- CTA button shimmer
+
+### TrustBadges.tsx
+- Staggered card entrance animation
+- Icon container pulse on hover
+- Highlight badges float animation
+- Cards lift on hover
+
+### Newsletter.tsx
+- Decorative blur elements: slow float animation
+- Form input: focus glow effect
+- Submit button: shimmer + scale on hover
+- Perks list: fade-in with stagger
+
+### Footer
+- Links: underline slide animation on hover
+- Social icons: scale + glow on hover
+
+---
+
+## Technical Implementation
+
+### File: tailwind.config.ts
+
+Add new keyframes and animations:
+
+```text
+keyframes: {
+  "fade-in-up": {
+    "0%": { opacity: "0", transform: "translateY(20px)" },
+    "100%": { opacity: "1", transform: "translateY(0)" }
+  },
+  "float": {
+    "0%, 100%": { transform: "translateY(0)" },
+    "50%": { transform: "translateY(-10px)" }
+  },
+  "shimmer": {
+    "0%": { backgroundPosition: "-200% 0" },
+    "100%": { backgroundPosition: "200% 0" }
+  },
+  "pulse-soft": {
+    "0%, 100%": { opacity: "1" },
+    "50%": { opacity: "0.7" }
+  },
+  "blur-in": {
+    "0%": { opacity: "0", filter: "blur(10px)" },
+    "100%": { opacity: "1", filter: "blur(0)" }
+  }
+}
+
+animation: {
+  "fade-in-up": "fade-in-up 0.6s ease-out forwards",
+  "float": "float 3s ease-in-out infinite",
+  "shimmer": "shimmer 2s linear infinite",
+  "pulse-soft": "pulse-soft 2s ease-in-out infinite",
+  "blur-in": "blur-in 0.8s ease-out forwards"
+}
+```
+
+### File: src/index.css
+
+Add animation delay utilities and hover effects:
+
+```text
+.stagger-delay-1 { animation-delay: 0.1s; }
+.stagger-delay-2 { animation-delay: 0.2s; }
+.stagger-delay-3 { animation-delay: 0.3s; }
+.stagger-delay-4 { animation-delay: 0.4s; }
+.stagger-delay-5 { animation-delay: 0.5s; }
+
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-float);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+}
+
+.animate-shimmer-bg {
+  background: linear-gradient(
+    90deg, 
+    transparent 0%, 
+    hsl(var(--accent) / 0.1) 50%, 
+    transparent 100%
+  );
+  background-size: 200% 100%;
+}
 ```
 
 ---
 
-## Phase 2: Admin Dashboard Components
+## Files to Modify
 
-### Files to Update
-
-| File | Icons to Replace |
-|------|------------------|
-| `src/shared/components/admin/AdminHeader.tsx` | Bell, LogOut, User |
-| `src/shared/components/admin/dashboard/QuickActionsCard.tsx` | Truck, ArrowLeftRight, Package |
-| `src/shared/components/admin/dashboard/PendingApprovalsCard.tsx` | Truck |
-| `src/shared/components/admin/dashboard/PendingTransfersCard.tsx` | ArrowLeftRight |
-| `src/shared/components/admin/dashboard/LowStockAlertsCard.tsx` | AlertTriangle |
-
----
-
-## Phase 3: Admin Dialog Components
-
-### Files to Update
-
-| File | Icons to Replace |
-|------|------------------|
-| `src/components/admin/products/ECMSImportDialog.tsx` | FileSpreadsheet, ArrowLeft, ArrowRight |
-| `src/components/admin/products/FrameAttributesForm.tsx` | Loader2 |
-| `src/components/admin/products/ImportHistoryPanel.tsx` | Clock, CheckCircle2, XCircle, FileSpreadsheet, ChevronDown |
-| `src/components/admin/products/BulkUploadDialog.tsx` | Upload, FileSpreadsheet |
-| `src/components/admin/products/BulkImageUploadDialog.tsx` | Upload, Image |
-| `src/components/admin/products/CreateProductDialog.tsx` | Plus, Loader2 |
-| `src/components/admin/products/EditProductDialog.tsx` | Loader2 |
-| `src/components/admin/products/ecms-import/UploadStep.tsx` | Upload, Download |
-| `src/components/admin/products/ecms-import/MappingStep.tsx` | AlertTriangle |
-| `src/components/admin/products/ecms-import/ProgressStep.tsx` | Loader2, X |
-| `src/components/admin/categories/SortableCategoryRow.tsx` | GripVertical, Pencil, Trash2, ChevronRight |
-| `src/components/admin/categories/CreateCategoryDialog.tsx` | Plus |
-| `src/components/admin/categories/EditCategoryDialog.tsx` | Loader2 |
-| `src/components/admin/services/CreateServiceDialog.tsx` | Plus, Loader2 |
-| `src/components/admin/services/EditServiceDialog.tsx` | Loader2 |
-| `src/components/admin/users/InviteUserDialog.tsx` | Mail, Loader2 |
-| `src/components/admin/users/PendingInvitationsList.tsx` | Mail, Trash2, Loader2 |
-| `src/components/admin/users/BranchAssignmentDialog.tsx` | Building2, Star, Loader2 |
-| `src/components/admin/adjustments/CreateAdjustmentDialog.tsx` | Plus, Loader2 |
-| `src/components/admin/transfers/CreateStockTransferDialog.tsx` | ArrowRight, Loader2 |
-| `src/components/admin/purchase-orders/CreatePurchaseOrderDialog.tsx` | Plus, Trash2, Loader2 |
+| File | Changes |
+|------|---------|
+| `index.html` | Update Google Fonts import |
+| `tailwind.config.ts` | Add font families, keyframes, animations |
+| `src/index.css` | Add animation utilities, hover effects |
+| `src/components/home/HeroSection.tsx` | Add animations to elements |
+| `src/components/home/CategoryCards.tsx` | Staggered card animations |
+| `src/components/home/QuizPromo.tsx` | Benefit list + card animations |
+| `src/components/home/VirtualTryOn.tsx` | Float + pulse animations |
+| `src/components/home/TrustBadges.tsx` | Card entrance animations |
+| `src/components/home/Newsletter.tsx` | Float + form animations |
+| `src/components/storefront/FeaturedFrames.tsx` | Product card animations |
+| `src/pages/Index.tsx` | Fix Lucide import (Sparkles → Sparkle) |
 
 ---
 
-## Phase 4: Customer Dashboard & Pages
+## Visual Impact Summary
 
-### Files to Update
+| Before | After |
+|--------|-------|
+| Static page load | Smooth cascading entrance animations |
+| Basic hover states | Lift, glow, shimmer effects |
+| Playfair Display font | Cormorant Garamond (more refined) |
+| Outfit body font | Inter (better readability) |
+| Static floating cards | Gentle continuous floating |
+| Plain CTA buttons | Shimmer effect on hover |
 
-| File | Icons to Replace |
-|------|------------------|
-| `src/pages/Dashboard.tsx` | Loader2, LogOut, User, ShoppingBag, Calendar, Heart, MapPin, Sparkles, Settings |
-| `src/pages/Login.tsx` | Eye, EyeOff, Loader2 |
-| `src/pages/Signup.tsx` | Eye, EyeOff, Loader2 |
-| `src/pages/OrderConfirmation.tsx` | CheckCircle, Package, Truck, MapPin, ArrowRight, ShoppingBag, Calendar, Copy, Check |
-| `src/components/dashboard/AppointmentsSection.tsx` | Calendar, Clock, MapPin, Loader2, X |
-| `src/components/dashboard/OrderHistorySection.tsx` | ShoppingBag, Loader2 |
-| `src/components/dashboard/AddressesSection.tsx` | MapPin, Plus, Loader2, Edit, Trash2 |
-| `src/components/dashboard/ProfileSection.tsx` | User, Loader2 |
-| `src/components/dashboard/SettingsSection.tsx` | Settings, Loader2 |
-| `src/components/eyewear/VirtualTryOnBanner.tsx` | Camera |
+This will give the website that polished, luxury boutique feel with smooth, sophisticated interactions that match the premium "Optics Elevation" visual style.
 
----
-
-## Phase 5: UI Primitives
-
-### Files to Update
-
-| File | Icons to Replace |
-|------|------------------|
-| `src/components/ui/menubar.tsx` | Check, ChevronRight, Circle |
-| `src/components/ui/context-menu.tsx` | Check, ChevronRight, Circle |
-| `src/components/ui/radio-group.tsx` | Circle |
-
----
-
-## Phase 6: Update Icon Exports
-
-### Add Missing Icons to `src/lib/icons.ts`
-
-New icons needed for this migration phase:
-
-```typescript
-export {
-  // Additional icons for admin
-  Bell,
-  ClockCounterClockwise,
-  ArrowsClockwise,
-  ArrowDownLeft,
-  ImageSquare,
-  CurrencyDollar,
-  ShoppingCart,
-  ChartLineUp,
-  UserPlus,
-  Star,
-  
-  // For UI primitives
-  Dot,
-  
-  // Already added in phase 1...
-} from "@phosphor-icons/react";
-```
-
----
-
-## Implementation Order
-
-1. **Update `src/lib/icons.ts`** - Add all new icons needed
-2. **Admin Pages** - Migrate all 13 admin page files
-3. **Admin Dashboard Components** - Migrate 5 shared dashboard component files
-4. **Admin Dialogs** - Migrate ~21 dialog and form component files
-5. **Customer Dashboard** - Migrate 10 customer-facing files
-6. **UI Primitives** - Migrate 3 UI component files
-7. **Verify & Test** - Build verification, no Lucide imports remain
-
----
-
-## Technical Details
-
-### Import Pattern Change
-
-**Before:**
-```tsx
-import { Package, AlertTriangle, Users } from "lucide-react";
-```
-
-**After:**
-```tsx
-import { Package, Warning, Users } from "@phosphor-icons/react";
-```
-
-### Weight Application
-
-For consistency with Phase 1:
-- **Default state**: `weight="light"` (minimal, professional)
-- **Active/selected**: `weight="bold"` or `weight="regular"`
-- **Featured items**: `weight="duotone"` (technical depth)
-
-### Example Transformation
-
-```tsx
-// Before (Lucide)
-<Loader2 className="h-4 w-4 animate-spin" />
-
-// After (Phosphor)
-<CircleNotch className="h-4 w-4 animate-spin" weight="light" />
-```
-
----
-
-## Files Summary
-
-### Total Files to Modify: ~58
-
-| Category | Count |
-|----------|-------|
-| Admin Pages | 13 |
-| Admin Dashboard Components | 5 |
-| Admin Dialogs/Components | 21 |
-| Customer Dashboard/Pages | 10 |
-| UI Primitives | 3 |
-| Icon Exports (`icons.ts`) | 1 |
-| **Remaining Misc Files** | ~5 |
-
----
-
-## Post-Migration Cleanup
-
-After all files are migrated:
-
-1. **Remove lucide-react from package.json**
-   ```bash
-   npm uninstall lucide-react
-   ```
-
-2. **Build verification** - Ensure no compilation errors
-
-3. **Visual QA** - Check all icon states render correctly
-
-4. **Bundle size check** - Verify tree-shaking is effective
-
----
-
-## Estimated Impact
-
-- **Visual consistency**: Unified weight-based icon system
-- **Brand alignment**: Professional, medical-tech aesthetic
-- **Bundle size**: Similar to Lucide (~60kb tree-shaken)
-- **Maintenance**: Single source of truth for all icons in `src/lib/icons.ts`
