@@ -140,38 +140,122 @@ export const useECMSImport = () => {
               : null
           );
 
+          // Separate products into: toInsert, toUpdate, toSkip
+          const toInsert: { product: ParsedProduct; rowNum: number }[] = [];
+          const toUpdate: { product: ParsedProduct; rowNum: number; existingId: string }[] = [];
+
           for (let i = 0; i < batch.length; i++) {
-            if (isCancelled) break;
-
             const product = batch[i];
-            const rowNum = start + i + 2; // +2 for header row and 1-indexing
+            const rowNum = start + i + 2;
 
-            try {
-              // Check for duplicates
-              const existingId =
-                duplicateMap.get(`sku:${product.sku}`) ||
-                (product.external_id
-                  ? duplicateMap.get(`external:${product.external_id}`)
-                  : undefined);
+            const existingId =
+              duplicateMap.get(`sku:${product.sku}`) ||
+              (product.external_id
+                ? duplicateMap.get(`external:${product.external_id}`)
+                : undefined);
 
-              if (existingId) {
-                if (duplicateHandling === "skip") {
-                  result.skipped++;
-                  continue;
-                } else if (duplicateHandling === "fail") {
-                  result.failed++;
-                  result.errors.push({
-                    row: rowNum,
-                    column: "sku",
-                    message: `Duplicate product found: ${product.sku}`,
-                    value: product.sku,
-                  });
-                  continue;
+            if (existingId) {
+              if (duplicateHandling === "skip") {
+                result.skipped++;
+              } else if (duplicateHandling === "fail") {
+                result.failed++;
+                result.errors.push({
+                  row: rowNum,
+                  column: "sku",
+                  message: `Duplicate product found: ${product.sku}`,
+                  value: product.sku,
+                });
+              } else {
+                // update
+                toUpdate.push({ product, rowNum, existingId });
+              }
+            } else {
+              toInsert.push({ product, rowNum });
+            }
+          }
+
+          // Batch INSERT new products
+          if (toInsert.length > 0) {
+            const insertData: ProductInsert[] = toInsert.map(({ product }) => ({
+              external_id: product.external_id,
+              name: product.name,
+              sku: product.sku,
+              brand: product.brand,
+              brand_line: product.brand_line,
+              price: product.price,
+              cost_price: product.cost_price,
+              unit: product.unit,
+              item_type: product.item_type || "other",
+              description: product.description,
+              color: product.color,
+              material: product.material,
+              style: product.style,
+              gender: product.gender,
+              reorder_level: product.reorder_level,
+              reorder_quantity: product.reorder_quantity,
+              lead_time_days: product.lead_time_days,
+              is_active: true,
+            }));
+
+            const { data: insertedProducts, error: insertError } = await supabase
+              .from("products")
+              .insert(insertData)
+              .select("id, sku, external_id");
+
+            if (insertError) {
+              // If batch fails, log all rows as failed
+              toInsert.forEach(({ rowNum, product }) => {
+                result.failed++;
+                result.errors.push({
+                  row: rowNum,
+                  column: "database",
+                  message: insertError.message,
+                  value: product.sku,
+                });
+              });
+            } else if (insertedProducts) {
+              result.inserted += insertedProducts.length;
+
+              // Update duplicate map and create frame attributes
+              for (const inserted of insertedProducts) {
+                duplicateMap.set(`sku:${inserted.sku}`, inserted.id);
+                if (inserted.external_id) {
+                  duplicateMap.set(`external:${inserted.external_id}`, inserted.id);
                 }
-                // For "update", continue to update the product below
               }
 
-              // Prepare product data
+              // Batch create frame attributes for inserted frame products
+              if (createFrameAttributes) {
+                const frameDataToInsert: FrameAttributesInsert[] = [];
+                
+                for (const { product } of toInsert) {
+                  if (product.item_type === "frames" && product.frame_attributes) {
+                    const productId = duplicateMap.get(`sku:${product.sku}`);
+                    if (productId) {
+                      frameDataToInsert.push({
+                        product_id: productId,
+                        model_code: product.frame_attributes.model_code,
+                        frame_shape: product.frame_attributes.frame_shape,
+                        frame_material: product.frame_attributes.frame_material,
+                        front_color: product.frame_attributes.front_color,
+                        lens_width: product.frame_attributes.lens_width,
+                        bridge_size: product.frame_attributes.bridge_size,
+                        temple_length: product.frame_attributes.temple_length,
+                      });
+                    }
+                  }
+                }
+
+                if (frameDataToInsert.length > 0) {
+                  await supabase.from("frame_attributes").insert(frameDataToInsert);
+                }
+              }
+            }
+          }
+
+          // Batch UPDATE existing products (must be done individually due to different IDs)
+          for (const { product, rowNum, existingId } of toUpdate) {
+            try {
               const productData: ProductInsert = {
                 external_id: product.external_id,
                 name: product.name,
@@ -193,45 +277,18 @@ export const useECMSImport = () => {
                 is_active: true,
               };
 
-              let productId: string;
+              const { error: updateError } = await supabase
+                .from("products")
+                .update(productData)
+                .eq("id", existingId);
 
-              if (existingId && duplicateHandling === "update") {
-                // Update existing product
-                const { error: updateError } = await supabase
-                  .from("products")
-                  .update(productData)
-                  .eq("id", existingId);
+              if (updateError) throw updateError;
+              result.updated++;
 
-                if (updateError) throw updateError;
-                productId = existingId;
-                result.updated++;
-              } else {
-                // Insert new product
-                const { data: insertedProduct, error: insertError } = await supabase
-                  .from("products")
-                  .insert(productData)
-                  .select("id")
-                  .single();
-
-                if (insertError) throw insertError;
-                productId = insertedProduct.id;
-                result.inserted++;
-
-                // Add to duplicate map to handle duplicates within the import batch
-                duplicateMap.set(`sku:${product.sku}`, productId);
-                if (product.external_id) {
-                  duplicateMap.set(`external:${product.external_id}`, productId);
-                }
-              }
-
-              // Create frame attributes if applicable
-              if (
-                createFrameAttributes &&
-                product.frame_attributes &&
-                product.item_type === "frames"
-              ) {
+              // Update frame attributes if applicable
+              if (createFrameAttributes && product.frame_attributes && product.item_type === "frames") {
                 const frameData: FrameAttributesInsert = {
-                  product_id: productId,
+                  product_id: existingId,
                   model_code: product.frame_attributes.model_code,
                   frame_shape: product.frame_attributes.frame_shape,
                   frame_material: product.frame_attributes.frame_material,
@@ -241,21 +298,9 @@ export const useECMSImport = () => {
                   temple_length: product.frame_attributes.temple_length,
                 };
 
-                // Check if frame_attributes already exists
-                const { data: existingFrameAttrs } = await supabase
+                await supabase
                   .from("frame_attributes")
-                  .select("id")
-                  .eq("product_id", productId)
-                  .single();
-
-                if (existingFrameAttrs) {
-                  await supabase
-                    .from("frame_attributes")
-                    .update(frameData)
-                    .eq("id", existingFrameAttrs.id);
-                } else {
-                  await supabase.from("frame_attributes").insert(frameData);
-                }
+                  .upsert(frameData, { onConflict: "product_id" });
               }
             } catch (error) {
               result.failed++;
@@ -266,22 +311,22 @@ export const useECMSImport = () => {
                 value: product.sku,
               });
             }
-
-            // Update progress
-            setProgress((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    processed: start + i + 1,
-                    inserted: result.inserted,
-                    updated: result.updated,
-                    skipped: result.skipped,
-                    failed: result.failed,
-                    errors: result.errors,
-                  }
-                : null
-            );
           }
+
+          // Update progress after each batch
+          setProgress((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  processed: end,
+                  inserted: result.inserted,
+                  updated: result.updated,
+                  skipped: result.skipped,
+                  failed: result.failed,
+                  errors: result.errors,
+                }
+              : null
+          );
         }
 
         // Invalidate queries to refresh product list
