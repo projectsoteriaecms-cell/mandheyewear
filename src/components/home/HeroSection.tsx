@@ -54,6 +54,18 @@ export const HeroSection = () => {
               </Button>
             </div>
 
+            {/* Mobile/Tablet Hero Image - shown below buttons on smaller screens */}
+            <div className="lg:hidden mt-8 animate-fade-in-up stagger-delay-4">
+              <div className="relative rounded-2xl overflow-hidden shadow-float">
+                <img
+                  src={heroEyewear}
+                  alt="Stylish eyewear collection"
+                  className="w-full h-[280px] sm:h-[350px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent" />
+              </div>
+            </div>
+
             {/* Trust indicators */}
             <div className="flex flex-wrap items-center gap-8 pt-6 border-t border-border/50 animate-fade-in-up stagger-delay-4">
               <div className="flex items-center gap-3 hover-lift cursor-default">
