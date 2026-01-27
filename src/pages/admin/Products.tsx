@@ -34,10 +34,13 @@ import {
   Edit,
   Trash2,
   ShoppingBag,
+  ImagePlus,
 } from "lucide-react";
 import { useAdminProducts } from "@/hooks/admin/useAdminProducts";
 import { CreateProductDialog } from "@/components/admin/products/CreateProductDialog";
 import { BulkUploadDialog } from "@/components/admin/products/BulkUploadDialog";
+import { EditProductDialog } from "@/components/admin/products/EditProductDialog";
+import { BulkImageUploadDialog } from "@/components/admin/products/BulkImageUploadDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -49,6 +52,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import type { Database } from "@/integrations/supabase/types";
+
+type Product = Database["public"]["Tables"]["products"]["Row"];
 
 const Products = () => {
   const { products, isLoading, deleteProduct } = useAdminProducts();
@@ -57,6 +63,8 @@ const Products = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isBulkImageUploadOpen, setIsBulkImageUploadOpen] = useState(false);
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
 
   const filteredProducts = products.filter((product) => {
@@ -101,6 +109,10 @@ const Products = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsBulkImageUploadOpen(true)}>
+              <ImagePlus className="mr-2 h-4 w-4" />
+              Upload Images
+            </Button>
             <Button variant="outline" onClick={() => setIsBulkUploadOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
               Bulk Upload
@@ -241,7 +253,7 @@ const Products = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setEditProduct(product)}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
@@ -273,6 +285,17 @@ const Products = () => {
       <BulkUploadDialog
         open={isBulkUploadOpen}
         onOpenChange={setIsBulkUploadOpen}
+      />
+
+      <EditProductDialog
+        open={!!editProduct}
+        onOpenChange={(open) => !open && setEditProduct(null)}
+        product={editProduct}
+      />
+
+      <BulkImageUploadDialog
+        open={isBulkImageUploadOpen}
+        onOpenChange={setIsBulkImageUploadOpen}
       />
 
       <AlertDialog

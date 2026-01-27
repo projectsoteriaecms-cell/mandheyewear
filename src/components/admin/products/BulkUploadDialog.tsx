@@ -28,6 +28,12 @@ interface ParsedProduct {
   material?: string;
   style?: string;
   gender?: string;
+  frame_width?: string;
+  bridge_size?: string;
+  temple_length?: string;
+  reorder_level?: number;
+  reorder_quantity?: number;
+  lead_time_days?: number;
 }
 
 interface ParseResult {
@@ -35,9 +41,9 @@ interface ParseResult {
   errors: string[];
 }
 
-const CSV_TEMPLATE = `name,sku,brand_line,price,cost_price,description,item_type,color,material,style,gender
-"Ray-Ban Aviator Classic",RB-AV-001,soteria_medical,85000,45000,"Classic aviator style sunglasses",frames,Gold,Metal,Aviator,unisex
-"Gucci Round Frame",GC-RF-002,m_and_h_fashion,120000,65000,"Luxury round frame glasses",frames,Black,Acetate,Round,female`;
+const CSV_TEMPLATE = `name,sku,brand_line,price,cost_price,description,item_type,color,material,style,gender,frame_width,bridge_size,temple_length,reorder_level,reorder_quantity,lead_time_days
+"Ray-Ban Aviator Classic",RB-AV-001,soteria_medical,85000,45000,"Classic aviator style sunglasses",frames,Gold,Metal,Aviator,unisex,140mm,14mm,145mm,10,20,7
+"Gucci Round Frame",GC-RF-002,m_and_h_fashion,120000,65000,"Luxury round frame glasses",frames,Black,Acetate,Round,female,138mm,16mm,140mm,5,10,14`;
 
 export const BulkUploadDialog = ({
   open,
@@ -129,6 +135,12 @@ export const BulkUploadDialog = ({
         material: row.material || undefined,
         style: row.style || undefined,
         gender: row.gender || undefined,
+        frame_width: row.frame_width || undefined,
+        bridge_size: row.bridge_size || undefined,
+        temple_length: row.temple_length || undefined,
+        reorder_level: row.reorder_level ? parseInt(row.reorder_level) : undefined,
+        reorder_quantity: row.reorder_quantity ? parseInt(row.reorder_quantity) : undefined,
+        lead_time_days: row.lead_time_days ? parseInt(row.lead_time_days) : undefined,
       });
     }
 
@@ -172,6 +184,12 @@ export const BulkUploadDialog = ({
           material: p.material ?? null,
           style: p.style ?? null,
           gender: p.gender ?? null,
+          frame_width: p.frame_width ?? null,
+          bridge_size: p.bridge_size ?? null,
+          temple_length: p.temple_length ?? null,
+          reorder_level: p.reorder_level ?? 10,
+          reorder_quantity: p.reorder_quantity ?? 20,
+          lead_time_days: p.lead_time_days ?? 7,
         }))
       );
       onOpenChange(false);
