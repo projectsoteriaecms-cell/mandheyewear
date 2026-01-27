@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Search, Heart, User, LogOut, Settings, Sparkles, ChevronRight, MapPin, Calendar, Moon, Sun } from "lucide-react";
+import { List, X, MagnifyingGlass, User, SignOut, Gear, Sparkle, CaretRight, MapPin, Calendar, Moon, Sun } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { CartDrawer } from "@/components/cart/CartDrawer";
@@ -14,7 +14,7 @@ import soteriaLogo from "@/assets/soteria-logo.png";
 import mhLogo from "@/assets/mh-logo.png";
 
 const navLinks = [
-  { name: "Style Quiz", path: "/style-quiz", highlight: true, description: "Find your perfect frames", icon: Sparkles },
+  { name: "Style Quiz", path: "/style-quiz", highlight: true, description: "Find your perfect frames", icon: Sparkle },
   { name: "Eyeglasses", path: "/eyewear?category=eyeglasses", description: "Prescription frames" },
   { name: "Sunglasses", path: "/eyewear?category=sunglasses", description: "UV protection & style" },
   { name: "Eye Exams", path: "/booking", description: "Book an appointment", icon: Calendar },
@@ -76,7 +76,7 @@ export const MobileNav = () => {
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="text-foreground">
-              <Menu className="h-6 w-6" />
+              <List weight="light" className="h-6 w-6" />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0">
@@ -97,7 +97,7 @@ export const MobileNav = () => {
                 </div>
                 <SheetClose asChild>
                   <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
-                    <X className="h-5 w-5" />
+                    <X weight="light" className="h-5 w-5" />
                   </Button>
                 </SheetClose>
               </SheetTitle>
@@ -122,7 +122,7 @@ export const MobileNav = () => {
                       )}
                     >
                       <div className="flex items-center gap-3">
-                        {Icon && <Icon className={cn("h-5 w-5", link.highlight ? "text-accent" : "text-muted-foreground")} />}
+                        {Icon && <Icon weight={link.highlight ? "duotone" : "light"} className={cn("h-5 w-5", link.highlight ? "text-accent" : "text-muted-foreground")} />}
                         <div>
                           <div className={cn(
                             "font-medium",
@@ -133,7 +133,7 @@ export const MobileNav = () => {
                           <p className="text-xs text-muted-foreground">{link.description}</p>
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <CaretRight weight="light" className="h-4 w-4 text-muted-foreground" />
                     </Link>
                   );
                 })}
@@ -148,12 +148,12 @@ export const MobileNav = () => {
                 >
                   {isDark ? (
                     <>
-                      <Sun className="h-4 w-4 mr-2" />
+                      <Sun weight="light" className="h-4 w-4 mr-2" />
                       Light Mode
                     </>
                   ) : (
                     <>
-                      <Moon className="h-4 w-4 mr-2" />
+                      <Moon weight="light" className="h-4 w-4 mr-2" />
                       Dark Mode
                     </>
                   )}
@@ -167,14 +167,14 @@ export const MobileNav = () => {
                     <>
                       <Button variant="outline" className="w-full justify-start" asChild>
                         <Link to="/dashboard" onClick={() => setOpen(false)}>
-                          <User className="h-4 w-4 mr-2" />
+                          <User weight="light" className="h-4 w-4 mr-2" />
                           My Account
                         </Link>
                       </Button>
                       {isStaff && (
                         <Button variant="outline" className="w-full justify-start" asChild>
                           <Link to="/admin" onClick={() => setOpen(false)}>
-                            <Settings className="h-4 w-4 mr-2" />
+                            <Gear weight="light" className="h-4 w-4 mr-2" />
                             Admin Panel
                           </Link>
                         </Button>
@@ -184,7 +184,7 @@ export const MobileNav = () => {
                         className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={handleSignOut}
                       >
-                        <LogOut className="h-4 w-4 mr-2" />
+                        <SignOut weight="light" className="h-4 w-4 mr-2" />
                         Sign Out
                       </Button>
                     </>
@@ -226,7 +226,7 @@ export const MobileNav = () => {
         {/* Right Actions */}
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground">
-            <Search className="h-5 w-5" />
+            <MagnifyingGlass weight="light" className="h-5 w-5" />
           </Button>
           <CartDrawer />
         </div>

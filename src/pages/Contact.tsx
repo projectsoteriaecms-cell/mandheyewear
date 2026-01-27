@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone, Mail, MapPin, Clock, MessageCircle } from "lucide-react";
+import { Phone, Envelope, MapPin, Clock, ChatCircle } from "@phosphor-icons/react";
 
 const Contact = () => {
   const contactMethods = [
@@ -17,14 +17,14 @@ const Contact = () => {
       color: "text-primary"
     },
     {
-      icon: Mail,
+      icon: Envelope,
       title: "Email Us",
       detail: "info@soteriaeyeclinic.com",
       action: "mailto:info@soteriaeyeclinic.com",
       color: "text-primary"
     },
     {
-      icon: MessageCircle,
+      icon: ChatCircle,
       title: "Live Chat",
       detail: "Available 9am - 6pm",
       action: "#",
@@ -64,7 +64,7 @@ const Contact = () => {
                   <a href={method.action}>
                     <CardContent className="p-6 text-center space-y-3">
                       <div className="inline-flex p-3 rounded-full bg-secondary">
-                        <Icon className={`h-6 w-6 ${method.color}`} />
+                        <Icon weight="duotone" className={`h-6 w-6 ${method.color}`} />
                       </div>
                       <h3 className="font-semibold text-foreground">{method.title}</h3>
                       <p className="text-sm text-muted-foreground">{method.detail}</p>
@@ -136,7 +136,7 @@ const Contact = () => {
 
                   <div className="space-y-4 pt-4 border-t border-border">
                     <div className="flex items-start gap-3">
-                      <Clock className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <Clock weight="duotone" className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-medium text-foreground mb-1">Office Hours</p>
                         <p className="text-sm text-muted-foreground">Monday - Saturday: 9:00am – 6:00pm</p>
@@ -146,7 +146,7 @@ const Contact = () => {
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <Phone className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <Phone weight="duotone" className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-medium text-foreground mb-1">Phone Support</p>
                         <p className="text-sm text-muted-foreground">Available during office hours</p>
@@ -160,7 +160,7 @@ const Contact = () => {
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <Mail className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <Envelope weight="duotone" className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-medium text-foreground mb-1">Email Response</p>
                         <p className="text-sm text-muted-foreground">We respond within 24 hours</p>

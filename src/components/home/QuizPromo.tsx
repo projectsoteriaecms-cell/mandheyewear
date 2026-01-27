@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Clock, Target, Heart, ArrowRight, CheckCircle } from "lucide-react";
+import { Sparkle, ArrowRight, CheckCircle } from "@phosphor-icons/react";
 
 const benefits = [
   "Personalized frame recommendations",
@@ -15,7 +15,7 @@ export const QuizPromo = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 text-sm font-medium">
-              <Sparkles className="h-4 w-4" />
+              <Sparkle weight="duotone" className="h-4 w-4" />
               AI-Powered Recommendations
             </div>
             
@@ -31,7 +31,7 @@ export const QuizPromo = () => {
             <ul className="space-y-3">
               {benefits.map((benefit) => (
                 <li key={benefit} className="flex items-center gap-3 text-primary-foreground/90">
-                  <CheckCircle className="h-5 w-5 text-accent" />
+                  <CheckCircle weight="duotone" className="h-5 w-5 text-accent" />
                   {benefit}
                 </li>
               ))}
@@ -45,7 +45,7 @@ export const QuizPromo = () => {
             >
               <Link to="/style-quiz" className="flex items-center gap-2">
                 Start the Style Quiz
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
           </div>

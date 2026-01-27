@@ -9,18 +9,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { 
-  Sparkles, 
+  Sparkle, 
   ArrowRight, 
   ArrowLeft,
   Circle,
   Square,
   Hexagon,
   Diamond,
-  Glasses,
+  Eyeglasses,
   Sun,
   Monitor,
   BookOpen,
-} from "lucide-react";
+} from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 type QuizStep = "welcome" | "face-shape" | "frame-style" | "colors" | "usage" | "budget" | "results";
@@ -59,7 +59,7 @@ const colorOptions = [
 ];
 
 const usageOptions = [
-  { id: "everyday", name: "Everyday Wear", icon: Glasses, description: "All-day comfort" },
+  { id: "everyday", name: "Everyday Wear", icon: Eyeglasses, description: "All-day comfort" },
   { id: "computer", name: "Computer/Screen", icon: Monitor, description: "Blue light blocking" },
   { id: "reading", name: "Reading", icon: BookOpen, description: "Close-up work" },
   { id: "outdoor", name: "Outdoor/Sun", icon: Sun, description: "UV protection" },
@@ -175,7 +175,7 @@ const StyleQuiz = () => {
         {currentStep === "welcome" && (
           <div className="text-center py-12 space-y-8">
             <div className="inline-flex p-6 rounded-full bg-accent/10">
-              <Sparkles className="h-12 w-12 text-accent" />
+              <Sparkle weight="duotone" className="h-12 w-12 text-accent" />
             </div>
             <h1 className="text-4xl font-display font-bold text-foreground">
               Let's find your perfect frames
@@ -421,7 +421,7 @@ const StyleQuiz = () => {
         {currentStep === "results" && (
           <div className="text-center py-12 space-y-8">
             <div className="inline-flex p-6 rounded-full bg-primary/10">
-              <Sparkles className="h-12 w-12 text-primary" />
+              <Sparkle weight="duotone" className="h-12 w-12 text-primary" />
             </div>
             <h2 className="text-3xl font-display font-bold text-foreground">
               Your style profile is ready!

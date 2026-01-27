@@ -6,13 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import {
-  Settings as SettingsIcon,
-  Store,
+  Gear,
+  Storefront,
   Bell,
-  Mail,
+  Envelope,
   Shield,
   Palette,
-} from "lucide-react";
+} from "@phosphor-icons/react";
 
 const Settings = () => {
   return (
@@ -32,7 +32,7 @@ const Settings = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Store className="h-5 w-5" />
+                <Storefront weight="duotone" className="h-5 w-5" />
                 Store Information
               </CardTitle>
               <CardDescription>
@@ -66,7 +66,7 @@ const Settings = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
+                <Bell weight="duotone" className="h-5 w-5" />
                 Notifications
               </CardTitle>
               <CardDescription>
@@ -110,7 +110,7 @@ const Settings = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
+                <Envelope weight="duotone" className="h-5 w-5" />
                 Email Configuration
               </CardTitle>
               <CardDescription>
@@ -145,7 +145,7 @@ const Settings = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
+                <Shield weight="duotone" className="h-5 w-5" />
                 Security
               </CardTitle>
               <CardDescription>
@@ -179,7 +179,7 @@ const Settings = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
+                <Palette weight="duotone" className="h-5 w-5" />
                 Appearance
               </CardTitle>
               <CardDescription>

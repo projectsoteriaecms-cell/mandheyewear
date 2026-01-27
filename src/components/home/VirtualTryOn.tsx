@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Camera, Scan, Ruler, ArrowRight } from "lucide-react";
+import { Camera, Scan, Ruler, ArrowRight } from "@phosphor-icons/react";
 import frame3 from "@/assets/frame-3.jpg";
 
 const features = [
@@ -29,7 +29,7 @@ export const VirtualTryOn = () => {
               {/* Floating elements */}
               <div className="absolute top-4 right-4 bg-card/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-border">
                 <div className="flex items-center gap-2 text-sm">
-                  <Scan className="h-4 w-4 text-primary" />
+                  <Scan weight="duotone" className="h-4 w-4 text-primary" />
                   <span className="font-medium text-foreground">Face detected</span>
                 </div>
               </div>
@@ -49,7 +49,7 @@ export const VirtualTryOn = () => {
           {/* Content */}
           <div className="space-y-6 order-1 lg:order-2">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              <Camera className="h-4 w-4" />
+              <Camera weight="duotone" className="h-4 w-4" />
               Virtual Try-On Technology
             </div>
             
@@ -68,7 +68,7 @@ export const VirtualTryOn = () => {
                 return (
                   <div key={feature.title} className="bg-card rounded-xl p-4 border border-border">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                      <Icon className="h-5 w-5 text-primary" />
+                      <Icon weight="duotone" className="h-5 w-5 text-primary" />
                     </div>
                     <h4 className="font-semibold text-foreground">{feature.title}</h4>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -82,7 +82,7 @@ export const VirtualTryOn = () => {
             <Button size="lg" asChild className="group">
               <Link to="/try-on" className="flex items-center gap-2">
                 Try It Now
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
           </div>

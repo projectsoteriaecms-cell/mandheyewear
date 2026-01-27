@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/shared/lib/utils";
-import { ChevronDown } from "lucide-react";
+import { CaretDown } from "@phosphor-icons/react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -34,10 +34,11 @@ export const NavMenuItem = ({ item, isOpen, onToggle }: NavMenuItemProps) => {
             )}
           >
             <div className="flex items-center gap-3">
-              <item.icon className="h-4 w-4" />
+              <item.icon weight={isParentActive ? "duotone" : "light"} className="h-4 w-4" />
               {item.title}
             </div>
-            <ChevronDown
+            <CaretDown
+              weight="light"
               className={cn(
                 "h-4 w-4 transition-transform",
                 isOpen && "rotate-180"
@@ -75,7 +76,7 @@ export const NavMenuItem = ({ item, isOpen, onToggle }: NavMenuItemProps) => {
           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
       )}
     >
-      <item.icon className="h-4 w-4" />
+      <item.icon weight={isActive ? "duotone" : "light"} className="h-4 w-4" />
       {item.title}
     </Link>
   );

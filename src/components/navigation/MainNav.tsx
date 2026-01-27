@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Search, Heart, User, LogOut, Settings, Sparkles } from "lucide-react";
+import { MagnifyingGlass, Heart, User, SignOut, Gear, Sparkle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -86,7 +86,7 @@ export const MainNav = () => {
                 )}
               >
                 {link.highlight && (
-                  <Sparkles className="h-3.5 w-3.5" />
+                  <Sparkle weight="duotone" className="h-3.5 w-3.5" />
                 )}
                 {link.name}
                 {location.pathname === link.path && (
@@ -100,13 +100,13 @@ export const MainNav = () => {
           <div className="flex items-center gap-1">
             {/* Search */}
             <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
-              <Search className="h-5 w-5" />
+              <MagnifyingGlass weight="light" className="h-5 w-5" />
             </Button>
 
             {/* Wishlist */}
             <Button variant="ghost" size="icon" asChild className="text-foreground/70 hover:text-foreground hover:bg-muted">
               <Link to="/dashboard?tab=wishlist">
-                <Heart className="h-5 w-5" />
+                <Heart weight="light" className="h-5 w-5" />
               </Link>
             </Button>
 
@@ -119,27 +119,27 @@ export const MainNav = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
-                      <User className="h-5 w-5" />
+                      <User weight="light" className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem asChild>
                       <Link to="/dashboard" className="cursor-pointer">
-                        <User className="h-4 w-4 mr-2" />
+                        <User weight="light" className="h-4 w-4 mr-2" />
                         My Account
                       </Link>
                     </DropdownMenuItem>
                     {isStaff && (
                       <DropdownMenuItem asChild>
                         <Link to="/admin" className="cursor-pointer">
-                          <Settings className="h-4 w-4 mr-2" />
+                          <Gear weight="light" className="h-4 w-4 mr-2" />
                           Admin Panel
                         </Link>
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
-                      <LogOut className="h-4 w-4 mr-2" />
+                      <SignOut weight="light" className="h-4 w-4 mr-2" />
                       Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>

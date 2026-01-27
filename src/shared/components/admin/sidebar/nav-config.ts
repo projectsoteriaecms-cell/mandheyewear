@@ -1,16 +1,16 @@
 import {
-  LayoutDashboard,
+  SquaresFour,
   Package,
   Truck,
-  ArrowLeftRight,
+  ArrowsLeftRight,
   Users,
-  Settings,
-  ShoppingBag,
-  BarChart3,
-  Building2,
+  Gear,
+  Bag,
+  ChartBar,
+  Buildings,
   Wrench,
-  FolderTree,
-} from "lucide-react";
+  FolderSimple,
+} from "@phosphor-icons/react";
 
 export interface NavItem {
   title: string;
@@ -25,7 +25,7 @@ export const navItems: NavItem[] = [
   {
     title: "Dashboard",
     href: "/admin",
-    icon: LayoutDashboard,
+    icon: SquaresFour,
   },
   {
     title: "Inventory",
@@ -48,7 +48,7 @@ export const navItems: NavItem[] = [
   {
     title: "Products",
     href: "/admin/products",
-    icon: ShoppingBag,
+    icon: Bag,
     requiresManager: true,
   },
   {
@@ -60,19 +60,19 @@ export const navItems: NavItem[] = [
   {
     title: "Categories",
     href: "/admin/categories",
-    icon: FolderTree,
+    icon: FolderSimple,
     requiresManager: true,
   },
   {
     title: "Branches",
     href: "/admin/branches",
-    icon: Building2,
+    icon: Buildings,
     requiresSuperAdmin: true,
   },
   {
     title: "Reports",
     href: "/admin/reports",
-    icon: BarChart3,
+    icon: ChartBar,
     requiresManager: true,
   },
   {
@@ -84,7 +84,7 @@ export const navItems: NavItem[] = [
   {
     title: "Settings",
     href: "/admin/settings",
-    icon: Settings,
+    icon: Gear,
     requiresSuperAdmin: true,
   },
 ];

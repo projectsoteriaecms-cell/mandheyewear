@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter, Lock, ChevronDown, Moon, Sun } from "lucide-react";
+import { FacebookLogo, InstagramLogo, TwitterLogo, Lock, CaretDown, Moon, Sun } from "@phosphor-icons/react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -47,7 +47,7 @@ const FooterSection = ({ title, links }: { title: string; links: { name: string;
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border-b border-border lg:border-0">
       <CollapsibleTrigger className="flex items-center justify-between w-full py-4 lg:py-0 lg:pointer-events-none">
         <span className="font-medium text-foreground">{title}</span>
-        <ChevronDown className={cn(
+        <CaretDown weight="light" className={cn(
           "h-4 w-4 text-muted-foreground lg:hidden transition-transform",
           isOpen && "rotate-180"
         )} />
@@ -124,21 +124,21 @@ export const Footer = () => {
                 className="p-2 rounded-full bg-secondary text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
                 aria-label="Facebook"
               >
-                <Facebook className="h-4 w-4" />
+                <FacebookLogo weight="light" className="h-4 w-4" />
               </a>
               <a
                 href="#"
                 className="p-2 rounded-full bg-secondary text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                 aria-label="Instagram"
               >
-                <Instagram className="h-4 w-4" />
+                <InstagramLogo weight="light" className="h-4 w-4" />
               </a>
               <a
                 href="#"
                 className="p-2 rounded-full bg-secondary text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
                 aria-label="Twitter"
               >
-                <Twitter className="h-4 w-4" />
+                <TwitterLogo weight="light" className="h-4 w-4" />
               </a>
             </div>
 
@@ -152,12 +152,12 @@ export const Footer = () => {
               >
                 {isDark ? (
                   <>
-                    <Sun className="h-4 w-4" />
+                    <Sun weight="light" className="h-4 w-4" />
                     Light Mode
                   </>
                 ) : (
                   <>
-                    <Moon className="h-4 w-4" />
+                    <Moon weight="light" className="h-4 w-4" />
                     Dark Mode
                   </>
                 )}
@@ -176,7 +176,7 @@ export const Footer = () => {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             {/* Security Badge */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Lock className="h-4 w-4 text-green-600" />
+              <Lock weight="duotone" className="h-4 w-4 text-green-600" />
               <span>We guarantee every transaction is 100% secure</span>
             </div>
 
