@@ -1,0 +1,19 @@
+# This directory contains feature modules following the modular monolith architecture
+# 
+# Module structure:
+# src/modules/
+#   [domain]/
+#     components/     - UI components specific to this domain
+#     hooks/          - React hooks for data fetching and state
+#     lib/            - Utility functions and helpers
+#     types/          - TypeScript types and interfaces
+#     index.ts        - Public API barrel export
+#
+# Modules:
+# - products      - Product catalog, ECMS import, images
+# - inventory     - Stock management, transfers, adjustments
+# - suppliers     - Supplier management
+# - users         - User management, invitations
+# - branches      - Branch management
+# - categories    - Category taxonomy
+# - services      - Service offerings
