@@ -1,326 +1,271 @@
 
 
-# Plan: Enhanced Database Schema for SOTERIA ECMS
+# Plan: ECMS Product Import Parser with Frame Attributes Support
 
 ## Overview
 
-This plan adds the missing schema elements identified in the ECMS documentation to support the 1,250 product import while preserving all existing functionality. The changes are additive - no existing columns or tables are removed, ensuring backward compatibility with current code.
+This plan creates a dedicated ECMS import dialog that handles the complete 1,250 product dataset from SOTERIA's Excel/CSV exports. The importer will map ECMS columns to the new database schema, automatically create `frame_attributes` records for frame products, and handle dimension parsing from formats like "52-18-145".
 
 ---
 
-## Current State vs. ECMS Requirements
+## ECMS Data Mapping
 
-| Element | Current State | ECMS Requirement | Action |
-|---------|--------------|------------------|--------|
-| `external_id` | Missing | Store original Excel ProductId | Add column |
-| `brand` | Missing (only `brand_line`) | Separate brand name (VOGUE, OAKLEY) | Add column |
-| `price_tier` | Missing | luxury/premium/standard/budget | Add column + computed trigger |
-| `unit` | Missing | Item/Frame/Bottle/Pair | Add column |
-| `description_raw` | Missing | Original unmodified description | Add column |
-| `product_type` | `item_type` enum exists | Same concept, expand values | Expand enum |
-| `record_type` | Missing | inventory_item vs service | Add column |
-| `frame_attributes` table | Partial (columns on products) | Dedicated table for frame specs | Create table |
-| `lens_attributes` table | Missing | Dedicated table for optical data | Create table |
-| `services` table | Missing | Non-inventory service items | Create table |
-| `display_order` on categories | Missing | Sort order for display | Add column |
+Based on the product type distribution provided:
 
----
-
-## Phase 1: Expand the Products Table
-
-### 1.1 Add New Columns to Products Table
-
-Add these columns to the existing `products` table:
-
-```text
-Column             | Type                 | Default          | Purpose
--------------------|----------------------|------------------|----------------------------------
-external_id        | TEXT                 | NULL             | Original Excel ProductId for sync
-brand              | TEXT                 | NULL             | Brand name (VOGUE, OAKLEY, etc.)
-price_tier         | price_tier enum      | NULL             | Computed: luxury/premium/standard/budget
-unit               | TEXT                 | 'Item'           | Unit of measure
-description_raw    | TEXT                 | NULL             | Original unmodified description
-record_type        | record_type enum     | 'inventory_item' | inventory_item or service
-```
-
-### 1.2 Create New Enums
-
-```text
-Enum: price_tier
-Values: 'budget', 'standard', 'premium', 'luxury'
-
-Enum: record_type  
-Values: 'inventory_item', 'service'
-
-Enum: product_type (expand existing item_type)
-Add values: 'cleanser', 'packaging'
-```
-
-### 1.3 Add Trigger for Price Tier Calculation
-
-Create a trigger that automatically calculates `price_tier` based on the `price` column:
-- price >= 200,000 → 'luxury'
-- price >= 150,000 → 'premium'  
-- price >= 100,000 → 'standard'
-- price < 100,000 → 'budget'
+| ECMS Column | Database Column | Notes |
+|-------------|-----------------|-------|
+| ProductId | `external_id` | Original Excel ID for sync |
+| ItemDescription | `name` | Product name |
+| SKU / ItemNo | `sku` | Unique identifier |
+| Brand | `brand` | VOGUE, OAKLEY, etc. |
+| BrandLine | `brand_line` | soteria_medical or m_and_h_fashion |
+| UnitPrice | `price` | In kobo (auto-calculates `price_tier`) |
+| CostPrice | `cost_price` | Purchase cost |
+| Unit | `unit` | Item, Frame, Bottle, Pair |
+| ProductType | `item_type` | frame, accessory, contact_lens, cleanser, solution, packaging |
+| Description | `description` | Full description text |
+| Color | `color` | Product color |
+| Material | `material` | Frame/lens material |
+| Style | `style` | Aviator, Cat Eye, Round, etc. |
+| Gender | `gender` | male, female, unisex |
+| Dimensions | Frame measurements | Parsed into lens_width, bridge_size, temple_length |
+| ModelCode | `frame_attributes.model_code` | Manufacturer code |
+| FrameShape | `frame_attributes.frame_shape` | Cat Eye, Rectangle, etc. |
 
 ---
 
-## Phase 2: Create Frame Attributes Table
+## Dimension Parsing Logic
 
-A dedicated table for frame-specific measurements and properties, linked 1:1 with products.
+ECMS often provides frame dimensions in formats like:
+- `52-18-145` → lens_width: 52, bridge_size: 18, temple_length: 145
+- `52mm x 18mm x 145mm` → Same parsing
+- `140mm` (single value) → frame_width: 140mm
 
-### 2.1 Table Structure
-
-```text
-Table: frame_attributes
-Column            | Type          | Constraints
-------------------|---------------|---------------------------
-id                | UUID          | PRIMARY KEY
-product_id        | UUID          | FOREIGN KEY → products.id, UNIQUE
-model_code        | TEXT          | Model/manufacturer code
-frame_shape       | TEXT          | Cat Eye, Rectangle, Aviator, etc.
-lens_width        | INTEGER       | In millimeters (from XX-XX-XXX)
-bridge_size       | INTEGER       | In millimeters (parsed from dimensions)
-temple_length     | INTEGER       | In millimeters
-frame_material    | TEXT          | Titanium, Acetate, Metal, etc.
-front_color       | TEXT          | Front frame color
-temple_color      | TEXT          | Temple/arm color if different
-has_clip_on       | BOOLEAN       | Has clip-on sunglasses attachment
-created_at        | TIMESTAMPTZ   | Default now()
-```
-
-### 2.2 RLS Policies
-
-- Anyone can view frame attributes (public read for storefront)
-- Managers and super admins can manage (insert, update, delete)
+The parser will:
+1. Detect the format pattern using regex
+2. Extract numeric values
+3. Map to appropriate `frame_attributes` fields
 
 ---
 
-## Phase 3: Create Lens Attributes Table
-
-A dedicated table for prescription lens data, linked 1:1 with products.
-
-### 3.1 Table Structure
+## Import Process Flow
 
 ```text
-Table: lens_attributes
-Column            | Type          | Constraints
-------------------|---------------|---------------------------
-id                | UUID          | PRIMARY KEY
-product_id        | UUID          | FOREIGN KEY → products.id, UNIQUE
-sph               | DECIMAL(4,2)  | Sphere value
-cyl               | DECIMAL(4,2)  | Cylinder value
-axis              | INTEGER       | Axis (0-180 degrees)
-lens_type         | TEXT          | Single Vision, Bifocal, Progressive
-lens_material     | TEXT          | CR-39, Polycarbonate, Trivex, etc.
-coating           | TEXT          | Anti-reflective, Blue light, etc.
-created_at        | TIMESTAMPTZ   | Default now()
-```
-
-### 3.2 Validation Trigger
-
-Create a trigger to validate axis is between 0 and 180 (using trigger instead of CHECK constraint for flexibility).
-
-### 3.3 RLS Policies
-
-- Anyone can view lens attributes
-- Managers and super admins can manage
-
----
-
-## Phase 4: Create Services Table
-
-A dedicated table for non-inventory service offerings.
-
-### 4.1 Table Structure
-
-```text
-Table: services
-Column               | Type          | Constraints
----------------------|---------------|---------------------------
-id                   | UUID          | PRIMARY KEY
-name                 | TEXT          | NOT NULL - Service name
-service_type         | TEXT          | courier_local, courier_interstate, eye_exam, fitting
-price                | DECIMAL       | Service price
-description          | TEXT          | Service description
-duration_minutes     | INTEGER       | Estimated duration
-requires_appointment | BOOLEAN       | Default false
-is_active            | BOOLEAN       | Default true
-created_at           | TIMESTAMPTZ   | Default now()
-updated_at           | TIMESTAMPTZ   | Default now()
-```
-
-### 4.2 RLS Policies
-
-- Anyone can view active services
-- Managers and super admins can manage
-
----
-
-## Phase 5: Enhance Categories Table
-
-### 5.1 Add New Columns
-
-```text
-Column         | Type     | Default | Purpose
----------------|----------|---------|---------------------------
-display_order  | INTEGER  | 0       | Sort order for UI display
-description_raw| TEXT     | NULL    | Extended category description
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  1. Upload CSV  │ --> │  2. Parse &     │ --> │  3. Preview &   │
+│  or Excel file  │     │  Validate Data  │     │  Review Errors  │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                                                        │
+                                                        v
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  6. Complete    │ <-- │  5. Create      │ <-- │  4. Batch       │
+│  Summary        │     │  frame_attrs    │     │  Insert Products│
+└─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
 ---
 
-## Phase 6: Code Updates
+## Key Features
 
-### 6.1 Update TypeScript Types
+### 1. Smart Column Detection
+- Auto-detect ECMS column names (case-insensitive)
+- Map common variations (e.g., "Item Description" / "ItemDescription" / "Product Name")
+- Allow manual column mapping for unrecognized headers
 
-The Supabase types will auto-regenerate after migrations. No manual edits needed.
+### 2. Batch Processing
+- Process products in batches of 50 to avoid timeout
+- Show progress indicator during import
+- Continue on error with detailed error log
 
-### 6.2 Update Product Forms
+### 3. Duplicate Detection
+- Check `external_id` and `sku` for existing products
+- Option to skip, update, or fail on duplicates
 
-Modify these components to include new fields:
+### 4. Frame Attributes Auto-Creation
+- For products where `item_type = 'frame'`:
+  - Parse dimension strings
+  - Create linked `frame_attributes` record
+  - Map frame-specific fields (shape, material, model_code)
 
-**CreateProductDialog.tsx**
-- Add: `external_id`, `brand`, `unit`, `description_raw`
-- Add: Price tier display (read-only, auto-calculated)
+### 5. Validation Rules
+- Required: name, sku, brand_line, price
+- Price must be positive number
+- `brand_line` must be `soteria_medical` or `m_and_h_fashion`
+- `item_type` must match enum values
 
-**EditProductDialog.tsx**  
-- Add same fields as CreateProductDialog
-- Add frame attributes tab if item_type is 'frames'
-- Add lens attributes tab if item_type is 'lenses'
+---
 
-### 6.3 Update Product Hooks
+## Technical Implementation
 
-**useAdminProducts.ts**
-- Update queries to include frame_attributes and lens_attributes joins
-- Add mutations for creating/updating attribute records
+### New Files to Create
 
-### 6.4 Create New Hooks
+| File | Purpose |
+|------|---------|
+| `src/components/admin/products/ECMSImportDialog.tsx` | Main import dialog with full workflow |
+| `src/lib/ecms-parser.ts` | ECMS-specific parsing utilities |
+| `src/hooks/admin/useECMSImport.ts` | Bulk import with frame_attributes creation |
 
-**useFrameAttributes.ts**
-- CRUD operations for frame_attributes table
+### Files to Modify
 
-**useLensAttributes.ts**
-- CRUD operations for lens_attributes table
+| File | Changes |
+|------|---------|
+| `src/pages/admin/Products.tsx` | Add "ECMS Import" button |
+| `src/hooks/admin/useAdminProducts.ts` | Add bulk upsert mutation for handling duplicates |
 
-**useServices.ts**
-- CRUD operations for services table
+---
 
-### 6.5 Update Bulk Upload
+## ECMSImportDialog Component Structure
 
-**BulkUploadDialog.tsx**
-- Expand CSV template to include: `external_id`, `brand`, `unit`, `frame_shape`, `model_code`
-- Add price tier calculation in parser
-- Add frame attributes creation for frame products
+### Step 1: File Upload
+- Accepts both .csv and .xlsx files
+- Uses SheetJS (xlsx) library for Excel parsing
+- Shows file info and row count
+
+### Step 2: Column Mapping
+- Auto-maps recognized columns
+- Allows manual override via dropdowns
+- Required columns highlighted
+
+### Step 3: Data Preview
+- Shows first 10 rows in table format
+- Validation errors displayed inline
+- Toggle to show only errors
+
+### Step 4: Import Options
+- Duplicate handling: Skip / Update / Fail
+- Batch size slider (25-100)
+- Create frame_attributes checkbox
+
+### Step 5: Import Progress
+- Progress bar with percentage
+- Current batch indicator
+- Live error counter
+- Cancel button
+
+### Step 6: Summary
+- Total imported count
+- Skipped/failed counts
+- Download error log as CSV
+- "View Products" link
+
+---
+
+## ECMS Parser Utilities (`src/lib/ecms-parser.ts`)
+
+```typescript
+// Column name mappings
+const ECMS_COLUMN_MAPPINGS = {
+  productid: 'external_id',
+  itemdescription: 'name',
+  productname: 'name',
+  itemno: 'sku',
+  brandline: 'brand_line',
+  unitprice: 'price',
+  // ... etc
+};
+
+// Dimension parser
+function parseDimensions(dimString: string): {
+  lens_width?: number;
+  bridge_size?: number;
+  temple_length?: number;
+} { /* regex parsing */ }
+
+// Brand line normalizer
+function normalizeBrandLine(value: string): 'soteria_medical' | 'm_and_h_fashion' | null;
+
+// Item type normalizer  
+function normalizeItemType(value: string): ItemType | null;
+```
+
+---
+
+## Enhanced CSV Template
+
+The ECMS template will include all mappable fields:
+
+```csv
+ProductId,ItemDescription,SKU,Brand,BrandLine,UnitPrice,CostPrice,Unit,ProductType,Description,Color,Material,Style,Gender,Dimensions,ModelCode,FrameShape,ReorderLevel,ReorderQty,LeadTimeDays
+1001,"VOGUE Cat Eye",VG-CE-001,VOGUE,soteria_medical,85000,45000,Item,frame,"Elegant cat eye frames",Black,Acetate,Cat Eye,female,52-18-145,VO5423,Cat Eye,10,20,7
+```
+
+---
+
+## Dependencies
+
+Add the `xlsx` library for Excel file parsing:
+```json
+{
+  "xlsx": "^0.18.5"
+}
+```
+
+---
+
+## Error Handling Strategy
+
+| Error Type | Handling |
+|------------|----------|
+| Missing required field | Log row number, skip row |
+| Invalid price format | Attempt to clean (remove commas, currency), fail if unparseable |
+| Unknown brand_line | Default to "soteria_medical" with warning |
+| Duplicate SKU/external_id | Based on user selection (skip/update/fail) |
+| Database insert failure | Log error, continue batch, retry failed rows |
+| Frame attributes failure | Log warning, product still created |
 
 ---
 
 ## Implementation Order
 
-| Step | Description | Priority | Dependencies |
-|------|-------------|----------|--------------|
-| 1 | Create new enums (price_tier, record_type) | High | None |
-| 2 | Add new columns to products table | High | Step 1 |
-| 3 | Create price_tier trigger | High | Step 2 |
-| 4 | Create frame_attributes table + RLS | High | None |
-| 5 | Create lens_attributes table + RLS | High | None |
-| 6 | Create services table + RLS | Medium | None |
-| 7 | Add display_order to categories | Low | None |
-| 8 | Update CreateProductDialog | High | Steps 2-5 |
-| 9 | Update EditProductDialog | High | Steps 2-5 |
-| 10 | Create useFrameAttributes hook | High | Step 4 |
-| 11 | Create useLensAttributes hook | High | Step 5 |
-| 12 | Create useServices hook | Medium | Step 6 |
-| 13 | Update BulkUploadDialog | High | All above |
-| 14 | Create Services admin page | Medium | Step 12 |
+| Step | Task | Priority |
+|------|------|----------|
+| 1 | Install xlsx dependency | High |
+| 2 | Create `src/lib/ecms-parser.ts` | High |
+| 3 | Create `useECMSImport.ts` hook with batch insert | High |
+| 4 | Create `ECMSImportDialog.tsx` with full workflow | High |
+| 5 | Add bulk upsert mutation to `useAdminProducts.ts` | High |
+| 6 | Update Products.tsx with ECMS Import button | Medium |
+| 7 | Add downloadable ECMS template | Medium |
+| 8 | Add import history/audit log (optional) | Low |
 
 ---
 
-## Migration Strategy
+## User Interface Design
 
-All changes are **additive** - no breaking changes to existing data:
+### Import Button Location
+Products page header, next to existing "Bulk Upload" button:
+- **Bulk Upload**: Simple CSV import (current)
+- **ECMS Import**: Full ECMS data import with column mapping
 
-1. New columns have sensible defaults (NULL or specific values)
-2. Existing products continue to work without frame/lens attributes
-3. Price tier is auto-calculated, existing products get tier on next update
-4. Services table is completely separate from products
+### Dialog Size
+Full-screen dialog (`max-w-4xl`) to accommodate:
+- Wide column mapping table
+- Data preview with horizontal scroll
+- Progress and summary panels
 
----
-
-## Database Migration SQL Preview
-
-```sql
--- Phase 1: New enums
-CREATE TYPE price_tier AS ENUM ('budget', 'standard', 'premium', 'luxury');
-CREATE TYPE record_type AS ENUM ('inventory_item', 'service');
-
--- Expand item_type enum
-ALTER TYPE item_type ADD VALUE 'cleanser';
-ALTER TYPE item_type ADD VALUE 'packaging';
-
--- Phase 1: Add columns to products
-ALTER TABLE products 
-  ADD COLUMN external_id TEXT UNIQUE,
-  ADD COLUMN brand TEXT,
-  ADD COLUMN price_tier price_tier,
-  ADD COLUMN unit TEXT DEFAULT 'Item',
-  ADD COLUMN description_raw TEXT,
-  ADD COLUMN record_type record_type DEFAULT 'inventory_item';
-
--- Phase 2: frame_attributes table
-CREATE TABLE frame_attributes (...);
-
--- Phase 3: lens_attributes table  
-CREATE TABLE lens_attributes (...);
-
--- Phase 4: services table
-CREATE TABLE services (...);
-
--- Phase 5: categories enhancement
-ALTER TABLE categories ADD COLUMN display_order INTEGER DEFAULT 0;
-
--- Price tier trigger
-CREATE FUNCTION calculate_price_tier() ...
-CREATE TRIGGER set_price_tier BEFORE INSERT OR UPDATE ON products ...
-```
+### Visual Feedback
+- Step indicators at top
+- Color-coded validation (green = valid, red = error, yellow = warning)
+- Progress bar with ETA estimate
+- Confetti animation on successful import (optional)
 
 ---
 
-## Files to Create
+## Files Summary
 
-| File | Purpose |
-|------|---------|
-| `src/hooks/admin/useFrameAttributes.ts` | CRUD for frame attributes |
-| `src/hooks/admin/useLensAttributes.ts` | CRUD for lens attributes |
-| `src/hooks/admin/useServices.ts` | CRUD for services |
-| `src/pages/admin/Services.tsx` | Admin page for service management |
-| `src/components/admin/products/FrameAttributesForm.tsx` | Form for frame specs |
-| `src/components/admin/products/LensAttributesForm.tsx` | Form for lens specs |
-| `src/components/admin/services/CreateServiceDialog.tsx` | Create service dialog |
-| `src/components/admin/services/EditServiceDialog.tsx` | Edit service dialog |
+### Create
 
-## Files to Modify
+| File | Description |
+|------|-------------|
+| `src/lib/ecms-parser.ts` | Column mapping, dimension parsing, data normalization |
+| `src/hooks/admin/useECMSImport.ts` | Batch import logic with frame_attributes creation |
+| `src/components/admin/products/ECMSImportDialog.tsx` | Multi-step import wizard UI |
+
+### Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/admin/products/CreateProductDialog.tsx` | Add new fields |
-| `src/components/admin/products/EditProductDialog.tsx` | Add attribute tabs |
-| `src/components/admin/products/BulkUploadDialog.tsx` | Expand template |
-| `src/hooks/admin/useAdminProducts.ts` | Include attributes in queries |
-| `src/pages/admin/Products.tsx` | Add price tier and brand columns |
-| `src/components/admin/AdminSidebar.tsx` | Add Services nav item |
-| `src/App.tsx` | Add Services route |
-
----
-
-## Data Import Workflow
-
-After schema changes, the import workflow becomes:
-
-1. **Prepare CSV** with enhanced template (includes `external_id`, `brand`, `unit`, frame measurements)
-2. **Upload CSV** → Creates products with auto-calculated `price_tier`
-3. **Auto-parse frame dimensions** → Creates `frame_attributes` records for frames
-4. **Bulk image upload** → Matches by SKU or `external_id`
-5. **Verify** → Admin reviews imported data in enhanced product table
+| `src/pages/admin/Products.tsx` | Add ECMS Import button and dialog |
+| `src/hooks/admin/useAdminProducts.ts` | Add `bulkUpsertProducts` mutation |
+| `package.json` | Add `xlsx` dependency |
 
