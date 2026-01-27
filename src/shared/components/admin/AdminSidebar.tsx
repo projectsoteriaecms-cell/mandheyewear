@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { Package, ArrowLeftRight } from "lucide-react";
+import { Package, ArrowsLeftRight } from "@phosphor-icons/react";
 import { cn } from "@/shared/lib/utils";
 import { useIsManager, useIsSuperAdmin } from "@/shared/hooks/useUserRole";
 import { NavMenuItem, navItems, filterNavItems } from "./sidebar";
@@ -24,7 +24,7 @@ export const AdminSidebar = () => {
     <aside className="w-64 border-r bg-card min-h-screen flex flex-col">
       <div className="p-6 border-b">
         <Link to="/admin" className="flex items-center gap-2">
-          <Package className="h-6 w-6 text-primary" />
+          <Package weight="duotone" className="h-6 w-6 text-primary" />
           <span className="font-bold text-lg">ECMS Admin</span>
         </Link>
       </div>
@@ -45,7 +45,7 @@ export const AdminSidebar = () => {
           to="/"
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeftRight className="h-4 w-4" />
+          <ArrowsLeftRight weight="light" className="h-4 w-4" />
           Back to Store
         </Link>
       </div>

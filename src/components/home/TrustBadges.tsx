@@ -1,4 +1,4 @@
-import { Eye, Camera, Truck, RotateCcw } from "lucide-react";
+import { Eye, Camera, Truck, ArrowCounterClockwise } from "@phosphor-icons/react";
 
 const badges = [
   {
@@ -17,7 +17,7 @@ const badges = [
     description: "On orders over ₦50,000",
   },
   {
-    icon: RotateCcw,
+    icon: ArrowCounterClockwise,
     title: "Easy Returns",
     description: "30-day hassle-free returns",
   },
@@ -33,7 +33,7 @@ export const TrustBadges = () => {
             return (
               <div key={badge.title} className="text-center">
                 <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Icon className="h-7 w-7 text-primary" />
+                  <Icon weight="duotone" className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">
                   {badge.title}

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/sheet";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
-import { ShoppingBag, Minus, Plus, Trash2, Loader2 } from "lucide-react";
+import { Bag, Minus, Plus, Trash, CircleNotch } from "@phosphor-icons/react";
 
 // Import placeholder images
 import frame1 from "@/assets/frame-1.jpg";
@@ -33,7 +33,7 @@ export const CartDrawer = () => {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <ShoppingBag className="h-5 w-5" />
+          <Bag weight="light" className="h-5 w-5" />
           {cartCount > 0 && (
             <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-bold">
               {cartCount}
@@ -44,7 +44,7 @@ export const CartDrawer = () => {
       <SheetContent className="w-full sm:max-w-lg flex flex-col">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5" />
+            <Bag weight="light" className="h-5 w-5" />
             Your Cart ({cartCount})
           </SheetTitle>
         </SheetHeader>
@@ -53,7 +53,7 @@ export const CartDrawer = () => {
           {!isAuthenticated ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="h-16 w-16 rounded-full bg-accent/10 flex items-center justify-center mb-4">
-                <ShoppingBag className="h-8 w-8 text-accent" />
+                <Bag weight="duotone" className="h-8 w-8 text-accent" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Sign in to view your cart</h3>
               <p className="text-muted-foreground text-sm mb-4 max-w-[200px]">
@@ -65,13 +65,13 @@ export const CartDrawer = () => {
             </div>
           ) : isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <CircleNotch weight="bold" className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : cartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="relative mb-4">
                 <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
-                  <ShoppingBag className="h-10 w-10 text-muted-foreground" />
+                  <Bag weight="light" className="h-10 w-10 text-muted-foreground" />
                 </div>
                 <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent/30" />
                 <div className="absolute -bottom-1 -left-2 h-3 w-3 rounded-full bg-primary/30" />
@@ -133,7 +133,7 @@ export const CartDrawer = () => {
                           }
                           disabled={updateQuantity.isPending}
                         >
-                          <Minus className="h-3 w-3" />
+                          <Minus weight="bold" className="h-3 w-3" />
                         </Button>
                         <span className="w-6 text-center text-sm font-medium">
                           {item.quantity}
@@ -150,7 +150,7 @@ export const CartDrawer = () => {
                           }
                           disabled={updateQuantity.isPending}
                         >
-                          <Plus className="h-3 w-3" />
+                          <Plus weight="bold" className="h-3 w-3" />
                         </Button>
                       </div>
                       <Button
@@ -160,7 +160,7 @@ export const CartDrawer = () => {
                         onClick={() => removeFromCart.mutate(item.id)}
                         disabled={removeFromCart.isPending}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash weight="light" className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

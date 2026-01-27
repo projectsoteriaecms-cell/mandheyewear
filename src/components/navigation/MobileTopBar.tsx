@@ -1,6 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Heart, ShoppingBag, Moon, Sun, MapPin, Phone, Info, HelpCircle, Sparkles, Settings, LogOut, User, Calendar } from "lucide-react";
+import { 
+  List, 
+  X, 
+  Heart, 
+  Bag, 
+  Moon, 
+  Sun, 
+  MapPin, 
+  Phone, 
+  Info, 
+  Question, 
+  Sparkle, 
+  Gear, 
+  SignOut 
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
@@ -15,11 +29,11 @@ import soteriaLogo from "@/assets/soteria-logo.png";
 import mhLogo from "@/assets/mh-logo.png";
 
 const menuItems = [
-  { name: "Style Quiz", path: "/style-quiz", icon: Sparkles, highlight: true, description: "Find your perfect frames" },
+  { name: "Style Quiz", path: "/style-quiz", icon: Sparkle, highlight: true, description: "Find your perfect frames" },
   { name: "Find a Store", path: "/branches", icon: MapPin, description: "Visit us in person" },
   { name: "Contact Us", path: "/contact", icon: Phone, description: "Get in touch" },
   { name: "About Us", path: "/about", icon: Info, description: "Our story" },
-  { name: "FAQ", path: "/faq", icon: HelpCircle, description: "Common questions" },
+  { name: "FAQ", path: "/faq", icon: Question, description: "Common questions" },
 ];
 
 export const MobileTopBar = () => {
@@ -78,7 +92,7 @@ export const MobileTopBar = () => {
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-foreground -ml-2">
-                <Menu className="h-5 w-5" />
+                <List weight="light" className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
@@ -100,7 +114,7 @@ export const MobileTopBar = () => {
                   </div>
                   <SheetClose asChild>
                     <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 -mr-2">
-                      <X className="h-5 w-5" />
+                      <X weight="light" className="h-5 w-5" />
                     </Button>
                   </SheetClose>
                 </SheetTitle>
@@ -120,10 +134,13 @@ export const MobileTopBar = () => {
                         item.highlight && "bg-accent/10"
                       )}
                     >
-                      <Icon className={cn(
-                        "h-5 w-5",
-                        item.highlight ? "text-accent" : "text-muted-foreground"
-                      )} />
+                      <Icon 
+                        weight={item.highlight ? "duotone" : "light"}
+                        className={cn(
+                          "h-5 w-5",
+                          item.highlight ? "text-accent" : "text-muted-foreground"
+                        )} 
+                      />
                       <div>
                         <div className={cn(
                           "font-medium text-sm",
@@ -148,12 +165,12 @@ export const MobileTopBar = () => {
                 >
                   {isDark ? (
                     <>
-                      <Sun className="h-4 w-4 mr-2" />
+                      <Sun weight="light" className="h-4 w-4 mr-2" />
                       Light Mode
                     </>
                   ) : (
                     <>
-                      <Moon className="h-4 w-4 mr-2" />
+                      <Moon weight="light" className="h-4 w-4 mr-2" />
                       Dark Mode
                     </>
                   )}
@@ -168,7 +185,7 @@ export const MobileTopBar = () => {
                       {isStaff && (
                         <Button variant="outline" className="w-full justify-start" asChild>
                           <Link to="/admin" onClick={() => setOpen(false)}>
-                            <Settings className="h-4 w-4 mr-2" />
+                            <Gear weight="light" className="h-4 w-4 mr-2" />
                             Admin Panel
                           </Link>
                         </Button>
@@ -178,7 +195,7 @@ export const MobileTopBar = () => {
                         className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={handleSignOut}
                       >
-                        <LogOut className="h-4 w-4 mr-2" />
+                        <SignOut weight="light" className="h-4 w-4 mr-2" />
                         Sign Out
                       </Button>
                     </div>
@@ -209,9 +226,9 @@ export const MobileTopBar = () => {
             className="text-foreground/70 hover:text-foreground"
           >
             {isDark ? (
-              <Sun className="h-5 w-5" />
+              <Sun weight="light" className="h-5 w-5" />
             ) : (
-              <Moon className="h-5 w-5" />
+              <Moon weight="light" className="h-5 w-5" />
             )}
           </Button>
         </div>
@@ -235,12 +252,12 @@ export const MobileTopBar = () => {
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" asChild className="text-foreground/70 hover:text-foreground">
             <Link to="/dashboard?tab=wishlist">
-              <Heart className="h-5 w-5" />
+              <Heart weight="light" className="h-5 w-5" />
             </Link>
           </Button>
           <Button variant="ghost" size="icon" asChild className="text-foreground/70 hover:text-foreground relative">
             <Link to="/checkout">
-              <ShoppingBag className="h-5 w-5" />
+              <Bag weight="light" className="h-5 w-5" />
               {cartCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-accent text-[10px] font-medium flex items-center justify-center text-accent-foreground">
                   {cartCount}

@@ -1,12 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, ShoppingBag, Calendar, Search, User } from "lucide-react";
+import { House, Bag, Calendar, MagnifyingGlass, User } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { getIconWeight } from "@/components/ui/icon";
 
 const bottomNavItems = [
-  { name: "Home", path: "/", icon: Home },
-  { name: "Shop", path: "/eyewear", icon: ShoppingBag },
+  { name: "Home", path: "/", icon: House },
+  { name: "Shop", path: "/eyewear", icon: Bag },
   { name: "Book", path: "/booking", icon: Calendar },
-  { name: "Search", path: "/eyewear?search=true", icon: Search },
+  { name: "Search", path: "/eyewear?search=true", icon: MagnifyingGlass },
   { name: "Account", path: "/dashboard", icon: User },
 ];
 
@@ -40,10 +41,13 @@ export const MobileBottomNav = () => {
                 "relative p-1.5 rounded-xl transition-all",
                 active && "bg-primary/10"
               )}>
-                <Icon className={cn(
-                  "h-5 w-5 transition-all",
-                  active && "scale-110"
-                )} />
+                <Icon 
+                  weight={getIconWeight(active)}
+                  className={cn(
+                    "h-5 w-5 transition-all",
+                    active && "scale-110"
+                  )} 
+                />
                 {active && (
                   <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
                 )}

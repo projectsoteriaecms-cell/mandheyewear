@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ShoppingBag, ArrowRight } from "lucide-react";
+import { Sparkle, Bag, ArrowRight } from "@phosphor-icons/react";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
 
 export const HeroSection = () => {
@@ -28,14 +28,14 @@ export const HeroSection = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" asChild className="group">
                 <Link to="/style-quiz" className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5" />
+                  <Sparkle weight="duotone" className="h-5 w-5" />
                   Take the Style Quiz
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link to="/eyewear" className="flex items-center gap-2">
-                  <ShoppingBag className="h-5 w-5" />
+                  <Bag weight="light" className="h-5 w-5" />
                   Shop Eyeglasses
                 </Link>
               </Button>

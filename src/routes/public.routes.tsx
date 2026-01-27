@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Route } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { CircleNotch } from "@phosphor-icons/react";
 
 // Lazy load public pages
 const Index = lazy(() => import("@/pages/Index"));
@@ -27,7 +27,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <CircleNotch weight="bold" className="h-8 w-8 animate-spin text-primary" />
   </div>
 );
 

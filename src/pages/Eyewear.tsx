@@ -15,7 +15,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Home, Eye } from "lucide-react";
+import { House, Eye } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 
 const PRODUCTS_PER_PAGE = 12;
@@ -78,7 +78,7 @@ const Eyewear = () => {
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link to="/" className="flex items-center gap-1">
-                    <Home className="h-4 w-4" />
+                    <House weight="light" className="h-4 w-4" />
                     Home
                   </Link>
                 </BreadcrumbLink>
@@ -86,7 +86,7 @@ const Eyewear = () => {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbPage className="flex items-center gap-1">
-                  <Eye className="h-4 w-4" />
+                  <Eye weight="duotone" className="h-4 w-4" />
                   Eyewear
                 </BreadcrumbPage>
               </BreadcrumbItem>
