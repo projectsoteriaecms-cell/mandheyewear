@@ -1,0 +1,227 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
+import { Loader2, Save, Key } from "lucide-react";
+
+export const SettingsSection = () => {
+  const { user } = useAuth();
+  const { data: profile, isLoading } = useProfile(user?.id);
+  const updateProfile = useUpdateProfile();
+  const { toast } = useToast();
+
+  const [formData, setFormData] = useState({
+    full_name: profile?.full_name || "",
+    phone_number: profile?.phone_number || "",
+  });
+
+  const [notifications, setNotifications] = useState({
+    email_orders: true,
+    email_promotions: true,
+    sms_orders: false,
+    sms_promotions: false,
+  });
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Update form when profile loads
+  useState(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || "",
+        phone_number: profile.phone_number || "",
+      });
+    }
+  });
+
+  const handleSave = async () => {
+    if (!user) return;
+    
+    setIsSaving(true);
+    try {
+      await updateProfile.mutateAsync({
+        userId: user.id,
+        updates: {
+          full_name: formData.full_name,
+          phone_number: formData.phone_number,
+        },
+      });
+      
+      toast({
+        title: "Settings saved",
+        description: "Your account settings have been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save settings. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Account Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Account Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="full_name">Full Name</Label>
+              <Input
+                id="full_name"
+                value={formData.full_name}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                placeholder="Enter your name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                value={user?.email || ""}
+                disabled
+                className="bg-muted"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              value={formData.phone_number}
+              onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+              placeholder="+234 XXX XXX XXXX"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Password */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Password</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline">
+            <Key className="h-4 w-4 mr-2" />
+            Change Password
+          </Button>
+          <p className="text-sm text-muted-foreground mt-2">
+            You'll receive an email to reset your password
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Notification Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Notification Preferences</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <h4 className="text-sm font-medium mb-4">Email Notifications</h4>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Order Updates</p>
+                  <p className="text-sm text-muted-foreground">
+                    Receive updates about your orders
+                  </p>
+                </div>
+                <Switch
+                  checked={notifications.email_orders}
+                  onCheckedChange={(checked) =>
+                    setNotifications({ ...notifications, email_orders: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Promotions & Offers</p>
+                  <p className="text-sm text-muted-foreground">
+                    Stay updated on sales and new arrivals
+                  </p>
+                </div>
+                <Switch
+                  checked={notifications.email_promotions}
+                  onCheckedChange={(checked) =>
+                    setNotifications({ ...notifications, email_promotions: checked })
+                  }
+                />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div>
+            <h4 className="text-sm font-medium mb-4">SMS Notifications</h4>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Order Updates</p>
+                  <p className="text-sm text-muted-foreground">
+                    Get SMS updates for order status
+                  </p>
+                </div>
+                <Switch
+                  checked={notifications.sms_orders}
+                  onCheckedChange={(checked) =>
+                    setNotifications({ ...notifications, sms_orders: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Promotions & Offers</p>
+                  <p className="text-sm text-muted-foreground">
+                    Receive promotional SMS
+                  </p>
+                </div>
+                <Switch
+                  checked={notifications.sms_promotions}
+                  onCheckedChange={(checked) =>
+                    setNotifications({ ...notifications, sms_promotions: checked })
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={isSaving}>
+          {isSaving ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4 mr-2" />
+          )}
+          Save Changes
+        </Button>
+      </div>
+    </div>
+  );
+};
