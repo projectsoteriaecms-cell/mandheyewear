@@ -1,271 +1,399 @@
 
 
-# Plan: ECMS Product Import Parser with Frame Attributes Support
+# Modular Monolith Architecture Refactoring Plan
 
-## Overview
+## Executive Summary
 
-This plan creates a dedicated ECMS import dialog that handles the complete 1,250 product dataset from SOTERIA's Excel/CSV exports. The importer will map ECMS columns to the new database schema, automatically create `frame_attributes` records for frame products, and handle dimension parsing from formats like "52-18-145".
-
----
-
-## ECMS Data Mapping
-
-Based on the product type distribution provided:
-
-| ECMS Column | Database Column | Notes |
-|-------------|-----------------|-------|
-| ProductId | `external_id` | Original Excel ID for sync |
-| ItemDescription | `name` | Product name |
-| SKU / ItemNo | `sku` | Unique identifier |
-| Brand | `brand` | VOGUE, OAKLEY, etc. |
-| BrandLine | `brand_line` | soteria_medical or m_and_h_fashion |
-| UnitPrice | `price` | In kobo (auto-calculates `price_tier`) |
-| CostPrice | `cost_price` | Purchase cost |
-| Unit | `unit` | Item, Frame, Bottle, Pair |
-| ProductType | `item_type` | frame, accessory, contact_lens, cleanser, solution, packaging |
-| Description | `description` | Full description text |
-| Color | `color` | Product color |
-| Material | `material` | Frame/lens material |
-| Style | `style` | Aviator, Cat Eye, Round, etc. |
-| Gender | `gender` | male, female, unisex |
-| Dimensions | Frame measurements | Parsed into lens_width, bridge_size, temple_length |
-| ModelCode | `frame_attributes.model_code` | Manufacturer code |
-| FrameShape | `frame_attributes.frame_shape` | Cat Eye, Rectangle, etc. |
+This plan restructures the ECMS platform into a clean **modular monolith architecture** where each business domain (Products, Inventory, Users, Branches) is self-contained with its own components, hooks, types, and utilities. This improves maintainability, reduces cognitive load, and makes it easier to navigate and extend features.
 
 ---
 
-## Dimension Parsing Logic
+## Current State Analysis
 
-ECMS often provides frame dimensions in formats like:
-- `52-18-145` → lens_width: 52, bridge_size: 18, temple_length: 145
-- `52mm x 18mm x 145mm` → Same parsing
-- `140mm` (single value) → frame_width: 140mm
+### Problems Identified
 
-The parser will:
-1. Detect the format pattern using regex
-2. Extract numeric values
-3. Map to appropriate `frame_attributes` fields
+1. **Scattered Domain Logic**: Product import logic spans 4+ files across different folders
+2. **Flat Hook Structure**: 16 hooks in `src/hooks/admin/` without domain grouping
+3. **Large Monolithic Components**: `ECMSImportDialog.tsx` is 631 lines with mixed concerns
+4. **Centralized Routing**: All 30+ routes defined in a single `App.tsx`
+5. **No Type Co-location**: Domain types scattered or defined inline
+6. **Utility Sprawl**: `ecms-parser.ts` (654 lines) could be split by concern
 
----
-
-## Import Process Flow
+### Current Structure
 
 ```text
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  1. Upload CSV  │ --> │  2. Parse &     │ --> │  3. Preview &   │
-│  or Excel file  │     │  Validate Data  │     │  Review Errors  │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                                                        │
-                                                        v
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  6. Complete    │ <-- │  5. Create      │ <-- │  4. Batch       │
-│  Summary        │     │  frame_attrs    │     │  Insert Products│
-└─────────────────┘     └─────────────────┘     └─────────────────┘
+src/
+  components/
+    admin/           (flat, mixed domains)
+    cart/
+    checkout/
+  hooks/
+    admin/           (flat, 16 files)
+    useProducts.ts   (customer-facing)
+  lib/
+    ecms-parser.ts   (massive, single file)
+  pages/
+    admin/           (14 files, no grouping)
 ```
 
 ---
 
-## Key Features
+## Target Architecture
 
-### 1. Smart Column Detection
-- Auto-detect ECMS column names (case-insensitive)
-- Map common variations (e.g., "Item Description" / "ItemDescription" / "Product Name")
-- Allow manual column mapping for unrecognized headers
+### New Module-Based Structure
 
-### 2. Batch Processing
-- Process products in batches of 50 to avoid timeout
-- Show progress indicator during import
-- Continue on error with detailed error log
+```text
+src/
+  modules/
+    products/
+      components/
+        ProductsPage.tsx
+        ProductTable.tsx
+        ProductDialogs.tsx
+        import/
+          ECMSImportDialog.tsx
+          ImportHistoryPanel.tsx
+          ImportProgress.tsx
+      hooks/
+        useProducts.ts
+        useECMSImport.ts
+        useImportHistory.ts
+        useFrameAttributes.ts
+        useLensAttributes.ts
+        useProductImageUpload.ts
+      lib/
+        ecms-parser.ts
+        price-utils.ts
+      types/
+        index.ts
+      index.ts (public exports)
 
-### 3. Duplicate Detection
-- Check `external_id` and `sku` for existing products
-- Option to skip, update, or fail on duplicates
+    inventory/
+      components/
+        InventoryPage.tsx
+        StockOverview.tsx
+        PurchaseOrdersPage.tsx
+        StockTransfersPage.tsx
+        AdjustmentsPage.tsx
+        TransactionsPage.tsx
+      hooks/
+        useInventoryOverview.ts
+        usePurchaseOrders.ts
+        useStockTransfers.ts
+        useStockAdjustments.ts
+        useInventoryTransactions.ts
+      types/
+        index.ts
+      index.ts
 
-### 4. Frame Attributes Auto-Creation
-- For products where `item_type = 'frame'`:
-  - Parse dimension strings
-  - Create linked `frame_attributes` record
-  - Map frame-specific fields (shape, material, model_code)
+    suppliers/
+      components/
+        SuppliersPage.tsx
+        SupplierForm.tsx
+      hooks/
+        useSuppliers.ts
+      types/
+        index.ts
+      index.ts
 
-### 5. Validation Rules
-- Required: name, sku, brand_line, price
-- Price must be positive number
-- `brand_line` must be `soteria_medical` or `m_and_h_fashion`
-- `item_type` must match enum values
+    users/
+      components/
+        UsersPage.tsx
+        InviteUserDialog.tsx
+        PendingInvitations.tsx
+        BranchAssignment.tsx
+      hooks/
+        useUserInvitations.ts
+        useUserRole.ts
+      types/
+        index.ts
+      index.ts
+
+    branches/
+      components/
+        AdminBranchesPage.tsx
+        BranchCard.tsx
+      hooks/
+        useBranches.ts
+        useBranchContext.ts
+      types/
+        index.ts
+      index.ts
+
+    categories/
+      components/
+        CategoriesPage.tsx
+        CategoryDialogs.tsx
+        SortableCategoryRow.tsx
+      hooks/
+        useCategories.ts
+      types/
+        index.ts
+      index.ts
+
+    services/
+      components/
+        ServicesPage.tsx
+        ServiceDialogs.tsx
+      hooks/
+        useServices.ts
+      types/
+        index.ts
+      index.ts
+
+  shared/
+    components/
+      admin/
+        AdminLayout.tsx
+        AdminSidebar.tsx
+        AdminHeader.tsx
+        RoleGuard.tsx
+      ui/              (keep existing)
+    hooks/
+      useAuth.ts
+      use-mobile.tsx
+      use-toast.ts
+    lib/
+      utils.ts
+      permissions.ts
+    types/
+      database.ts      (re-exports from Supabase types)
+
+  routes/
+    index.tsx          (main router)
+    admin.routes.tsx   (admin route definitions)
+    public.routes.tsx  (customer-facing routes)
+```
 
 ---
 
-## Technical Implementation
+## Implementation Phases
 
-### New Files to Create
+### Phase 1: Core Architecture Setup
 
-| File | Purpose |
-|------|---------|
-| `src/components/admin/products/ECMSImportDialog.tsx` | Main import dialog with full workflow |
-| `src/lib/ecms-parser.ts` | ECMS-specific parsing utilities |
-| `src/hooks/admin/useECMSImport.ts` | Bulk import with frame_attributes creation |
+**Goal**: Establish the folder structure, shared utilities, and routing patterns.
 
-### Files to Modify
+**Tasks**:
+1. Create `src/modules/` directory structure
+2. Create `src/shared/` directory with extracted shared components
+3. Create `src/routes/` with modular route definitions
+4. Set up barrel exports (index.ts) pattern for each module
+5. Update path aliases in `vite.config.ts` for cleaner imports:
+   - `@/modules/*`
+   - `@/shared/*`
+   - `@/routes/*`
 
-| File | Changes |
-|------|---------|
-| `src/pages/admin/Products.tsx` | Add "ECMS Import" button |
-| `src/hooks/admin/useAdminProducts.ts` | Add bulk upsert mutation for handling duplicates |
+**Files to Create**:
+- `src/routes/index.tsx` - Main router component
+- `src/routes/admin.routes.tsx` - Admin route configuration
+- `src/routes/public.routes.tsx` - Public route configuration
+- `src/shared/types/database.ts` - Type re-exports
+
+### Phase 2: Products Module Migration
+
+**Goal**: Consolidate all product-related code into a self-contained module.
+
+**Tasks**:
+1. Move and split `ECMSImportDialog.tsx` (631 lines) into:
+   - `ImportWizard.tsx` (orchestration)
+   - `ImportSteps/UploadStep.tsx`
+   - `ImportSteps/MappingStep.tsx`
+   - `ImportSteps/PreviewStep.tsx`
+   - `ImportSteps/OptionsStep.tsx`
+   - `ImportSteps/ProgressStep.tsx`
+   - `ImportSteps/SummaryStep.tsx`
+
+2. Move product hooks:
+   - `useAdminProducts.ts` -> `modules/products/hooks/`
+   - `useECMSImport.ts` -> `modules/products/hooks/`
+   - `useImportHistory.ts` -> `modules/products/hooks/`
+   - `useFrameAttributes.ts` -> `modules/products/hooks/`
+   - `useLensAttributes.ts` -> `modules/products/hooks/`
+   - `useProductImageUpload.ts` -> `modules/products/hooks/`
+
+3. Split `src/lib/ecms-parser.ts` (654 lines) into:
+   - `modules/products/lib/column-mappings.ts`
+   - `modules/products/lib/parsers.ts`
+   - `modules/products/lib/validators.ts`
+   - `modules/products/lib/transformers.ts`
+
+4. Create `modules/products/types/index.ts` with domain types
+
+5. Create `modules/products/index.ts` barrel export
+
+### Phase 3: Inventory Module Migration
+
+**Goal**: Group all inventory operations into a cohesive module.
+
+**Tasks**:
+1. Create `modules/inventory/` structure
+2. Move inventory hooks:
+   - `useInventoryOverview.ts`
+   - `usePurchaseOrders.ts`
+   - `useStockTransfers.ts`
+   - `useStockAdjustments.ts`
+   - `useInventoryTransactions.ts`
+
+3. Move inventory pages and components:
+   - `pages/admin/Inventory.tsx` -> `modules/inventory/components/`
+   - `pages/admin/PurchaseOrders.tsx` -> `modules/inventory/components/`
+   - `pages/admin/StockTransfers.tsx` -> `modules/inventory/components/`
+   - `pages/admin/StockAdjustments.tsx` -> `modules/inventory/components/`
+   - `pages/admin/InventoryTransactions.tsx` -> `modules/inventory/components/`
+   - `components/admin/purchase-orders/*`
+   - `components/admin/transfers/*`
+   - `components/admin/adjustments/*`
+
+4. Create inventory-specific types file
+
+### Phase 4: Remaining Admin Modules
+
+**Goal**: Migrate Users, Branches, Categories, Services, and Suppliers modules.
+
+**Tasks** (per module pattern):
+1. Create module folder structure
+2. Move relevant hooks
+3. Move relevant components and pages
+4. Create types file
+5. Create barrel export
+
+### Phase 5: Shared Components Extraction
+
+**Goal**: Move truly shared admin components to `src/shared/`.
+
+**Tasks**:
+1. Move to `src/shared/components/admin/`:
+   - `AdminLayout.tsx`
+   - `AdminSidebar.tsx`
+   - `AdminHeader.tsx`
+   - `RoleGuard.tsx`
+
+2. Keep `src/components/ui/` unchanged (already generic)
+
+3. Move shared hooks to `src/shared/hooks/`:
+   - `useAuth.ts`
+   - `use-mobile.tsx`
+   - `use-toast.ts`
+
+### Phase 6: Update Imports and Clean Up
+
+**Goal**: Update all import paths and remove old files.
+
+**Tasks**:
+1. Update App.tsx to use new route structure
+2. Update AdminSidebar navigation
+3. Remove old empty directories
+4. Verify no circular dependencies
+5. Run TypeScript check for import errors
 
 ---
 
-## ECMSImportDialog Component Structure
+## Technical Details
 
-### Step 1: File Upload
-- Accepts both .csv and .xlsx files
-- Uses SheetJS (xlsx) library for Excel parsing
-- Shows file info and row count
+### Barrel Export Pattern
 
-### Step 2: Column Mapping
-- Auto-maps recognized columns
-- Allows manual override via dropdowns
-- Required columns highlighted
-
-### Step 3: Data Preview
-- Shows first 10 rows in table format
-- Validation errors displayed inline
-- Toggle to show only errors
-
-### Step 4: Import Options
-- Duplicate handling: Skip / Update / Fail
-- Batch size slider (25-100)
-- Create frame_attributes checkbox
-
-### Step 5: Import Progress
-- Progress bar with percentage
-- Current batch indicator
-- Live error counter
-- Cancel button
-
-### Step 6: Summary
-- Total imported count
-- Skipped/failed counts
-- Download error log as CSV
-- "View Products" link
-
----
-
-## ECMS Parser Utilities (`src/lib/ecms-parser.ts`)
+Each module will have an `index.ts` that explicitly exports its public API:
 
 ```typescript
-// Column name mappings
-const ECMS_COLUMN_MAPPINGS = {
-  productid: 'external_id',
-  itemdescription: 'name',
-  productname: 'name',
-  itemno: 'sku',
-  brandline: 'brand_line',
-  unitprice: 'price',
-  // ... etc
-};
+// modules/products/index.ts
+export { ProductsPage } from './components/ProductsPage';
+export { useProducts, useAdminProducts } from './hooks/useProducts';
+export { useECMSImport } from './hooks/useECMSImport';
+export type { Product, ParsedProduct } from './types';
+```
 
-// Dimension parser
-function parseDimensions(dimString: string): {
-  lens_width?: number;
-  bridge_size?: number;
-  temple_length?: number;
-} { /* regex parsing */ }
+### Route Configuration Pattern
 
-// Brand line normalizer
-function normalizeBrandLine(value: string): 'soteria_medical' | 'm_and_h_fashion' | null;
+```typescript
+// routes/admin.routes.tsx
+import { lazy } from 'react';
 
-// Item type normalizer  
-function normalizeItemType(value: string): ItemType | null;
+const ProductsPage = lazy(() => import('@/modules/products/components/ProductsPage'));
+const InventoryPage = lazy(() => import('@/modules/inventory/components/InventoryPage'));
+
+export const adminRoutes = [
+  { path: '/admin/products', element: <ProductsPage /> },
+  { path: '/admin/inventory', element: <InventoryPage /> },
+  // ...
+];
+```
+
+### Import Alias Updates
+
+```typescript
+// vite.config.ts additions
+resolve: {
+  alias: {
+    '@/modules': path.resolve(__dirname, './src/modules'),
+    '@/shared': path.resolve(__dirname, './src/shared'),
+    '@/routes': path.resolve(__dirname, './src/routes'),
+  },
+},
 ```
 
 ---
 
-## Enhanced CSV Template
+## Migration Strategy
 
-The ECMS template will include all mappable fields:
+### Approach: Incremental Migration
 
-```csv
-ProductId,ItemDescription,SKU,Brand,BrandLine,UnitPrice,CostPrice,Unit,ProductType,Description,Color,Material,Style,Gender,Dimensions,ModelCode,FrameShape,ReorderLevel,ReorderQty,LeadTimeDays
-1001,"VOGUE Cat Eye",VG-CE-001,VOGUE,soteria_medical,85000,45000,Item,frame,"Elegant cat eye frames",Black,Acetate,Cat Eye,female,52-18-145,VO5423,Cat Eye,10,20,7
-```
+We will use a **strangler fig** pattern:
+1. Create new module structure alongside existing code
+2. Move files one module at a time
+3. Update imports to point to new locations
+4. Delete old files only after verification
+5. Each phase results in a working application
 
----
+### Risk Mitigation
 
-## Dependencies
-
-Add the `xlsx` library for Excel file parsing:
-```json
-{
-  "xlsx": "^0.18.5"
-}
-```
+- **No Big Bang**: Each phase is independently deployable
+- **Type Safety**: TypeScript will catch broken imports
+- **Testing**: Manual testing after each module migration
+- **Rollback**: Git makes reverting straightforward if issues arise
 
 ---
 
-## Error Handling Strategy
+## Expected Benefits
 
-| Error Type | Handling |
-|------------|----------|
-| Missing required field | Log row number, skip row |
-| Invalid price format | Attempt to clean (remove commas, currency), fail if unparseable |
-| Unknown brand_line | Default to "soteria_medical" with warning |
-| Duplicate SKU/external_id | Based on user selection (skip/update/fail) |
-| Database insert failure | Log error, continue batch, retry failed rows |
-| Frame attributes failure | Log warning, product still created |
-
----
-
-## Implementation Order
-
-| Step | Task | Priority |
-|------|------|----------|
-| 1 | Install xlsx dependency | High |
-| 2 | Create `src/lib/ecms-parser.ts` | High |
-| 3 | Create `useECMSImport.ts` hook with batch insert | High |
-| 4 | Create `ECMSImportDialog.tsx` with full workflow | High |
-| 5 | Add bulk upsert mutation to `useAdminProducts.ts` | High |
-| 6 | Update Products.tsx with ECMS Import button | Medium |
-| 7 | Add downloadable ECMS template | Medium |
-| 8 | Add import history/audit log (optional) | Low |
-
----
-
-## User Interface Design
-
-### Import Button Location
-Products page header, next to existing "Bulk Upload" button:
-- **Bulk Upload**: Simple CSV import (current)
-- **ECMS Import**: Full ECMS data import with column mapping
-
-### Dialog Size
-Full-screen dialog (`max-w-4xl`) to accommodate:
-- Wide column mapping table
-- Data preview with horizontal scroll
-- Progress and summary panels
-
-### Visual Feedback
-- Step indicators at top
-- Color-coded validation (green = valid, red = error, yellow = warning)
-- Progress bar with ETA estimate
-- Confetti animation on successful import (optional)
+1. **Discoverability**: All product code in one place (`modules/products/`)
+2. **Smaller Files**: ECMSImportDialog split from 631 lines to ~100 lines each
+3. **Clear Boundaries**: Each module has explicit public API via barrel exports
+4. **Easier Onboarding**: New developers can focus on one module
+5. **Reduced Conflicts**: Teams can work on different modules independently
+6. **Lazy Loading**: Route-based code splitting for better performance
 
 ---
 
 ## Files Summary
 
-### Create
+### New Files to Create (~40 files)
 
-| File | Description |
-|------|-------------|
-| `src/lib/ecms-parser.ts` | Column mapping, dimension parsing, data normalization |
-| `src/hooks/admin/useECMSImport.ts` | Batch import logic with frame_attributes creation |
-| `src/components/admin/products/ECMSImportDialog.tsx` | Multi-step import wizard UI |
+- 6 route files
+- 8 module index/barrel files
+- 15 split component files (from ECMSImportDialog)
+- 4 split parser files (from ecms-parser.ts)
+- 7 types files
 
-### Modify
+### Files to Move (~35 files)
 
-| File | Changes |
-|------|---------|
-| `src/pages/admin/Products.tsx` | Add ECMS Import button and dialog |
-| `src/hooks/admin/useAdminProducts.ts` | Add `bulkUpsertProducts` mutation |
-| `package.json` | Add `xlsx` dependency |
+- 16 hooks from `hooks/admin/`
+- 14 pages from `pages/admin/`
+- 5 component directories from `components/admin/`
+
+### Files to Delete (after migration)
+
+- Old empty directories
+- Original large files (after split)
+
+---
+
+## Next Steps
+
+After approval, I will implement this in the following order:
+1. Phase 1: Core architecture and routing setup
+2. Phase 2: Products module (most complex, highest impact)
+3. Phase 3: Inventory module
+4. Phase 4-6: Remaining modules and cleanup
+
+Each phase will be a separate implementation session to ensure stability.
 
