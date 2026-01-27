@@ -26,8 +26,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { useAdminProducts } from "@/hooks/admin/useAdminProducts";
-import { useSuppliers } from "@/hooks/admin/useSuppliers";
+import { useAdminProducts } from "@/modules/products";
+import { useSuppliers } from "@/modules/suppliers";
 import { Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 

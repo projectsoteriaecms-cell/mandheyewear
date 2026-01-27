@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { AdminLayout } from "@/components/admin/AdminLayout";
-import { RoleGuard } from "@/components/admin/RoleGuard";
+import { AdminLayout, RoleGuard } from "@/shared/components/admin";
 import {
   useSuppliers,
   useCreateSupplier,
@@ -8,7 +7,7 @@ import {
   useDeleteSupplier,
   type Supplier,
   type SupplierInput,
-} from "@/hooks/admin/useSuppliers";
+} from "@/modules/suppliers";
 import {
   Table,
   TableBody,

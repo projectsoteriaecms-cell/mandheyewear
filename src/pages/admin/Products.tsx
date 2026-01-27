@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { AdminLayout } from "@/components/admin/AdminLayout";
-import { RoleGuard } from "@/components/admin/RoleGuard";
+import { AdminLayout, RoleGuard } from "@/shared/components/admin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -37,7 +36,7 @@ import {
   ImagePlus,
   FileSpreadsheet,
 } from "lucide-react";
-import { useAdminProducts } from "@/hooks/admin/useAdminProducts";
+import { useAdminProducts } from "@/modules/products";
 import { CreateProductDialog } from "@/components/admin/products/CreateProductDialog";
 import { BulkUploadDialog } from "@/components/admin/products/BulkUploadDialog";
 import { EditProductDialog } from "@/components/admin/products/EditProductDialog";

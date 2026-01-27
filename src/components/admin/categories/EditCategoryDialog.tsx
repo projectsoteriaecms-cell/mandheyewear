@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useCategories, type Category } from "@/hooks/admin/useCategories";
+import { useCategories, type Category } from "@/modules/categories";
 
 const categorySchema = z.object({
   name: z.string().min(1, "Name is required"),

@@ -27,9 +27,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useBranches } from "@/hooks/useBranches";
+import { useBranches } from "@/modules/branches";
 import { useProducts } from "@/hooks/useProducts";
-import { useCreateStockTransfer } from "@/hooks/admin/useStockTransfers";
+import { useCreateStockTransfer } from "@/modules/inventory";
 import { Plus, Trash2, ArrowRight } from "lucide-react";
 
 const lineItemSchema = z.object({

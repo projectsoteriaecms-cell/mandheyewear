@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { AdminLayout } from "@/components/admin/AdminLayout";
-import { usePurchaseOrders, useUpdatePurchaseOrderStatus } from "@/hooks/admin/usePurchaseOrders";
-import { useUserRole } from "@/hooks/useUserRole";
-import { canApprovePurchaseOrder, canReceivePurchaseOrder } from "@/lib/permissions";
+import { AdminLayout } from "@/shared/components/admin";
+import { usePurchaseOrders, useUpdatePurchaseOrderStatus } from "@/modules/inventory";
+import { useUserRole } from "@/shared/hooks/useUserRole";
+import { canApprovePurchaseOrder, canReceivePurchaseOrder } from "@/shared/lib/permissions";
 import {
   Table,
   TableBody,

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { AdminLayout } from "@/components/admin/AdminLayout";
-import { useStockTransfers, useUpdateTransferStatus } from "@/hooks/admin/useStockTransfers";
-import { useUserRole } from "@/hooks/useUserRole";
-import { canApproveStockTransfer, canCompleteStockTransfer } from "@/lib/permissions";
+import { AdminLayout } from "@/shared/components/admin";
+import { useStockTransfers, useUpdateTransferStatus } from "@/modules/inventory";
+import { useUserRole } from "@/shared/hooks/useUserRole";
+import { canApproveStockTransfer, canCompleteStockTransfer } from "@/shared/lib/permissions";
 import {
   Table,
   TableBody,

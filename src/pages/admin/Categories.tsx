@@ -14,7 +14,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminLayout } from "@/shared/components/admin";
 import {
   Table,
   TableBody,
@@ -32,7 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useCategories, type Category } from "@/hooks/admin/useCategories";
+import { useCategories, type Category } from "@/modules/categories";
 import { SortableCategoryRow } from "@/components/admin/categories/SortableCategoryRow";
 import { CreateCategoryDialog } from "@/components/admin/categories/CreateCategoryDialog";
 import { EditCategoryDialog } from "@/components/admin/categories/EditCategoryDialog";

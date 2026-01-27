@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useServices } from "@/hooks/admin/useServices";
+import { useServices } from "@/modules/services";
 import { Loader2 } from "lucide-react";
 
 const serviceSchema = z.object({

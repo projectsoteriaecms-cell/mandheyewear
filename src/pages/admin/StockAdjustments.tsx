@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminLayout } from "@/shared/components/admin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,10 +19,10 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, AlertTriangle, PackageMinus, RotateCcw, Trash2, HelpCircle } from "lucide-react";
-import { useStockAdjustments } from "@/hooks/admin/useStockAdjustments";
-import { useBranches } from "@/hooks/useBranches";
-import { useUserRole } from "@/hooks/useUserRole";
-import { canCreateStockAdjustment } from "@/lib/permissions";
+import { useStockAdjustments } from "@/modules/inventory";
+import { useBranches } from "@/modules/branches";
+import { useUserRole } from "@/shared/hooks/useUserRole";
+import { canCreateStockAdjustment } from "@/shared/lib/permissions";
 import { CreateAdjustmentDialog } from "@/components/admin/adjustments/CreateAdjustmentDialog";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";

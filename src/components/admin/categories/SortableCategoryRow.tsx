@@ -4,8 +4,8 @@ import { GripVertical, Pencil, Trash2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { Category } from "@/hooks/admin/useCategories";
-import { cn } from "@/lib/utils";
+import type { Category } from "@/modules/categories";
+import { cn } from "@/shared/lib/utils";
 
 interface SortableCategoryRowProps {
   category: Category;

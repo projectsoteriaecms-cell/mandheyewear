@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Plus } from "lucide-react";
-import { useCategories } from "@/hooks/admin/useCategories";
+import { useCategories } from "@/modules/categories";
 
 const categorySchema = z.object({
   name: z.string().min(1, "Name is required"),

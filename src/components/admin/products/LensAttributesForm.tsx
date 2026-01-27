@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useLensAttributes } from "@/hooks/admin/useLensAttributes";
+import { useLensAttributes } from "@/modules/products";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
