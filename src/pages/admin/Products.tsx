@@ -192,6 +192,7 @@ const Products = () => {
                       <TableHead>Brand</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead className="text-right">Price</TableHead>
+                      <TableHead>Tier</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
@@ -226,17 +227,36 @@ const Products = () => {
                           {product.sku}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">
-                            {product.brand_line === "soteria_medical"
-                              ? "Soteria"
-                              : "M&H"}
-                          </Badge>
+                          {(product as any).brand ? (
+                            <span className="text-sm">{(product as any).brand}</span>
+                          ) : (
+                            <Badge variant="outline">
+                              {product.brand_line === "soteria_medical"
+                                ? "Soteria"
+                                : "M&H"}
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell className="capitalize">
                           {product.item_type?.replace("_", " ") || "—"}
                         </TableCell>
                         <TableCell className="text-right font-medium">
                           {formatPrice(product.price)}
+                        </TableCell>
+                        <TableCell>
+                          {(product as any).price_tier && (
+                            <Badge 
+                              variant="outline"
+                              className={
+                                (product as any).price_tier === "luxury" ? "border-amber-500 text-amber-600" :
+                                (product as any).price_tier === "premium" ? "border-purple-500 text-purple-600" :
+                                (product as any).price_tier === "standard" ? "border-blue-500 text-blue-600" :
+                                "border-gray-400 text-gray-500"
+                              }
+                            >
+                              {(product as any).price_tier}
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell>
                           <Badge

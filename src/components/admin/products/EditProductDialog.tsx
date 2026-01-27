@@ -32,6 +32,8 @@ import { useAdminProducts } from "@/hooks/admin/useAdminProducts";
 import { useSuppliers } from "@/hooks/admin/useSuppliers";
 import { useProductImageUpload } from "@/hooks/admin/useProductImageUpload";
 import { ProductImageUpload } from "./ProductImageUpload";
+import { FrameAttributesForm } from "./FrameAttributesForm";
+import { LensAttributesForm } from "./LensAttributesForm";
 import { Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Database } from "@/integrations/supabase/types";
@@ -50,6 +52,8 @@ const itemTypes = [
   { value: "solutions", label: "Solutions" },
   { value: "medications", label: "Medications" },
   { value: "accessories", label: "Accessories" },
+  { value: "cleanser", label: "Cleanser" },
+  { value: "packaging", label: "Packaging" },
   { value: "other", label: "Other" },
 ] as const;
 
@@ -63,7 +67,7 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   sku: z.string().min(1, "SKU is required"),
   brand_line: z.enum(["soteria_medical", "m_and_h_fashion"]),
-  item_type: z.enum(["frames", "lenses", "contact_lenses", "solutions", "medications", "accessories", "other"]).optional(),
+  item_type: z.string().optional(),
   price: z.number().min(0, "Price must be positive"),
   cost_price: z.number().min(0).optional(),
   description: z.string().optional(),
@@ -200,7 +204,7 @@ export const EditProductDialog = ({
       name: data.name,
       sku: data.sku,
       brand_line: data.brand_line,
-      item_type: data.item_type,
+      item_type: data.item_type as any,
       price: data.price,
       cost_price: data.cost_price || null,
       description: data.description || null,
@@ -229,9 +233,15 @@ export const EditProductDialog = ({
         </DialogHeader>
 
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="images">Images</TabsTrigger>
+            <TabsTrigger value="frames" disabled={form.watch("item_type") !== "frames"}>
+              Frame Specs
+            </TabsTrigger>
+            <TabsTrigger value="lenses" disabled={form.watch("item_type") !== "lenses"}>
+              Lens Specs
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
@@ -639,6 +649,22 @@ export const EditProductDialog = ({
                 primaryImage={primaryImage}
                 onPrimaryChange={setPrimaryImage}
               />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="frames">
+            <div className="py-4">
+              {product && form.watch("item_type") === "frames" && (
+                <FrameAttributesForm productId={product.id} />
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="lenses">
+            <div className="py-4">
+              {product && form.watch("item_type") === "lenses" && (
+                <LensAttributesForm productId={product.id} />
+              )}
             </div>
           </TabsContent>
         </Tabs>

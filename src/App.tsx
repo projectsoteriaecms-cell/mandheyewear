@@ -30,6 +30,7 @@ import StockAdjustments from "./pages/admin/StockAdjustments";
 import InventoryTransactions from "./pages/admin/InventoryTransactions";
 import Suppliers from "./pages/admin/Suppliers";
 import Products from "./pages/admin/Products";
+import Services from "./pages/admin/Services";
 import AdminBranches from "./pages/admin/AdminBranches";
 import AdminUsers from "./pages/admin/AdminUsers";
 import Reports from "./pages/admin/Reports";
@@ -70,6 +71,7 @@ const App = () => (
           <Route path="/admin/inventory/transactions" element={<InventoryTransactions />} />
           <Route path="/admin/suppliers" element={<Suppliers />} />
           <Route path="/admin/products" element={<Products />} />
+          <Route path="/admin/services" element={<Services />} />
           <Route path="/admin/branches" element={<AdminBranches />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/reports" element={<Reports />} />

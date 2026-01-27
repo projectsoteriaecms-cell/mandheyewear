@@ -19,10 +19,13 @@ interface BulkUploadDialogProps {
 interface ParsedProduct {
   name: string;
   sku: string;
+  external_id?: string;
+  brand?: string;
   brand_line: "soteria_medical" | "m_and_h_fashion";
   price: number;
   cost_price?: number;
   description?: string;
+  unit?: string;
   item_type?: string;
   color?: string;
   material?: string;
@@ -41,9 +44,9 @@ interface ParseResult {
   errors: string[];
 }
 
-const CSV_TEMPLATE = `name,sku,brand_line,price,cost_price,description,item_type,color,material,style,gender,frame_width,bridge_size,temple_length,reorder_level,reorder_quantity,lead_time_days
-"Ray-Ban Aviator Classic",RB-AV-001,soteria_medical,85000,45000,"Classic aviator style sunglasses",frames,Gold,Metal,Aviator,unisex,140mm,14mm,145mm,10,20,7
-"Gucci Round Frame",GC-RF-002,m_and_h_fashion,120000,65000,"Luxury round frame glasses",frames,Black,Acetate,Round,female,138mm,16mm,140mm,5,10,14`;
+const CSV_TEMPLATE = `name,sku,external_id,brand,brand_line,price,cost_price,description,unit,item_type,color,material,style,gender,frame_width,bridge_size,temple_length,reorder_level,reorder_quantity,lead_time_days
+"Ray-Ban Aviator Classic",RB-AV-001,EXT-001,Ray-Ban,soteria_medical,85000,45000,"Classic aviator style sunglasses",Item,frames,Gold,Metal,Aviator,unisex,140mm,14mm,145mm,10,20,7
+"Gucci Round Frame",GC-RF-002,EXT-002,Gucci,m_and_h_fashion,220000,120000,"Luxury round frame glasses",Item,frames,Black,Acetate,Round,female,138mm,16mm,140mm,5,10,14`;
 
 export const BulkUploadDialog = ({
   open,
@@ -126,10 +129,13 @@ export const BulkUploadDialog = ({
       success.push({
         name: row.name,
         sku: row.sku,
+        external_id: row.external_id || undefined,
+        brand: row.brand || undefined,
         brand_line: brandLine as "soteria_medical" | "m_and_h_fashion",
         price,
         cost_price: row.cost_price ? parseFloat(row.cost_price) : undefined,
         description: row.description || undefined,
+        unit: row.unit || undefined,
         item_type: row.item_type || undefined,
         color: row.color || undefined,
         material: row.material || undefined,
@@ -175,10 +181,13 @@ export const BulkUploadDialog = ({
         parseResult.success.map((p) => ({
           name: p.name,
           sku: p.sku,
+          external_id: p.external_id ?? null,
+          brand: p.brand ?? null,
           brand_line: p.brand_line,
           price: p.price,
           cost_price: p.cost_price ?? null,
           description: p.description ?? null,
+          unit: p.unit ?? "Item",
           item_type: p.item_type as any ?? "frames",
           color: p.color ?? null,
           material: p.material ?? null,

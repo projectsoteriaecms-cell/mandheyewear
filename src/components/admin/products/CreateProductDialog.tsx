@@ -43,6 +43,8 @@ const itemTypes = [
   { value: "solutions", label: "Solutions" },
   { value: "medications", label: "Medications" },
   { value: "accessories", label: "Accessories" },
+  { value: "cleanser", label: "Cleanser" },
+  { value: "packaging", label: "Packaging" },
   { value: "other", label: "Other" },
 ] as const;
 
@@ -55,11 +57,14 @@ const genders = [
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   sku: z.string().min(1, "SKU is required"),
+  external_id: z.string().optional(),
+  brand: z.string().optional(),
   brand_line: z.enum(["soteria_medical", "m_and_h_fashion"]),
-  item_type: z.enum(["frames", "lenses", "contact_lenses", "solutions", "medications", "accessories", "other"]).optional(),
+  item_type: z.string().optional(),
   price: z.number().min(0, "Price must be positive"),
   cost_price: z.number().min(0).optional(),
   description: z.string().optional(),
+  unit: z.string().optional(),
   color: z.string().optional(),
   material: z.string().optional(),
   style: z.string().optional(),
@@ -94,11 +99,14 @@ export const CreateProductDialog = ({
     defaultValues: {
       name: "",
       sku: "",
+      external_id: "",
+      brand: "",
       brand_line: "soteria_medical",
       item_type: "frames",
       price: 0,
       cost_price: 0,
       description: "",
+      unit: "Item",
       color: "",
       material: "",
       style: "",
@@ -115,11 +123,14 @@ export const CreateProductDialog = ({
     await createProduct.mutateAsync({
       name: data.name,
       sku: data.sku,
+      external_id: data.external_id || null,
+      brand: data.brand || null,
       brand_line: data.brand_line,
-      item_type: data.item_type,
+      item_type: data.item_type as any,
       price: data.price,
       cost_price: data.cost_price || null,
       description: data.description || null,
+      unit: data.unit || "Item",
       color: data.color || null,
       material: data.material || null,
       style: data.style || null,
@@ -172,6 +183,36 @@ export const CreateProductDialog = ({
                       <FormLabel>SKU *</FormLabel>
                       <FormControl>
                         <Input placeholder="RB-AV-001" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="external_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>External ID</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Original system ID" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="brand"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Brand</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., VOGUE, OAKLEY" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
