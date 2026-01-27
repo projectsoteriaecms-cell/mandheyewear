@@ -16,10 +16,13 @@ export const RoleGuard = ({
   fallbackPath = "/login",
 }: RoleGuardProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { data: role, isLoading: roleLoading } = useUserRole();
+  const { data: role, isLoading: roleLoading, isFetched } = useUserRole();
   const location = useLocation();
 
-  if (authLoading || roleLoading) {
+  // Show loading while auth is loading, role is loading, or role hasn't been fetched yet (when user exists)
+  const isLoading = authLoading || roleLoading || (user && !isFetched);
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
