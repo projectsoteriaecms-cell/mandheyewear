@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { AdminLayout } from "@/components/admin/AdminLayout";
-import { useInventoryOverview } from "@/hooks/admin/useInventoryOverview";
-import { useBranches } from "@/hooks/useBranches";
+import { AdminLayout } from "@/shared/components/admin";
+import { useInventoryOverview } from "@/modules/inventory";
+import { useBranches } from "@/modules/branches";
 import {
   Table,
   TableBody,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminLayout } from "@/shared/components/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { ArrowDownLeft, ArrowUpRight, RefreshCw, History } from "lucide-react";
-import { useInventoryTransactions } from "@/hooks/admin/useInventoryTransactions";
-import { useBranches } from "@/hooks/useBranches";
+import { useInventoryTransactions } from "@/modules/inventory";
+import { useBranches } from "@/modules/branches";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 

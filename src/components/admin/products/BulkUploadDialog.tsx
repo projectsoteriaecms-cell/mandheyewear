@@ -7,7 +7,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useAdminProducts } from "@/hooks/admin/useAdminProducts";
+import { useAdminProducts } from "@/modules/products";
 import { Upload, FileSpreadsheet, Download, Loader2, AlertCircle, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 

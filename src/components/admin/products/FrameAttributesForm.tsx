@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useFrameAttributes } from "@/hooks/admin/useFrameAttributes";
+import { useFrameAttributes } from "@/modules/products";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 

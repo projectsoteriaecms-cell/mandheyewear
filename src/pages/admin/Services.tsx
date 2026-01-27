@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { AdminLayout } from "@/components/admin/AdminLayout";
-import { RoleGuard } from "@/components/admin/RoleGuard";
+import { AdminLayout, RoleGuard } from "@/shared/components/admin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Plus, Search, MoreHorizontal, Pencil, Trash2, Clock, Calendar } from "lucide-react";
-import { useServices } from "@/hooks/admin/useServices";
+import { useServices } from "@/modules/services";
 import { CreateServiceDialog } from "@/components/admin/services/CreateServiceDialog";
 import { EditServiceDialog } from "@/components/admin/services/EditServiceDialog";
 import type { Database } from "@/integrations/supabase/types";

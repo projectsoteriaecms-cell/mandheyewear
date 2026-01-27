@@ -26,9 +26,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useBranches } from "@/hooks/useBranches";
+import { useBranches } from "@/modules/branches";
 import { useProducts } from "@/hooks/useProducts";
-import { useStockAdjustments } from "@/hooks/admin/useStockAdjustments";
+import { useStockAdjustments } from "@/modules/inventory";
 import { Loader2 } from "lucide-react";
 
 const adjustmentTypes = [

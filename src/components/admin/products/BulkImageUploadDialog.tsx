@@ -7,12 +7,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useAdminProducts } from "@/hooks/admin/useAdminProducts";
-import { useProductImageUpload } from "@/hooks/admin/useProductImageUpload";
+import { useAdminProducts, useProductImageUpload } from "@/modules/products";
 import { Upload, Image as ImageIcon, Loader2, CheckCircle, AlertCircle, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { toast } from "sonner";
 
 interface BulkImageUploadDialogProps {
