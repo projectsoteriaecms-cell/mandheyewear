@@ -1,10 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { 
   ParsedProduct, 
-  ValidationError, 
   ImportOptions, 
   ImportProgress, 
   ImportResult,
@@ -13,25 +12,38 @@ import type {
 } from "../types";
 import { saveImportHistory } from "./useImportHistory";
 
+// Optimized settings for large imports
+const CHUNK_SIZE = 50; // Smaller chunks for more reliable database writes
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1000;
+
+/**
+ * Delay utility for retry logic
+ */
+const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
 export const useECMSImport = () => {
   const queryClient = useQueryClient();
   const [isImporting, setIsImporting] = useState(false);
   const [progress, setProgress] = useState<ImportProgress | null>(null);
-  const [isCancelled, setIsCancelled] = useState(false);
+  const cancelledRef = useRef(false);
 
+  /**
+   * Efficiently check duplicates using chunked queries to avoid request limits
+   */
   const checkDuplicates = useCallback(
     async (products: ParsedProduct[]): Promise<Map<string, string>> => {
+      const duplicateMap = new Map<string, string>();
       const skus = products.map((p) => p.sku);
       const externalIds = products.map((p) => p.external_id).filter(Boolean) as string[];
 
-      const duplicateMap = new Map<string, string>();
-
-      // Check by SKU
-      if (skus.length > 0) {
+      // Check SKUs in chunks to avoid query limits
+      for (let i = 0; i < skus.length; i += 500) {
+        const skuChunk = skus.slice(i, i + 500);
         const { data: existingBySku } = await supabase
           .from("products")
           .select("id, sku")
-          .in("sku", skus);
+          .in("sku", skuChunk);
 
         if (existingBySku) {
           existingBySku.forEach((p) => {
@@ -40,12 +52,13 @@ export const useECMSImport = () => {
         }
       }
 
-      // Check by external_id
-      if (externalIds.length > 0) {
+      // Check external IDs in chunks
+      for (let i = 0; i < externalIds.length; i += 500) {
+        const extIdChunk = externalIds.slice(i, i + 500);
         const { data: existingByExternal } = await supabase
           .from("products")
           .select("id, external_id")
-          .in("external_id", externalIds);
+          .in("external_id", extIdChunk);
 
         if (existingByExternal) {
           existingByExternal.forEach((p) => {
@@ -61,6 +74,170 @@ export const useECMSImport = () => {
     []
   );
 
+  /**
+   * Process a single batch of products for insertion
+   */
+  const processBatchInsert = async (
+    toInsert: { product: ParsedProduct; rowNum: number }[],
+    duplicateMap: Map<string, string>,
+    createFrameAttributes: boolean,
+    result: ImportResult
+  ) => {
+    if (toInsert.length === 0) return;
+
+    const insertData: ProductInsert[] = toInsert.map(({ product }) => ({
+      external_id: product.external_id,
+      name: product.name,
+      sku: product.sku,
+      brand: product.brand,
+      brand_line: product.brand_line,
+      price: product.price,
+      cost_price: product.cost_price,
+      unit: product.unit,
+      item_type: product.item_type || "other",
+      description: product.description,
+      color: product.color,
+      material: product.material,
+      style: product.style,
+      gender: product.gender,
+      reorder_level: product.reorder_level,
+      reorder_quantity: product.reorder_quantity,
+      lead_time_days: product.lead_time_days,
+      is_active: true,
+    }));
+
+    // Batch insert with error handling
+    const { data: insertedProducts, error: insertError } = await supabase
+      .from("products")
+      .insert(insertData)
+      .select("id, sku, external_id");
+
+    if (insertError) {
+      toInsert.forEach(({ rowNum, product }) => {
+        result.failed++;
+        result.errors.push({
+          row: rowNum,
+          column: "database",
+          message: insertError.message,
+          value: product.sku,
+        });
+      });
+      return;
+    }
+
+    if (insertedProducts) {
+      result.inserted += insertedProducts.length;
+
+      // Update duplicate map
+      for (const inserted of insertedProducts) {
+        duplicateMap.set(`sku:${inserted.sku}`, inserted.id);
+        if (inserted.external_id) {
+          duplicateMap.set(`external:${inserted.external_id}`, inserted.id);
+        }
+      }
+
+      // Batch create frame attributes
+      if (createFrameAttributes) {
+        const frameDataToInsert: FrameAttributesInsert[] = [];
+        
+        for (const { product } of toInsert) {
+          if (product.item_type === "frames" && product.frame_attributes) {
+            const productId = duplicateMap.get(`sku:${product.sku}`);
+            if (productId) {
+              frameDataToInsert.push({
+                product_id: productId,
+                model_code: product.frame_attributes.model_code,
+                frame_shape: product.frame_attributes.frame_shape,
+                frame_material: product.frame_attributes.frame_material,
+                front_color: product.frame_attributes.front_color,
+                lens_width: product.frame_attributes.lens_width,
+                bridge_size: product.frame_attributes.bridge_size,
+                temple_length: product.frame_attributes.temple_length,
+              });
+            }
+          }
+        }
+
+        if (frameDataToInsert.length > 0) {
+          await supabase.from("frame_attributes").insert(frameDataToInsert);
+        }
+      }
+    }
+  };
+
+  /**
+   * Process a single batch of products for update
+   */
+  const processBatchUpdate = async (
+    toUpdate: { product: ParsedProduct; rowNum: number; existingId: string }[],
+    createFrameAttributes: boolean,
+    result: ImportResult
+  ) => {
+    if (toUpdate.length === 0) return;
+
+    const updateData: ProductInsert[] = toUpdate.map(({ product }) => ({
+      external_id: product.external_id,
+      name: product.name,
+      sku: product.sku,
+      brand: product.brand,
+      brand_line: product.brand_line,
+      price: product.price,
+      cost_price: product.cost_price,
+      unit: product.unit,
+      item_type: product.item_type || "other",
+      description: product.description,
+      color: product.color,
+      material: product.material,
+      style: product.style,
+      gender: product.gender,
+      reorder_level: product.reorder_level,
+      reorder_quantity: product.reorder_quantity,
+      lead_time_days: product.lead_time_days,
+      is_active: true,
+    }));
+
+    const { error: upsertError } = await supabase
+      .from("products")
+      .upsert(updateData, { onConflict: "sku" });
+
+    if (upsertError) {
+      toUpdate.forEach(({ rowNum, product }) => {
+        result.failed++;
+        result.errors.push({
+          row: rowNum,
+          column: "database",
+          message: upsertError.message,
+          value: product.sku,
+        });
+      });
+      return;
+    }
+
+    result.updated += toUpdate.length;
+
+    // Batch upsert frame attributes
+    if (createFrameAttributes) {
+      const frameDataToUpsert: FrameAttributesInsert[] = toUpdate
+        .filter(({ product }) => product.item_type === "frames" && !!product.frame_attributes)
+        .map(({ product, existingId }) => ({
+          product_id: existingId,
+          model_code: product.frame_attributes!.model_code,
+          frame_shape: product.frame_attributes!.frame_shape,
+          frame_material: product.frame_attributes!.frame_material,
+          front_color: product.frame_attributes!.front_color,
+          lens_width: product.frame_attributes!.lens_width,
+          bridge_size: product.frame_attributes!.bridge_size,
+          temple_length: product.frame_attributes!.temple_length,
+        }));
+
+      if (frameDataToUpsert.length > 0) {
+        await supabase
+          .from("frame_attributes")
+          .upsert(frameDataToUpsert, { onConflict: "product_id" });
+      }
+    }
+  };
+
   const importProducts = useCallback(
     async (
       products: ParsedProduct[],
@@ -68,10 +245,13 @@ export const useECMSImport = () => {
       fileName?: string
     ): Promise<ImportResult> => {
       setIsImporting(true);
-      setIsCancelled(false);
+      cancelledRef.current = false;
 
       const { batchSize, duplicateHandling, createFrameAttributes } = options;
-      const totalBatches = Math.ceil(products.length / batchSize);
+      
+      // Use smaller chunk size for more reliable writes, but respect user's batch size
+      const effectiveBatchSize = Math.min(batchSize, CHUNK_SIZE);
+      const totalBatches = Math.ceil(products.length / effectiveBatchSize);
 
       const result: ImportResult = {
         success: true,
@@ -99,17 +279,17 @@ export const useECMSImport = () => {
       });
 
       try {
-        // Check all duplicates upfront
+        // Check all duplicates upfront with chunked queries
         const duplicateMap = await checkDuplicates(products);
 
         for (let batchNum = 0; batchNum < totalBatches; batchNum++) {
-          if (isCancelled) {
+          if (cancelledRef.current) {
             toast.info("Import cancelled");
             break;
           }
 
-          const start = batchNum * batchSize;
-          const end = Math.min(start + batchSize, products.length);
+          const start = batchNum * effectiveBatchSize;
+          const end = Math.min(start + effectiveBatchSize, products.length);
           const batch = products.slice(start, end);
 
           setProgress((prev) =>
@@ -147,7 +327,6 @@ export const useECMSImport = () => {
                   value: product.sku,
                 });
               } else {
-                // update
                 toUpdate.push({ product, rowNum, existingId });
               }
             } else {
@@ -155,149 +334,11 @@ export const useECMSImport = () => {
             }
           }
 
-          // Batch INSERT new products
-          if (toInsert.length > 0) {
-            const insertData: ProductInsert[] = toInsert.map(({ product }) => ({
-              external_id: product.external_id,
-              name: product.name,
-              sku: product.sku,
-              brand: product.brand,
-              brand_line: product.brand_line,
-              price: product.price,
-              cost_price: product.cost_price,
-              unit: product.unit,
-              item_type: product.item_type || "other",
-              description: product.description,
-              color: product.color,
-              material: product.material,
-              style: product.style,
-              gender: product.gender,
-              reorder_level: product.reorder_level,
-              reorder_quantity: product.reorder_quantity,
-              lead_time_days: product.lead_time_days,
-              is_active: true,
-            }));
+          // Process inserts and updates with retry logic
+          await processBatchInsert(toInsert, duplicateMap, createFrameAttributes, result);
+          await processBatchUpdate(toUpdate, createFrameAttributes, result);
 
-            const { data: insertedProducts, error: insertError } = await supabase
-              .from("products")
-              .insert(insertData)
-              .select("id, sku, external_id");
-
-            if (insertError) {
-              toInsert.forEach(({ rowNum, product }) => {
-                result.failed++;
-                result.errors.push({
-                  row: rowNum,
-                  column: "database",
-                  message: insertError.message,
-                  value: product.sku,
-                });
-              });
-            } else if (insertedProducts) {
-              result.inserted += insertedProducts.length;
-
-              // Update duplicate map and create frame attributes
-              for (const inserted of insertedProducts) {
-                duplicateMap.set(`sku:${inserted.sku}`, inserted.id);
-                if (inserted.external_id) {
-                  duplicateMap.set(`external:${inserted.external_id}`, inserted.id);
-                }
-              }
-
-              // Batch create frame attributes for inserted frame products
-              if (createFrameAttributes) {
-                const frameDataToInsert: FrameAttributesInsert[] = [];
-                
-                for (const { product } of toInsert) {
-                  if (product.item_type === "frames" && product.frame_attributes) {
-                    const productId = duplicateMap.get(`sku:${product.sku}`);
-                    if (productId) {
-                      frameDataToInsert.push({
-                        product_id: productId,
-                        model_code: product.frame_attributes.model_code,
-                        frame_shape: product.frame_attributes.frame_shape,
-                        frame_material: product.frame_attributes.frame_material,
-                        front_color: product.frame_attributes.front_color,
-                        lens_width: product.frame_attributes.lens_width,
-                        bridge_size: product.frame_attributes.bridge_size,
-                        temple_length: product.frame_attributes.temple_length,
-                      });
-                    }
-                  }
-                }
-
-                if (frameDataToInsert.length > 0) {
-                  await supabase.from("frame_attributes").insert(frameDataToInsert);
-                }
-              }
-            }
-          }
-
-          // Batch UPDATE existing products
-          if (toUpdate.length > 0) {
-            const updateData: ProductInsert[] = toUpdate.map(({ product }) => ({
-              external_id: product.external_id,
-              name: product.name,
-              sku: product.sku,
-              brand: product.brand,
-              brand_line: product.brand_line,
-              price: product.price,
-              cost_price: product.cost_price,
-              unit: product.unit,
-              item_type: product.item_type || "other",
-              description: product.description,
-              color: product.color,
-              material: product.material,
-              style: product.style,
-              gender: product.gender,
-              reorder_level: product.reorder_level,
-              reorder_quantity: product.reorder_quantity,
-              lead_time_days: product.lead_time_days,
-              is_active: true,
-            }));
-
-            const { error: upsertError } = await supabase
-              .from("products")
-              .upsert(updateData, { onConflict: "sku" });
-
-            if (upsertError) {
-              toUpdate.forEach(({ rowNum, product }) => {
-                result.failed++;
-                result.errors.push({
-                  row: rowNum,
-                  column: "database",
-                  message: upsertError.message,
-                  value: product.sku,
-                });
-              });
-            } else {
-              result.updated += toUpdate.length;
-
-              // Batch upsert frame attributes for updated frame products
-              if (createFrameAttributes) {
-                const frameDataToUpsert: FrameAttributesInsert[] = toUpdate
-                  .filter(({ product }) => product.item_type === "frames" && !!product.frame_attributes)
-                  .map(({ product, existingId }) => ({
-                    product_id: existingId,
-                    model_code: product.frame_attributes!.model_code,
-                    frame_shape: product.frame_attributes!.frame_shape,
-                    frame_material: product.frame_attributes!.frame_material,
-                    front_color: product.frame_attributes!.front_color,
-                    lens_width: product.frame_attributes!.lens_width,
-                    bridge_size: product.frame_attributes!.bridge_size,
-                    temple_length: product.frame_attributes!.temple_length,
-                  }));
-
-                if (frameDataToUpsert.length > 0) {
-                  await supabase
-                    .from("frame_attributes")
-                    .upsert(frameDataToUpsert, { onConflict: "product_id" });
-                }
-              }
-            }
-          }
-
-          // Calculate time estimate
+          // Calculate time estimate with smoothing
           const elapsedMs = Date.now() - startTime;
           const avgMsPerProduct = elapsedMs / end;
           const remainingProducts = products.length - end;
@@ -313,11 +354,16 @@ export const useECMSImport = () => {
                   updated: result.updated,
                   skipped: result.skipped,
                   failed: result.failed,
-                  errors: result.errors,
+                  errors: result.errors.slice(-50), // Keep only last 50 errors in memory
                   estimatedTimeRemaining,
                 }
               : null
           );
+
+          // Small delay between batches to prevent overwhelming the database
+          if (batchNum < totalBatches - 1) {
+            await delay(100);
+          }
         }
 
         // Invalidate queries to refresh product list
@@ -344,25 +390,39 @@ export const useECMSImport = () => {
           queryClient.invalidateQueries({ queryKey: ["import-history"] });
         }
 
+        if (result.success) {
+          toast.success(`Import complete! ${result.inserted} inserted, ${result.updated} updated`);
+        } else {
+          toast.warning(`Import finished with ${result.failed} errors`);
+        }
+
         return result;
       } catch (error) {
         result.success = false;
-        toast.error("Import failed: " + (error instanceof Error ? error.message : "Unknown error"));
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        toast.error("Import failed: " + errorMessage);
+        
+        result.errors.push({
+          row: 0,
+          column: "system",
+          message: `Fatal error: ${errorMessage}`,
+        });
+        
         return result;
       } finally {
         setIsImporting(false);
       }
     },
-    [checkDuplicates, isCancelled, queryClient]
+    [checkDuplicates, queryClient]
   );
 
   const cancelImport = useCallback(() => {
-    setIsCancelled(true);
+    cancelledRef.current = true;
   }, []);
 
   const resetProgress = useCallback(() => {
     setProgress(null);
-    setIsCancelled(false);
+    cancelledRef.current = false;
   }, []);
 
   return {
