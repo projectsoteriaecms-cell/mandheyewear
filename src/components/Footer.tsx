@@ -1,12 +1,15 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter, Lock, ChevronDown } from "lucide-react";
+import { Facebook, Instagram, Twitter, Lock, ChevronDown, Moon, Sun } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import soteriaLogo from "@/assets/soteria-logo.png";
+import mhLogo from "@/assets/mh-logo.png";
 
 const footerSections = [
   {
@@ -50,12 +53,12 @@ const FooterSection = ({ title, links }: { title: string; links: { name: string;
         )} />
       </CollapsibleTrigger>
       <CollapsibleContent className="lg:!block">
-        <ul className="space-y-2 pb-4 lg:pb-0 lg:mt-4">
+        <ul className="space-y-3 pb-4 lg:pb-0 lg:mt-4">
           {links.map((link) => (
             <li key={link.name}>
               <Link
                 to={link.path}
-                className="text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 {link.name}
               </Link>
@@ -69,6 +72,26 @@ const FooterSection = ({ title, links }: { title: string; links: { name: string;
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    // Check if dark mode is already set
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    setIsDark(isDarkMode);
+  }, []);
+
+  const toggleTheme = () => {
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    
+    if (newIsDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   return (
     <footer className="bg-card border-t border-border">
@@ -77,12 +100,20 @@ export const Footer = () => {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-display font-bold text-primary">SOTERIA</span>
-              <span className="text-muted-foreground">|</span>
-              <span className="text-xl font-display font-bold text-accent">M&H</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
+            <Link to="/" className="flex items-center gap-3">
+              <img 
+                src={soteriaLogo} 
+                alt="Soteria Eye Clinic" 
+                className="h-10 w-auto dark:invert dark:brightness-[1.2]"
+              />
+              <span className="text-border text-xl font-light">|</span>
+              <img 
+                src={mhLogo} 
+                alt="M&H Eyewear" 
+                className="h-10 w-auto dark:invert dark:brightness-[1.2]"
+              />
+            </Link>
+            <p className="text-sm text-muted-foreground max-w-xs">
               Premium eye care and designer eyewear. See better. Look better.
             </p>
             
@@ -90,25 +121,47 @@ export const Footer = () => {
             <div className="flex gap-3 pt-2">
               <a
                 href="#"
-                className="p-2 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-smooth"
+                className="p-2 rounded-full bg-secondary text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="h-4 w-4" />
               </a>
               <a
                 href="#"
-                className="p-2 rounded-full bg-secondary hover:bg-accent hover:text-accent-foreground transition-smooth"
+                className="p-2 rounded-full bg-secondary text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="h-4 w-4" />
               </a>
               <a
                 href="#"
-                className="p-2 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-smooth"
+                className="p-2 rounded-full bg-secondary text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
                 aria-label="Twitter"
               >
                 <Twitter className="h-4 w-4" />
               </a>
+            </div>
+
+            {/* Theme Toggle */}
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleTheme}
+                className="flex items-center gap-2"
+              >
+                {isDark ? (
+                  <>
+                    <Sun className="h-4 w-4" />
+                    Light Mode
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4" />
+                    Dark Mode
+                  </>
+                )}
+              </Button>
             </div>
           </div>
 
@@ -123,19 +176,19 @@ export const Footer = () => {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             {/* Security Badge */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Lock className="h-4 w-4" />
+              <Lock className="h-4 w-4 text-green-600" />
               <span>We guarantee every transaction is 100% secure</span>
             </div>
 
-            {/* Payment Icons Placeholder */}
+            {/* Payment Icons */}
             <div className="flex items-center gap-3">
-              <div className="px-3 py-1 bg-secondary rounded text-xs font-medium text-muted-foreground">
+              <div className="px-3 py-1.5 bg-secondary rounded text-xs font-medium text-foreground">
                 Paystack
               </div>
-              <div className="px-3 py-1 bg-secondary rounded text-xs font-medium text-muted-foreground">
+              <div className="px-3 py-1.5 bg-secondary rounded text-xs font-medium text-foreground">
                 Visa
               </div>
-              <div className="px-3 py-1 bg-secondary rounded text-xs font-medium text-muted-foreground">
+              <div className="px-3 py-1.5 bg-secondary rounded text-xs font-medium text-foreground">
                 Mastercard
               </div>
             </div>

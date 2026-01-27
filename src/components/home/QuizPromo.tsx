@@ -1,53 +1,85 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Clock, Target, Heart } from "lucide-react";
+import { Sparkles, Clock, Target, Heart, ArrowRight, CheckCircle } from "lucide-react";
 
 const benefits = [
-  { icon: Clock, text: "Takes only 60 seconds" },
-  { icon: Target, text: "Personalized results" },
-  { icon: Heart, text: "Find your perfect fit" },
+  "Personalized frame recommendations",
+  "Find your perfect fit in 60 seconds",
+  "Based on your face shape & style",
 ];
 
 export const QuizPromo = () => {
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
-      <div className="max-w-4xl mx-auto text-center">
-        {/* Icon */}
-        <div className="inline-flex p-4 rounded-full bg-accent/10 mb-6">
-          <Sparkles className="h-8 w-8 text-accent" />
-        </div>
-        
-        {/* Headline */}
-        <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-4">
-          Find your perfect frame in 60 seconds
-        </h2>
-        
-        {/* Description */}
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-          Answer a few questions about your style preferences, face shape, and lifestyle. 
-          We'll recommend frames that fit you perfectly.
-        </p>
+    <section className="py-20 bg-primary text-primary-foreground">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 text-sm font-medium">
+              <Sparkles className="h-4 w-4" />
+              AI-Powered Recommendations
+            </div>
+            
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold">
+              Find your perfect frame in 60 seconds
+            </h2>
+            
+            <p className="text-lg text-primary-foreground/80 max-w-lg">
+              Answer a few questions about your style preferences, face shape, and lifestyle. 
+              We'll recommend frames that fit you perfectly.
+            </p>
 
-        {/* Benefits */}
-        <div className="flex flex-wrap justify-center gap-6 mb-10">
-          {benefits.map((benefit) => {
-            const Icon = benefit.icon;
-            return (
-              <div key={benefit.text} className="flex items-center gap-2 text-muted-foreground">
-                <Icon className="h-4 w-4 text-primary" />
-                <span className="text-sm">{benefit.text}</span>
+            <ul className="space-y-3">
+              {benefits.map((benefit) => (
+                <li key={benefit} className="flex items-center gap-3 text-primary-foreground/90">
+                  <CheckCircle className="h-5 w-5 text-accent" />
+                  {benefit}
+                </li>
+              ))}
+            </ul>
+
+            <Button 
+              size="lg" 
+              variant="secondary"
+              asChild 
+              className="group bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+            >
+              <Link to="/style-quiz" className="flex items-center gap-2">
+                Start the Style Quiz
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
+          </div>
+
+          {/* Visual element - Frame style previews */}
+          <div className="relative hidden lg:block">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div className="bg-primary-foreground/10 rounded-2xl p-6 backdrop-blur-sm border border-primary-foreground/10">
+                  <div className="text-4xl mb-3">🔲</div>
+                  <h4 className="font-semibold mb-1">Square</h4>
+                  <p className="text-sm text-primary-foreground/70">Bold & Angular</p>
+                </div>
+                <div className="bg-primary-foreground/10 rounded-2xl p-6 backdrop-blur-sm border border-primary-foreground/10">
+                  <div className="text-4xl mb-3">⭕</div>
+                  <h4 className="font-semibold mb-1">Round</h4>
+                  <p className="text-sm text-primary-foreground/70">Soft & Classic</p>
+                </div>
               </div>
-            );
-          })}
+              <div className="space-y-4 mt-8">
+                <div className="bg-primary-foreground/10 rounded-2xl p-6 backdrop-blur-sm border border-primary-foreground/10">
+                  <div className="text-4xl mb-3">😺</div>
+                  <h4 className="font-semibold mb-1">Cat-eye</h4>
+                  <p className="text-sm text-primary-foreground/70">Retro Chic</p>
+                </div>
+                <div className="bg-primary-foreground/10 rounded-2xl p-6 backdrop-blur-sm border border-primary-foreground/10">
+                  <div className="text-4xl mb-3">✈️</div>
+                  <h4 className="font-semibold mb-1">Aviator</h4>
+                  <p className="text-sm text-primary-foreground/70">Timeless Cool</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
-        {/* CTA */}
-        <Button size="lg" className="text-base px-8" asChild>
-          <Link to="/style-quiz">
-            <Sparkles className="mr-2 h-5 w-5" />
-            Start the Style Quiz
-          </Link>
-        </Button>
       </div>
     </section>
   );

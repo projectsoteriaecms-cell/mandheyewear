@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { Glasses, Sun, Eye } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ArrowRight, Glasses, Sun, Eye } from "lucide-react";
 import frame1 from "@/assets/frame-1.jpg";
 import frame2 from "@/assets/frame-2.jpg";
 import heroEyeCare from "@/assets/hero-eye-care.jpg";
@@ -31,8 +30,17 @@ const categories = [
 
 export const CategoryCards = () => {
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-20 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground">
+            Shop by Category
+          </h2>
+          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+            Explore our curated collection of eyewear and professional eye care services
+          </p>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-6">
           {categories.map((category) => {
             const Icon = category.icon;
@@ -40,7 +48,7 @@ export const CategoryCards = () => {
               <Link
                 key={category.name}
                 to={category.path}
-                className="group relative overflow-hidden rounded-xl aspect-[4/5] block"
+                className="group relative overflow-hidden rounded-2xl aspect-[4/5] block bg-card border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg"
               >
                 {/* Image */}
                 <img
@@ -50,22 +58,21 @@ export const CategoryCards = () => {
                 />
                 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/40 to-transparent" />
                 
                 {/* Content */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon className="h-5 w-5" />
-                    <h3 className="text-xl font-display font-semibold">{category.name}</h3>
-                  </div>
-                  <p className="text-white/80 text-sm">{category.description}</p>
-                  
-                  {/* Hover Arrow */}
-                  <div className="mt-4 flex items-center gap-2 text-sm font-medium opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                    <span>Explore</span>
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2 text-white/90">
+                        <Icon className="h-5 w-5" />
+                        <h3 className="text-xl font-display font-semibold">{category.name}</h3>
+                      </div>
+                      <p className="text-white/70 text-sm">{category.description}</p>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-primary transition-colors">
+                      <ArrowRight className="h-5 w-5 text-white" />
+                    </div>
                   </div>
                 </div>
               </Link>

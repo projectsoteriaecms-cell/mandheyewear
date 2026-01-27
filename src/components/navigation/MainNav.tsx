@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Search, Heart, User, LogOut, Settings, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,8 @@ import { hasAdminAccess } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import soteriaLogo from "@/assets/soteria-logo.png";
+import mhLogo from "@/assets/mh-logo.png";
 
 const navLinks = [
   { name: "Style Quiz", path: "/style-quiz", highlight: true },
@@ -52,16 +53,22 @@ export const MainNav = () => {
   };
 
   return (
-    <div className="bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-50">
+    <div className="bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo - Unified Brand */}
-          <Link to="/" className="flex items-center">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-display font-bold text-primary">SOTERIA</span>
-              <span className="text-muted-foreground">|</span>
-              <span className="text-xl font-display font-bold text-accent">M&H</span>
-            </div>
+          {/* Logo - Unified Brand with Images */}
+          <Link to="/" className="flex items-center gap-3">
+            <img 
+              src={soteriaLogo} 
+              alt="Soteria Eye Clinic" 
+              className="h-10 w-auto dark:invert dark:brightness-[1.2]"
+            />
+            <span className="text-border text-2xl font-light">|</span>
+            <img 
+              src={mhLogo} 
+              alt="M&H Eyewear" 
+              className="h-10 w-auto dark:invert dark:brightness-[1.2]"
+            />
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -73,13 +80,13 @@ export const MainNav = () => {
                 className={cn(
                   "text-sm font-medium transition-smooth relative py-2",
                   link.highlight 
-                    ? "text-accent hover:text-accent/80" 
-                    : "text-foreground hover:text-primary",
-                  location.pathname === link.path && "text-primary"
+                    ? "text-accent hover:text-accent/80 flex items-center gap-1" 
+                    : "text-foreground/70 hover:text-foreground",
+                  location.pathname === link.path && "text-foreground"
                 )}
               >
                 {link.highlight && (
-                  <Sparkles className="h-3 w-3 inline-block mr-1 -mt-0.5" />
+                  <Sparkles className="h-3.5 w-3.5" />
                 )}
                 {link.name}
                 {location.pathname === link.path && (
@@ -90,14 +97,14 @@ export const MainNav = () => {
           </nav>
 
           {/* Icon Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {/* Search */}
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
               <Search className="h-5 w-5" />
             </Button>
 
             {/* Wishlist */}
-            <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon" asChild className="text-foreground/70 hover:text-foreground hover:bg-muted">
               <Link to="/dashboard?tab=wishlist">
                 <Heart className="h-5 w-5" />
               </Link>
@@ -111,7 +118,7 @@ export const MainNav = () => {
               isAuthenticated ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                    <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
                       <User className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -138,7 +145,7 @@ export const MainNav = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="text-foreground/70 hover:text-foreground">
                   <Link to="/login">Sign In</Link>
                 </Button>
               )
