@@ -22,6 +22,7 @@ const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
 const Checkout = lazy(() => import("@/pages/Checkout"));
 const OrderConfirmation = lazy(() => import("@/pages/OrderConfirmation"));
 const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
+const StyleQuiz = lazy(() => import("@/pages/StyleQuiz"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const PageLoader = () => (
@@ -30,7 +31,7 @@ const PageLoader = () => (
   </div>
 );
 
-const withSuspense = (Component: React.LazyExoticComponent<() => JSX.Element>) => (
+const withSuspense = (Component: React.LazyExoticComponent<React.ComponentType<unknown>>) => (
   <Suspense fallback={<PageLoader />}>
     <Component />
   </Suspense>
@@ -56,5 +57,6 @@ export const publicRoutes = [
   <Route key="/checkout" path="/checkout" element={withSuspense(Checkout)} />,
   <Route key="/order-confirmation" path="/order/:orderId" element={withSuspense(OrderConfirmation)} />,
   <Route key="/track-order" path="/track-order" element={withSuspense(OrderTracking)} />,
+  <Route key="/style-quiz" path="/style-quiz" element={withSuspense(StyleQuiz)} />,
   <Route key="*" path="*" element={withSuspense(NotFound)} />,
 ];
