@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Building2,
   Wrench,
+  FolderTree,
 } from "lucide-react";
 import { useIsManager, useIsSuperAdmin } from "@/hooks/useUserRole";
 import {
@@ -65,6 +66,12 @@ const navItems: NavItem[] = [
     title: "Services",
     href: "/admin/services",
     icon: Wrench,
+    requiresManager: true,
+  },
+  {
+    title: "Categories",
+    href: "/admin/categories",
+    icon: FolderTree,
     requiresManager: true,
   },
   {
