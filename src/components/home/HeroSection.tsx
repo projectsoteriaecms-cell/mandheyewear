@@ -98,8 +98,8 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          {/* Hero Image with floating elements */}
-          <div className="relative order-1 lg:order-2">
+          {/* Hero Image with floating elements - hidden on mobile/tablet, shown on desktop */}
+          <div className="relative hidden lg:block">
             {/* Main image container */}
             <div className="relative rounded-3xl overflow-hidden shadow-float animate-scale-in">
               <img
