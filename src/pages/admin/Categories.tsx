@@ -36,7 +36,7 @@ import { useCategories, type Category } from "@/modules/categories";
 import { SortableCategoryRow } from "@/components/admin/categories/SortableCategoryRow";
 import { CreateCategoryDialog } from "@/components/admin/categories/CreateCategoryDialog";
 import { EditCategoryDialog } from "@/components/admin/categories/EditCategoryDialog";
-import { Loader2 } from "lucide-react";
+import { CircleNotch } from "@phosphor-icons/react";
 
 interface CategoryTreeNode extends Category {
   depth: number;
@@ -127,7 +127,7 @@ const Categories = () => {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <CircleNotch className="h-8 w-8 animate-spin text-primary" weight="bold" />
         </div>
       </AdminLayout>
     );

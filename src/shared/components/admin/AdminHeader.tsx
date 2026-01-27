@@ -1,4 +1,4 @@
-import { Bell, LogOut, User } from "lucide-react";
+import { Bell, SignOut, User } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -55,7 +55,7 @@ export const AdminHeader = () => {
 
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+          <Bell className="h-5 w-5" weight="light" />
           <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
             3
           </span>
@@ -65,7 +65,7 @@ export const AdminHeader = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-4 w-4 text-primary" />
+                <User className="h-4 w-4 text-primary" weight="light" />
               </div>
               <div className="text-left hidden sm:block">
                 <p className="text-sm font-medium">{user?.email}</p>
@@ -79,12 +79,12 @@ export const AdminHeader = () => {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-              <User className="mr-2 h-4 w-4" />
+              <User className="mr-2 h-4 w-4" weight="light" />
               Profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-              <LogOut className="mr-2 h-4 w-4" />
+              <SignOut className="mr-2 h-4 w-4" weight="light" />
               Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>

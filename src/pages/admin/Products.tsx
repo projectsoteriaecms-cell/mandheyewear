@@ -28,14 +28,14 @@ import {
 import {
   Plus,
   Upload,
-  Search,
-  MoreHorizontal,
-  Edit,
-  Trash2,
+  MagnifyingGlass,
+  DotsThree,
+  PencilSimple,
+  Trash,
   ShoppingBag,
-  ImagePlus,
-  FileSpreadsheet,
-} from "lucide-react";
+  ImageSquare,
+  FileXls,
+} from "@phosphor-icons/react";
 import { useAdminProducts } from "@/modules/products";
 import { CreateProductDialog } from "@/components/admin/products/CreateProductDialog";
 import { BulkUploadDialog } from "@/components/admin/products/BulkUploadDialog";
@@ -113,19 +113,19 @@ const Products = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => setIsBulkImageUploadOpen(true)}>
-              <ImagePlus className="mr-2 h-4 w-4" />
+              <ImageSquare className="mr-2 h-4 w-4" weight="light" />
               Upload Images
             </Button>
             <Button variant="outline" onClick={() => setIsBulkUploadOpen(true)}>
-              <Upload className="mr-2 h-4 w-4" />
+              <Upload className="mr-2 h-4 w-4" weight="light" />
               Bulk Upload
             </Button>
             <Button variant="outline" onClick={() => setIsECMSImportOpen(true)}>
-              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              <FileXls className="mr-2 h-4 w-4" weight="light" />
               ECMS Import
             </Button>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" weight="light" />
               Add Product
             </Button>
           </div>
@@ -136,7 +136,7 @@ const Products = () => {
           <CardContent className="pt-6">
             <div className="flex flex-wrap gap-4">
               <div className="relative flex-1 min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" weight="light" />
                 <Input
                   placeholder="Search by name or SKU..."
                   value={searchQuery}
@@ -175,7 +175,7 @@ const Products = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5" />
+              <ShoppingBag className="h-5 w-5" weight="light" />
               Product Catalog ({filteredProducts.length})
             </CardTitle>
           </CardHeader>
@@ -188,7 +188,7 @@ const Products = () => {
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <ShoppingBag className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                <ShoppingBag className="mx-auto h-12 w-12 mb-4 opacity-50" weight="light" />
                 <p>No products found</p>
                 <p className="text-sm">Add your first product to get started</p>
               </div>
@@ -220,7 +220,7 @@ const Products = () => {
                                   className="h-10 w-10 rounded object-cover"
                                 />
                               ) : (
-                                <ShoppingBag className="h-5 w-5 text-muted-foreground" />
+                                <ShoppingBag className="h-5 w-5 text-muted-foreground" weight="light" />
                               )}
                             </div>
                             <div>
@@ -279,19 +279,19 @@ const Products = () => {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
+                                <DotsThree className="h-4 w-4" weight="bold" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setEditProduct(product)}>
-                                <Edit className="mr-2 h-4 w-4" />
+                                <PencilSimple className="mr-2 h-4 w-4" weight="light" />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 className="text-destructive"
                                 onClick={() => setDeleteProductId(product.id)}
                               >
-                                <Trash2 className="mr-2 h-4 w-4" />
+                                <Trash className="mr-2 h-4 w-4" weight="light" />
                                 Deactivate
                               </DropdownMenuItem>
                             </DropdownMenuContent>

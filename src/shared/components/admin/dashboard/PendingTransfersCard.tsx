@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowsLeftRight } from "@phosphor-icons/react";
 import type { StockTransfer } from "@/modules/inventory";
 
 interface PendingTransfersCardProps {
@@ -14,7 +14,7 @@ export const PendingTransfersCard = ({ pendingTransfers }: PendingTransfersCardP
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base">Pending Transfers</CardTitle>
-        <ArrowLeftRight className="h-5 w-5 text-muted-foreground" />
+        <ArrowsLeftRight className="h-5 w-5 text-muted-foreground" weight="light" />
       </CardHeader>
       <CardContent>
         {pendingTransfers && pendingTransfers.length > 0 ? (

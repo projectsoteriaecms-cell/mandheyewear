@@ -26,14 +26,22 @@ export {
   CaretRight,
   CaretDown,
   CaretLeft,
+  CaretUp,
   ArrowRight,
   ArrowLeft,
+  ArrowUp,
+  ArrowDown,
   ArrowCounterClockwise,
   ArrowsLeftRight,
+  ArrowDownLeft,
+  ArrowUpRight,
+  ArrowDownRight,
+  ArrowsClockwise,
   
   // Shopping
   Bag,
   ShoppingBag,
+  ShoppingCart,
   Tag,
   Receipt,
   CreditCard,
@@ -43,6 +51,7 @@ export {
   Calendar,
   CalendarBlank,
   Clock,
+  ClockCounterClockwise,
   Timer,
   
   // Location
@@ -53,6 +62,7 @@ export {
   Phone,
   Envelope,
   ChatCircle,
+  Bell,
   
   // Info
   Info,
@@ -65,6 +75,7 @@ export {
   Sparkle,
   Star,
   Eye,
+  EyeSlash,
   EyeClosed,
   Camera,
   Scan,
@@ -79,6 +90,9 @@ export {
   Copy,
   Download,
   Upload,
+  FloppyDisk,
+  Key,
+  ArrowSquareOut,
   
   // Loading
   CircleNotch,
@@ -93,12 +107,17 @@ export {
   Package,
   Truck,
   ChartBar,
+  ChartLineUp,
+  TrendUp,
   Wrench,
   FolderSimple,
   Users,
+  UserPlus,
   Shield,
   Palette,
   Sliders,
+  CurrencyDollar,
+  ImageSquare,
   
   // Social
   FacebookLogo,
@@ -117,6 +136,7 @@ export {
   SortDescending,
   DotsThree,
   DotsThreeVertical,
+  DotsSixVertical,
   Export,
   Rows,
   CaretCircleDown,
@@ -134,7 +154,6 @@ export {
   Circle,
   Dot,
   ArrowsOutCardinal,
-  DotsSixVertical,
   Sidebar,
 } from "@phosphor-icons/react";
 

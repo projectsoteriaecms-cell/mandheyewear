@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Download, AlertTriangle, Package } from "lucide-react";
+import { MagnifyingGlass, Download, Warning, Package } from "@phosphor-icons/react";
 
 const getStockStatus = (quantity: number, threshold: number) => {
   if (quantity === 0) return { label: "Out of Stock", variant: "destructive" as const };
@@ -101,7 +101,7 @@ const Inventory = () => {
             </p>
           </div>
           <Button onClick={handleExportCSV} variant="outline">
-            <Download className="mr-2 h-4 w-4" />
+            <Download className="mr-2 h-4 w-4" weight="light" />
             Export CSV
           </Button>
         </div>
@@ -114,7 +114,7 @@ const Inventory = () => {
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" weight="light" />
                 <Input
                   placeholder="Search by product name or SKU..."
                   value={searchTerm}
@@ -139,7 +139,7 @@ const Inventory = () => {
                 variant={showLowStockOnly ? "default" : "outline"}
                 onClick={() => setShowLowStockOnly(!showLowStockOnly)}
               >
-                <AlertTriangle className="mr-2 h-4 w-4" />
+                <Warning className="mr-2 h-4 w-4" weight="light" />
                 Low Stock Only
               </Button>
             </div>
@@ -185,7 +185,7 @@ const Inventory = () => {
                             />
                           ) : (
                             <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
-                              <Package className="h-5 w-5 text-muted-foreground" />
+                              <Package className="h-5 w-5 text-muted-foreground" weight="light" />
                             </div>
                           )}
                           <div>
@@ -228,7 +228,7 @@ const Inventory = () => {
               </Table>
             ) : (
               <div className="p-12 text-center">
-                <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" weight="light" />
                 <h3 className="text-lg font-medium">No inventory found</h3>
                 <p className="text-muted-foreground">
                   {showLowStockOnly
