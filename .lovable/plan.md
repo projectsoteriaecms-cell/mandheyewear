@@ -1,403 +1,262 @@
 
 
-# Homepage and Navigation Redesign Plan
-## Inspired by Warby Parker, Vogue Eyewear, ZEELOOL, and Zenni - Following Dieter Rams' Principles
+# Icon System Migration Plan
+## From Lucide to Phosphor Icons - Minimalist Geometric Design
 
 ---
 
-## Vision Overview
+## Overview
 
-This redesign transforms the current homepage into a premium, minimalist experience that embodies Dieter Rams' design philosophy: "Less, but better." The new design will feel like a sophisticated blend of medical trust and fashion-forward eyewear, inspired by industry leaders like Warby Parker.
-
----
-
-## Dieter Rams' 10 Principles Applied
-
-| Principle | Application |
-|-----------|-------------|
-| **Innovative** | Style Quiz for personalized recommendations, unified brand presentation |
-| **Useful** | Clear product categories, direct paths to key actions |
-| **Aesthetic** | Clean typography, generous whitespace, refined color palette |
-| **Understandable** | Intuitive navigation, clear visual hierarchy |
-| **Unobtrusive** | Subtle animations, no visual clutter |
-| **Honest** | Authentic product imagery, transparent pricing in Naira |
-| **Long-lasting** | Timeless design patterns, not trendy |
-| **Thorough** | Every detail considered, from spacing to icons |
-| **Environmentally-friendly** | Efficient code, optimized images |
-| **Minimal** | Only essential elements, no decoration for decoration's sake |
+This plan migrates the project from **Lucide React** icons to **Phosphor Icons** - a more flexible icon family that supports multiple weights including the minimalist, geometric aesthetic you're looking for. Phosphor offers 6 distinct weights (thin, light, regular, bold, fill, duotone) that align perfectly with Dieter Rams' principles of clean, professional design.
 
 ---
 
-## Part 1: Navigation Redesign
+## Why Phosphor Icons?
 
-### Current Issues
-- Separate "Home" link is redundant when logo serves this purpose
-- Too many CTA buttons competing for attention
-- Navigation doesn't reflect core product categories
-- Dual logo treatment feels disconnected
+| Feature | Lucide | Phosphor |
+|---------|--------|----------|
+| Weights | 1 (stroke only) | 6 (thin, light, regular, bold, fill, duotone) |
+| Style | Rounded, friendly | Geometric, professional |
+| Customization | Limited | High (weight, color, size, mirroring) |
+| Bundle Size | ~50kb | ~60kb (tree-shakeable) |
+| Design Philosophy | Playful, casual | Technical, architectural |
 
-### New Navigation Structure
-
-```text
-+--------------------------------------------------------------------------------+
-| [Find a Store]          [SOTERIA | M&H]              [Book an Eye Exam]       |
-+--------------------------------------------------------------------------------+
-| Style Quiz | Eyeglasses | Sunglasses | Eye Exams | Accessories    [Icons Row] |
-+--------------------------------------------------------------------------------+
-```
-
-**Top Utility Bar (Warby Parker style)**
-- Left: "Find a Store" link with location icon
-- Center: Unified brand lockup (single combined logo or text treatment)
-- Right: "Book an Eye Exam" CTA (matches Warby Parker's prominent booking)
-
-**Main Navigation**
-- Style Quiz (personalization entry point - leads to frame recommendations)
-- Eyeglasses (prescription frames)
-- Sunglasses (fashion and prescription sunglasses)
-- Eye Exams (replaces "Eye Care" - clearer intent)
-- Accessories (cases, cleaning kits, lens solutions)
-
-**Icon Row (right side)**
-- Account icon (dropdown with profile sections)
-- Search icon
-- Wishlist/Favorites heart icon
-- Cart icon with count badge
-
-### Logo Treatment
-- Combined "SOTERIA | M&H" text lockup OR
-- Single unified logo that represents both brands
-- Clicking anywhere on the logo returns to homepage
-- No separate "Home" text link needed
-
----
-
-## Part 2: Homepage Redesign
-
-### Section 1: Hero Area
-**Warby Parker-inspired clean hero**
+### Phosphor Weight Options
 
 ```text
-+------------------------------------------------------------------------+
-|                                                                         |
-|              Your perfect pair is waiting                               |
-|                                                                         |
-|   Take the Style Quiz and get personalized frame recommendations        |
-|                                                                         |
-|              [Take the Style Quiz]   [Shop Eyeglasses]                 |
-|                                                                         |
-|   [Full-width lifestyle image of person wearing frames]                 |
-|                                                                         |
-+------------------------------------------------------------------------+
-```
-
-- Minimal text, maximum impact
-- Single powerful headline
-- Two primary CTAs (Quiz for personalization, Shop for direct browsing)
-- High-quality lifestyle photography (not product shots)
-
-### Section 2: Category Navigation Cards
-**Visual category entry points (like Vogue Eyewear)**
-
-```text
-+--------------------+--------------------+--------------------+
-|   [Eyeglasses]     |   [Sunglasses]     |  [Eye Exams]      |
-|   Image + Label    |   Image + Label    |  Image + Label    |
-+--------------------+--------------------+--------------------+
-```
-
-- Three equal-width cards with hover effects
-- Category image with subtle overlay
-- Clean typography for labels
-- Links to respective catalog or booking pages
-
-### Section 3: Personalization CTA
-**Style Quiz promotion (Warby Parker's key feature)**
-
-```text
-+------------------------------------------------------------------------+
-|  Find your perfect frame in 60 seconds                                  |
-|                                                                         |
-|  Answer a few questions about your style preferences, face shape,       |
-|  and lifestyle. We'll recommend frames that fit you perfectly.          |
-|                                                                         |
-|  [Start the Style Quiz]                                                 |
-+------------------------------------------------------------------------+
-```
-
-### Section 4: Featured Products
-**Product recommendations (existing FeaturedFrames, refined)**
-
-```text
-+--------------------+--------------------+--------------------+
-|  [Frame Image]     |  [Frame Image]     |  [Frame Image]    |
-|  Wishlist | Try On |  Wishlist | Try On |  Wishlist | Try On|
-|  Name       Price  |  Name       Price  |  Name       Price |
-|  [Color dots]      |  [Color dots]      |  [Color dots]     |
-+--------------------+--------------------+--------------------+
-```
-
-- Cleaner product cards following reference images
-- "Try on" button on each card
-- Color variant dots below product name
-- Heart icon for wishlist
-- Prices in Naira
-
-### Section 5: Virtual Try-On Feature
-**Refined VTO promotion**
-
-```text
-+------------------------------------------------------------------------+
-|  Try frames on virtually                                                |
-|                                                                         |
-|  Use your camera or upload a photo to see how frames look on you.       |
-|  Our AI technology calculates your face measurements for a perfect fit. |
-|                                                                         |
-|  [Try It Now]                                                           |
-+------------------------------------------------------------------------+
-```
-
-### Section 6: Why Choose Us
-**Trust indicators (simplified)**
-
-```text
-+------------------+------------------+------------------+------------------+
-| Free Eye Exams   | Virtual Try-On   | Free Shipping    | Easy Returns    |
-| Icon + Text      | Icon + Text      | Icon + Text      | Icon + Text     |
-+------------------+------------------+------------------+------------------+
-```
-
-### Section 7: Newsletter
-**Simple newsletter signup (like Vogue reference)**
-
-```text
-+------------------------------------------------------------------------+
-|  Join our newsletter                                                    |
-|  Stay up to date on styles, promos, and all things eyewear.            |
-|                                                                         |
-|  [Subscribe]                                                            |
-+------------------------------------------------------------------------+
+thin     ─────────────  Ultra minimal, 1px strokes
+light    ─────────────  Subtle, refined appearance  
+regular  ─────────────  Balanced, professional (DEFAULT)
+bold     ─────────────  Strong emphasis
+fill     ─────────────  Solid, active states
+duotone  ─────────────  Two-tone depth (non-playful 3D feel)
 ```
 
 ---
 
-## Part 3: Customer Dashboard Redesign
+## Recommended Style Configuration
 
-### New Tab Structure (matching Warby Parker references)
-Following the uploaded reference images:
+Based on your design requirements for "Minimalist Geometric + Negative Space" and "Isometric 3D (Non-Playful)":
 
-| Tab | Content |
-|-----|---------|
-| **Home** | Welcome message, quick stats, recent activity |
-| **Orders** | Order history with tracking links |
-| **Prescriptions** | Uploaded/stored prescription documents |
-| **Addresses** | Saved shipping addresses (new feature) |
-| **Favorites** | Wishlist items |
-| **Frame Profile** | Face dimensions, style preferences, fit data |
+### Primary Style: `light` weight
+- Clean, sharp 1.5px strokes
+- Maximum negative space
+- Professional, medical/tech feel
 
-### Frame Profile Section (new)
-Based on the reference image showing "Frame Profile":
+### Active/Selected States: `regular` or `bold` weight
+- Slightly heavier for emphasis
+- Clear visual hierarchy
 
-```text
-Your style preferences
-+------------------------+------------------------+
-| Frame shapes           | Preferred colors       |
-| Get started with Quiz  | Get started with Quiz  |
-+------------------------+------------------------+
-
-Your facial features
-+------------------------+------------------------+
-| Face shape             | Pupillary distance     |
-| From Virtual Try-On    | From Virtual Try-On    |
-+------------------------+------------------------+
-
-Your fit
-+------------------------+------------------------+
-| Frame width            | Best bridge fit        |
-| From Virtual Try-On    | From Virtual Try-On    |
-+------------------------+------------------------+
-```
-
-### Settings Page (new)
-Clean settings form based on reference:
-
-- Name (first, last)
-- Email (read-only)
-- Phone number
-- Password change button
-- Notification preferences (email, SMS checkboxes)
-- Save changes button
-
----
-
-## Part 4: Style Quiz Implementation
-
-### Quiz Flow
-1. **Welcome Screen**: "Let's find your perfect frames"
-2. **Face Shape**: Select from visual options
-3. **Frame Style**: Round, Square, Aviator, Cat-eye, etc.
-4. **Color Preferences**: Neutrals, Bold colors, Tortoise, Metal
-5. **Usage**: Reading, Computer, All-day, Fashion
-6. **Budget Range**: Price tier selection in Naira
-7. **Results**: Personalized frame recommendations
-
-### Data Storage
-- Save preferences to `profiles.frame_preferences` (JSON field already exists)
-- Link to "Your recommendations" page showing filtered products
-- Add "Quiz results" link in navigation for returning users
-
----
-
-## Part 5: Footer Redesign
-
-### Simplified Footer (following Vogue reference)
-
-```text
-+------------------------------------------------------------------------+
-| Talk to us     | How can we help? | Privacy and Terms | Refer Friends |
-|   [Dropdown]   |    [Dropdown]    |     [Dropdown]    |    [Link]     |
-+------------------------------------------------------------------------+
-| [Lock Icon] We guarantee every transaction is 100% secure              |
-|                                        [Payment icons: Paystack, etc.]  |
-+------------------------------------------------------------------------+
-```
-
----
-
-## Part 6: Technical Implementation
-
-### New Files to Create
-
-| File | Purpose |
-|------|---------|
-| `src/components/navigation/TopBar.tsx` | Utility bar (Find store, Book exam) |
-| `src/components/navigation/MainNav.tsx` | Primary navigation |
-| `src/components/navigation/MobileNav.tsx` | Mobile slide-out menu |
-| `src/pages/StyleQuiz.tsx` | Multi-step quiz flow |
-| `src/components/quiz/QuizStep.tsx` | Individual quiz step component |
-| `src/components/quiz/QuizResults.tsx` | Results display |
-| `src/components/home/HeroSection.tsx` | New minimal hero |
-| `src/components/home/CategoryCards.tsx` | Visual category links |
-| `src/components/home/TrustBadges.tsx` | Why choose us icons |
-| `src/components/home/Newsletter.tsx` | Email signup |
-| `src/components/dashboard/AddressesSection.tsx` | Saved addresses |
-| `src/components/dashboard/PrescriptionsSection.tsx` | Prescription docs |
-| `src/components/dashboard/FrameProfileSection.tsx` | Frame preferences |
-| `src/components/dashboard/SettingsSection.tsx` | Account settings |
-
-### Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/components/Navigation.tsx` | Complete redesign with new structure |
-| `src/pages/Index.tsx` | New section composition |
-| `src/pages/Dashboard.tsx` | New tabs: Addresses, Prescriptions, Frame Profile |
-| `src/components/Footer.tsx` | Simplified dropdown-based footer |
-| `src/index.css` | Additional utility classes for new design |
-| `src/routes/public.routes.tsx` | Add /style-quiz route |
-
-### Database Updates
-- Add `addresses` table for saved shipping addresses
-- Add `prescriptions` table for uploaded prescription documents
-- Extend `profiles.frame_preferences` JSON structure for quiz results
-
----
-
-## Part 7: Component Architecture
-
-```text
-src/
-├── components/
-│   ├── navigation/
-│   │   ├── TopBar.tsx          # Utility bar
-│   │   ├── MainNav.tsx         # Desktop navigation
-│   │   ├── MobileNav.tsx       # Mobile drawer
-│   │   ├── NavDropdown.tsx     # Mega menu dropdowns
-│   │   └── index.ts
-│   ├── home/
-│   │   ├── HeroSection.tsx
-│   │   ├── CategoryCards.tsx
-│   │   ├── QuizPromo.tsx
-│   │   ├── TrustBadges.tsx
-│   │   ├── Newsletter.tsx
-│   │   └── index.ts
-│   ├── quiz/
-│   │   ├── QuizContainer.tsx
-│   │   ├── QuizStep.tsx
-│   │   ├── QuizProgress.tsx
-│   │   ├── QuizResults.tsx
-│   │   └── index.ts
-│   └── dashboard/
-│       ├── AddressesSection.tsx
-│       ├── PrescriptionsSection.tsx
-│       ├── FrameProfileSection.tsx
-│       ├── SettingsSection.tsx
-│       └── index.ts
-```
+### Feature Highlights: `duotone` weight
+- Two-tone rendering creates subtle depth
+- Technical, architectural feel without being cute
+- Perfect for hero sections and key CTAs
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Navigation Overhaul
-1. Create new navigation component structure
-2. Implement top utility bar
-3. Build main navigation with new menu items
-4. Remove "Home" link, make logo clickable
-5. Add icon-based actions (search, wishlist, cart, account)
-6. Mobile navigation redesign
+### Phase 1: Install and Configure Phosphor
 
-### Phase 2: Homepage Sections
-1. Create new hero section component
-2. Build category cards section
-3. Refine existing FeaturedFrames component
-4. Create trust badges component
-5. Add newsletter signup section
-6. Compose new Index.tsx
+**Package Installation**
+```bash
+npm install @phosphor-icons/react
+```
 
-### Phase 3: Style Quiz
-1. Create quiz container and step components
-2. Build each quiz step (face shape, style, colors, usage, budget)
-3. Save results to user profile
-4. Create recommendations page based on quiz results
-5. Add "Quiz results" link for returning users
+**Create Icon Wrapper Component** for consistent styling across the app.
 
-### Phase 4: Dashboard Enhancement
-1. Add Addresses tab with CRUD functionality
-2. Add Prescriptions tab with file upload
-3. Add Frame Profile tab showing VTO data and quiz results
-4. Create Settings page with profile management
-5. Reorganize existing tabs
+### Phase 2: Create Icon Mapping
 
-### Phase 5: Footer and Polish
-1. Redesign footer with accordion/dropdown sections
-2. Add payment icons
-3. Final typography and spacing refinements
-4. Animation and transition polish
+Map all Lucide icons currently in use to their Phosphor equivalents.
+
+| Lucide Icon | Phosphor Equivalent | Usage Context |
+|-------------|---------------------|---------------|
+| `Home` | `House` | Bottom nav, home links |
+| `ShoppingBag` | `Bag` | Cart, shop navigation |
+| `Calendar` | `Calendar` | Booking, appointments |
+| `Search` | `MagnifyingGlass` | Search functionality |
+| `User` | `User` | Account, profile |
+| `Heart` | `Heart` | Wishlist, favorites |
+| `Menu` | `List` | Hamburger menu |
+| `X` | `X` | Close buttons |
+| `Moon` | `Moon` | Dark mode toggle |
+| `Sun` | `Sun` | Light mode toggle |
+| `MapPin` | `MapPin` | Location, branches |
+| `Phone` | `Phone` | Contact |
+| `Info` | `Info` | About |
+| `HelpCircle` | `Question` | FAQ, help |
+| `Sparkles` | `Sparkle` | Style quiz, special features |
+| `Settings` | `Gear` | Settings |
+| `LogOut` | `SignOut` | Sign out |
+| `Eye` | `Eye` | Eye care, visibility |
+| `Camera` | `Camera` | Virtual try-on |
+| `Truck` | `Truck` | Shipping, suppliers |
+| `RotateCcw` | `ArrowCounterClockwise` | Returns |
+| `ArrowRight` | `ArrowRight` | Navigation arrows |
+| `ArrowLeft` | `ArrowLeft` | Back navigation |
+| `Check` | `Check` | Checkmarks |
+| `ChevronRight` | `CaretRight` | Expand indicators |
+| `ChevronDown` | `CaretDown` | Dropdowns |
+| `Plus` | `Plus` | Add actions |
+| `Minus` | `Minus` | Remove actions |
+| `Loader2` | `CircleNotch` | Loading states |
+| `Package` | `Package` | Inventory |
+| `LayoutDashboard` | `SquaresFour` | Dashboard |
+| `BarChart3` | `ChartBar` | Reports |
+| `Building2` | `Buildings` | Branches |
+| `Wrench` | `Wrench` | Services |
+| `FolderTree` | `FolderSimple` | Categories |
+| `Users` | `Users` | User management |
+
+### Phase 3: Update Navigation Components
+
+**Files to Update:**
+
+| File | Icon Changes |
+|------|--------------|
+| `src/components/navigation/MobileBottomNav.tsx` | 5 icons |
+| `src/components/navigation/MobileTopBar.tsx` | 15+ icons |
+| `src/components/navigation/MainNav.tsx` | 8+ icons |
+| `src/components/navigation/TopBar.tsx` | 4 icons |
+
+### Phase 4: Update Home Components
+
+| File | Icon Changes |
+|------|--------------|
+| `src/components/home/HeroSection.tsx` | 3 icons |
+| `src/components/home/TrustBadges.tsx` | 4 icons |
+| `src/components/home/QuizPromo.tsx` | 2 icons |
+| `src/components/home/VirtualTryOn.tsx` | 2 icons |
+
+### Phase 5: Update UI Components
+
+| File | Icon Changes |
+|------|--------------|
+| `src/components/ui/checkbox.tsx` | 1 icon (Check) |
+| `src/components/ui/dropdown-menu.tsx` | 3 icons |
+| `src/components/ui/toast.tsx` | 1 icon (X) |
+| `src/components/ui/carousel.tsx` | 2 icons |
+| `src/components/ui/input-otp.tsx` | 1 icon |
+
+### Phase 6: Update Admin Components
+
+| File | Icon Changes |
+|------|--------------|
+| `src/shared/components/admin/sidebar/nav-config.ts` | 11 icons |
+| `src/components/admin/` (all files) | 50+ icons |
+
+### Phase 7: Update Page Components
+
+| File | Icon Changes |
+|------|--------------|
+| `src/pages/Dashboard.tsx` | 10+ icons |
+| `src/pages/Eyewear.tsx` | 3+ icons |
+| `src/pages/EyeCare.tsx` | 7 icons |
+| `src/pages/TryOn.tsx` | 3 icons |
+| `src/pages/Login.tsx` | 3 icons |
+| `src/pages/Signup.tsx` | 3 icons |
+| Other pages | Various |
 
 ---
 
-## Visual Style Updates
+## Technical Details
 
-### Typography
-- Headlines: Playfair Display (existing)
-- Body: Outfit (existing)
-- Increased line height for readability
-- Larger heading sizes for impact
+### New Files to Create
 
-### Spacing
-- More generous padding (32px to 64px sections)
-- Consistent 16px/24px grid alignment
-- Increased whitespace between elements
+| File | Purpose |
+|------|---------|
+| `src/components/ui/icon.tsx` | Centralized icon wrapper component |
+| `src/lib/icons.ts` | Icon mapping and re-exports for easy imports |
 
-### Colors
-- Primary: Soteria Blue (medical trust)
-- Accent: M&H Gold (calls to action)
-- Background: Clean whites with subtle grays
-- Text: Deep charcoal for readability
+### Icon Wrapper Component
 
-### Interactions
-- Subtle hover states (not dramatic)
-- Smooth 200-300ms transitions
-- No bouncy animations (professional feel)
+Creates a consistent interface for all icons with default weight and size settings:
+
+```text
+<Icon name="House" />           → Light weight, 20px (default)
+<Icon name="House" active />    → Bold weight (for active states)
+<Icon name="House" featured />  → Duotone weight (for highlights)
+```
+
+### Import Pattern Change
+
+**Before (Lucide):**
+```tsx
+import { Home, ShoppingBag, Calendar } from "lucide-react";
+```
+
+**After (Phosphor):**
+```tsx
+import { House, Bag, Calendar } from "@phosphor-icons/react";
+```
+
+---
+
+## Visual Examples
+
+### Bottom Navigation (Mobile)
+
+```text
+Current (Lucide - rounded strokes):
+  ⌂     🛍️     📅     🔍     👤
+ Home   Shop   Book  Search  Account
+
+New (Phosphor - light weight, geometric):
+  ⌂     ⊡     ☐     ○     ○
+ Home   Shop   Book  Search  Account
+```
+
+### Active State Transition
+
+```text
+Inactive: light weight (thin strokes)
+Active:   bold weight + duotone background
+```
+
+---
+
+## Package.json Changes
+
+```json
+{
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.7",
+    // Remove after migration:
+    // "lucide-react": "^0.462.0"  
+  }
+}
+```
+
+---
+
+## Cleanup Phase
+
+After all components are migrated:
+
+1. Remove `lucide-react` from dependencies
+2. Run final build to verify no Lucide imports remain
+3. Test all icon states (default, hover, active, disabled)
+
+---
+
+## File Changes Summary
+
+### New Files (2)
+- `src/components/ui/icon.tsx`
+- `src/lib/icons.ts`
+
+### Modified Files (~115 files)
+All files currently importing from `lucide-react` will be updated to use Phosphor equivalents with the appropriate weight settings.
+
+### Deleted Dependencies (1)
+- `lucide-react` (after full migration)
+
+---
+
+## Estimated Impact
+
+- **Bundle Size**: Similar (~60kb tree-shaken)
+- **Visual Consistency**: Significantly improved with weight system
+- **Brand Alignment**: Professional, medical-tech aesthetic
+- **Maintenance**: Easier with centralized icon component
 
