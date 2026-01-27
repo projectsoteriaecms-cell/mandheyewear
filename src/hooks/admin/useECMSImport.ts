@@ -259,63 +259,68 @@ export const useECMSImport = () => {
             }
           }
 
-          // Batch UPDATE existing products (must be done individually due to different IDs)
-          for (const { product, rowNum, existingId } of toUpdate) {
-            try {
-              const productData: ProductInsert = {
-                external_id: product.external_id,
-                name: product.name,
-                sku: product.sku,
-                brand: product.brand,
-                brand_line: product.brand_line,
-                price: product.price,
-                cost_price: product.cost_price,
-                unit: product.unit,
-                item_type: product.item_type || "other",
-                description: product.description,
-                color: product.color,
-                material: product.material,
-                style: product.style,
-                gender: product.gender,
-                reorder_level: product.reorder_level,
-                reorder_quantity: product.reorder_quantity,
-                lead_time_days: product.lead_time_days,
-                is_active: true,
-              };
+          // Batch UPDATE existing products (opt: single upsert by SKU instead of N individual updates)
+          if (toUpdate.length > 0) {
+            const updateData: ProductInsert[] = toUpdate.map(({ product }) => ({
+              external_id: product.external_id,
+              name: product.name,
+              sku: product.sku,
+              brand: product.brand,
+              brand_line: product.brand_line,
+              price: product.price,
+              cost_price: product.cost_price,
+              unit: product.unit,
+              item_type: product.item_type || "other",
+              description: product.description,
+              color: product.color,
+              material: product.material,
+              style: product.style,
+              gender: product.gender,
+              reorder_level: product.reorder_level,
+              reorder_quantity: product.reorder_quantity,
+              lead_time_days: product.lead_time_days,
+              is_active: true,
+            }));
 
-              const { error: updateError } = await supabase
-                .from("products")
-                .update(productData)
-                .eq("id", existingId);
+            const { error: upsertError } = await supabase
+              .from("products")
+              .upsert(updateData, { onConflict: "sku" });
 
-              if (updateError) throw updateError;
-              result.updated++;
-
-              // Update frame attributes if applicable
-              if (createFrameAttributes && product.frame_attributes && product.item_type === "frames") {
-                const frameData: FrameAttributesInsert = {
-                  product_id: existingId,
-                  model_code: product.frame_attributes.model_code,
-                  frame_shape: product.frame_attributes.frame_shape,
-                  frame_material: product.frame_attributes.frame_material,
-                  front_color: product.frame_attributes.front_color,
-                  lens_width: product.frame_attributes.lens_width,
-                  bridge_size: product.frame_attributes.bridge_size,
-                  temple_length: product.frame_attributes.temple_length,
-                };
-
-                await supabase
-                  .from("frame_attributes")
-                  .upsert(frameData, { onConflict: "product_id" });
-              }
-            } catch (error) {
-              result.failed++;
-              result.errors.push({
-                row: rowNum,
-                column: "database",
-                message: error instanceof Error ? error.message : "Database error",
-                value: product.sku,
+            if (upsertError) {
+              // If batch fails, log all rows as failed
+              toUpdate.forEach(({ rowNum, product }) => {
+                result.failed++;
+                result.errors.push({
+                  row: rowNum,
+                  column: "database",
+                  message: upsertError.message,
+                  value: product.sku,
+                });
               });
+            } else {
+              result.updated += toUpdate.length;
+
+              // Batch upsert frame attributes for updated frame products
+              if (createFrameAttributes) {
+                const frameDataToUpsert: FrameAttributesInsert[] = toUpdate
+                  .filter(({ product }) => product.item_type === "frames" && !!product.frame_attributes)
+                  .map(({ product, existingId }) => ({
+                    product_id: existingId,
+                    model_code: product.frame_attributes!.model_code,
+                    frame_shape: product.frame_attributes!.frame_shape,
+                    frame_material: product.frame_attributes!.frame_material,
+                    front_color: product.frame_attributes!.front_color,
+                    lens_width: product.frame_attributes!.lens_width,
+                    bridge_size: product.frame_attributes!.bridge_size,
+                    temple_length: product.frame_attributes!.temple_length,
+                  }));
+
+                if (frameDataToUpsert.length > 0) {
+                  await supabase
+                    .from("frame_attributes")
+                    .upsert(frameDataToUpsert, { onConflict: "product_id" });
+                }
+              }
             }
           }
 
