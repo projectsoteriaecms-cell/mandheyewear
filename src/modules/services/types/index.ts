@@ -1,0 +1,10 @@
+// Services module types
+import type { Database } from "@/integrations/supabase/types";
+
+export type Service = Database["public"]["Tables"]["services"]["Row"];
+export type ServiceInsert = Database["public"]["Tables"]["services"]["Insert"];
+export type ServiceUpdate = Database["public"]["Tables"]["services"]["Update"];
+
+export interface ServiceWithBookings extends Service {
+  upcoming_bookings_count?: number;
+}
