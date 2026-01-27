@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Heart, ShoppingBag, Moon, Sun, MapPin, Phone, Info, HelpCircle, Sparkles, Settings, LogOut, User } from "lucide-react";
+import { Menu, X, Heart, ShoppingBag, Moon, Sun, MapPin, Phone, Info, HelpCircle, Sparkles, Settings, LogOut, User, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
@@ -71,134 +71,150 @@ export const MobileTopBar = () => {
   };
 
   return (
-    <div className="lg:hidden bg-background/95 backdrop-blur-lg border-b border-border">
+    <div className="lg:hidden bg-background/95 backdrop-blur-lg border-b border-border relative">
       <div className="flex justify-between items-center h-14 px-4">
-        {/* Hamburger Menu */}
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-foreground -ml-2">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
-            {/* Header */}
-            <SheetHeader className="p-4 border-b border-border bg-primary">
-              <SheetTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <img 
-                    src={soteriaLogo} 
-                    alt="Soteria" 
-                    className="h-6 w-auto brightness-0 invert"
-                  />
-                  <span className="text-primary-foreground/40">|</span>
-                  <img 
-                    src={mhLogo} 
-                    alt="M&H" 
-                    className="h-6 w-auto brightness-0 invert"
-                  />
-                </div>
-                <SheetClose asChild>
-                  <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 -mr-2">
-                    <X className="h-5 w-5" />
-                  </Button>
-                </SheetClose>
-              </SheetTitle>
-            </SheetHeader>
-            
-            {/* Menu Items */}
-            <nav className="flex-1 overflow-y-auto py-2">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    onClick={() => setOpen(false)}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted",
-                      item.highlight && "bg-accent/10"
-                    )}
-                  >
-                    <Icon className={cn(
-                      "h-5 w-5",
-                      item.highlight ? "text-accent" : "text-muted-foreground"
-                    )} />
-                    <div>
-                      <div className={cn(
-                        "font-medium text-sm",
-                        item.highlight ? "text-accent" : "text-foreground"
-                      )}>
-                        {item.name}
-                      </div>
-                      <p className="text-xs text-muted-foreground">{item.description}</p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Theme & Account Section */}
-            <div className="border-t border-border p-4 space-y-3">
-              {/* Theme Toggle */}
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={toggleTheme}
-              >
-                {isDark ? (
-                  <>
-                    <Sun className="h-4 w-4 mr-2" />
-                    Light Mode
-                  </>
-                ) : (
-                  <>
-                    <Moon className="h-4 w-4 mr-2" />
-                    Dark Mode
-                  </>
-                )}
+        {/* Left: Hamburger Menu + Theme Toggle */}
+        <div className="flex items-center gap-1">
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-foreground -ml-2">
+                <Menu className="h-5 w-5" />
               </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
+              {/* Header */}
+              <SheetHeader className="p-4 border-b border-border bg-primary">
+                <SheetTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <img 
+                      src={soteriaLogo} 
+                      alt="Soteria" 
+                      className="h-6 w-auto brightness-0 invert"
+                    />
+                    <span className="text-primary-foreground/40">|</span>
+                    <img 
+                      src={mhLogo} 
+                      alt="M&H" 
+                      className="h-6 w-auto brightness-0 invert"
+                    />
+                  </div>
+                  <SheetClose asChild>
+                    <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 -mr-2">
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </SheetClose>
+                </SheetTitle>
+              </SheetHeader>
+              
+              {/* Menu Items */}
+              <nav className="flex-1 overflow-y-auto py-2">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.path}
+                      onClick={() => setOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted",
+                        item.highlight && "bg-accent/10"
+                      )}
+                    >
+                      <Icon className={cn(
+                        "h-5 w-5",
+                        item.highlight ? "text-accent" : "text-muted-foreground"
+                      )} />
+                      <div>
+                        <div className={cn(
+                          "font-medium text-sm",
+                          item.highlight ? "text-accent" : "text-foreground"
+                        )}>
+                          {item.name}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{item.description}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </nav>
 
-              <Separator />
+              {/* Theme & Account Section */}
+              <div className="border-t border-border p-4 space-y-3">
+                {/* Theme Toggle */}
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={toggleTheme}
+                >
+                  {isDark ? (
+                    <>
+                      <Sun className="h-4 w-4 mr-2" />
+                      Light Mode
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="h-4 w-4 mr-2" />
+                      Dark Mode
+                    </>
+                  )}
+                </Button>
 
-              {/* Account */}
-              {!loading && (
-                isAuthenticated ? (
-                  <div className="space-y-2">
-                    {isStaff && (
-                      <Button variant="outline" className="w-full justify-start" asChild>
-                        <Link to="/admin" onClick={() => setOpen(false)}>
-                          <Settings className="h-4 w-4 mr-2" />
-                          Admin Panel
+                <Separator />
+
+                {/* Account */}
+                {!loading && (
+                  isAuthenticated ? (
+                    <div className="space-y-2">
+                      {isStaff && (
+                        <Button variant="outline" className="w-full justify-start" asChild>
+                          <Link to="/admin" onClick={() => setOpen(false)}>
+                            <Settings className="h-4 w-4 mr-2" />
+                            Admin Panel
+                          </Link>
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={handleSignOut}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Button className="w-full" asChild>
+                        <Link to="/login" onClick={() => setOpen(false)}>
+                          Sign In
                         </Link>
                       </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={handleSignOut}
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Button className="w-full" asChild>
-                      <Link to="/login" onClick={() => setOpen(false)}>
-                        Sign In
-                      </Link>
-                    </Button>
-                    <Button variant="outline" className="w-full" asChild>
-                      <Link to="/signup" onClick={() => setOpen(false)}>
-                        Create Account
-                      </Link>
-                    </Button>
-                  </div>
-                )
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+                      <Button variant="outline" className="w-full" asChild>
+                        <Link to="/signup" onClick={() => setOpen(false)}>
+                          Create Account
+                        </Link>
+                      </Button>
+                    </div>
+                  )
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Theme Toggle Icon - Visible on top bar */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleTheme}
+            className="text-foreground/70 hover:text-foreground"
+          >
+            {isDark ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
 
         {/* Logo - Centered */}
         <Link to="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
