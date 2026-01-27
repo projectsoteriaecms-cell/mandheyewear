@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Search, Heart, User, LogOut, Settings, Sparkles, ChevronRight, MapPin, Calendar } from "lucide-react";
+import { Menu, X, Search, Heart, User, LogOut, Settings, Sparkles, ChevronRight, MapPin, Calendar, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { CartDrawer } from "@/components/cart/CartDrawer";
@@ -24,6 +24,7 @@ const navLinks = [
 
 export const MobileNav = () => {
   const [open, setOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const location = useLocation();
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const { data: role } = useUserRole();
@@ -31,6 +32,24 @@ export const MobileNav = () => {
   const navigate = useNavigate();
   
   const isStaff = hasAdminAccess(role ?? null);
+
+  useEffect(() => {
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    setIsDark(isDarkMode);
+  }, []);
+
+  const toggleTheme = () => {
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    
+    if (newIsDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -119,6 +138,27 @@ export const MobileNav = () => {
                   );
                 })}
               </nav>
+
+              {/* Theme Toggle */}
+              <div className="border-t border-border p-4">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={toggleTheme}
+                >
+                  {isDark ? (
+                    <>
+                      <Sun className="h-4 w-4 mr-2" />
+                      Light Mode
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="h-4 w-4 mr-2" />
+                      Dark Mode
+                    </>
+                  )}
+                </Button>
+              </div>
 
               {/* Account Section */}
               <div className="border-t border-border p-4 space-y-2">
