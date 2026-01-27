@@ -1,194 +1,326 @@
 
 
-# Plan: Enhanced Product Structure with Image Support
+# Plan: Enhanced Database Schema for SOTERIA ECMS
 
 ## Overview
-This plan addresses product image management and CSV bulk upload improvements. Since CSV files cannot contain images directly, we'll implement a two-phase workflow: (1) upload product data via CSV, then (2) attach images individually or in bulk through the admin interface.
+
+This plan adds the missing schema elements identified in the ECMS documentation to support the 1,250 product import while preserving all existing functionality. The changes are additive - no existing columns or tables are removed, ensuring backward compatibility with current code.
 
 ---
 
-## Phase 1: Storage Setup for Product Images
+## Current State vs. ECMS Requirements
 
-### 1.1 Create Storage Bucket
-Create a `product-images` storage bucket with public access for serving images on the storefront.
+| Element | Current State | ECMS Requirement | Action |
+|---------|--------------|------------------|--------|
+| `external_id` | Missing | Store original Excel ProductId | Add column |
+| `brand` | Missing (only `brand_line`) | Separate brand name (VOGUE, OAKLEY) | Add column |
+| `price_tier` | Missing | luxury/premium/standard/budget | Add column + computed trigger |
+| `unit` | Missing | Item/Frame/Bottle/Pair | Add column |
+| `description_raw` | Missing | Original unmodified description | Add column |
+| `product_type` | `item_type` enum exists | Same concept, expand values | Expand enum |
+| `record_type` | Missing | inventory_item vs service | Add column |
+| `frame_attributes` table | Partial (columns on products) | Dedicated table for frame specs | Create table |
+| `lens_attributes` table | Missing | Dedicated table for optical data | Create table |
+| `services` table | Missing | Non-inventory service items | Create table |
+| `display_order` on categories | Missing | Sort order for display | Add column |
 
-```sql
--- Create bucket for product images
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('product-images', 'product-images', true);
+---
 
--- Allow authenticated admin users to upload
-CREATE POLICY "Admin users can upload product images"
-ON storage.objects FOR INSERT TO authenticated
-WITH CHECK (bucket_id = 'product-images');
+## Phase 1: Expand the Products Table
 
--- Allow public read access
-CREATE POLICY "Public can view product images"
-ON storage.objects FOR SELECT TO public
-USING (bucket_id = 'product-images');
+### 1.1 Add New Columns to Products Table
 
--- Allow admin users to delete images
-CREATE POLICY "Admin users can delete product images"
-ON storage.objects FOR DELETE TO authenticated
-USING (bucket_id = 'product-images');
+Add these columns to the existing `products` table:
+
+```text
+Column             | Type                 | Default          | Purpose
+-------------------|----------------------|------------------|----------------------------------
+external_id        | TEXT                 | NULL             | Original Excel ProductId for sync
+brand              | TEXT                 | NULL             | Brand name (VOGUE, OAKLEY, etc.)
+price_tier         | price_tier enum      | NULL             | Computed: luxury/premium/standard/budget
+unit               | TEXT                 | 'Item'           | Unit of measure
+description_raw    | TEXT                 | NULL             | Original unmodified description
+record_type        | record_type enum     | 'inventory_item' | inventory_item or service
+```
+
+### 1.2 Create New Enums
+
+```text
+Enum: price_tier
+Values: 'budget', 'standard', 'premium', 'luxury'
+
+Enum: record_type  
+Values: 'inventory_item', 'service'
+
+Enum: product_type (expand existing item_type)
+Add values: 'cleanser', 'packaging'
+```
+
+### 1.3 Add Trigger for Price Tier Calculation
+
+Create a trigger that automatically calculates `price_tier` based on the `price` column:
+- price >= 200,000 → 'luxury'
+- price >= 150,000 → 'premium'  
+- price >= 100,000 → 'standard'
+- price < 100,000 → 'budget'
+
+---
+
+## Phase 2: Create Frame Attributes Table
+
+A dedicated table for frame-specific measurements and properties, linked 1:1 with products.
+
+### 2.1 Table Structure
+
+```text
+Table: frame_attributes
+Column            | Type          | Constraints
+------------------|---------------|---------------------------
+id                | UUID          | PRIMARY KEY
+product_id        | UUID          | FOREIGN KEY → products.id, UNIQUE
+model_code        | TEXT          | Model/manufacturer code
+frame_shape       | TEXT          | Cat Eye, Rectangle, Aviator, etc.
+lens_width        | INTEGER       | In millimeters (from XX-XX-XXX)
+bridge_size       | INTEGER       | In millimeters (parsed from dimensions)
+temple_length     | INTEGER       | In millimeters
+frame_material    | TEXT          | Titanium, Acetate, Metal, etc.
+front_color       | TEXT          | Front frame color
+temple_color      | TEXT          | Temple/arm color if different
+has_clip_on       | BOOLEAN       | Has clip-on sunglasses attachment
+created_at        | TIMESTAMPTZ   | Default now()
+```
+
+### 2.2 RLS Policies
+
+- Anyone can view frame attributes (public read for storefront)
+- Managers and super admins can manage (insert, update, delete)
+
+---
+
+## Phase 3: Create Lens Attributes Table
+
+A dedicated table for prescription lens data, linked 1:1 with products.
+
+### 3.1 Table Structure
+
+```text
+Table: lens_attributes
+Column            | Type          | Constraints
+------------------|---------------|---------------------------
+id                | UUID          | PRIMARY KEY
+product_id        | UUID          | FOREIGN KEY → products.id, UNIQUE
+sph               | DECIMAL(4,2)  | Sphere value
+cyl               | DECIMAL(4,2)  | Cylinder value
+axis              | INTEGER       | Axis (0-180 degrees)
+lens_type         | TEXT          | Single Vision, Bifocal, Progressive
+lens_material     | TEXT          | CR-39, Polycarbonate, Trivex, etc.
+coating           | TEXT          | Anti-reflective, Blue light, etc.
+created_at        | TIMESTAMPTZ   | Default now()
+```
+
+### 3.2 Validation Trigger
+
+Create a trigger to validate axis is between 0 and 180 (using trigger instead of CHECK constraint for flexibility).
+
+### 3.3 RLS Policies
+
+- Anyone can view lens attributes
+- Managers and super admins can manage
+
+---
+
+## Phase 4: Create Services Table
+
+A dedicated table for non-inventory service offerings.
+
+### 4.1 Table Structure
+
+```text
+Table: services
+Column               | Type          | Constraints
+---------------------|---------------|---------------------------
+id                   | UUID          | PRIMARY KEY
+name                 | TEXT          | NOT NULL - Service name
+service_type         | TEXT          | courier_local, courier_interstate, eye_exam, fitting
+price                | DECIMAL       | Service price
+description          | TEXT          | Service description
+duration_minutes     | INTEGER       | Estimated duration
+requires_appointment | BOOLEAN       | Default false
+is_active            | BOOLEAN       | Default true
+created_at           | TIMESTAMPTZ   | Default now()
+updated_at           | TIMESTAMPTZ   | Default now()
+```
+
+### 4.2 RLS Policies
+
+- Anyone can view active services
+- Managers and super admins can manage
+
+---
+
+## Phase 5: Enhance Categories Table
+
+### 5.1 Add New Columns
+
+```text
+Column         | Type     | Default | Purpose
+---------------|----------|---------|---------------------------
+display_order  | INTEGER  | 0       | Sort order for UI display
+description_raw| TEXT     | NULL    | Extended category description
 ```
 
 ---
 
-## Phase 2: Product Edit Dialog with Image Upload
+## Phase 6: Code Updates
 
-### 2.1 Create EditProductDialog Component
-A new dialog for editing existing products, including image management.
+### 6.1 Update TypeScript Types
 
-**File:** `src/components/admin/products/EditProductDialog.tsx`
+The Supabase types will auto-regenerate after migrations. No manual edits needed.
 
-**Features:**
-- All fields from CreateProductDialog (editable)
-- Primary image upload with preview
-- Additional images upload (up to 4 images)
-- Drag-and-drop image support
-- Image deletion capability
-- Image reordering
+### 6.2 Update Product Forms
 
-### 2.2 Create ProductImageUpload Component
-Reusable image upload component for product images.
+Modify these components to include new fields:
 
-**File:** `src/components/admin/products/ProductImageUpload.tsx`
+**CreateProductDialog.tsx**
+- Add: `external_id`, `brand`, `unit`, `description_raw`
+- Add: Price tier display (read-only, auto-calculated)
 
-**Features:**
-- Single/multiple image upload modes
-- Preview thumbnails
-- Progress indicator during upload
-- Delete button on each image
-- Accepts JPG, PNG, WebP formats
-- Max file size validation (5MB per image)
+**EditProductDialog.tsx**  
+- Add same fields as CreateProductDialog
+- Add frame attributes tab if item_type is 'frames'
+- Add lens attributes tab if item_type is 'lenses'
 
----
+### 6.3 Update Product Hooks
 
-## Phase 3: Enhanced Bulk Upload Workflow
+**useAdminProducts.ts**
+- Update queries to include frame_attributes and lens_attributes joins
+- Add mutations for creating/updating attribute records
 
-### 3.1 Improve CSV Template
-Expand the CSV template to include more fields:
+### 6.4 Create New Hooks
 
-```csv
-name,sku,brand_line,price,cost_price,description,item_type,color,material,style,gender,frame_width,bridge_size,temple_length,category_slug,reorder_level,reorder_quantity,lead_time_days
-```
+**useFrameAttributes.ts**
+- CRUD operations for frame_attributes table
 
-### 3.2 Add Category Matching
-Parse `category_slug` from CSV and match to existing categories.
+**useLensAttributes.ts**
+- CRUD operations for lens_attributes table
 
-### 3.3 Create Bulk Image Upload Dialog
-After CSV import, allow bulk image assignment via SKU matching.
+**useServices.ts**
+- CRUD operations for services table
 
-**File:** `src/components/admin/products/BulkImageUploadDialog.tsx`
+### 6.5 Update Bulk Upload
 
-**Workflow:**
-1. Display list of products without images
-2. Allow drag-drop of images named by SKU (e.g., `MH-RND-001.jpg`)
-3. Auto-match image filenames to product SKUs
-4. Preview matches before upload
-5. Batch upload all matched images
-
----
-
-## Phase 4: Update Products Page UI
-
-### 4.1 Add Edit Action
-Wire up the "Edit" dropdown action to open EditProductDialog.
-
-### 4.2 Add Image Column Indicator
-Show thumbnail or icon indicating whether product has images.
-
-### 4.3 Add "Upload Images" Button
-New button next to "Bulk Upload" for the bulk image upload workflow.
-
----
-
-## Phase 5: Create Image Upload Hook
-
-**File:** `src/hooks/admin/useProductImageUpload.ts`
-
-```typescript
-// Functions provided:
-- uploadProductImage(productId: string, file: File, isPrimary: boolean)
-- uploadMultipleImages(productId: string, files: File[])
-- deleteProductImage(imageUrl: string)
-- getImagePublicUrl(path: string)
-```
+**BulkUploadDialog.tsx**
+- Expand CSV template to include: `external_id`, `brand`, `unit`, `frame_shape`, `model_code`
+- Add price tier calculation in parser
+- Add frame attributes creation for frame products
 
 ---
 
 ## Implementation Order
 
-| Step | Description | Priority |
-|------|-------------|----------|
-| 1 | Create storage bucket with RLS policies | High |
-| 2 | Build useProductImageUpload hook | High |
-| 3 | Build ProductImageUpload component | High |
-| 4 | Build EditProductDialog with image support | High |
-| 5 | Wire Edit action in Products page | High |
-| 6 | Enhance CSV template with more fields | Medium |
-| 7 | Build BulkImageUploadDialog | Medium |
-| 8 | Add image status indicator to product table | Low |
+| Step | Description | Priority | Dependencies |
+|------|-------------|----------|--------------|
+| 1 | Create new enums (price_tier, record_type) | High | None |
+| 2 | Add new columns to products table | High | Step 1 |
+| 3 | Create price_tier trigger | High | Step 2 |
+| 4 | Create frame_attributes table + RLS | High | None |
+| 5 | Create lens_attributes table + RLS | High | None |
+| 6 | Create services table + RLS | Medium | None |
+| 7 | Add display_order to categories | Low | None |
+| 8 | Update CreateProductDialog | High | Steps 2-5 |
+| 9 | Update EditProductDialog | High | Steps 2-5 |
+| 10 | Create useFrameAttributes hook | High | Step 4 |
+| 11 | Create useLensAttributes hook | High | Step 5 |
+| 12 | Create useServices hook | Medium | Step 6 |
+| 13 | Update BulkUploadDialog | High | All above |
+| 14 | Create Services admin page | Medium | Step 12 |
 
 ---
 
-## Technical Details
+## Migration Strategy
 
-### Image Storage Path Convention
-```
-product-images/{product_id}/main.{ext}
-product-images/{product_id}/additional-{index}.{ext}
-```
+All changes are **additive** - no breaking changes to existing data:
 
-### Database Updates on Image Upload
-```typescript
-// After uploading main image
-await supabase
-  .from('products')
-  .update({ image_url: publicUrl })
-  .eq('id', productId);
-
-// After uploading additional images
-await supabase
-  .from('products')
-  .update({ 
-    additional_images: [...existingImages, newImageUrl] 
-  })
-  .eq('id', productId);
-```
-
-### CSV Enhanced Parser Changes
-- Add parsing for: frame_width, bridge_size, temple_length, category_slug, reorder_level, reorder_quantity, lead_time_days
-- Category slug lookup to get category_id
-- Validation for dimension format (e.g., "140mm")
-
-### Files to Create
-1. `src/components/admin/products/EditProductDialog.tsx`
-2. `src/components/admin/products/ProductImageUpload.tsx`
-3. `src/components/admin/products/BulkImageUploadDialog.tsx`
-4. `src/hooks/admin/useProductImageUpload.ts`
-
-### Files to Modify
-1. `src/pages/admin/Products.tsx` - Add edit dialog state, image upload button
-2. `src/components/admin/products/BulkUploadDialog.tsx` - Enhanced CSV template
-3. `src/hooks/admin/useAdminProducts.ts` - Add image-related mutations if needed
+1. New columns have sensible defaults (NULL or specific values)
+2. Existing products continue to work without frame/lens attributes
+3. Price tier is auto-calculated, existing products get tier on next update
+4. Services table is completely separate from products
 
 ---
 
-## User Workflow Summary
+## Database Migration SQL Preview
 
-### Adding Products with Images (Manual)
-1. Click "Add Product" → Fill form → Save
-2. Click "Edit" on product row
-3. Upload primary image and additional images
-4. Save changes
+```sql
+-- Phase 1: New enums
+CREATE TYPE price_tier AS ENUM ('budget', 'standard', 'premium', 'luxury');
+CREATE TYPE record_type AS ENUM ('inventory_item', 'service');
 
-### Adding Products with Images (Bulk)
-1. Download enhanced CSV template
-2. Fill in product data (no images in CSV)
-3. Upload CSV → Products created without images
-4. Click "Upload Images" button
-5. Drag-drop images named by SKU
-6. System auto-matches and uploads
+-- Expand item_type enum
+ALTER TYPE item_type ADD VALUE 'cleanser';
+ALTER TYPE item_type ADD VALUE 'packaging';
+
+-- Phase 1: Add columns to products
+ALTER TABLE products 
+  ADD COLUMN external_id TEXT UNIQUE,
+  ADD COLUMN brand TEXT,
+  ADD COLUMN price_tier price_tier,
+  ADD COLUMN unit TEXT DEFAULT 'Item',
+  ADD COLUMN description_raw TEXT,
+  ADD COLUMN record_type record_type DEFAULT 'inventory_item';
+
+-- Phase 2: frame_attributes table
+CREATE TABLE frame_attributes (...);
+
+-- Phase 3: lens_attributes table  
+CREATE TABLE lens_attributes (...);
+
+-- Phase 4: services table
+CREATE TABLE services (...);
+
+-- Phase 5: categories enhancement
+ALTER TABLE categories ADD COLUMN display_order INTEGER DEFAULT 0;
+
+-- Price tier trigger
+CREATE FUNCTION calculate_price_tier() ...
+CREATE TRIGGER set_price_tier BEFORE INSERT OR UPDATE ON products ...
+```
+
+---
+
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/hooks/admin/useFrameAttributes.ts` | CRUD for frame attributes |
+| `src/hooks/admin/useLensAttributes.ts` | CRUD for lens attributes |
+| `src/hooks/admin/useServices.ts` | CRUD for services |
+| `src/pages/admin/Services.tsx` | Admin page for service management |
+| `src/components/admin/products/FrameAttributesForm.tsx` | Form for frame specs |
+| `src/components/admin/products/LensAttributesForm.tsx` | Form for lens specs |
+| `src/components/admin/services/CreateServiceDialog.tsx` | Create service dialog |
+| `src/components/admin/services/EditServiceDialog.tsx` | Edit service dialog |
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/components/admin/products/CreateProductDialog.tsx` | Add new fields |
+| `src/components/admin/products/EditProductDialog.tsx` | Add attribute tabs |
+| `src/components/admin/products/BulkUploadDialog.tsx` | Expand template |
+| `src/hooks/admin/useAdminProducts.ts` | Include attributes in queries |
+| `src/pages/admin/Products.tsx` | Add price tier and brand columns |
+| `src/components/admin/AdminSidebar.tsx` | Add Services nav item |
+| `src/App.tsx` | Add Services route |
+
+---
+
+## Data Import Workflow
+
+After schema changes, the import workflow becomes:
+
+1. **Prepare CSV** with enhanced template (includes `external_id`, `brand`, `unit`, frame measurements)
+2. **Upload CSV** → Creates products with auto-calculated `price_tier`
+3. **Auto-parse frame dimensions** → Creates `frame_attributes` records for frames
+4. **Bulk image upload** → Matches by SKU or `external_id`
+5. **Verify** → Admin reviews imported data in enhanced product table
 
