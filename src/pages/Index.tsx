@@ -4,12 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { FeaturedFrames } from "@/components/storefront";
 import heroEyeCare from "@/assets/hero-eye-care.jpg";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
-import frame1 from "@/assets/frame-1.jpg";
-import frame2 from "@/assets/frame-2.jpg";
-import frame3 from "@/assets/frame-3.jpg";
-import frame4 from "@/assets/frame-4.jpg";
 
 const Index = () => {
   const services = [
@@ -75,33 +72,6 @@ const Index = () => {
       city: "Akwa Ibom State",
       address: "Tropicana Mall, Shop GBA, Udo Udoma Avenue, Uyo",
       region: "Akwa Ibom"
-    }
-  ];
-
-  const featuredFrames = [
-    {
-      image: frame1,
-      name: "Aurora Gold",
-      price: "$249",
-      category: "Classic Round"
-    },
-    {
-      image: frame2,
-      name: "Metropolitan Black",
-      price: "$189",
-      category: "Rectangular"
-    },
-    {
-      image: frame3,
-      name: "Savanna Tortoise",
-      price: "$299",
-      category: "Cat-Eye"
-    },
-    {
-      image: frame4,
-      name: "Sky Aviator",
-      price: "$329",
-      category: "Aviator"
     }
   ];
 
@@ -279,47 +249,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured Frames */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-muted/30">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-4">
-              Featured Frames
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Handpicked designer eyewear from our premium collection
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredFrames.map((frame, index) => (
-              <Card key={index} className="group overflow-hidden hover:shadow-gold transition-all cursor-pointer">
-                <div className="relative h-64 overflow-hidden bg-secondary">
-                  <img 
-                    src={frame.image} 
-                    alt={frame.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                </div>
-                <CardContent className="p-4 space-y-2">
-                  <p className="text-xs text-accent font-medium">{frame.category}</p>
-                  <h3 className="font-semibold text-foreground">{frame.name}</h3>
-                  <p className="text-lg font-bold text-accent">{frame.price}</p>
-                  <Button variant="outline" size="sm" className="w-full mt-2">
-                    View Details
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <Button variant="gold" asChild>
-              <Link to="/eyewear">
-                View Full Collection
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      {/* Featured Frames - Dynamic from Database */}
+      <FeaturedFrames />
 
       {/* Branch Locator */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
