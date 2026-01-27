@@ -35,6 +35,7 @@ import AdminBranches from "./pages/admin/AdminBranches";
 import AdminUsers from "./pages/admin/AdminUsers";
 import Reports from "./pages/admin/Reports";
 import Settings from "./pages/admin/Settings";
+import Categories from "./pages/admin/Categories";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +77,7 @@ const App = () => (
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/reports" element={<Reports />} />
           <Route path="/admin/settings" element={<Settings />} />
+          <Route path="/admin/categories" element={<Categories />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
