@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle } from "lucide-react";
+import { Warning } from "@phosphor-icons/react";
 import type { InventoryItem } from "@/modules/inventory";
 
 interface LowStockAlertsCardProps {
@@ -16,7 +16,7 @@ export const LowStockAlertsCard = ({ lowStockItems, loading }: LowStockAlertsCar
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base">Low Stock Alerts</CardTitle>
-        <AlertTriangle className="h-5 w-5 text-amber-500" />
+        <Warning className="h-5 w-5 text-amber-500" weight="fill" />
       </CardHeader>
       <CardContent>
         {loading ? (

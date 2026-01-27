@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Truck } from "lucide-react";
+import { Truck } from "@phosphor-icons/react";
 import type { PurchaseOrder } from "@/modules/inventory";
 
 interface PendingApprovalsCardProps {
@@ -14,7 +14,7 @@ export const PendingApprovalsCard = ({ pendingPOs }: PendingApprovalsCardProps) 
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base">Pending Approvals</CardTitle>
-        <Truck className="h-5 w-5 text-muted-foreground" />
+        <Truck className="h-5 w-5 text-muted-foreground" weight="light" />
       </CardHeader>
       <CardContent>
         {pendingPOs && pendingPOs.length > 0 ? (

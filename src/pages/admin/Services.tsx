@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Search, MoreHorizontal, Pencil, Trash2, Clock, Calendar } from "lucide-react";
+import { Plus, MagnifyingGlass, DotsThree, PencilSimple, Trash, Clock, Calendar } from "@phosphor-icons/react";
 import { useServices } from "@/modules/services";
 import { CreateServiceDialog } from "@/components/admin/services/CreateServiceDialog";
 import { EditServiceDialog } from "@/components/admin/services/EditServiceDialog";
@@ -71,14 +71,14 @@ const Services = () => {
               </p>
             </div>
             <Button onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" weight="light" />
               Add Service
             </Button>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" weight="light" />
               <Input
                 placeholder="Search services..."
                 value={searchQuery}
@@ -136,7 +136,7 @@ const Services = () => {
                       <TableCell>
                         {service.duration_minutes ? (
                           <div className="flex items-center gap-1 text-sm">
-                            <Clock className="h-3 w-3" />
+                            <Clock className="h-3 w-3" weight="light" />
                             {service.duration_minutes} min
                           </div>
                         ) : (
@@ -146,7 +146,7 @@ const Services = () => {
                       <TableCell>
                         {service.requires_appointment ? (
                           <div className="flex items-center gap-1 text-sm text-primary">
-                            <Calendar className="h-3 w-3" />
+                            <Calendar className="h-3 w-3" weight="light" />
                             Required
                           </div>
                         ) : (
@@ -162,19 +162,19 @@ const Services = () => {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
+                              <DotsThree className="h-4 w-4" weight="bold" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => setEditingService(service)}>
-                              <Pencil className="mr-2 h-4 w-4" />
+                              <PencilSimple className="mr-2 h-4 w-4" weight="light" />
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive"
                               onClick={() => handleDelete(service.id)}
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
+                              <Trash className="mr-2 h-4 w-4" weight="light" />
                               Deactivate
                             </DropdownMenuItem>
                           </DropdownMenuContent>

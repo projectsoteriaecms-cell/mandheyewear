@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/shared/components/admin";
-import { Package, AlertTriangle, TrendingUp, Users } from "lucide-react";
+import { Package, Warning, TrendUp, Users } from "@phosphor-icons/react";
 import { useInventoryStats, useLowStockAlerts } from "@/modules/inventory";
 import { usePurchaseOrders, useStockTransfers } from "@/modules/inventory";
 import { useBranchAssignments } from "@/modules/branches";
@@ -58,7 +58,7 @@ const AdminDashboard = () => {
           <StatCard
             title="Low Stock Alerts"
             value={stats?.lowStockCount || 0}
-            icon={AlertTriangle}
+            icon={Warning}
             loading={statsLoading}
             variant={stats?.lowStockCount ? "warning" : "default"}
             description="Items below threshold"
@@ -66,7 +66,7 @@ const AdminDashboard = () => {
           <StatCard
             title="Products"
             value={stats?.productCount || 0}
-            icon={TrendingUp}
+            icon={TrendUp}
             loading={statsLoading}
             description="Active products"
           />
