@@ -1,19 +1,24 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Pencil, Trash2 } from "lucide-react";
+import { GripVertical, Pencil, Trash2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Category } from "@/hooks/admin/useCategories";
+import { cn } from "@/lib/utils";
 
 interface SortableCategoryRowProps {
   category: Category;
+  depth: number;
+  hasChildren: boolean;
   onEdit: (category: Category) => void;
   onDelete: (id: string) => void;
 }
 
 export const SortableCategoryRow = ({
   category,
+  depth,
+  hasChildren,
   onEdit,
   onDelete,
 }: SortableCategoryRowProps) => {
@@ -49,7 +54,11 @@ export const SortableCategoryRow = ({
   };
 
   return (
-    <TableRow ref={setNodeRef} style={style}>
+    <TableRow 
+      ref={setNodeRef} 
+      style={style}
+      className={cn(depth > 0 && "bg-muted/30")}
+    >
       <TableCell className="w-10">
         <button
           {...attributes}
@@ -59,7 +68,19 @@ export const SortableCategoryRow = ({
           <GripVertical className="h-4 w-4 text-muted-foreground" />
         </button>
       </TableCell>
-      <TableCell className="font-medium">{category.name}</TableCell>
+      <TableCell className="font-medium">
+        <div className="flex items-center gap-1" style={{ paddingLeft: `${depth * 24}px` }}>
+          {depth > 0 && (
+            <ChevronRight className="h-3 w-3 text-muted-foreground" />
+          )}
+          <span>{category.name}</span>
+          {hasChildren && (
+            <Badge variant="secondary" className="ml-2 text-xs">
+              Parent
+            </Badge>
+          )}
+        </div>
+      </TableCell>
       <TableCell className="text-muted-foreground">{category.slug}</TableCell>
       <TableCell>{getBrandLineBadge(category.brand_line)}</TableCell>
       <TableCell>
@@ -79,8 +100,10 @@ export const SortableCategoryRow = ({
             variant="ghost"
             size="icon"
             onClick={() => onDelete(category.id)}
+            disabled={hasChildren}
+            title={hasChildren ? "Cannot delete category with children" : "Delete category"}
           >
-            <Trash2 className="h-4 w-4 text-destructive" />
+            <Trash2 className={cn("h-4 w-4", hasChildren ? "text-muted-foreground" : "text-destructive")} />
           </Button>
         </div>
       </TableCell>
