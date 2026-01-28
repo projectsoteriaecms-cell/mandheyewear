@@ -22,6 +22,19 @@ import { Loader2 } from "lucide-react";
 type ImageFilter = "all" | "with_images" | "missing_primary" | "complete";
 type ViewMode = "grid" | "list";
 
+// Priority order for item types (frames first, then contact lenses, lenses, then others)
+const ITEM_TYPE_PRIORITY: Record<string, number> = {
+  frames: 1,
+  contact_lenses: 2,
+  lenses: 3,
+  solutions: 4,
+  medications: 5,
+  accessories: 6,
+  cleanser: 7,
+  packaging: 8,
+  other: 9,
+};
+
 const ITEMS_PER_PAGE = 24;
 const MAX_ADDITIONAL = 8;
 
@@ -83,6 +96,13 @@ const ProductImages = () => {
         );
         break;
     }
+
+    // Sort by item type priority (frames first, then contact lenses, lenses, then others)
+    result = result.sort((a, b) => {
+      const priorityA = ITEM_TYPE_PRIORITY[a.item_type || 'other'] || 99;
+      const priorityB = ITEM_TYPE_PRIORITY[b.item_type || 'other'] || 99;
+      return priorityA - priorityB;
+    });
 
     return result;
   }, [products, searchTerm, filter]);
