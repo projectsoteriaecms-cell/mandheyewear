@@ -1,65 +1,46 @@
 
 
-# Product Image List Sorting by Item Type
+# Increase Product Image Upload Limit to 7MB
 
 ## Overview
 
-Add priority-based sorting to the Product Images Manager so products are displayed in this order:
-1. **Frames** (highest priority)
-2. **Contact Lenses**
-3. **Lenses**
-4. **Others** (solutions, medications, accessories, cleanser, packaging, other)
+A simple change to increase the maximum file size limit for product image uploads from 5MB to 7MB.
 
 ---
 
-## Implementation
+## Files to Modify
 
-### File to Modify
+### 1. `src/modules/products/hooks/useProductImageUpload.ts`
 
-`src/pages/admin/ProductImages.tsx`
-
-### Changes
-
-Add a sorting function within the `filteredProducts` useMemo that orders products by item type priority:
-
+**Line 5** - Update the constant:
 ```typescript
-// Priority order for item types
-const ITEM_TYPE_PRIORITY: Record<string, number> = {
-  frames: 1,
-  contact_lenses: 2,
-  lenses: 3,
-  solutions: 4,
-  medications: 5,
-  accessories: 6,
-  cleanser: 7,
-  packaging: 8,
-  other: 9,
-};
+// From:
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-// In the filteredProducts useMemo, after filtering:
-result = result.sort((a, b) => {
-  const priorityA = ITEM_TYPE_PRIORITY[a.item_type || 'other'] || 99;
-  const priorityB = ITEM_TYPE_PRIORITY[b.item_type || 'other'] || 99;
-  return priorityA - priorityB;
-});
+// To:
+const MAX_FILE_SIZE = 7 * 1024 * 1024; // 7MB
 ```
 
----
+**Line 14** - Update the error message:
+```typescript
+// From:
+return "File size exceeds 5MB limit.";
 
-## Technical Details
+// To:
+return "File size exceeds 7MB limit.";
+```
 
-- The sorting happens after search and filter operations, ensuring the priority order is always maintained
-- Products without an `item_type` default to lowest priority (treated as "other")
-- Secondary sorting by name can be added for products with the same item type if needed
+### 2. `src/components/admin/products/QuickImageUploadModal.tsx`
+
+Update the UI text that shows "5MB" to "7MB" in the upload zone instructions.
 
 ---
 
 ## Summary
 
-| Change | Description |
-|--------|-------------|
-| Add priority constant | Define `ITEM_TYPE_PRIORITY` mapping |
-| Update `filteredProducts` | Sort by item type priority after filtering |
-
-This ensures frames always appear first, followed by contact lenses, then regular lenses, with all other product types at the end.
+| Change | Location |
+|--------|----------|
+| Update `MAX_FILE_SIZE` constant | useProductImageUpload.ts line 5 |
+| Update error message | useProductImageUpload.ts line 14 |
+| Update UI help text | QuickImageUploadModal.tsx |
 
