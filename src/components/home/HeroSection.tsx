@@ -1,9 +1,87 @@
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkle, Bag, ArrowRight, Eye } from "@phosphor-icons/react";
+import { 
+  Sparkle, 
+  Bag, 
+  ArrowRight, 
+  Eye, 
+  Calendar,
+  Circle 
+} from "@phosphor-icons/react";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
+import heroEyeCare from "@/assets/hero-eye-care.jpg";
+import { cn } from "@/lib/utils";
+
+// Slide data structure
+const slides = [
+  {
+    id: 1,
+    type: "clinic" as const,
+    image: heroEyeCare,
+    badge: "Soteria Eye Clinic",
+    badgeIcon: Eye,
+    headline: "Your path to clearer vision",
+    subheadline: "begins with us",
+    description: "Comprehensive eye exams, advanced diagnostics, and personalized care from Nigeria's trusted eye care specialists.",
+    primaryCTA: { text: "Book Eye Exam", link: "/booking", icon: Calendar },
+    secondaryCTA: { text: "Our Services", link: "/eye-care", icon: Eye },
+    accentColor: "primary",
+    trustIndicators: [
+      { icon: "✓", label: "Certified Optometrists", sublabel: "Board certified", bgColor: "bg-primary/10", textColor: "text-primary" },
+      { icon: "🏥", label: "5+ Locations", sublabel: "Across Nigeria", bgColor: "bg-green-500/10", textColor: "text-green-600" },
+      { icon: "⏰", label: "Same Day Exams", sublabel: "Walk-ins welcome", bgColor: "bg-accent/10", textColor: "text-accent" },
+    ],
+  },
+  {
+    id: 2,
+    type: "eyewear" as const,
+    image: heroEyewear,
+    badge: "M&H Eyewear",
+    badgeIcon: Sparkle,
+    headline: "Transforming vision with",
+    subheadline: "clarity & confidence",
+    description: "Not just eyewear — a unique blend of elegance, cutting-edge tech, and affordability that defines your style.",
+    primaryCTA: { text: "Find Your Frame", link: "/style-quiz", icon: Sparkle },
+    secondaryCTA: { text: "Shop Collection", link: "/eyewear", icon: Bag },
+    accentColor: "accent",
+    trustIndicators: [
+      { icon: "✓", label: "Free Eye Exams", sublabel: "At all locations", bgColor: "bg-green-500/10", textColor: "text-green-600" },
+      { icon: "📷", label: "Virtual Try-On", sublabel: "AI-powered", bgColor: "bg-primary/10", textColor: "text-primary" },
+      { icon: "🚚", label: "Free Shipping", sublabel: "Orders over ₦50k", bgColor: "bg-accent/10", textColor: "text-accent" },
+    ],
+  },
+];
 
 export const HeroSection = () => {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true, duration: 30 },
+    [Autoplay({ delay: 6000, stopOnInteraction: false, stopOnMouseEnter: true })]
+  );
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  const scrollTo = useCallback((index: number) => {
+    if (emblaApi) emblaApi.scrollTo(index);
+  }, [emblaApi]);
+
+  const currentSlide = slides[selectedIndex];
+
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
       {/* Subtle background pattern */}
@@ -13,119 +91,251 @@ export const HeroSection = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center py-20 lg:py-28">
-          {/* Content */}
+          {/* Content - Animates on slide change */}
           <div className="space-y-10 order-2 lg:order-1">
             {/* Tagline badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 text-sm font-medium text-primary animate-fade-in-up">
-              <Eye weight="duotone" className="h-4 w-4" />
-              Precision Eyecare • Premium Eyewear
+            <div 
+              key={`badge-${currentSlide.id}`}
+              className={cn(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium animate-slide-content-in",
+                currentSlide.type === "clinic" 
+                  ? "bg-primary/5 border-primary/10 text-primary" 
+                  : "bg-accent/5 border-accent/10 text-accent"
+              )}
+            >
+              <currentSlide.badgeIcon weight="duotone" className="h-4 w-4" />
+              {currentSlide.badge}
             </div>
 
-            <div className="space-y-6">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-semibold text-foreground leading-[1.1] tracking-tight animate-fade-in-up stagger-delay-1">
-                Transforming vision with{" "}
-                <span className="text-primary relative">
-                  clarity
+            <div key={`headline-${currentSlide.id}`} className="space-y-6">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-semibold text-foreground leading-[1.1] tracking-tight animate-slide-content-in" style={{ animationDelay: '0.1s' }}>
+                {currentSlide.headline}{" "}
+                <span className={cn(
+                  "relative",
+                  currentSlide.type === "clinic" ? "text-primary" : "text-accent"
+                )}>
+                  {currentSlide.subheadline}
                   <svg className="absolute -bottom-2 left-0 w-full h-3 text-accent/30" viewBox="0 0 200 12" preserveAspectRatio="none">
                     <path d="M0 9c50-6 100-6 200 0" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round"/>
                   </svg>
-                </span>{" "}
-                & confidence
+                </span>
               </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground max-w-lg leading-relaxed animate-fade-in-up stagger-delay-2">
-                Not just eyewear — a unique blend of elegance, cutting-edge tech, and affordability that defines your style.
+              <p 
+                className="text-lg sm:text-xl text-muted-foreground max-w-lg leading-relaxed animate-slide-content-in"
+                style={{ animationDelay: '0.2s' }}
+              >
+                {currentSlide.description}
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up stagger-delay-3">
-              <Button size="lg" asChild className="group h-14 px-8 text-base shadow-float hover:shadow-card-hover transition-all relative overflow-hidden">
-                <Link to="/style-quiz" className="flex items-center gap-3">
+            <div 
+              key={`cta-${currentSlide.id}`}
+              className="flex flex-col sm:flex-row gap-4 animate-slide-content-in"
+              style={{ animationDelay: '0.3s' }}
+            >
+              <Button 
+                size="lg" 
+                asChild 
+                className={cn(
+                  "group h-14 px-8 text-base shadow-float hover:shadow-card-hover transition-all relative overflow-hidden",
+                  currentSlide.type === "clinic" && "bg-primary hover:bg-primary/90"
+                )}
+              >
+                <Link to={currentSlide.primaryCTA.link} className="flex items-center gap-3">
                   <span className="absolute inset-0 shimmer-bg" />
-                  <Sparkle weight="duotone" className="h-5 w-5 relative z-10" />
-                  <span className="relative z-10">Find Your Frame</span>
+                  <currentSlide.primaryCTA.icon weight="duotone" className="h-5 w-5 relative z-10" />
+                  <span className="relative z-10">{currentSlide.primaryCTA.text}</span>
                   <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-1 relative z-10" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="h-14 px-8 text-base border-2 hover:bg-primary/5 hover-glow">
-                <Link to="/eyewear" className="flex items-center gap-3">
-                  <Bag weight="light" className="h-5 w-5" />
-                  Shop Collection
+                <Link to={currentSlide.secondaryCTA.link} className="flex items-center gap-3">
+                  <currentSlide.secondaryCTA.icon weight="light" className="h-5 w-5" />
+                  {currentSlide.secondaryCTA.text}
                 </Link>
               </Button>
             </div>
 
-            {/* Mobile/Tablet Hero Image - shown below buttons on smaller screens */}
-            <div className="lg:hidden mt-8 animate-fade-in-up stagger-delay-4">
-              <div className="relative rounded-2xl overflow-hidden shadow-float">
-                <img
-                  src={heroEyewear}
-                  alt="Stylish eyewear collection"
-                  className="w-full h-[280px] sm:h-[350px] object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent" />
+            {/* Mobile/Tablet Hero Image Carousel - shown below buttons on smaller screens */}
+            <div className="lg:hidden mt-8">
+              <div className="relative rounded-2xl overflow-hidden shadow-float" ref={emblaRef}>
+                <div className="flex">
+                  {slides.map((slide, index) => (
+                    <div key={slide.id} className="flex-[0_0_100%] min-w-0">
+                      <div className="relative">
+                        <img
+                          src={slide.image}
+                          alt={slide.badge}
+                          className={cn(
+                            "w-full h-[280px] sm:h-[350px] object-cover",
+                            selectedIndex === index && "animate-ken-burns"
+                          )}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Dot indicators for mobile */}
+              <div className="flex justify-center gap-2 mt-4">
+                {slides.map((slide, index) => (
+                  <button
+                    key={slide.id}
+                    onClick={() => scrollTo(index)}
+                    className={cn(
+                      "transition-all duration-300",
+                      selectedIndex === index 
+                        ? "scale-100" 
+                        : "scale-75 opacity-50 hover:opacity-75"
+                    )}
+                    aria-label={`Go to slide ${index + 1}`}
+                  >
+                    <Circle 
+                      weight={selectedIndex === index ? "fill" : "regular"} 
+                      className={cn(
+                        "h-3 w-3",
+                        selectedIndex === index 
+                          ? (slide.type === "clinic" ? "text-primary" : "text-accent")
+                          : "text-muted-foreground"
+                      )}
+                    />
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Trust indicators */}
-            <div className="flex flex-wrap items-center gap-8 pt-6 border-t border-border/50 animate-fade-in-up stagger-delay-4">
-              <div className="flex items-center gap-3 hover-lift cursor-default">
-                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-                  <span className="text-green-600 text-lg">✓</span>
+            <div 
+              key={`trust-${currentSlide.id}`}
+              className="flex flex-wrap items-center gap-8 pt-6 border-t border-border/50 animate-slide-content-in"
+              style={{ animationDelay: '0.4s' }}
+            >
+              {currentSlide.trustIndicators.map((indicator, index) => (
+                <div 
+                  key={index} 
+                  className="flex items-center gap-3 hover-lift cursor-default"
+                  style={{ animationDelay: `${0.5 + index * 0.1}s` }}
+                >
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", indicator.bgColor)}>
+                    <span className={cn("text-lg", indicator.textColor)}>{indicator.icon}</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground text-sm">{indicator.label}</p>
+                    <p className="text-xs text-muted-foreground">{indicator.sublabel}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-foreground text-sm">Free Eye Exams</p>
-                  <p className="text-xs text-muted-foreground">At all locations</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 hover-lift cursor-default">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <span className="text-primary text-lg">📷</span>
-                </div>
-                <div>
-                  <p className="font-medium text-foreground text-sm">Virtual Try-On</p>
-                  <p className="text-xs text-muted-foreground">AI-powered</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 hover-lift cursor-default">
-                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <span className="text-accent text-lg">🚚</span>
-                </div>
-                <div>
-                  <p className="font-medium text-foreground text-sm">Free Shipping</p>
-                  <p className="text-xs text-muted-foreground">Orders over ₦50k</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Hero Image with floating elements - hidden on mobile/tablet, shown on desktop */}
+          {/* Hero Image Carousel with floating elements - hidden on mobile/tablet, shown on desktop */}
           <div className="relative hidden lg:block">
             {/* Main image container */}
-            <div className="relative rounded-3xl overflow-hidden shadow-float animate-scale-in">
-              <img
-                src={heroEyewear}
-                alt="Person wearing stylish eyeglasses"
-                className="w-full h-[400px] sm:h-[500px] lg:h-[600px] object-cover"
-              />
+            <div className="relative rounded-3xl overflow-hidden shadow-float">
+              <div ref={emblaRef} className="overflow-hidden">
+                <div className="flex">
+                  {slides.map((slide, index) => (
+                    <div key={slide.id} className="flex-[0_0_100%] min-w-0">
+                      <img
+                        src={slide.image}
+                        alt={slide.badge}
+                        className={cn(
+                          "w-full h-[400px] sm:h-[500px] lg:h-[600px] object-cover transition-transform",
+                          selectedIndex === index && "animate-ken-burns"
+                        )}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
               {/* Elegant overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 via-transparent to-transparent pointer-events-none" />
+            </div>
+
+            {/* Dot indicators - desktop */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+              {slides.map((slide, index) => (
+                <button
+                  key={slide.id}
+                  onClick={() => scrollTo(index)}
+                  className={cn(
+                    "w-2 h-2 rounded-full transition-all duration-300",
+                    selectedIndex === index 
+                      ? (slide.type === "clinic" ? "bg-primary w-6" : "bg-accent w-6")
+                      : "bg-white/50 hover:bg-white/75"
+                  )}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
             </div>
             
-            {/* Floating testimonial card */}
-            <div className="absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 hidden lg:block backdrop-blur-sm max-w-[280px] animate-float">
+            {/* Floating testimonial card - shows based on slide type */}
+            <div 
+              key={`float-card-${currentSlide.id}`}
+              className={cn(
+                "absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm max-w-[280px] animate-float transition-all duration-500",
+                selectedIndex === 0 ? "opacity-100" : "opacity-0 pointer-events-none"
+              )}
+            >
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground font-bold text-lg shrink-0">
+                  10K+
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">Eye Exams Completed</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">Trusted care for clearer vision</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating testimonial card - eyewear slide */}
+            <div 
+              className={cn(
+                "absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm max-w-[280px] animate-float transition-all duration-500",
+                selectedIndex === 1 ? "opacity-100" : "opacity-0 pointer-events-none"
+              )}
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center text-accent-foreground font-bold text-lg shrink-0">
                   50K+
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">Happy Customers</p>
-                  <p className="text-sm text-muted-foreground mt-0.5">Trusted across Nigeria for quality eyecare</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">Trusted across Nigeria for quality eyewear</p>
                 </div>
               </div>
             </div>
 
-            {/* Floating product card - top right */}
-            <div className="absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-float border border-border/50 hidden lg:block backdrop-blur-sm animate-float-slow" style={{ animationDelay: '0.5s' }}>
+            {/* Floating product card - top right (clinic slide) */}
+            <div 
+              className={cn(
+                "absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm animate-float-slow transition-all duration-500",
+                selectedIndex === 0 ? "opacity-100" : "opacity-0 pointer-events-none"
+              )}
+              style={{ animationDelay: '0.5s' }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
+                  👁️
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Book Now</p>
+                  <p className="font-semibold text-foreground">Eye Exam</p>
+                  <p className="text-sm font-bold text-primary">Free</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating product card - top right (eyewear slide) */}
+            <div 
+              className={cn(
+                "absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm animate-float-slow transition-all duration-500",
+                selectedIndex === 1 ? "opacity-100" : "opacity-0 pointer-events-none"
+              )}
+              style={{ animationDelay: '0.5s' }}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-2xl">
                   👓
