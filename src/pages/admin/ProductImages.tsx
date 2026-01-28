@@ -20,6 +20,7 @@ import { Loader2 } from "lucide-react";
 type ImageFilter = "all" | "with_images" | "missing_primary" | "complete";
 
 const ITEMS_PER_PAGE = 24;
+const MAX_ADDITIONAL = 8;
 
 const ProductImages = () => {
   const { products, isLoading } = useAdminProducts();
@@ -39,7 +40,7 @@ const ProductImages = () => {
       (p) =>
         p.image_url &&
         p.additional_images &&
-        p.additional_images.length >= 4
+        p.additional_images.length >= MAX_ADDITIONAL
     ).length;
     const missingPrimary = total - withPrimary;
 
@@ -74,7 +75,7 @@ const ProductImages = () => {
           (p) =>
             p.image_url &&
             p.additional_images &&
-            p.additional_images.length >= 4
+            p.additional_images.length >= MAX_ADDITIONAL
         );
         break;
     }
@@ -129,7 +130,7 @@ const ProductImages = () => {
             <div className="bg-card rounded-lg border p-4">
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <CheckCircle className="h-4 w-4 text-primary" />
-                Complete (5/5)
+                Complete (9/9)
               </div>
               <p className="text-2xl font-bold mt-1 text-primary">{stats.complete}</p>
             </div>
@@ -157,7 +158,7 @@ const ProductImages = () => {
                 <SelectItem value="all">All Products</SelectItem>
                 <SelectItem value="with_images">With Images</SelectItem>
                 <SelectItem value="missing_primary">Missing Primary</SelectItem>
-                <SelectItem value="complete">Complete (5/5)</SelectItem>
+                <SelectItem value="complete">Complete (9/9)</SelectItem>
               </SelectContent>
             </Select>
           </div>

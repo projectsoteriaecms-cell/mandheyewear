@@ -14,10 +14,12 @@ interface ProductImageCardProps {
   onClick: () => void;
 }
 
+const MAX_IMAGES = 9; // 1 primary + 8 additional
+
 export const ProductImageCard = ({ product, onClick }: ProductImageCardProps) => {
   const imageCount =
     (product.image_url ? 1 : 0) + (product.additional_images?.length ?? 0);
-  const isComplete = imageCount >= 5;
+  const isComplete = imageCount >= MAX_IMAGES;
   const hasNoImages = imageCount === 0;
 
   return (
@@ -81,7 +83,7 @@ export const ProductImageCard = ({ product, onClick }: ProductImageCardProps) =>
         {isComplete ? (
           <CheckCircle className="h-3 w-3 mr-1" weight="fill" />
         ) : null}
-        {imageCount}/5
+        {imageCount}/{MAX_IMAGES}
       </Badge>
     </button>
   );
