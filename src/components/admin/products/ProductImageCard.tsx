@@ -14,7 +14,7 @@ interface ProductImageCardProps {
   onClick: () => void;
 }
 
-const MAX_IMAGES = 9; // 1 primary + 8 additional
+const MAX_IMAGES = 6; // 1 primary + 5 additional
 
 export const ProductImageCard = ({ product, onClick }: ProductImageCardProps) => {
   const imageCount =

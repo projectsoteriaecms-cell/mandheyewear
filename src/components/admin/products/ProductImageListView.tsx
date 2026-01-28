@@ -26,7 +26,7 @@ interface ProductImageListViewProps {
 export const ProductImageListView = ({
   products,
   onUploadClick,
-  maxImages = 9,
+  maxImages = 6,
 }: ProductImageListViewProps) => {
   return (
     <div className="space-y-2">
