@@ -57,6 +57,7 @@ const slides = [
 
 export const HeroSection = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
   const autoplayRef = useRef(
     Autoplay({ delay: 6000, stopOnInteraction: false, stopOnMouseEnter: true })
   );
@@ -70,7 +71,9 @@ export const HeroSection = () => {
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
+    setIsAnimating(true);
     setSelectedIndex(emblaApi.selectedScrollSnap());
+    setTimeout(() => setIsAnimating(false), 700);
   }, [emblaApi]);
 
   useEffect(() => {
@@ -90,19 +93,19 @@ export const HeroSection = () => {
 
   // Dot indicators component
   const DotIndicators = ({ className, variant = "mobile" }: { className?: string; variant?: "mobile" | "desktop" }) => (
-    <div className={cn("flex justify-center gap-2", className)}>
+    <div className={cn("flex justify-center gap-3", className)}>
       {slides.map((slide, index) => (
         <button
           key={slide.id}
           onClick={() => scrollTo(index)}
           className={cn(
-            "transition-all duration-300",
+            "transition-all duration-500",
             variant === "mobile" && (
               selectedIndex === index 
                 ? "scale-100" 
                 : "scale-75 opacity-50 hover:opacity-75"
             ),
-            variant === "desktop" && "w-2 h-2 rounded-full"
+            variant === "desktop" && "group"
           )}
           aria-label={`Go to slide ${index + 1}`}
         >
@@ -110,7 +113,7 @@ export const HeroSection = () => {
             <Circle 
               weight={selectedIndex === index ? "fill" : "regular"} 
               className={cn(
-                "h-3 w-3",
+                "h-3 w-3 transition-all duration-300",
                 selectedIndex === index 
                   ? (slide.type === "clinic" ? "text-primary" : "text-accent")
                   : "text-muted-foreground"
@@ -118,9 +121,9 @@ export const HeroSection = () => {
             />
           ) : (
             <span className={cn(
-              "block w-full h-full rounded-full transition-all duration-300",
+              "block rounded-full transition-all duration-500",
               selectedIndex === index 
-                ? (slide.type === "clinic" ? "bg-primary w-6 h-2" : "bg-accent w-6 h-2")
+                ? (slide.type === "clinic" ? "bg-primary w-8 h-2" : "bg-accent w-8 h-2")
                 : "bg-white/50 hover:bg-white/75 w-2 h-2"
             )} />
           )}
@@ -131,6 +134,10 @@ export const HeroSection = () => {
 
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Animated background orbs */}
+      <div className="absolute top-20 right-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl animate-float-slow" />
+      <div className="absolute bottom-20 left-1/4 w-64 h-64 rounded-full bg-accent/5 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+      
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-[0.02]" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -144,7 +151,8 @@ export const HeroSection = () => {
             <div 
               key={`badge-${currentSlide.id}`}
               className={cn(
-                "inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium animate-slide-content-in",
+                "inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium",
+                isAnimating ? "animate-slide-up-spring" : "",
                 currentSlide.type === "clinic" 
                   ? "bg-primary/5 border-primary/10 text-primary" 
                   : "bg-accent/5 border-accent/10 text-accent"
@@ -155,10 +163,13 @@ export const HeroSection = () => {
             </div>
 
             <div key={`headline-${currentSlide.id}`} className="space-y-6">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-semibold text-foreground leading-[1.1] tracking-tight animate-slide-content-in" style={{ animationDelay: '0.1s' }}>
+              <h1 className={cn(
+                "text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-semibold text-foreground leading-[1.1] tracking-tight",
+                isAnimating ? "animate-slide-up-spring" : ""
+              )} style={{ animationDelay: '0.1s' }}>
                 {currentSlide.headline}{" "}
                 <span className={cn(
-                  "relative",
+                  "relative inline-block",
                   currentSlide.type === "clinic" ? "text-primary" : "text-accent"
                 )}>
                   {currentSlide.subheadline}
@@ -168,7 +179,10 @@ export const HeroSection = () => {
                 </span>
               </h1>
               <p 
-                className="text-lg sm:text-xl text-muted-foreground max-w-lg leading-relaxed animate-slide-content-in"
+                className={cn(
+                  "text-lg sm:text-xl text-muted-foreground max-w-lg leading-relaxed",
+                  isAnimating ? "animate-slide-up-spring" : ""
+                )}
                 style={{ animationDelay: '0.2s' }}
               >
                 {currentSlide.description}
@@ -177,14 +191,17 @@ export const HeroSection = () => {
 
             <div 
               key={`cta-${currentSlide.id}`}
-              className="flex flex-col sm:flex-row gap-4 animate-slide-content-in"
+              className={cn(
+                "flex flex-col sm:flex-row gap-4",
+                isAnimating ? "animate-slide-up-spring" : ""
+              )}
               style={{ animationDelay: '0.3s' }}
             >
               <Button 
                 size="lg" 
                 asChild 
                 className={cn(
-                  "group h-14 px-8 text-base shadow-float hover:shadow-card-hover transition-all relative overflow-hidden",
+                  "group h-14 px-8 text-base shadow-float hover:shadow-card-hover transition-all relative overflow-hidden hover:scale-105",
                   currentSlide.type === "clinic" && "bg-primary hover:bg-primary/90"
                 )}
               >
@@ -195,7 +212,7 @@ export const HeroSection = () => {
                   <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-1 relative z-10" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild className="h-14 px-8 text-base border-2 hover:bg-primary/5 hover-glow">
+              <Button size="lg" variant="outline" asChild className="h-14 px-8 text-base border-2 hover:bg-primary/5 hover-glow transition-all hover:scale-105">
                 <Link to={currentSlide.secondaryCTA.link} className="flex items-center gap-3">
                   <currentSlide.secondaryCTA.icon weight="light" className="h-5 w-5" />
                   {currentSlide.secondaryCTA.text}
@@ -228,16 +245,21 @@ export const HeroSection = () => {
             {/* Trust indicators */}
             <div 
               key={`trust-${currentSlide.id}`}
-              className="flex flex-wrap items-center gap-8 pt-6 border-t border-border/50 animate-slide-content-in"
+              className={cn(
+                "flex flex-wrap items-center gap-8 pt-6 border-t border-border/50",
+                isAnimating ? "animate-slide-up-spring" : ""
+              )}
               style={{ animationDelay: '0.4s' }}
             >
               {currentSlide.trustIndicators.map((indicator, index) => (
                 <div 
                   key={index} 
-                  className="flex items-center gap-3 hover-lift cursor-default"
-                  style={{ animationDelay: `${0.5 + index * 0.1}s` }}
+                  className="flex items-center gap-3 hover-lift cursor-default group"
                 >
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", indicator.bgColor)}>
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110",
+                    indicator.bgColor
+                  )}>
                     <span className={cn("text-lg", indicator.textColor)}>{indicator.icon}</span>
                   </div>
                   <div>
@@ -250,10 +272,9 @@ export const HeroSection = () => {
           </div>
 
           {/* Hero Image Carousel with floating elements - hidden on mobile/tablet, shown on desktop */}
-          <div className="relative hidden lg:block order-1 lg:order-2">
-            {/* Main image container - Desktop uses the same carousel ref but it's hidden on mobile */}
+          <div className="relative hidden lg:block order-1 lg:order-2 perspective-1500">
+            {/* Main image container */}
             <div className="relative rounded-3xl overflow-hidden shadow-float">
-              {/* We show a static image synced with the carousel for desktop */}
               <div className="relative">
                 {slides.map((slide, index) => (
                   <img
@@ -261,11 +282,11 @@ export const HeroSection = () => {
                     src={slide.image}
                     alt={slide.badge}
                     className={cn(
-                      "w-full h-[400px] sm:h-[500px] lg:h-[600px] object-cover transition-all duration-700 ease-out absolute inset-0",
+                      "w-full h-[400px] sm:h-[500px] lg:h-[600px] object-cover absolute inset-0 transition-all duration-1000",
                       selectedIndex === index 
-                        ? "opacity-100 scale-105" 
+                        ? "opacity-100 scale-105 animate-ken-burns" 
                         : "opacity-0 scale-100",
-                      index === 0 && "relative" // First image is relative to establish height
+                      index === 0 && "relative"
                     )}
                   />
                 ))}
@@ -283,12 +304,12 @@ export const HeroSection = () => {
             {/* Floating testimonial card - clinic slide */}
             <div 
               className={cn(
-                "absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm max-w-[280px] animate-float transition-all duration-500",
-                selectedIndex === 0 ? "opacity-100" : "opacity-0 pointer-events-none"
+                "absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm max-w-[280px] transition-all duration-700",
+                selectedIndex === 0 ? "opacity-100 animate-float translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
               )}
             >
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground font-bold text-lg shrink-0">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground font-bold text-lg shrink-0 animate-pulse-soft">
                   10K+
                 </div>
                 <div>
@@ -301,12 +322,12 @@ export const HeroSection = () => {
             {/* Floating testimonial card - eyewear slide */}
             <div 
               className={cn(
-                "absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm max-w-[280px] animate-float transition-all duration-500",
-                selectedIndex === 1 ? "opacity-100" : "opacity-0 pointer-events-none"
+                "absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm max-w-[280px] transition-all duration-700",
+                selectedIndex === 1 ? "opacity-100 animate-float translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
               )}
             >
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center text-accent-foreground font-bold text-lg shrink-0">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center text-accent-foreground font-bold text-lg shrink-0 animate-pulse-soft">
                   50K+
                 </div>
                 <div>
@@ -319,8 +340,8 @@ export const HeroSection = () => {
             {/* Floating product card - top right (clinic slide) */}
             <div 
               className={cn(
-                "absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm animate-float-slow transition-all duration-500",
-                selectedIndex === 0 ? "opacity-100" : "opacity-0 pointer-events-none"
+                "absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm transition-all duration-700",
+                selectedIndex === 0 ? "opacity-100 animate-float-slow translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
               )}
               style={{ animationDelay: '0.5s' }}
             >
@@ -339,8 +360,8 @@ export const HeroSection = () => {
             {/* Floating product card - top right (eyewear slide) */}
             <div 
               className={cn(
-                "absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm animate-float-slow transition-all duration-500",
-                selectedIndex === 1 ? "opacity-100" : "opacity-0 pointer-events-none"
+                "absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm transition-all duration-700",
+                selectedIndex === 1 ? "opacity-100 animate-float-slow translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
               )}
               style={{ animationDelay: '0.5s' }}
             >
