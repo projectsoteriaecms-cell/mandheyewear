@@ -189,9 +189,9 @@ export const MobileTopBar = () => {
 
         {/* Logo - Centered */}
         <Link to="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-          <img src="/lovable-uploads/c6bc733f-cada-4635-b01a-c1aa00c8ba32.png" alt="Soteria" className="h-7 w-auto brightness-0 dark:invert" />
+          <img src={soteriaLogo} alt="Soteria" className="h-7 w-auto dark:invert" />
           <span className="text-border text-lg">|</span>
-          <img src={mhLogo} alt="M&H" className="h-7 w-auto brightness-0 dark:invert" />
+          <img src={mhLogo} alt="M&H" className="h-7 w-auto dark:invert" />
         </Link>
 
         {/* Right Actions */}
