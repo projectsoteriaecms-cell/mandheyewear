@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -57,10 +57,16 @@ const slides = [
 
 export const HeroSection = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const autoplayRef = useRef(
+    Autoplay({ delay: 6000, stopOnInteraction: false, stopOnMouseEnter: true })
+  );
+  
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true, duration: 30 },
-    [Autoplay({ delay: 6000, stopOnInteraction: false, stopOnMouseEnter: true })]
+    [autoplayRef.current]
   );
+
+  const currentSlide = slides[selectedIndex];
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -71,8 +77,10 @@ export const HeroSection = () => {
     if (!emblaApi) return;
     onSelect();
     emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
     return () => {
       emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
     };
   }, [emblaApi, onSelect]);
 
@@ -80,7 +88,46 @@ export const HeroSection = () => {
     if (emblaApi) emblaApi.scrollTo(index);
   }, [emblaApi]);
 
-  const currentSlide = slides[selectedIndex];
+  // Dot indicators component
+  const DotIndicators = ({ className, variant = "mobile" }: { className?: string; variant?: "mobile" | "desktop" }) => (
+    <div className={cn("flex justify-center gap-2", className)}>
+      {slides.map((slide, index) => (
+        <button
+          key={slide.id}
+          onClick={() => scrollTo(index)}
+          className={cn(
+            "transition-all duration-300",
+            variant === "mobile" && (
+              selectedIndex === index 
+                ? "scale-100" 
+                : "scale-75 opacity-50 hover:opacity-75"
+            ),
+            variant === "desktop" && "w-2 h-2 rounded-full"
+          )}
+          aria-label={`Go to slide ${index + 1}`}
+        >
+          {variant === "mobile" ? (
+            <Circle 
+              weight={selectedIndex === index ? "fill" : "regular"} 
+              className={cn(
+                "h-3 w-3",
+                selectedIndex === index 
+                  ? (slide.type === "clinic" ? "text-primary" : "text-accent")
+                  : "text-muted-foreground"
+              )}
+            />
+          ) : (
+            <span className={cn(
+              "block w-full h-full rounded-full transition-all duration-300",
+              selectedIndex === index 
+                ? (slide.type === "clinic" ? "bg-primary w-6 h-2" : "bg-accent w-6 h-2")
+                : "bg-white/50 hover:bg-white/75 w-2 h-2"
+            )} />
+          )}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
@@ -158,52 +205,24 @@ export const HeroSection = () => {
 
             {/* Mobile/Tablet Hero Image Carousel - shown below buttons on smaller screens */}
             <div className="lg:hidden mt-8">
-              <div className="relative rounded-2xl overflow-hidden shadow-float" ref={emblaRef}>
+              <div ref={emblaRef} className="overflow-hidden rounded-2xl shadow-float">
                 <div className="flex">
                   {slides.map((slide, index) => (
-                    <div key={slide.id} className="flex-[0_0_100%] min-w-0">
-                      <div className="relative">
-                        <img
-                          src={slide.image}
-                          alt={slide.badge}
-                          className={cn(
-                            "w-full h-[280px] sm:h-[350px] object-cover",
-                            selectedIndex === index && "animate-ken-burns"
-                          )}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent" />
-                      </div>
+                    <div key={slide.id} className="flex-[0_0_100%] min-w-0 relative">
+                      <img
+                        src={slide.image}
+                        alt={slide.badge}
+                        className={cn(
+                          "w-full h-[280px] sm:h-[350px] object-cover transition-transform duration-[6000ms] ease-out",
+                          selectedIndex === index && "scale-105"
+                        )}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent pointer-events-none" />
                     </div>
                   ))}
                 </div>
               </div>
-              
-              {/* Dot indicators for mobile */}
-              <div className="flex justify-center gap-2 mt-4">
-                {slides.map((slide, index) => (
-                  <button
-                    key={slide.id}
-                    onClick={() => scrollTo(index)}
-                    className={cn(
-                      "transition-all duration-300",
-                      selectedIndex === index 
-                        ? "scale-100" 
-                        : "scale-75 opacity-50 hover:opacity-75"
-                    )}
-                    aria-label={`Go to slide ${index + 1}`}
-                  >
-                    <Circle 
-                      weight={selectedIndex === index ? "fill" : "regular"} 
-                      className={cn(
-                        "h-3 w-3",
-                        selectedIndex === index 
-                          ? (slide.type === "clinic" ? "text-primary" : "text-accent")
-                          : "text-muted-foreground"
-                      )}
-                    />
-                  </button>
-                ))}
-              </div>
+              <DotIndicators className="mt-4" variant="mobile" />
             </div>
 
             {/* Trust indicators */}
@@ -231,49 +250,38 @@ export const HeroSection = () => {
           </div>
 
           {/* Hero Image Carousel with floating elements - hidden on mobile/tablet, shown on desktop */}
-          <div className="relative hidden lg:block">
-            {/* Main image container */}
+          <div className="relative hidden lg:block order-1 lg:order-2">
+            {/* Main image container - Desktop uses the same carousel ref but it's hidden on mobile */}
             <div className="relative rounded-3xl overflow-hidden shadow-float">
-              <div ref={emblaRef} className="overflow-hidden">
-                <div className="flex">
-                  {slides.map((slide, index) => (
-                    <div key={slide.id} className="flex-[0_0_100%] min-w-0">
-                      <img
-                        src={slide.image}
-                        alt={slide.badge}
-                        className={cn(
-                          "w-full h-[400px] sm:h-[500px] lg:h-[600px] object-cover transition-transform",
-                          selectedIndex === index && "animate-ken-burns"
-                        )}
-                      />
-                    </div>
-                  ))}
-                </div>
+              {/* We show a static image synced with the carousel for desktop */}
+              <div className="relative">
+                {slides.map((slide, index) => (
+                  <img
+                    key={slide.id}
+                    src={slide.image}
+                    alt={slide.badge}
+                    className={cn(
+                      "w-full h-[400px] sm:h-[500px] lg:h-[600px] object-cover transition-all duration-700 ease-out absolute inset-0",
+                      selectedIndex === index 
+                        ? "opacity-100 scale-105" 
+                        : "opacity-0 scale-100",
+                      index === 0 && "relative" // First image is relative to establish height
+                    )}
+                  />
+                ))}
               </div>
               {/* Elegant overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 via-transparent to-transparent pointer-events-none" />
-            </div>
-
-            {/* Dot indicators - desktop */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-              {slides.map((slide, index) => (
-                <button
-                  key={slide.id}
-                  onClick={() => scrollTo(index)}
-                  className={cn(
-                    "w-2 h-2 rounded-full transition-all duration-300",
-                    selectedIndex === index 
-                      ? (slide.type === "clinic" ? "bg-primary w-6" : "bg-accent w-6")
-                      : "bg-white/50 hover:bg-white/75"
-                  )}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
+              
+              {/* Dot indicators - desktop */}
+              <DotIndicators 
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20" 
+                variant="desktop" 
+              />
             </div>
             
-            {/* Floating testimonial card - shows based on slide type */}
+            {/* Floating testimonial card - clinic slide */}
             <div 
-              key={`float-card-${currentSlide.id}`}
               className={cn(
                 "absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm max-w-[280px] animate-float transition-all duration-500",
                 selectedIndex === 0 ? "opacity-100" : "opacity-0 pointer-events-none"
