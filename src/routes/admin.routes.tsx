@@ -15,6 +15,7 @@ const ProductImages = lazy(() => import("@/pages/admin/ProductImages"));
 const Services = lazy(() => import("@/pages/admin/Services"));
 const AdminBranches = lazy(() => import("@/pages/admin/AdminBranches"));
 const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
+const AdminAppointments = lazy(() => import("@/pages/admin/Appointments"));
 const Reports = lazy(() => import("@/pages/admin/Reports"));
 const Settings = lazy(() => import("@/pages/admin/Settings"));
 const Categories = lazy(() => import("@/pages/admin/Categories"));
@@ -42,6 +43,7 @@ export const adminRoutes = [
   <Route key="/admin/products" path="/admin/products" element={withSuspense(Products)} />,
   <Route key="/admin/products/images" path="/admin/products/images" element={withSuspense(ProductImages)} />,
   <Route key="/admin/services" path="/admin/services" element={withSuspense(Services)} />,
+  <Route key="/admin/appointments" path="/admin/appointments" element={withSuspense(AdminAppointments)} />,
   <Route key="/admin/branches" path="/admin/branches" element={withSuspense(AdminBranches)} />,
   <Route key="/admin/users" path="/admin/users" element={withSuspense(AdminUsers)} />,
   <Route key="/admin/reports" path="/admin/reports" element={withSuspense(Reports)} />,
