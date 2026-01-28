@@ -1,131 +1,147 @@
 
 
-# Hero Slideshow Implementation Plan
+# Premium Animations & Contrast Enhancement Plan
 
 ## Overview
 
-Transform the static hero section into an elegant, auto-advancing slideshow that balances both brand identities: **Soteria Eye Clinic** (medical/clinical) and **M&H Eyewear** (fashion/premium eyewear). The slideshow will feature smooth animations, dynamic content per slide, and maintain the professional, minimalist aesthetic.
+This plan addresses two key concerns:
+1. **Contrast Issues**: Arrow icons, badges like "500+ Frames", and other elements not displaying well in dark mode or on image overlays
+2. **Animation Sophistication**: Elevating all animations to be premium, sleek, and truly engaging for a luxury eyewear brand
 
 ---
 
-## What We're Building
+## Part 1: Fixing Contrast Issues
 
-A 2-3 slide hero carousel where each slide represents a different aspect of the brand:
+### Problem Areas Identified
 
-| Slide | Focus | Image | Headline | CTA |
-|-------|-------|-------|----------|-----|
-| 1 | Eye Care (Medical) | `hero-eye-care.jpg` | "Your path to clearer vision begins with us" | Book Eye Exam |
-| 2 | Eyewear (Fashion) | `hero-eyewear.jpg` | "Transforming vision with clarity & confidence" | Find Your Frame |
-| 3 | Combined/Trust | Frame collage or lifestyle | "Precision eye care. Premium eyewear." | Shop Collection |
+| Component | Element | Issue |
+|-----------|---------|-------|
+| CategoryCards | Arrow button circle | White background with `text-foreground` - low contrast on dark overlay |
+| CategoryCards | "500+ Frames" badge | Small text with thin styling - hard to read |
+| HeroSection | CTAs and icons | Need higher contrast glow effects |
+| FeaturedFrames | Quick action buttons | Rely on white which can blend with light product images |
+| TrustBadges | Highlight badges | Need better legibility |
 
----
+### Solution: Enhanced Contrast System
 
-## Design Approach (Reference-Inspired)
+**Category Cards Arrow Fix:**
+- Change arrow container from `bg-white` to `bg-accent` (gold) for immediate brand recognition
+- Use `text-foreground` that inverts properly on gold background
+- Add a subtle glow effect on hover
 
-Drawing from the reference image showing the eye clinic design:
+**Badge Enhancement:**
+- Increase badge text weight from `font-medium` to `font-semibold`
+- Add subtle text shadow for readability on images
+- Use glassmorphism with higher opacity backdrop
 
-**Visual Elements:**
-- Clean, professional slides with teal/blue medical tones for clinic slides
-- Warm gold accents for eyewear/fashion slides
-- Smooth crossfade or slide transitions (not abrupt jumps)
-- Dot indicators at bottom showing current slide
-- Optional: subtle arrow controls on desktop
-
-**Animation System:**
-- Auto-advance every 5-6 seconds
-- Pause on hover (desktop) for user control
-- Text elements animate in with staggered fade-in-up
-- Image zooms subtly during display (Ken Burns effect)
-- Smooth crossfade between slides
-
-**Mobile/Tablet Behavior:**
-- Image appears below CTA buttons (as currently requested)
-- Touch/swipe support for manual navigation
-- Same auto-advance timing
+**Dark Mode Specific:**
+- Add CSS variables for elevated contrast in dark mode
+- Implement text-shadow utilities for text over images
 
 ---
 
-## Technical Implementation
+## Part 2: Sophisticated Animation System
 
-### Install Autoplay Plugin
+### Current Limitations
+- Basic `fade-in-up` used everywhere - lacks variety
+- No scroll-triggered animations (Intersection Observer)
+- Missing micro-interactions on interactive elements
+- No sophisticated easing curves (cubic-bezier)
+- Missing parallax effects, reveal masks, staggered sequencing
 
-Add `embla-carousel-autoplay` package for automatic slide advancement with pause on interaction.
-
-### Slide Data Structure
+### New Animation Architecture
 
 ```text
-slides = [
-  {
-    id: 1,
-    type: "clinic",
-    image: heroEyeCare,
-    badge: "Soteria Eye Clinic",
-    headline: "Your path to clearer vision",
-    subheadline: "begins with us",
-    description: "Comprehensive eye exams, advanced diagnostics...",
-    primaryCTA: { text: "Book Eye Exam", link: "/booking", icon: Calendar },
-    secondaryCTA: { text: "Our Services", link: "/eye-care", icon: Eye },
-    accentColor: "primary" // blue
-  },
-  {
-    id: 2,
-    type: "eyewear",
-    image: heroEyewear,
-    badge: "M&H Eyewear",
-    headline: "Transforming vision with",
-    subheadline: "clarity & confidence",
-    description: "Not just eyewear — a unique blend of elegance...",
-    primaryCTA: { text: "Find Your Frame", link: "/style-quiz", icon: Sparkle },
-    secondaryCTA: { text: "Shop Collection", link: "/eyewear", icon: Bag },
-    accentColor: "accent" // gold
-  }
-]
+Animation Tiers:
+
+TIER 1: Entry Animations (Page Load / Scroll Reveal)
+- Split-text reveal for headlines (character-by-character)
+- Blur-to-focus effect for images
+- Mask reveal with gradient wipe
+- Staggered grid cascades
+
+TIER 2: Continuous Animations (Ambient Motion)
+- Parallax floating elements
+- Subtle rotation orbits for decorative shapes
+- Breathing pulse effects on badges
+- Smooth Ken Burns on hero images
+
+TIER 3: Interaction Animations (User Triggered)
+- Magnetic hover effects on buttons
+- 3D card tilt on hover
+- Elastic bounce on click
+- Ripple effects on actions
 ```
 
-### Animation Keyframes
+### New Keyframes to Add
 
-Add new keyframes to tailwind.config.ts:
+| Animation | Effect | Use Case |
+|-----------|--------|----------|
+| `text-reveal` | Clip-path wipe from left | Headlines, taglines |
+| `blur-sharp` | Blur-to-focus entrance | Images, cards |
+| `slide-mask` | Gradient mask reveal | Section headers |
+| `scale-spring` | Spring-physics scale | Buttons, interactive |
+| `tilt-3d` | Perspective tilt | Cards on hover |
+| `orbit-slow` | Slow rotation | Decorative elements |
+| `glow-pulse` | Soft glow animation | Active states, CTAs |
+| `parallax-float` | Parallax movement | Background elements |
+| `cascade` | Sequential grid reveal | Product grids |
 
-| Animation | Effect |
-|-----------|--------|
-| `slide-fade-in` | Fade in from opacity 0 with slight scale |
-| `slide-fade-out` | Fade out to opacity 0 |
-| `ken-burns` | Slow zoom from 100% to 105% over slide duration |
-| `text-reveal` | Staggered text appearance with mask/clip effect |
+### Intersection Observer System
 
-### Component Structure
-
-```text
-HeroSection.tsx
-├── Carousel (Embla with Autoplay)
-│   ├── CarouselContent
-│   │   ├── CarouselItem (Slide 1 - Eye Clinic)
-│   │   │   ├── Background Image with Ken Burns
-│   │   │   ├── Gradient Overlay
-│   │   │   ├── Content (animated text + CTAs)
-│   │   │   └── Trust Indicators
-│   │   └── CarouselItem (Slide 2 - Eyewear)
-│   │       └── ... same structure
-│   └── Dot Indicators (custom styled)
-└── Floating Cards (optional: show on active slide only)
-```
+Create a custom hook `useScrollReveal` that:
+- Observes elements entering viewport
+- Triggers appropriate animation class
+- Supports stagger delays for sibling elements
+- Respects `prefers-reduced-motion`
 
 ---
 
-## Responsive Behavior
+## Part 3: Component-Specific Enhancements
 
-### Desktop (lg+)
-- Full-width hero with 2-column layout
-- Image on right side with floating cards
-- Navigation arrows visible on hover
-- Dot indicators centered at bottom
+### Hero Section
+- **Headline**: Split-text reveal with staggered character animation
+- **Subheadline**: Gradient wipe reveal effect
+- **Trust indicators**: Cascade entrance with spring physics
+- **Images**: Enhanced Ken Burns with subtle parallax
+- **Floating cards**: 3D perspective float with rotation
 
-### Tablet/Mobile (< lg)
-- Single column layout
-- Text content first
-- Image carousel below CTA buttons
-- Swipe-enabled navigation
-- Dot indicators below image
+### Category Cards
+- **Cards**: 3D tilt effect on hover with depth shadows
+- **Arrow button**: Gold gradient with magnetic hover (follows cursor slightly)
+- **Badge**: Glassmorphism with text shadow and subtle pulse
+- **Image**: Slow zoom with overlay darkening on hover
+- **Text**: Reveal mask animation on scroll
+
+### Quiz Promo
+- **Frame style cards**: Staggered entrance with spring bounce
+- **Floating orbs**: Slow orbit animation around cards
+- **Icon**: Subtle continuous rotation
+- **Benefits list**: Sequential reveal with checkmark animation
+
+### Featured Frames
+- **Product grid**: Cascade reveal from center outward
+- **Cards**: 3D perspective tilt on hover
+- **Quick actions**: Slide in with elastic bounce
+- **Price**: Count-up animation on reveal
+
+### Virtual Try-On
+- **Detection badge**: Breathing pulse effect
+- **Floating cards**: Enhanced parallax float
+- **Feature pills**: Magnetic hover effect
+- **AI scan indicator**: Animated scan line
+
+### Trust Badges
+- **Cards**: Pop-in with spring physics
+- **Icons**: Subtle bounce on hover
+- **Highlight badges**: Shimmer sweep animation
+- **Container**: Subtle parallax on scroll
+
+### Newsletter
+- **Orbs**: Enhanced slow orbit with varying speeds
+- **Form**: Focus glow intensification
+- **Perks**: Staggered entrance with sparkle effect
+- **Button**: Shimmer sweep with magnetic hover
 
 ---
 
@@ -133,27 +149,74 @@ HeroSection.tsx
 
 | File | Changes |
 |------|---------|
-| `src/components/home/HeroSection.tsx` | Complete refactor to slideshow with Embla + Autoplay |
-| `tailwind.config.ts` | Add Ken Burns and slide transition keyframes |
-| `package.json` | Add `embla-carousel-autoplay` dependency |
+| `tailwind.config.ts` | Add 15+ new sophisticated keyframes and animations |
+| `src/index.css` | Add contrast utilities, text-shadow classes, 3D transforms |
+| `src/hooks/useScrollReveal.ts` | NEW - Intersection Observer hook for scroll animations |
+| `src/components/home/CategoryCards.tsx` | Fix arrow contrast, add 3D tilt, enhance badges |
+| `src/components/home/HeroSection.tsx` | Add text reveal, enhanced floating cards |
+| `src/components/home/QuizPromo.tsx` | Add spring animations, orbit effects |
+| `src/components/storefront/FeaturedFrames.tsx` | Add cascade grid, 3D card hover |
+| `src/components/home/VirtualTryOn.tsx` | Add scan line animation, enhanced floats |
+| `src/components/home/TrustBadges.tsx` | Add pop-in springs, shimmer badges |
+| `src/components/home/Newsletter.tsx` | Add orbit animations, enhanced form focus |
+
+---
+
+## Technical Implementation Details
+
+### New CSS Utilities
+
+```text
+.text-shadow-sm     // Subtle shadow for text on images
+.text-shadow-md     // Medium shadow for headers
+.perspective-1000   // 3D perspective container
+.preserve-3d        // 3D transform preservation
+.backface-hidden    // Performance optimization
+.magnetic-hover     // Cursor-following effect base
+.gradient-mask      // Reveal mask effect
+```
+
+### Animation Timing Functions
+
+```text
+--ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55)
+--ease-smooth: cubic-bezier(0.4, 0, 0.2, 1)
+--ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275)
+--ease-expo-out: cubic-bezier(0.19, 1, 0.22, 1)
+```
+
+### Scroll Reveal Hook API
+
+```text
+const { ref, inView, controls } = useScrollReveal({
+  threshold: 0.2,
+  triggerOnce: true,
+  delay: 0,
+  stagger: 0.1
+});
+```
 
 ---
 
 ## Accessibility Considerations
 
-- Pause autoplay when user focuses on carousel
-- ARIA labels for slide navigation
-- Reduced motion preference support (disable Ken Burns)
-- Keyboard navigation (arrow keys)
+- All animations respect `prefers-reduced-motion: reduce`
+- Fallback to simple fade for reduced motion users
+- No flashing or rapidly repeating effects
+- Pause animations when not in viewport
+- Keyboard navigation fully supported
 
 ---
 
 ## Summary
 
-This implementation creates a balanced, professional hero that:
-1. **Represents both brands** equally with dedicated slides
-2. **Uses smooth animations** that feel premium, not gimmicky
-3. **Auto-advances** to ensure both messages are seen
-4. **Maintains the existing trust indicators** and floating cards
-5. **Works seamlessly** across all device sizes with the mobile image placement as requested
+This enhancement transforms the landing page from "functional with basic animations" to a **premium, sophisticated experience** befitting a luxury eyewear brand:
+
+1. **Contrast Fixes**: Gold accent arrows, enhanced badges with text shadows, proper dark mode optimization
+2. **Entry Animations**: Text reveals, blur-to-focus, cascade grids, mask wipes
+3. **Continuous Motion**: Parallax floats, slow orbits, breathing pulses
+4. **Interactive Effects**: 3D card tilts, magnetic hovers, spring physics
+5. **Performance**: GPU-accelerated transforms, reduced motion support, viewport-triggered
+
+The result will be a sleek, engaging experience that rivals Warby Parker and high-end fashion eyewear sites.
 
