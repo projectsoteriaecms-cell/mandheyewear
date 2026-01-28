@@ -6,6 +6,8 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
+import { MatchBadge } from "./MatchBadge";
+import { FitIndicator, FitType } from "./FitIndicator";
 import type { Product } from "@/hooks/useProducts";
 
 // Import placeholder images for products without images
@@ -18,6 +20,9 @@ const placeholderImages = [frame1, frame2, frame3, frame4];
 
 interface ProductCardProps {
   product: Product;
+  matchScore?: number;
+  matchReasons?: string[];
+  fitIndicator?: FitType;
 }
 
 const getPlaceholderImage = (productId: string) => {
@@ -38,7 +43,12 @@ const getCategoryLabel = (style: string | null): string => {
   return styleMap[style] || style.charAt(0).toUpperCase() + style.slice(1);
 };
 
-export const ProductCard = ({ product }: ProductCardProps) => {
+export const ProductCard = ({
+  product,
+  matchScore,
+  matchReasons = [],
+  fitIndicator,
+}: ProductCardProps) => {
   const imageUrl = product.image_url || getPlaceholderImage(product.id);
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -64,6 +74,15 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all" />
+          
+          {/* Match & Fit Badges */}
+          {(matchScore !== undefined && matchScore >= 40) && (
+            <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+              <MatchBadge score={matchScore} reasons={matchReasons} />
+              {fitIndicator && <FitIndicator fit={fitIndicator} />}
+            </div>
+          )}
+          
           <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity space-y-2">
             <WishlistButton productId={product.id} />
             <Button size="icon" variant="secondary" className="shadow-lg">

@@ -1,11 +1,16 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/eyewear/ProductCard";
 import { ProductFilters } from "@/components/eyewear/ProductFilters";
 import { VirtualTryOnBanner } from "@/components/eyewear/VirtualTryOnBanner";
 import { useProducts } from "@/hooks/useProducts";
+import { usePersonalizedProducts } from "@/hooks/usePersonalizedProducts";
+import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState, Pagination, ProductQuickView } from "@/components/storefront";
 import {
   Breadcrumb,
@@ -16,7 +21,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { House, Eye } from "@phosphor-icons/react";
-import { Link } from "react-router-dom";
+import { Sparkles, ChevronRight } from "lucide-react";
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -26,9 +31,21 @@ const Eyewear = () => {
   const [priceSort, setPriceSort] = useState("featured");
   const [currentPage, setCurrentPage] = useState(1);
   const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
+  const [showPersonalized, setShowPersonalized] = useState(true);
+
+  const { isAuthenticated } = useAuth();
 
   // Fetch M&H Fashion products for the eyewear page
   const { data: products, isLoading, error } = useProducts("m_and_h_fashion");
+
+  // Get personalized products
+  const {
+    scoredProducts,
+    topPicks,
+    hasPreferences,
+    hasMeasurements,
+    getProductScore,
+  } = usePersonalizedProducts();
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
@@ -45,9 +62,15 @@ const Eyewear = () => {
       .sort((a, b) => {
         if (priceSort === "low-high") return a.price - b.price;
         if (priceSort === "high-low") return b.price - a.price;
+        // If showing personalized, sort by match score
+        if (showPersonalized && hasPreferences) {
+          const scoreA = getProductScore(a.id)?.matchScore || 0;
+          const scoreB = getProductScore(b.id)?.matchScore || 0;
+          return scoreB - scoreA;
+        }
         return 0;
       });
-  }, [products, genderFilter, styleFilter, priceSort]);
+  }, [products, genderFilter, styleFilter, priceSort, showPersonalized, hasPreferences, getProductScore]);
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
@@ -65,6 +88,8 @@ const Eyewear = () => {
   const handleQuickView = (productId: string) => {
     setQuickViewProductId(productId);
   };
+
+  const showRecommendationsSection = isAuthenticated && hasPreferences && topPicks.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,6 +132,71 @@ const Eyewear = () => {
               </p>
             )}
           </div>
+
+          {/* Personalization CTA for non-personalized users */}
+          {isAuthenticated && !hasPreferences && (
+            <Card className="mb-8 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
+              <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-lg">Find Your Perfect Frames</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Complete your style profile and get personalized recommendations
+                    </p>
+                  </div>
+                </div>
+                <Button asChild>
+                  <Link to="/onboarding">
+                    Get Personalized
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Recommended For You Section */}
+          {showRecommendationsSection && (
+            <div className="mb-12">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-6 h-6 text-primary" />
+                  <h2 className="text-2xl font-display font-bold">Recommended For You</h2>
+                </div>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/dashboard?tab=frame-profile">
+                    Edit Preferences
+                    <ChevronRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {topPicks.slice(0, 4).map((product) => (
+                  <div
+                    key={product.id}
+                    onDoubleClick={() => handleQuickView(product.id)}
+                  >
+                    <ProductCard
+                      product={product}
+                      matchScore={product.matchScore}
+                      matchReasons={product.matchReasons}
+                      fitIndicator={product.fitIndicator}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* All Products Section */}
+          {showRecommendationsSection && (
+            <div className="flex items-center gap-2 mb-6">
+              <h2 className="text-2xl font-display font-bold">All Frames</h2>
+            </div>
+          )}
 
           <ProductFilters
             genderFilter={genderFilter}
@@ -152,14 +242,22 @@ const Eyewear = () => {
           ) : (
             <>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {paginatedProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    onDoubleClick={() => handleQuickView(product.id)}
-                  >
-                    <ProductCard product={product} />
-                  </div>
-                ))}
+                {paginatedProducts.map((product) => {
+                  const scored = getProductScore(product.id);
+                  return (
+                    <div
+                      key={product.id}
+                      onDoubleClick={() => handleQuickView(product.id)}
+                    >
+                      <ProductCard
+                        product={product}
+                        matchScore={hasPreferences ? scored?.matchScore : undefined}
+                        matchReasons={scored?.matchReasons}
+                        fitIndicator={hasMeasurements ? scored?.fitIndicator : undefined}
+                      />
+                    </div>
+                  );
+                })}
               </div>
 
               <Pagination
