@@ -16,9 +16,20 @@ export {
   useUpdatePurchaseOrderStatus,
   useReceivePurchaseOrder,
   useInventoryTransactions,
+  useBulkStockUpdate,
+  parseStockExcel,
 } from "./hooks";
 
-// Types
+// Types from hooks
+export type {
+  StockUpdateRow,
+  ParsedStockData,
+  StockUpdateProgress,
+  StockUpdateResult,
+  BulkStockUpdateProgress,
+} from "./hooks";
+
+// Types from types module
 export type {
   InventoryItem,
   InventoryStats,

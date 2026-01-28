@@ -23,3 +23,16 @@ export {
 } from "./usePurchaseOrders";
 
 export { useInventoryTransactions } from "./useInventoryTransactions";
+
+export {
+  useBulkStockUpdate,
+  parseStockExcel,
+} from "./useBulkStockUpdate";
+
+export type {
+  StockUpdateRow,
+  ParsedStockData,
+  StockUpdateProgress,
+  StockUpdateResult,
+  BulkStockUpdateProgress,
+} from "./useBulkStockUpdate";
