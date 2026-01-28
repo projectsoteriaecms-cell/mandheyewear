@@ -11,6 +11,7 @@ const StockAdjustments = lazy(() => import("@/pages/admin/StockAdjustments"));
 const InventoryTransactions = lazy(() => import("@/pages/admin/InventoryTransactions"));
 const Suppliers = lazy(() => import("@/pages/admin/Suppliers"));
 const Products = lazy(() => import("@/pages/admin/Products"));
+const ProductImages = lazy(() => import("@/pages/admin/ProductImages"));
 const Services = lazy(() => import("@/pages/admin/Services"));
 const AdminBranches = lazy(() => import("@/pages/admin/AdminBranches"));
 const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
@@ -39,6 +40,7 @@ export const adminRoutes = [
   <Route key="/admin/inventory/transactions" path="/admin/inventory/transactions" element={withSuspense(InventoryTransactions)} />,
   <Route key="/admin/suppliers" path="/admin/suppliers" element={withSuspense(Suppliers)} />,
   <Route key="/admin/products" path="/admin/products" element={withSuspense(Products)} />,
+  <Route key="/admin/products/images" path="/admin/products/images" element={withSuspense(ProductImages)} />,
   <Route key="/admin/services" path="/admin/services" element={withSuspense(Services)} />,
   <Route key="/admin/branches" path="/admin/branches" element={withSuspense(AdminBranches)} />,
   <Route key="/admin/users" path="/admin/users" element={withSuspense(AdminUsers)} />,

@@ -50,6 +50,10 @@ export const navItems: NavItem[] = [
     href: "/admin/products",
     icon: Bag,
     requiresManager: true,
+    children: [
+      { title: "All Products", href: "/admin/products" },
+      { title: "Product Images", href: "/admin/products/images" },
+    ],
   },
   {
     title: "Services",
