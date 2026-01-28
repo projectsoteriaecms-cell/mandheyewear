@@ -7,20 +7,21 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { cn } from "@/lib/utils";
 import { useProductImageUpload } from "@/modules/products";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Image,
-  Upload,
   Trash,
   Star,
   CloudArrowUp,
-  X,
 } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
+import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
+
+const MAX_IMAGES = 9; // 1 primary + 8 additional
+const MAX_ADDITIONAL = 8;
 
 interface QuickImageUploadModalProps {
   product: {
@@ -48,7 +49,7 @@ export const QuickImageUploadModal = ({
   const primaryImage = product?.image_url;
   const additionalImages = product?.additional_images ?? [];
   const totalImages = (primaryImage ? 1 : 0) + additionalImages.length;
-  const canAddMore = totalImages < 5;
+  const canAddMore = totalImages < MAX_IMAGES;
 
   const handleFileSelect = useCallback(
     async (files: FileList | null) => {
@@ -123,7 +124,7 @@ export const QuickImageUploadModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Image className="h-5 w-5" />
@@ -132,8 +133,8 @@ export const QuickImageUploadModal = ({
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{product.name}</span>
             <Badge variant="outline">{product.sku}</Badge>
-            <Badge variant={totalImages >= 5 ? "default" : "secondary"}>
-              {totalImages}/5 images
+            <Badge variant={totalImages >= MAX_IMAGES ? "default" : "secondary"}>
+              {totalImages}/{MAX_IMAGES} images
             </Badge>
           </div>
         </DialogHeader>
@@ -169,18 +170,24 @@ export const QuickImageUploadModal = ({
 
           {/* Additional Images */}
           <div>
-            <h4 className="text-sm font-medium mb-2">Additional Images</h4>
-            <div className="flex flex-wrap gap-2">
+            <h4 className="text-sm font-medium mb-2">Additional Images ({additionalImages.length}/{MAX_ADDITIONAL})</h4>
+            <div className="grid grid-cols-4 gap-3">
               {additionalImages.map((url, index) => (
                 <div
                   key={url}
-                  className="relative w-24 h-24 rounded-lg overflow-hidden border group"
+                  className="relative aspect-square rounded-lg overflow-hidden border group"
                 >
                   <img
                     src={url}
                     alt={`Additional ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
+                  <Badge 
+                    variant="secondary" 
+                    className="absolute bottom-1 left-1 text-[10px] px-1.5 py-0.5 bg-background/80 backdrop-blur-sm"
+                  >
+                    {IMAGE_POSITION_LABELS[index] || `Image ${index + 1}`}
+                  </Badge>
                   <button
                     onClick={() => handleDelete(url, false)}
                     disabled={isUploading}
@@ -191,7 +198,7 @@ export const QuickImageUploadModal = ({
                 </div>
               ))}
               {additionalImages.length === 0 && (
-                <div className="w-24 h-24 rounded-lg border-2 border-dashed flex items-center justify-center text-muted-foreground">
+                <div className="aspect-square rounded-lg border-2 border-dashed flex items-center justify-center text-muted-foreground col-span-2">
                   <span className="text-xs text-center px-2">No additional images</span>
                 </div>
               )}
@@ -223,8 +230,11 @@ export const QuickImageUploadModal = ({
                     Drag & drop images here, or click to select
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    JPG, PNG, or WebP up to 5MB each. {5 - totalImages} slot(s)
+                    JPG, PNG, or WebP up to 5MB each. {MAX_IMAGES - totalImages} slot(s)
                     remaining.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Positions: {IMAGE_POSITION_LABELS.slice(additionalImages.length, additionalImages.length + 3).join(", ")}...
                   </p>
                   <input
                     type="file"
@@ -240,7 +250,7 @@ export const QuickImageUploadModal = ({
 
           {!canAddMore && (
             <div className="text-center py-4 text-sm text-muted-foreground bg-muted/50 rounded-lg">
-              Maximum of 5 images reached. Delete an image to upload more.
+              Maximum of {MAX_IMAGES} images reached. Delete an image to upload more.
             </div>
           )}
         </div>

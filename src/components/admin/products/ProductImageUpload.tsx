@@ -2,6 +2,20 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Upload, Loader2, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+
+export const IMAGE_POSITION_LABELS = [
+  "Front View",
+  "Side View (Left)",
+  "Side View (Right)",
+  "On-Model",
+  "Detail 1",
+  "Detail 2",
+  "Detail 3",
+  "Lifestyle",
+] as const;
+
+export type ImagePosition = typeof IMAGE_POSITION_LABELS[number];
 
 interface ProductImageUploadProps {
   images: string[];
@@ -19,7 +33,7 @@ export const ProductImageUpload = ({
   onImagesChange,
   onUpload,
   onDelete,
-  maxImages = 4,
+  maxImages = 8,
   isUploading = false,
   primaryImage,
   onPrimaryChange,
@@ -135,17 +149,25 @@ export const ProductImageUpload = ({
         <label className="text-sm font-medium mb-2 block">
           Additional Images ({images.length}/{maxImages})
         </label>
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-4 gap-3">
           {images.map((url, idx) => (
             <div
               key={url}
-              className="relative w-20 h-20 rounded-lg overflow-hidden border group"
+              className="relative rounded-lg overflow-hidden border group"
             >
-              <img
-                src={url}
-                alt={`Product ${idx + 1}`}
-                className="w-full h-full object-cover"
-              />
+              <div className="aspect-square">
+                <img
+                  src={url}
+                  alt={`Product ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <Badge 
+                variant="secondary" 
+                className="absolute bottom-1 left-1 text-[10px] px-1.5 py-0.5 bg-background/80 backdrop-blur-sm"
+              >
+                {IMAGE_POSITION_LABELS[idx] || `Image ${idx + 1}`}
+              </Badge>
               <Button
                 type="button"
                 variant="destructive"
