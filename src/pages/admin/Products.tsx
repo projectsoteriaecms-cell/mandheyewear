@@ -26,6 +26,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Plus,
   Upload,
   MagnifyingGlass,
@@ -35,6 +40,7 @@ import {
   ShoppingBag,
   ImageSquare,
   FileXls,
+  Camera,
 } from "@phosphor-icons/react";
 import { useAdminProducts } from "@/modules/products";
 import { CreateProductDialog } from "@/components/admin/products/CreateProductDialog";
@@ -43,6 +49,7 @@ import { EditProductDialog } from "@/components/admin/products/EditProductDialog
 import { BulkImageUploadDialog } from "@/components/admin/products/BulkImageUploadDialog";
 import { ECMSImportDialog } from "@/components/admin/products/ECMSImportDialog";
 import { ImportHistoryPanel } from "@/components/admin/products/ImportHistoryPanel";
+import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -69,6 +76,7 @@ const Products = () => {
   const [isECMSImportOpen, setIsECMSImportOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+  const [quickUploadProduct, setQuickUploadProduct] = useState<Product | null>(null);
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -212,7 +220,7 @@ const Products = () => {
                       <TableRow key={product.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
+                            <div className="relative h-10 w-10 rounded bg-muted flex items-center justify-center group">
                               {product.image_url ? (
                                 <img
                                   src={product.image_url}
@@ -222,6 +230,22 @@ const Products = () => {
                               ) : (
                                 <ShoppingBag className="h-5 w-5 text-muted-foreground" weight="light" />
                               )}
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setQuickUploadProduct(product);
+                                    }}
+                                    className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded"
+                                  >
+                                    <Camera className="h-4 w-4 text-white" weight="fill" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Quick upload image</p>
+                                </TooltipContent>
+                              </Tooltip>
                             </div>
                             <div>
                               <p className="font-medium">{product.name}</p>
@@ -326,6 +350,12 @@ const Products = () => {
       <BulkImageUploadDialog
         open={isBulkImageUploadOpen}
         onOpenChange={setIsBulkImageUploadOpen}
+      />
+
+      <QuickImageUploadModal
+        product={quickUploadProduct}
+        open={!!quickUploadProduct}
+        onOpenChange={(open) => !open && setQuickUploadProduct(null)}
       />
 
       <ECMSImportDialog
