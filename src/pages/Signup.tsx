@@ -74,9 +74,10 @@ const Signup = () => {
     } else {
       toast({
         title: "Account Created!",
-        description: "Welcome to Soteria Eye Clinic & M&H Eyewear.",
+        description: "Let's personalize your experience.",
       });
-      navigate("/dashboard");
+      // Redirect to onboarding for personalization
+      navigate("/onboarding");
     }
   };
 

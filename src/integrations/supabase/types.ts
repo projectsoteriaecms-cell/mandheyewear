@@ -649,6 +649,65 @@ export type Database = {
           },
         ]
       }
+      personalization_analytics: {
+        Row: {
+          created_at: string
+          id: string
+          metric_type: string
+          metric_value: Json
+          period_end: string
+          period_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metric_type: string
+          metric_value: Json
+          period_end: string
+          period_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metric_type?: string
+          metric_value?: Json
+          period_end?: string
+          period_start?: string
+        }
+        Relationships: []
+      }
+      poll_responses: {
+        Row: {
+          created_at: string
+          id: string
+          poll_id: string
+          response: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          poll_id: string
+          response: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          poll_id?: string
+          response?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_responses_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "style_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prescriptions: {
         Row: {
           created_at: string
@@ -1189,6 +1248,42 @@ export type Database = {
           },
         ]
       }
+      style_polls: {
+        Row: {
+          category: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          options: Json
+          poll_type: string
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          options?: Json
+          poll_type?: string
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          options?: Json
+          poll_type?: string
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppliers: {
         Row: {
           address: string | null
@@ -1273,6 +1368,51 @@ export type Database = {
           invitation_token?: string
           invited_by?: string
           role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+      user_measurements: {
+        Row: {
+          bridge_width_mm: number | null
+          confidence_score: number | null
+          created_at: string
+          face_shape: string | null
+          face_width_mm: number | null
+          id: string
+          image_url: string | null
+          measurement_type: string
+          pupillary_distance_mm: number | null
+          raw_analysis: Json | null
+          temple_width_mm: number | null
+          user_id: string
+        }
+        Insert: {
+          bridge_width_mm?: number | null
+          confidence_score?: number | null
+          created_at?: string
+          face_shape?: string | null
+          face_width_mm?: number | null
+          id?: string
+          image_url?: string | null
+          measurement_type?: string
+          pupillary_distance_mm?: number | null
+          raw_analysis?: Json | null
+          temple_width_mm?: number | null
+          user_id: string
+        }
+        Update: {
+          bridge_width_mm?: number | null
+          confidence_score?: number | null
+          created_at?: string
+          face_shape?: string | null
+          face_width_mm?: number | null
+          id?: string
+          image_url?: string | null
+          measurement_type?: string
+          pupillary_distance_mm?: number | null
+          raw_analysis?: Json | null
+          temple_width_mm?: number | null
+          user_id?: string
         }
         Relationships: []
       }

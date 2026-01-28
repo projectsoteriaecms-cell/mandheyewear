@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { Sparkles, ChevronRight, CircleDashed, Scan, Ruler } from "lucide-react";
+import { Sparkles, ChevronRight, CircleDashed, Scan, Ruler, Check } from "lucide-react";
 
 interface FramePreferences {
   faceShape?: string;
@@ -14,12 +14,33 @@ interface FramePreferences {
   budget?: string;
 }
 
+interface FaceDimensions {
+  faceWidthMm?: number;
+  pupillaryDistanceMm?: number;
+  bridgeWidthMm?: number;
+  templeWidthMm?: number;
+  faceShape?: string;
+  confidenceScore?: number;
+  scanDate?: string;
+}
+
 export const FrameProfileSection = () => {
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile(user?.id);
   
   const preferences = profile?.frame_preferences as FramePreferences | null;
+  const faceDimensions = profile?.face_dimensions as FaceDimensions | null;
   const hasPreferences = preferences && Object.keys(preferences).length > 0;
+  const hasMeasurements = faceDimensions && Object.keys(faceDimensions).length > 0;
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleDateString("en-NG", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -50,6 +71,12 @@ export const FrameProfileSection = () => {
                       </Badge>
                     )) || <span className="text-sm text-muted-foreground">Not set</span>}
                   </div>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Budget Range</p>
+                  <Badge variant="outline" className="capitalize">
+                    {preferences.budget || "Not set"}
+                  </Badge>
                 </div>
               </div>
               <div className="space-y-4">
@@ -83,9 +110,9 @@ export const FrameProfileSection = () => {
                 Take our quick quiz to get personalized frame recommendations
               </p>
               <Button asChild>
-                <Link to="/style-quiz">
+                <Link to="/onboarding">
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Take the Style Quiz
+                  Start Personalization
                 </Link>
               </Button>
             </div>
@@ -109,45 +136,97 @@ export const FrameProfileSection = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Scan className="h-5 w-5 text-primary" />
-            Your Facial Features
+            Your Face Measurements
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid sm:grid-cols-2 gap-6">
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-3 mb-2">
-                <CircleDashed className="h-5 w-5 text-muted-foreground" />
-                <p className="font-medium">Face Shape</p>
+          {hasMeasurements ? (
+            <div className="space-y-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Face Width</p>
+                  <p className="text-xl font-semibold">
+                    {faceDimensions.faceWidthMm ? `${faceDimensions.faceWidthMm}mm` : "—"}
+                  </p>
+                </div>
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Pupillary Distance (PD)</p>
+                  <p className="text-xl font-semibold">
+                    {faceDimensions.pupillaryDistanceMm ? `${faceDimensions.pupillaryDistanceMm}mm` : "—"}
+                  </p>
+                </div>
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Bridge Width</p>
+                  <p className="text-xl font-semibold">
+                    {faceDimensions.bridgeWidthMm ? `${faceDimensions.bridgeWidthMm}mm` : "—"}
+                  </p>
+                </div>
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Face Shape</p>
+                  <p className="text-xl font-semibold capitalize">
+                    {faceDimensions.faceShape || "—"}
+                  </p>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {preferences?.faceShape ? (
-                  <span className="capitalize">{preferences.faceShape}</span>
-                ) : (
-                  "Use Virtual Try-On to detect"
-                )}
-              </p>
-            </div>
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-3 mb-2">
-                <Ruler className="h-5 w-5 text-muted-foreground" />
-                <p className="font-medium">Pupillary Distance</p>
+              
+              {faceDimensions.confidenceScore !== undefined && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Check className="h-4 w-4 text-green-600" />
+                  <span>
+                    Measurement confidence: {Math.round(faceDimensions.confidenceScore * 100)}%
+                  </span>
+                  {faceDimensions.scanDate && (
+                    <span className="ml-2">• Scanned on {formatDate(faceDimensions.scanDate)}</span>
+                  )}
+                </div>
+              )}
+              
+              <div className="pt-4 border-t">
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/onboarding">
+                    <Scan className="h-4 w-4 mr-2" />
+                    Rescan Face
+                  </Link>
+                </Button>
               </div>
-              <p className="text-sm text-muted-foreground">Use Virtual Try-On to measure</p>
             </div>
-          </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <CircleDashed className="h-5 w-5 text-muted-foreground" />
+                  <p className="font-medium">Face Shape</p>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Complete a face scan to detect your face shape
+                </p>
+              </div>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <Ruler className="h-5 w-5 text-muted-foreground" />
+                  <p className="font-medium">Pupillary Distance</p>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Scan your face to measure your PD
+                </p>
+              </div>
+            </div>
+          )}
           
-          <div className="mt-6">
-            <Button variant="outline" asChild>
-              <Link to="/try-on">
-                <Scan className="h-4 w-4 mr-2" />
-                Use Virtual Try-On
-              </Link>
-            </Button>
-          </div>
+          {!hasMeasurements && (
+            <div className="mt-6">
+              <Button variant="outline" asChild>
+                <Link to="/onboarding">
+                  <Scan className="h-4 w-4 mr-2" />
+                  Scan Your Face
+                </Link>
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Your Fit */}
+      {/* Your Fit Recommendations */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -156,20 +235,49 @@ export const FrameProfileSection = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid sm:grid-cols-2 gap-6">
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="font-medium mb-1">Frame Width</p>
-              <p className="text-sm text-muted-foreground">
-                Complete Virtual Try-On to calculate
-              </p>
+          {hasMeasurements ? (
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="font-medium mb-1">Recommended Frame Width</p>
+                <p className="text-lg font-semibold">
+                  {faceDimensions?.faceWidthMm 
+                    ? `${faceDimensions.faceWidthMm - 5}mm - ${faceDimensions.faceWidthMm + 5}mm`
+                    : "—"
+                  }
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Based on your face width measurement
+                </p>
+              </div>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="font-medium mb-1">Recommended Bridge Size</p>
+                <p className="text-lg font-semibold">
+                  {faceDimensions?.bridgeWidthMm
+                    ? `${faceDimensions.bridgeWidthMm - 2}mm - ${faceDimensions.bridgeWidthMm + 2}mm`
+                    : "—"
+                  }
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Based on your bridge width measurement
+                </p>
+              </div>
             </div>
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="font-medium mb-1">Best Bridge Fit</p>
-              <p className="text-sm text-muted-foreground">
-                Complete Virtual Try-On to calculate
-              </p>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="font-medium mb-1">Frame Width</p>
+                <p className="text-sm text-muted-foreground">
+                  Complete a face scan to calculate your ideal frame width
+                </p>
+              </div>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="font-medium mb-1">Best Bridge Fit</p>
+                <p className="text-sm text-muted-foreground">
+                  Complete a face scan to calculate your ideal bridge size
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
