@@ -1,274 +1,159 @@
 
 
-# Personalization & Face Measurement System
+# Hero Slideshow Implementation Plan
 
 ## Overview
 
-This plan creates a comprehensive personalization system that captures physical face measurements and style preferences during onboarding, then uses this data to power personalized shopping experiences and generate platform insights.
+Transform the static hero section into an elegant, auto-advancing slideshow that balances both brand identities: **Soteria Eye Clinic** (medical/clinical) and **M&H Eyewear** (fashion/premium eyewear). The slideshow will feature smooth animations, dynamic content per slide, and maintain the professional, minimalist aesthetic.
 
 ---
 
 ## What We're Building
 
-### For Customers
+A 2-3 slide hero carousel where each slide represents a different aspect of the brand:
 
-**Smart Onboarding Flow**
-After creating an account, new users will be guided through a personalization journey that includes:
-- Face scanning to capture measurements (face width, pupillary distance, bridge size)
-- Face shape detection (oval, round, square, heart, oblong)
-- Style preference questions (colors, usage, budget)
-- Lifestyle polls that help us understand their needs better
+| Slide | Focus | Image | Headline | CTA |
+|-------|-------|-------|----------|-----|
+| 1 | Eye Care (Medical) | `hero-eye-care.jpg` | "Your path to clearer vision begins with us" | Book Eye Exam |
+| 2 | Eyewear (Fashion) | `hero-eyewear.jpg` | "Transforming vision with clarity & confidence" | Find Your Frame |
+| 3 | Combined/Trust | Frame collage or lifestyle | "Precision eye care. Premium eyewear." | Shop Collection |
 
-**Personalized Shopping**
-Once we have their profile:
-- Products will be scored and ranked by how well they match
-- "Great Fit" and "Style Match" badges will appear on matching frames
-- A dedicated "For You" section shows personalized recommendations
-- Frame fit indicators (narrow, standard, wide) based on actual measurements
+---
 
-### For the Platform
+## Design Approach (Reference-Inspired)
 
-**Insights Dashboard** (Admin)
-- Aggregate data on popular face shapes, style preferences, budget ranges
-- Trends over time (what styles are gaining popularity)
-- Conversion rates by personalization completion
-- Data to inform inventory and product decisions
+Drawing from the reference image showing the eye clinic design:
+
+**Visual Elements:**
+- Clean, professional slides with teal/blue medical tones for clinic slides
+- Warm gold accents for eyewear/fashion slides
+- Smooth crossfade or slide transitions (not abrupt jumps)
+- Dot indicators at bottom showing current slide
+- Optional: subtle arrow controls on desktop
+
+**Animation System:**
+- Auto-advance every 5-6 seconds
+- Pause on hover (desktop) for user control
+- Text elements animate in with staggered fade-in-up
+- Image zooms subtly during display (Ken Burns effect)
+- Smooth crossfade between slides
+
+**Mobile/Tablet Behavior:**
+- Image appears below CTA buttons (as currently requested)
+- Touch/swipe support for manual navigation
+- Same auto-advance timing
 
 ---
 
 ## Technical Implementation
 
-### Phase 1: Database Setup
+### Install Autoplay Plugin
 
-Create tables to store personalization data and analytics:
+Add `embla-carousel-autoplay` package for automatic slide advancement with pause on interaction.
 
-| Table | Purpose |
-|-------|---------|
-| `user_measurements` | Store face scan results with timestamps |
-| `style_polls` | Define poll questions for collecting preferences |
-| `poll_responses` | Store user responses for analytics |
-| `personalization_analytics` | Aggregate insights for admin dashboard |
-
-**Face Dimensions Structure** (stored in profiles.face_dimensions):
-- Face Width (mm)
-- Pupillary Distance / PD (mm)
-- Bridge Width (mm)
-- Temple-to-Temple Width (mm)
-- Face Shape (detected)
-- Confidence Score
-- Scan Date
-
-### Phase 2: Onboarding Flow
-
-Create a multi-step wizard that appears after account creation:
+### Slide Data Structure
 
 ```text
-Step 1: Welcome
-   "Let's personalize your experience"
-   ↓
-Step 2: Face Scan (Optional)
-   Camera access → AI detects landmarks → Calculate measurements
-   OR Skip for manual selection
-   ↓
-Step 3: Style Quiz (Existing, Enhanced)
-   Face shape, frame styles, colors
-   ↓
-Step 4: Lifestyle Poll
-   "What's most important to you?" (Comfort/Style/Durability/Price)
-   "How often do you change glasses?"
-   ↓
-Step 5: Complete
-   Show profile summary, redirect to recommendations
+slides = [
+  {
+    id: 1,
+    type: "clinic",
+    image: heroEyeCare,
+    badge: "Soteria Eye Clinic",
+    headline: "Your path to clearer vision",
+    subheadline: "begins with us",
+    description: "Comprehensive eye exams, advanced diagnostics...",
+    primaryCTA: { text: "Book Eye Exam", link: "/booking", icon: Calendar },
+    secondaryCTA: { text: "Our Services", link: "/eye-care", icon: Eye },
+    accentColor: "primary" // blue
+  },
+  {
+    id: 2,
+    type: "eyewear",
+    image: heroEyewear,
+    badge: "M&H Eyewear",
+    headline: "Transforming vision with",
+    subheadline: "clarity & confidence",
+    description: "Not just eyewear — a unique blend of elegance...",
+    primaryCTA: { text: "Find Your Frame", link: "/style-quiz", icon: Sparkle },
+    secondaryCTA: { text: "Shop Collection", link: "/eyewear", icon: Bag },
+    accentColor: "accent" // gold
+  }
+]
 ```
 
-### Phase 3: Face Scanning Technology
+### Animation Keyframes
 
-**Approach: AI-Powered Analysis via Lovable AI**
+Add new keyframes to tailwind.config.ts:
 
-Instead of running heavy TensorFlow models in the browser, we'll:
-1. User uploads/captures a front-facing photo
-2. Send image to an edge function
-3. Edge function uses Lovable AI (Gemini with vision) to:
-   - Detect face landmarks
-   - Estimate face shape
-   - Calculate proportional measurements
-4. Return structured data to save in profile
+| Animation | Effect |
+|-----------|--------|
+| `slide-fade-in` | Fade in from opacity 0 with slight scale |
+| `slide-fade-out` | Fade out to opacity 0 |
+| `ken-burns` | Slow zoom from 100% to 105% over slide duration |
+| `text-reveal` | Staggered text appearance with mask/clip effect |
 
-**Why this approach?**
-- No heavy client-side libraries (TensorFlow.js is 5MB+)
-- More accurate than browser-based models
-- Easier to improve and iterate
-- Works consistently across devices
+### Component Structure
 
-**Measurement Calculation:**
-Using reference points (standard iris diameter ~11.7mm), the AI can estimate:
-- Face width from temple-to-temple landmarks
-- PD from pupil centers
-- Bridge width from nose bridge landmarks
-
-### Phase 4: Personalization Engine
-
-Create a scoring algorithm that matches users to products:
-
-**Match Scoring (0-100 points):**
-
-| Factor | Points | Logic |
-|--------|--------|-------|
-| Frame Width Fit | 25 | User face width matches product frame_width |
-| Bridge Fit | 15 | User bridge measurement matches product bridge_size |
-| Style Match | 20 | User's preferred styles contain product style |
-| Color Match | 20 | User's preferred colors contain product color |
-| Budget Match | 20 | Product price tier matches user budget |
-
-**Fit Recommendations:**
-- "Perfect Fit" - Frame width within 2mm of face width
-- "Good Fit" - Frame width within 5mm
-- "Narrow Fit" - Frame is smaller than ideal
-- "Wide Fit" - Frame is larger than ideal
-
-### Phase 5: Enhanced UI Components
-
-**Product Cards:**
-- Add "Great Match 95%" badge for high-scoring products
-- Show fit indicator icon (checkmark for good fit)
-- Highlight matching attributes on hover
-
-**Eyewear Page:**
-- New "Recommended for You" section at top
-- Toggle: "All Products" | "For You"
-- Filter by fit type (Narrow/Standard/Wide)
-
-**Dashboard - Frame Profile:**
-- Show face scan results with visual diagram
-- Display all measurements with edit option
-- Show fit statistics (what % of catalog fits)
-
-### Phase 6: Polls & Ongoing Data Collection
-
-Periodic polls to gather insights:
-- In-app prompts after key actions (purchase, browse)
-- "Quick poll" widget in dashboard
-- Email surveys for engagement
-
-Poll data structure:
-- Question text and type (single/multi select)
-- Response options
-- Timestamps and user attribution
-- Analytics aggregation
-
-### Phase 7: Admin Insights Dashboard
-
-New section in Admin Reports:
-
-**Personalization Analytics:**
-- % of users with complete profiles
-- Most common face shapes (pie chart)
-- Popular style preferences (bar chart)
-- Budget distribution
-- Poll response summaries
-
-**Recommendation Performance:**
-- Conversion rate: personalized vs non-personalized users
-- Most recommended products
-- Fit match accuracy feedback
+```text
+HeroSection.tsx
+├── Carousel (Embla with Autoplay)
+│   ├── CarouselContent
+│   │   ├── CarouselItem (Slide 1 - Eye Clinic)
+│   │   │   ├── Background Image with Ken Burns
+│   │   │   ├── Gradient Overlay
+│   │   │   ├── Content (animated text + CTAs)
+│   │   │   └── Trust Indicators
+│   │   └── CarouselItem (Slide 2 - Eyewear)
+│   │       └── ... same structure
+│   └── Dot Indicators (custom styled)
+└── Floating Cards (optional: show on active slide only)
+```
 
 ---
 
-## Files to Create
+## Responsive Behavior
 
-| File | Purpose |
-|------|---------|
-| `src/components/onboarding/OnboardingWizard.tsx` | Main onboarding flow container |
-| `src/components/onboarding/WelcomeStep.tsx` | Introduction screen |
-| `src/components/onboarding/FaceScanStep.tsx` | Camera/upload for face measurement |
-| `src/components/onboarding/StyleQuizStep.tsx` | Embedded style quiz |
-| `src/components/onboarding/LifestylePollStep.tsx` | Poll questions |
-| `src/components/onboarding/CompleteStep.tsx` | Summary and CTA |
-| `src/hooks/useFaceMeasurement.ts` | Hook for face scan logic |
-| `src/hooks/usePersonalizedProducts.ts` | Scoring and matching logic |
-| `src/hooks/useStylePolls.ts` | Poll fetching and responses |
-| `src/pages/Onboarding.tsx` | Onboarding page route |
-| `supabase/functions/analyze-face/index.ts` | Edge function for AI face analysis |
-| `src/components/eyewear/MatchBadge.tsx` | Visual match indicator |
-| `src/components/eyewear/FitIndicator.tsx` | Fit size indicator |
-| `src/components/admin/reports/PersonalizationInsights.tsx` | Admin analytics |
+### Desktop (lg+)
+- Full-width hero with 2-column layout
+- Image on right side with floating cards
+- Navigation arrows visible on hover
+- Dot indicators centered at bottom
+
+### Tablet/Mobile (< lg)
+- Single column layout
+- Text content first
+- Image carousel below CTA buttons
+- Swipe-enabled navigation
+- Dot indicators below image
+
+---
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/pages/Signup.tsx` | Redirect to onboarding after signup |
-| `src/pages/TryOn.tsx` | Integrate face scanning with measurement capture |
-| `src/components/dashboard/FrameProfileSection.tsx` | Display real measurements |
-| `src/components/eyewear/ProductCard.tsx` | Add match badge and fit indicator |
-| `src/pages/Eyewear.tsx` | Add "For You" section and personalization toggle |
-| `src/routes/public.routes.tsx` | Add `/onboarding` route |
-| `src/pages/admin/Reports.tsx` | Add personalization insights section |
+| `src/components/home/HeroSection.tsx` | Complete refactor to slideshow with Embla + Autoplay |
+| `tailwind.config.ts` | Add Ken Burns and slide transition keyframes |
+| `package.json` | Add `embla-carousel-autoplay` dependency |
 
 ---
 
-## User Journey Summary
+## Accessibility Considerations
 
-```text
-New User Signs Up
-       ↓
-Redirected to Onboarding Wizard
-       ↓
-[Optional] Scan Face → Get Measurements
-       ↓
-Complete Style Quiz
-       ↓
-Answer Lifestyle Poll
-       ↓
-Profile Complete → See Recommendations
-       ↓
-Browse Eyewear with Personalized Badges
-       ↓
-Periodic Polls Gather More Insights
-       ↓
-Admin Sees Aggregate Analytics
-```
+- Pause autoplay when user focuses on carousel
+- ARIA labels for slide navigation
+- Reduced motion preference support (disable Ken Burns)
+- Keyboard navigation (arrow keys)
 
 ---
 
-## Data Flow Diagram
+## Summary
 
-```text
-┌─────────────────┐     ┌──────────────────┐     ┌────────────────┐
-│   Face Photo    │────▶│  Edge Function   │────▶│ profiles table │
-│  (Camera/Upload)│     │  (Lovable AI)    │     │ face_dimensions│
-└─────────────────┘     └──────────────────┘     └────────────────┘
-                                                         │
-┌─────────────────┐     ┌──────────────────┐             │
-│   Style Quiz    │────▶│ profiles table   │◀────────────┘
-│   Responses     │     │ frame_preferences│
-└─────────────────┘     └──────────────────┘
-                                 │
-                                 ▼
-                        ┌──────────────────┐
-                        │ Personalization  │
-                        │ Scoring Engine   │
-                        └────────┬─────────┘
-                                 │
-              ┌──────────────────┼──────────────────┐
-              ▼                  ▼                  ▼
-       ┌────────────┐    ┌─────────────┐    ┌─────────────┐
-       │ Match Badges│   │ For You     │    │ Fit         │
-       │ on Products │   │ Section     │    │ Indicators  │
-       └────────────┘    └─────────────┘    └─────────────┘
-```
-
----
-
-## Implementation Priority
-
-1. **Database migrations** - Create tables for measurements and polls
-2. **Onboarding wizard** - Core multi-step flow
-3. **Face scanning edge function** - AI-powered measurement
-4. **Personalization hook** - Product scoring logic
-5. **UI enhancements** - Badges, indicators, "For You" section
-6. **Admin insights** - Analytics dashboard
-7. **Polls system** - Ongoing data collection
-
-This creates a complete personalization ecosystem that improves with every user interaction while respecting privacy (all processing happens via secure backend, no external tracking).
+This implementation creates a balanced, professional hero that:
+1. **Represents both brands** equally with dedicated slides
+2. **Uses smooth animations** that feel premium, not gimmicky
+3. **Auto-advances** to ensure both messages are seen
+4. **Maintains the existing trust indicators** and floating cards
+5. **Works seamlessly** across all device sizes with the mobile image placement as requested
 
