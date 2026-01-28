@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const BUCKET_NAME = "product-images";
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 7 * 1024 * 1024; // 7MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export const useProductImageUpload = () => {
@@ -11,7 +11,7 @@ export const useProductImageUpload = () => {
       return "Invalid file type. Please upload JPG, PNG, or WebP images.";
     }
     if (file.size > MAX_FILE_SIZE) {
-      return "File size exceeds 5MB limit.";
+      return "File size exceeds 7MB limit.";
     }
     return null;
   };

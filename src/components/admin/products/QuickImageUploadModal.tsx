@@ -230,7 +230,7 @@ export const QuickImageUploadModal = ({
                     Drag & drop images here, or click to select
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    JPG, PNG, or WebP up to 5MB each. {MAX_IMAGES - totalImages} slot(s)
+                    JPG, PNG, or WebP up to 7MB each. {MAX_IMAGES - totalImages} slot(s)
                     remaining.
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
