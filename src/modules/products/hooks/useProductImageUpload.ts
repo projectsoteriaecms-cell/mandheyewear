@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { compressImage, formatBytes } from "../lib/image-compression";
 
 const BUCKET_NAME = "product-images";
 const MAX_FILE_SIZE = 7 * 1024 * 1024; // 7MB
@@ -36,15 +37,30 @@ export const useProductImageUpload = () => {
       return null;
     }
 
-    const ext = getFileExtension(file);
-    const filename = isPrimary ? `main.${ext}` : `additional-${Date.now()}.${ext}`;
-    const path = `${productId}/${filename}`;
-
     try {
+      // Compress image before upload
+      const { file: compressedFile, originalSize, compressedSize, compressionRatio } = 
+        await compressImage(file, {
+          maxDimension: 2000,
+          quality: 0.85,
+          outputFormat: "image/webp",
+        });
+
+      // Log compression results
+      if (compressionRatio < 1) {
+        console.log(
+          `Image compressed: ${formatBytes(originalSize)} → ${formatBytes(compressedSize)} (${Math.round((1 - compressionRatio) * 100)}% reduction)`
+        );
+      }
+
+      const ext = compressedFile.type === "image/webp" ? "webp" : getFileExtension(compressedFile);
+      const filename = isPrimary ? `main.${ext}` : `additional-${Date.now()}.${ext}`;
+      const path = `${productId}/${filename}`;
+
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from(BUCKET_NAME)
-        .upload(path, file, { upsert: true });
+        .upload(path, compressedFile, { upsert: true });
 
       if (uploadError) throw uploadError;
 
