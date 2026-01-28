@@ -21,7 +21,7 @@ export const MobileBottomNav = () => {
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border safe-area-bottom">
-      <div className="flex items-center justify-around h-16 px-2">
+      <div className="flex items-center justify-around h-16 px-1 safe-area-x">
         {bottomNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -31,10 +31,11 @@ export const MobileBottomNav = () => {
               key={item.name}
               to={item.path}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all min-w-[60px]",
+                "flex flex-col items-center justify-center gap-0.5 py-2 px-2 rounded-xl transition-all touch-target touch-feedback no-select",
+                "min-w-[56px]",
                 active 
                   ? "text-primary" 
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground active:text-foreground"
               )}
             >
               <div className={cn(
@@ -53,7 +54,7 @@ export const MobileBottomNav = () => {
                 )}
               </div>
               <span className={cn(
-                "text-[10px] font-medium transition-all",
+                "text-[10px] font-medium transition-all leading-tight",
                 active ? "text-primary" : "text-muted-foreground"
               )}>
                 {item.name}

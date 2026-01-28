@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,32 +9,48 @@ import { ProductSpecifications } from "@/components/product/ProductSpecification
 import { AddToCartSection } from "@/components/product/AddToCartSection";
 import { ProductCard } from "@/components/eyewear/ProductCard";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
+import { MobileActionBar } from "@/components/mobile";
 import { useProduct, useProducts } from "@/hooks/useProducts";
-import { ArrowLeft, Star } from "lucide-react";
+import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
+import { ArrowLeft, Star, ShoppingBag } from "lucide-react";
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
   const { data: product, isLoading, error } = useProduct(productId || "");
   const { data: relatedProducts } = useProducts(product?.brand_line);
+  const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   // Filter out current product from related
   const filteredRelated = relatedProducts
     ?.filter((p) => p.id !== productId)
     .slice(0, 4);
 
+  const handleMobileAddToCart = () => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+    if (product) {
+      addToCart.mutate({ productId: product.id, quantity: 1 });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="pt-20 sm:pt-24 pb-24 lg:pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12">
               <Skeleton className="aspect-square rounded-lg" />
-              <div className="space-y-6">
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-6 w-1/4" />
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-12 w-full" />
+              <div className="space-y-4 sm:space-y-6">
+                <Skeleton className="h-6 sm:h-8 w-3/4" />
+                <Skeleton className="h-5 sm:h-6 w-1/4" />
+                <Skeleton className="h-20 sm:h-24 w-full" />
+                <Skeleton className="h-10 sm:h-12 w-full" />
               </div>
             </div>
           </div>
@@ -48,15 +64,15 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center py-16">
-            <h1 className="text-2xl font-bold text-foreground mb-4">
+        <div className="pt-20 sm:pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto text-center py-12 sm:py-16">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-4">
               Product Not Found
             </h1>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-6 text-sm sm:text-base">
               The product you're looking for doesn't exist or has been removed.
             </p>
-            <Button variant="hero" asChild>
+            <Button variant="hero" asChild className="touch-target">
               <Link to="/eyewear">Browse Eyewear</Link>
             </Button>
           </div>
@@ -82,20 +98,21 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-20 sm:pt-24 pb-28 lg:pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
-          <div className="mb-8">
-            <Button variant="ghost" size="sm" asChild>
+          <div className="mb-4 sm:mb-8">
+            <Button variant="ghost" size="sm" asChild className="touch-target -ml-2">
               <Link to="/eyewear">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Eyewear
+                <span className="hidden sm:inline">Back to Eyewear</span>
+                <span className="sm:hidden">Back</span>
               </Link>
             </Button>
           </div>
 
           {/* Product Grid */}
-          <div className="grid lg:grid-cols-2 gap-12 mb-16">
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 mb-12 lg:mb-16">
             {/* Image Gallery */}
             <ProductImageGallery
               mainImage={product.image_url}
@@ -105,13 +122,13 @@ const ProductDetail = () => {
             />
 
             {/* Product Info */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Category & Brand */}
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
                   {getCategoryLabel(product.style)}
                 </Badge>
-                <Badge variant="outline">
+                <Badge variant="outline" className="text-xs">
                   {product.brand_line === "m_and_h_fashion"
                     ? "M&H Eyewear"
                     : "Soteria Medical"}
@@ -120,32 +137,37 @@ const ProductDetail = () => {
 
               {/* Title */}
               <div>
-                <h1 className="text-3xl sm:text-4xl font-display font-bold text-foreground">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-foreground">
                   {product.name}
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   SKU: {product.sku}
                 </p>
               </div>
 
-              {/* Rating (placeholder) */}
+              {/* Price - Prominent on mobile */}
+              <p className="text-2xl sm:text-3xl font-bold text-accent lg:hidden">
+                ₦{product.price.toLocaleString()}
+              </p>
+
+              {/* Rating */}
               <div className="flex items-center gap-2">
                 <div className="flex">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
                       key={star}
-                      className="h-5 w-5 fill-accent text-accent"
+                      className="h-4 w-4 sm:h-5 sm:w-5 fill-accent text-accent"
                     />
                   ))}
                 </div>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   (12 reviews)
                 </span>
               </div>
 
               {/* Description */}
               {product.description && (
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   {product.description}
                 </p>
               )}
@@ -158,26 +180,31 @@ const ProductDetail = () => {
                 </p>
               )}
 
-              {/* Add to Cart & Wishlist */}
-              <div className="space-y-4">
+              {/* Desktop: Add to Cart & Wishlist */}
+              <div className="hidden lg:block space-y-4">
                 <AddToCartSection product={product} />
+                <WishlistButton productId={product.id} variant="full" className="w-full" />
+              </div>
+
+              {/* Mobile: Wishlist only (Cart is in sticky bar) */}
+              <div className="lg:hidden">
                 <WishlistButton productId={product.id} variant="full" className="w-full" />
               </div>
             </div>
           </div>
 
           {/* Specifications */}
-          <div className="mb-16">
+          <div className="mb-12 lg:mb-16">
             <ProductSpecifications product={product} />
           </div>
 
           {/* Related Products */}
           {filteredRelated && filteredRelated.length > 0 && (
             <div>
-              <h2 className="text-2xl font-display font-bold text-foreground mb-6">
+              <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground mb-4 sm:mb-6">
                 You May Also Like
               </h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                 {filteredRelated.map((relatedProduct) => (
                   <ProductCard key={relatedProduct.id} product={relatedProduct} />
                 ))}
@@ -186,6 +213,15 @@ const ProductDetail = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile Sticky Action Bar */}
+      <MobileActionBar
+        price={product.price}
+        onPrimaryAction={handleMobileAddToCart}
+        primaryLabel="Add to Cart"
+        primaryIcon={<ShoppingBag className="h-4 w-4" />}
+        isLoading={addToCart.isPending}
+      />
 
       <Footer />
     </div>
