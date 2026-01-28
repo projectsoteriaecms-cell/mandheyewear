@@ -36,7 +36,7 @@ const ITEM_TYPE_PRIORITY: Record<string, number> = {
 };
 
 const ITEMS_PER_PAGE = 24;
-const MAX_ADDITIONAL = 8;
+const MAX_ADDITIONAL = 5;
 
 const ProductImages = () => {
   const { products, isLoading } = useAdminProducts();
@@ -154,7 +154,7 @@ const ProductImages = () => {
             <div className="bg-card rounded-lg border p-4">
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <CheckCircle className="h-4 w-4 text-primary" />
-                Complete (9/9)
+                Complete (6/6)
               </div>
               <p className="text-2xl font-bold mt-1 text-primary">{stats.complete}</p>
             </div>
@@ -182,7 +182,7 @@ const ProductImages = () => {
                 <SelectItem value="all">All Products</SelectItem>
                 <SelectItem value="with_images">With Images</SelectItem>
                 <SelectItem value="missing_primary">Missing Primary</SelectItem>
-                <SelectItem value="complete">Complete (9/9)</SelectItem>
+                <SelectItem value="complete">Complete (6/6)</SelectItem>
               </SelectContent>
             </Select>
             <ToggleGroup
