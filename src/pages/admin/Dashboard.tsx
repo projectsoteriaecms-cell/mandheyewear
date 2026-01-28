@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
 import { AdminLayout } from "@/shared/components/admin";
-import { Package, Warning, TrendUp, Users } from "@phosphor-icons/react";
+import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple } from "@phosphor-icons/react";
 import { useInventoryStats, useLowStockAlerts } from "@/modules/inventory";
 import { usePurchaseOrders, useStockTransfers } from "@/modules/inventory";
 import { useBranchAssignments } from "@/modules/branches";
 import { useUserRole } from "@/shared/hooks/useUserRole";
 import { isAtLeast } from "@/shared/lib/permissions";
-import { StaffOnboardingWizard } from "@/components/admin/onboarding/StaffOnboardingWizard";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   StatCard,
   PendingApprovalsCard,
@@ -14,6 +14,37 @@ import {
   LowStockAlertsCard,
   QuickActionsCard,
 } from "@/shared/components/admin/dashboard";
+
+const NoBranchAssignmentCard = () => (
+  <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+    <CardHeader className="text-center pb-2">
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
+        <Buildings className="h-8 w-8 text-amber-600 dark:text-amber-400" weight="duotone" />
+      </div>
+      <CardTitle className="text-xl text-amber-900 dark:text-amber-100">
+        No Branch Assignment
+      </CardTitle>
+      <CardDescription className="text-amber-700 dark:text-amber-300">
+        You haven't been assigned to a branch yet
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="text-center space-y-4">
+      <p className="text-sm text-amber-600 dark:text-amber-400">
+        Please contact your administrator to complete your account setup and get assigned to a branch.
+      </p>
+      <Button 
+        variant="outline" 
+        className="border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900"
+        asChild
+      >
+        <a href="mailto:admin@soteriaeyeclinic.com">
+          <EnvelopeSimple className="mr-2 h-4 w-4" />
+          Contact Administrator
+        </a>
+      </Button>
+    </CardContent>
+  </Card>
+);
 
 const AdminDashboard = () => {
   const { data: stats, isLoading: statsLoading } = useInventoryStats();
@@ -23,19 +54,10 @@ const AdminDashboard = () => {
   const { data: branchAssignments, isLoading: assignmentsLoading } = useBranchAssignments();
   const { data: role, isLoading: roleLoading } = useUserRole();
   
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  
-  // Check if staff user needs onboarding (no branch assignments)
-  useEffect(() => {
-    if (!assignmentsLoading && !roleLoading && role) {
-      const isStaffOrManager = isAtLeast(role, "branch_staff") && role !== "super_admin";
-      const noBranchAssigned = !branchAssignments || branchAssignments.length === 0;
-      
-      if (isStaffOrManager && noBranchAssigned) {
-        setShowOnboarding(true);
-      }
-    }
-  }, [branchAssignments, assignmentsLoading, role, roleLoading]);
+  const isLoading = assignmentsLoading || roleLoading;
+  const isSuperAdmin = role === "super_admin";
+  const isStaffOrManager = role && isAtLeast(role, "branch_staff") && !isSuperAdmin;
+  const noBranchAssigned = !branchAssignments || branchAssignments.length === 0;
 
   return (
     <AdminLayout>
@@ -47,54 +69,57 @@ const AdminDashboard = () => {
           </p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Total Stock Items"
-            value={stats?.totalItems.toLocaleString() || 0}
-            icon={Package}
-            loading={statsLoading}
-          />
-          <StatCard
-            title="Low Stock Alerts"
-            value={stats?.lowStockCount || 0}
-            icon={Warning}
-            loading={statsLoading}
-            variant={stats?.lowStockCount ? "warning" : "default"}
-            description="Items below threshold"
-          />
-          <StatCard
-            title="Products"
-            value={stats?.productCount || 0}
-            icon={TrendUp}
-            loading={statsLoading}
-            description="Active products"
-          />
-          <StatCard
-            title="Suppliers"
-            value={stats?.supplierCount || 0}
-            icon={Users}
-            loading={statsLoading}
-            description="Active suppliers"
-          />
-        </div>
+        {/* Show "No Branch Assignment" for staff/managers without a branch */}
+        {!isLoading && isStaffOrManager && noBranchAssigned ? (
+          <div className="flex items-center justify-center py-12">
+            <NoBranchAssignmentCard />
+          </div>
+        ) : (
+          <>
+            {/* Stats Grid */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <StatCard
+                title="Total Stock Items"
+                value={stats?.totalItems.toLocaleString() || 0}
+                icon={Package}
+                loading={statsLoading}
+              />
+              <StatCard
+                title="Low Stock Alerts"
+                value={stats?.lowStockCount || 0}
+                icon={Warning}
+                loading={statsLoading}
+                variant={stats?.lowStockCount ? "warning" : "default"}
+                description="Items below threshold"
+              />
+              <StatCard
+                title="Products"
+                value={stats?.productCount || 0}
+                icon={TrendUp}
+                loading={statsLoading}
+                description="Active products"
+              />
+              <StatCard
+                title="Suppliers"
+                value={stats?.supplierCount || 0}
+                icon={Users}
+                loading={statsLoading}
+                description="Active suppliers"
+              />
+            </div>
 
-        {/* Action Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <PendingApprovalsCard pendingPOs={pendingPOs} />
-          <PendingTransfersCard pendingTransfers={pendingTransfers} />
-          <LowStockAlertsCard lowStockItems={lowStockItems} loading={alertsLoading} />
-        </div>
+            {/* Action Cards */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <PendingApprovalsCard pendingPOs={pendingPOs} />
+              <PendingTransfersCard pendingTransfers={pendingTransfers} />
+              <LowStockAlertsCard lowStockItems={lowStockItems} loading={alertsLoading} />
+            </div>
 
-        {/* Quick Actions */}
-        <QuickActionsCard />
+            {/* Quick Actions */}
+            <QuickActionsCard />
+          </>
+        )}
       </div>
-      
-      {/* Staff Onboarding Wizard */}
-      <StaffOnboardingWizard
-        open={showOnboarding}
-        onComplete={() => setShowOnboarding(false)}
-      />
     </AdminLayout>
   );
 };
