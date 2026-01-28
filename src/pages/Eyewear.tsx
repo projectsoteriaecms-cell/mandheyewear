@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/eyewear/ProductCard";
+import { ProductListCard } from "@/components/eyewear/ProductListCard";
 import { ProductFilters } from "@/components/eyewear/ProductFilters";
 import { VirtualTryOnBanner } from "@/components/eyewear/VirtualTryOnBanner";
 import { useProducts } from "@/hooks/useProducts";
@@ -20,10 +21,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { House, Eye } from "@phosphor-icons/react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { House, Eye, SquaresFour, List } from "@phosphor-icons/react";
 import { Sparkles, ChevronRight } from "lucide-react";
 
 const PRODUCTS_PER_PAGE = 12;
+
+type ViewMode = "grid" | "list";
 
 const Eyewear = () => {
   const [genderFilter, setGenderFilter] = useState("all");
@@ -32,6 +36,7 @@ const Eyewear = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
   const [showPersonalized, setShowPersonalized] = useState(true);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   const { isAuthenticated } = useAuth();
 
@@ -198,14 +203,31 @@ const Eyewear = () => {
             </div>
           )}
 
-          <ProductFilters
-            genderFilter={genderFilter}
-            styleFilter={styleFilter}
-            priceSort={priceSort}
-            onGenderChange={handleFilterChange(setGenderFilter)}
-            onStyleChange={handleFilterChange(setStyleFilter)}
-            onPriceSortChange={handleFilterChange(setPriceSort)}
-          />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <ProductFilters
+              genderFilter={genderFilter}
+              styleFilter={styleFilter}
+              priceSort={priceSort}
+              onGenderChange={handleFilterChange(setGenderFilter)}
+              onStyleChange={handleFilterChange(setStyleFilter)}
+              onPriceSortChange={handleFilterChange(setPriceSort)}
+            />
+            
+            {/* View Mode Toggle */}
+            <ToggleGroup 
+              type="single" 
+              value={viewMode} 
+              onValueChange={(value) => value && setViewMode(value as ViewMode)}
+              className="border rounded-lg p-1"
+            >
+              <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3">
+                <SquaresFour className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label="List view" className="px-3">
+                <List className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
 
           {/* Products Grid */}
           {isLoading ? (
@@ -241,24 +263,45 @@ const Eyewear = () => {
             />
           ) : (
             <>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {paginatedProducts.map((product) => {
-                  const scored = getProductScore(product.id);
-                  return (
-                    <div
-                      key={product.id}
-                      onDoubleClick={() => handleQuickView(product.id)}
-                    >
-                      <ProductCard
-                        product={product}
-                        matchScore={hasPreferences ? scored?.matchScore : undefined}
-                        matchReasons={scored?.matchReasons}
-                        fitIndicator={hasMeasurements ? scored?.fitIndicator : undefined}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
+              {viewMode === "grid" ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {paginatedProducts.map((product) => {
+                    const scored = getProductScore(product.id);
+                    return (
+                      <div
+                        key={product.id}
+                        onDoubleClick={() => handleQuickView(product.id)}
+                      >
+                        <ProductCard
+                          product={product}
+                          matchScore={hasPreferences ? scored?.matchScore : undefined}
+                          matchReasons={scored?.matchReasons}
+                          fitIndicator={hasMeasurements ? scored?.fitIndicator : undefined}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {paginatedProducts.map((product) => {
+                    const scored = getProductScore(product.id);
+                    return (
+                      <div
+                        key={product.id}
+                        onDoubleClick={() => handleQuickView(product.id)}
+                      >
+                        <ProductListCard
+                          product={product}
+                          matchScore={hasPreferences ? scored?.matchScore : undefined}
+                          matchReasons={scored?.matchReasons}
+                          fitIndicator={hasMeasurements ? scored?.fitIndicator : undefined}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               <Pagination
                 currentPage={currentPage}
