@@ -30,6 +30,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Plus,
   Upload,
@@ -41,6 +42,8 @@ import {
   ImageSquare,
   FileXls,
   Camera,
+  List,
+  SquaresFour,
 } from "@phosphor-icons/react";
 import { useAdminProducts } from "@/modules/products";
 import { CreateProductDialog } from "@/components/admin/products/CreateProductDialog";
@@ -50,6 +53,7 @@ import { BulkImageUploadDialog } from "@/components/admin/products/BulkImageUplo
 import { ECMSImportDialog } from "@/components/admin/products/ECMSImportDialog";
 import { ImportHistoryPanel } from "@/components/admin/products/ImportHistoryPanel";
 import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
+import { ProductListView } from "@/components/admin/products/ProductListView";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -64,12 +68,14 @@ import {
 import type { Database } from "@/integrations/supabase/types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
+type ViewMode = "grid" | "list";
 
 const Products = () => {
   const { products, isLoading, deleteProduct } = useAdminProducts();
   const [searchQuery, setSearchQuery] = useState("");
   const [brandFilter, setBrandFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [isBulkImageUploadOpen, setIsBulkImageUploadOpen] = useState(false);
@@ -182,10 +188,25 @@ const Products = () => {
         {/* Products Table */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5" weight="light" />
-              Product Catalog ({filteredProducts.length})
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <ShoppingBag className="h-5 w-5" weight="light" />
+                Product Catalog ({filteredProducts.length})
+              </CardTitle>
+              <ToggleGroup
+                type="single"
+                value={viewMode}
+                onValueChange={(value) => value && setViewMode(value as ViewMode)}
+                className="border rounded-lg p-1"
+              >
+                <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3">
+                  <SquaresFour className="h-4 w-4" weight="light" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="list" aria-label="List view" className="px-3">
+                  <List className="h-4 w-4" weight="light" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -200,6 +221,14 @@ const Products = () => {
                 <p>No products found</p>
                 <p className="text-sm">Add your first product to get started</p>
               </div>
+            ) : viewMode === "list" ? (
+              <ProductListView
+                products={filteredProducts}
+                onEdit={setEditProduct}
+                onDelete={setDeleteProductId}
+                onQuickUpload={setQuickUploadProduct}
+                formatPrice={formatPrice}
+              />
             ) : (
               <div className="overflow-x-auto">
                 <Table>
