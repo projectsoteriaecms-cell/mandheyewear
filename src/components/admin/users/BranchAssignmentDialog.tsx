@@ -92,7 +92,18 @@ export const BranchAssignmentDialog = ({
 
   // Helper to format Supabase errors with context
   const formatError = (error: unknown, context: string, branchIds?: string[]): string => {
-    const baseMessage = error instanceof Error ? error.message : String(error);
+    // Extract message from various error formats
+    let baseMessage: string;
+    if (error instanceof Error) {
+      baseMessage = error.message;
+    } else if (error && typeof error === "object") {
+      // Supabase errors have a message property
+      const errObj = error as { message?: string; details?: string; hint?: string; code?: string };
+      baseMessage = errObj.message || errObj.details || errObj.hint || JSON.stringify(error);
+    } else {
+      baseMessage = String(error);
+    }
+
     const branchNames = branchIds?.map(getBranchName).join(", ");
     
     // Parse common Supabase error patterns
