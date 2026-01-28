@@ -1,27 +1,37 @@
 import { useState, useCallback } from "react";
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useProductImageUpload } from "@/modules/products";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Image,
-  Trash,
-  Star,
-  CloudArrowUp,
-} from "@phosphor-icons/react";
+import { Image, CloudArrowUp } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
+import { DraggableImageItem } from "./DraggableImageItem";
 import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
+import { supabase } from "@/integrations/supabase/client";
 
 const MAX_IMAGES = 6; // 1 primary + 5 additional
-const MAX_ADDITIONAL = 5;
 
 interface QuickImageUploadModalProps {
   product: {
@@ -46,9 +56,26 @@ export const QuickImageUploadModal = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   const primaryImage = product?.image_url;
   const additionalImages = product?.additional_images ?? [];
-  const totalImages = (primaryImage ? 1 : 0) + additionalImages.length;
+  
+  // Combine all images into a unified list for drag-and-drop
+  const allImages = primaryImage
+    ? [primaryImage, ...additionalImages]
+    : additionalImages;
+    
+  const totalImages = allImages.length;
   const canAddMore = totalImages < MAX_IMAGES;
 
   const handleFileSelect = useCallback(
@@ -84,9 +111,10 @@ export const QuickImageUploadModal = ({
   );
 
   const handleDelete = useCallback(
-    async (imageUrl: string, isPrimary: boolean) => {
+    async (imageUrl: string) => {
       if (!product) return;
 
+      const isPrimary = imageUrl === primaryImage;
       setIsUploading(true);
       try {
         const success = await deleteProductImage(product.id, imageUrl, isPrimary);
@@ -98,7 +126,80 @@ export const QuickImageUploadModal = ({
         setIsUploading(false);
       }
     },
-    [product, deleteProductImage, queryClient]
+    [product, primaryImage, deleteProductImage, queryClient]
+  );
+
+  const handleSetPrimary = useCallback(
+    async (imageUrl: string) => {
+      if (!product) return;
+
+      setIsUploading(true);
+      try {
+        // Reorder: move selected image to first position
+        const currentIndex = allImages.indexOf(imageUrl);
+        if (currentIndex > 0) {
+          const newOrder = arrayMove(allImages, currentIndex, 0);
+          const newPrimary = newOrder[0];
+          const newAdditional = newOrder.slice(1);
+
+          const { error } = await supabase
+            .from("products")
+            .update({
+              image_url: newPrimary,
+              additional_images: newAdditional.length > 0 ? newAdditional : null,
+            })
+            .eq("id", product.id);
+
+          if (error) throw error;
+
+          toast.success("Primary image updated");
+          queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        }
+      } catch (error) {
+        console.error("Error setting primary:", error);
+        toast.error("Failed to update primary image");
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [product, allImages, queryClient]
+  );
+
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      if (!over || !product || active.id === over.id) return;
+
+      const oldIndex = allImages.indexOf(active.id as string);
+      const newIndex = allImages.indexOf(over.id as string);
+
+      const newOrder = arrayMove(allImages, oldIndex, newIndex);
+      const newPrimary = newOrder[0];
+      const newAdditional = newOrder.slice(1);
+
+      setIsUploading(true);
+      try {
+        const { error } = await supabase
+          .from("products")
+          .update({
+            image_url: newPrimary,
+            additional_images: newAdditional.length > 0 ? newAdditional : null,
+          })
+          .eq("id", product.id);
+
+        if (error) throw error;
+
+        toast.success("Image order updated");
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      } catch (error) {
+        console.error("Error reordering images:", error);
+        toast.error("Failed to reorder images");
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [product, allImages, queryClient]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -140,70 +241,41 @@ export const QuickImageUploadModal = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Primary Image */}
-          <div>
-            <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-              <Star className="h-4 w-4 text-amber-500" weight="fill" />
-              Primary Image
-            </h4>
-            {primaryImage ? (
-              <div className="relative w-32 h-32 rounded-lg overflow-hidden border group">
-                <img
-                  src={primaryImage}
-                  alt="Primary"
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  onClick={() => handleDelete(primaryImage, true)}
-                  disabled={isUploading}
-                  className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Trash className="h-4 w-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="w-32 h-32 rounded-lg border-2 border-dashed flex items-center justify-center text-muted-foreground">
-                <span className="text-xs">No primary image</span>
-              </div>
-            )}
-          </div>
+          {/* Instructions */}
+          <p className="text-xs text-muted-foreground">
+            Drag to reorder • First image is primary
+          </p>
 
-          {/* Additional Images */}
-          <div>
-            <h4 className="text-sm font-medium mb-2">Additional Images ({additionalImages.length}/{MAX_ADDITIONAL})</h4>
-            <div className="grid grid-cols-4 gap-3">
-              {additionalImages.map((url, index) => (
-                <div
-                  key={url}
-                  className="relative aspect-square rounded-lg overflow-hidden border group"
-                >
-                  <img
-                    src={url}
-                    alt={`Additional ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <Badge 
-                    variant="secondary" 
-                    className="absolute bottom-1 left-1 text-[10px] px-1.5 py-0.5 bg-background/80 backdrop-blur-sm"
-                  >
-                    {IMAGE_POSITION_LABELS[index] || `Image ${index + 1}`}
-                  </Badge>
-                  <button
-                    onClick={() => handleDelete(url, false)}
-                    disabled={isUploading}
-                    className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Trash className="h-3 w-3" />
-                  </button>
+          {/* Draggable Image Grid */}
+          {allImages.length > 0 ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={allImages} strategy={rectSortingStrategy}>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                  {allImages.map((url, idx) => (
+                    <DraggableImageItem
+                      key={url}
+                      id={url}
+                      url={url}
+                      index={idx}
+                      isPrimary={idx === 0}
+                      isUploading={isUploading}
+                      onDelete={handleDelete}
+                      onSetPrimary={idx !== 0 ? handleSetPrimary : undefined}
+                    />
+                  ))}
                 </div>
-              ))}
-              {additionalImages.length === 0 && (
-                <div className="aspect-square rounded-lg border-2 border-dashed flex items-center justify-center text-muted-foreground col-span-2">
-                  <span className="text-xs text-center px-2">No additional images</span>
-                </div>
-              )}
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+              <Image className="h-10 w-10 mb-2" weight="light" />
+              <p className="text-sm">No images yet</p>
             </div>
-          </div>
+          )}
 
           {/* Upload Zone */}
           {canAddMore && (
@@ -234,7 +306,7 @@ export const QuickImageUploadModal = ({
                     remaining.
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Positions: {IMAGE_POSITION_LABELS.slice(additionalImages.length, additionalImages.length + 3).join(", ")}...
+                    Positions: {IMAGE_POSITION_LABELS.slice(allImages.length, allImages.length + 3).join(", ")}...
                   </p>
                   <input
                     type="file"
