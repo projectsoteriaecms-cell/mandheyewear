@@ -48,6 +48,7 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Enable background sync for offline queue
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -89,7 +90,7 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/.*/i,
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",
@@ -98,6 +99,19 @@ export default defineConfig(({ mode }) => ({
                 maxAgeSeconds: 60 * 5, // 5 minutes
               },
               networkTimeoutSeconds: 10,
+            },
+          },
+          {
+            // Cache sync-offline-changes function for offline fallback
+            urlPattern: /^https:\/\/.*\.supabase\.co\/functions\/v1\/sync-offline-changes/i,
+            handler: "NetworkOnly",
+            options: {
+              backgroundSync: {
+                name: "offline-sync-queue",
+                options: {
+                  maxRetentionTime: 24 * 60, // Retry for up to 24 hours
+                },
+              },
             },
           },
         ],

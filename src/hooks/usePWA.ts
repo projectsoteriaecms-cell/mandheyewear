@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
+import { offlineStorage } from "@/services/offlineStorage";
+import { syncQueue, SyncStatus } from "@/services/syncQueue";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -14,6 +16,8 @@ interface PWAState {
   isInstalled: boolean;
   isOffline: boolean;
   isUpdateAvailable: boolean;
+  syncStatus: SyncStatus;
+  pendingSyncCount: number;
 }
 
 export const usePWA = () => {
@@ -23,7 +27,29 @@ export const usePWA = () => {
     isInstalled: false,
     isOffline: !navigator.onLine,
     isUpdateAvailable: false,
+    syncStatus: "idle",
+    pendingSyncCount: 0,
   });
+
+  // Initialize IndexedDB
+  useEffect(() => {
+    if (offlineStorage && typeof offlineStorage.init === "function") {
+      offlineStorage.init().catch(console.error);
+    }
+  }, []);
+
+  // Subscribe to sync queue events
+  useEffect(() => {
+    const unsubscribe = syncQueue.subscribe((status, count) => {
+      setState((prev) => ({
+        ...prev,
+        syncStatus: status,
+        pendingSyncCount: count,
+      }));
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     // Check if already installed
