@@ -12,7 +12,9 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { cn } from "@/lib/utils";
 import soteriaLogo from "@/assets/soteria-logo.png";
+import soteriaLogoGold from "@/assets/soteria-logo-gold.png";
 import mhLogo from "@/assets/mh-logo.png";
+import mhLogoGold from "@/assets/mh-logo-gold.png";
 const menuItems = [{
   name: "Style Quiz",
   path: "/style-quiz",
@@ -110,9 +112,9 @@ export const MobileTopBar = () => {
               <SheetHeader className="p-4 border-b border-border bg-primary">
                 <SheetTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <img alt="Soteria" className="h-6 w-auto brightness-0 invert" src="/lovable-uploads/c6bc733f-cada-4635-b01a-c1aa00c8ba32.png" />
+                    <img src={soteriaLogoGold} alt="Soteria" className="h-6 w-auto" />
                     <span className="text-primary-foreground/40">|</span>
-                    <img src={mhLogo} alt="M&H" className="h-6 w-auto brightness-0 invert" />
+                    <img src={mhLogoGold} alt="M&H" className="h-6 w-auto" />
                   </div>
                   <SheetClose asChild>
                     <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 -mr-2">
@@ -189,9 +191,9 @@ export const MobileTopBar = () => {
 
         {/* Logo - Centered */}
         <Link to="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-          <img src={soteriaLogo} alt="Soteria" className="h-7 w-auto dark:invert" />
+          <img src={isDark ? soteriaLogoGold : soteriaLogo} alt="Soteria" className="h-7 w-auto" />
           <span className="text-border text-lg">|</span>
-          <img src={mhLogo} alt="M&H" className="h-7 w-auto dark:invert" />
+          <img src={mhLogoGold} alt="M&H" className="h-7 w-auto" />
         </Link>
 
         {/* Right Actions */}
