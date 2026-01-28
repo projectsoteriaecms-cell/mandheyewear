@@ -41,17 +41,20 @@ const Dashboard = () => {
   const [searchParams] = useSearchParams();
 
   const defaultTab = searchParams.get("tab") || "profile";
+  // Allow staff to access their profile/settings tabs, redirect otherwise
+  const allowedStaffTabs = ["profile", "settings", "addresses", "frame-profile"];
+  const isStaffViewingAllowedTab = allowedStaffTabs.includes(defaultTab);
 
   const upcomingAppointments = appointments?.filter(
     (a) => a.status !== "cancelled" && a.status !== "completed" && new Date(a.scheduled_date) >= new Date()
   ).length || 0;
 
-  // Redirect staff users to admin panel
+  // Redirect staff users to admin panel (unless they're viewing their profile/settings)
   useEffect(() => {
-    if (!roleLoading && role && hasAdminAccess(role)) {
+    if (!roleLoading && role && hasAdminAccess(role) && !isStaffViewingAllowedTab) {
       navigate("/admin");
     }
-  }, [role, roleLoading, navigate]);
+  }, [role, roleLoading, navigate, isStaffViewingAllowedTab]);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
