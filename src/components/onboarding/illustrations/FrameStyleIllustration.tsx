@@ -12,212 +12,241 @@ export const FrameStyleIllustration = ({
   className 
 }: FrameStyleIllustrationProps) => {
   const strokeColor = selected ? "hsl(var(--accent))" : "currentColor";
-  const fillColor = selected ? "hsl(var(--accent) / 0.15)" : "transparent";
-  const strokeWidth = selected ? 2.5 : 2;
+  const fillColor = selected ? "hsl(var(--accent) / 0.12)" : "transparent";
+  const accentFill = selected ? "hsl(var(--accent))" : "currentColor";
+  const strokeWidth = selected ? 2.2 : 1.8;
 
   const renderFrame = () => {
     switch (style) {
       case "classic":
-        // Wayfarer/rectangular classic shape
+        // Classic Wayfarer style - iconic trapezoidal shape
         return (
-          <svg viewBox="0 0 120 48" className={cn("w-full h-full", className)}>
-            {/* Left lens - classic rectangular with slight curve */}
+          <svg viewBox="0 0 140 56" className={cn("w-full h-full", className)}>
+            {/* Left lens - wayfarer trapezoid */}
             <path
-              d="M8 12 
-                 Q8 8 14 8 
-                 L46 8 
-                 Q52 8 52 14 
-                 L52 34 
-                 Q52 40 44 40 
-                 L16 40 
-                 Q8 40 8 32 
+              d="M6 16 
+                 L12 10 
+                 L52 10 
+                 L58 16 
+                 L58 38 
+                 Q58 46 50 46 
+                 L18 46 
+                 Q8 46 6 38 
                  Z"
               fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
               strokeLinejoin="round"
             />
-            {/* Right lens */}
+            {/* Right lens - wayfarer trapezoid */}
             <path
-              d="M68 12 
-                 Q68 8 74 8 
-                 L106 8 
-                 Q112 8 112 14 
-                 L112 34 
-                 Q112 40 104 40 
-                 L76 40 
-                 Q68 40 68 32 
+              d="M82 16 
+                 L88 10 
+                 L128 10 
+                 L134 16 
+                 L134 38 
+                 Q134 46 126 46 
+                 L94 46 
+                 Q84 46 82 38 
                  Z"
               fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
               strokeLinejoin="round"
             />
-            {/* Bridge */}
+            {/* Bridge - keyhole style */}
             <path
-              d="M52 20 Q60 16 68 20"
+              d="M58 22 
+                 Q64 18 70 18 
+                 Q76 18 82 22"
               fill="none"
               stroke={strokeColor}
               strokeWidth={strokeWidth}
               strokeLinecap="round"
             />
-            {/* Temples hint */}
-            <line x1="4" y1="16" x2="8" y2="14" stroke={strokeColor} strokeWidth={strokeWidth * 0.8} strokeLinecap="round" />
-            <line x1="112" y1="14" x2="116" y2="16" stroke={strokeColor} strokeWidth={strokeWidth * 0.8} strokeLinecap="round" />
+            {/* Temple arms */}
+            <path d="M6 20 L2 18 L0 20" fill="none" stroke={strokeColor} strokeWidth={strokeWidth * 0.8} strokeLinecap="round" />
+            <path d="M134 20 L138 18 L140 20" fill="none" stroke={strokeColor} strokeWidth={strokeWidth * 0.8} strokeLinecap="round" />
+            {/* Hinge details */}
+            <circle cx="8" cy="22" r="2" fill={accentFill} opacity={selected ? 0.6 : 0.3} />
+            <circle cx="132" cy="22" r="2" fill={accentFill} opacity={selected ? 0.6 : 0.3} />
           </svg>
         );
 
       case "modern":
-        // Geometric angular modern shape
+        // Modern rectangular/geometric - clean angular lines
         return (
-          <svg viewBox="0 0 120 48" className={cn("w-full h-full", className)}>
-            {/* Left lens - angular geometric */}
-            <path
-              d="M6 14 
-                 L14 6 
-                 L50 6 
-                 L54 14 
-                 L54 36 
-                 L46 42 
-                 L14 42 
-                 L6 34 
-                 Z"
+          <svg viewBox="0 0 140 56" className={cn("w-full h-full", className)}>
+            {/* Left lens - sharp rectangle */}
+            <rect
+              x="6"
+              y="12"
+              width="54"
+              height="32"
+              rx="4"
               fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
-              strokeLinejoin="round"
             />
-            {/* Right lens */}
-            <path
-              d="M66 14 
-                 L70 6 
-                 L106 6 
-                 L114 14 
-                 L114 34 
-                 L106 42 
-                 L74 42 
-                 L66 36 
-                 Z"
+            {/* Right lens - sharp rectangle */}
+            <rect
+              x="80"
+              y="12"
+              width="54"
+              height="32"
+              rx="4"
               fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
-              strokeLinejoin="round"
             />
-            {/* Bridge - straight modern */}
-            <line x1="54" y1="18" x2="66" y2="18" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" />
-            {/* Temples */}
-            <line x1="2" y1="18" x2="6" y2="16" stroke={strokeColor} strokeWidth={strokeWidth * 0.8} strokeLinecap="round" />
-            <line x1="114" y1="16" x2="118" y2="18" stroke={strokeColor} strokeWidth={strokeWidth * 0.8} strokeLinecap="round" />
+            {/* Bridge - straight modern bar */}
+            <rect
+              x="60"
+              y="24"
+              width="20"
+              height="4"
+              rx="2"
+              fill={accentFill}
+              opacity={selected ? 0.5 : 0.3}
+            />
+            <line x1="60" y1="26" x2="80" y2="26" stroke={strokeColor} strokeWidth={strokeWidth * 0.9} strokeLinecap="round" />
+            {/* Temple arms - modern straight */}
+            <line x1="6" y1="22" x2="0" y2="22" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" />
+            <line x1="134" y1="22" x2="140" y2="22" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" />
+            {/* Subtle nose pads */}
+            <ellipse cx="62" cy="32" rx="2" ry="3" fill={accentFill} opacity={selected ? 0.4 : 0.2} />
+            <ellipse cx="78" cy="32" rx="2" ry="3" fill={accentFill} opacity={selected ? 0.4 : 0.2} />
           </svg>
         );
 
       case "bold":
-        // Thick oversized statement frames
+        // Bold oversized - thick chunky frames
         return (
-          <svg viewBox="0 0 120 48" className={cn("w-full h-full", className)}>
-            {/* Left lens - thick bold frame */}
+          <svg viewBox="0 0 140 56" className={cn("w-full h-full", className)}>
+            {/* Left lens - thick oversized */}
             <rect
               x="4"
-              y="4"
-              width="50"
-              height="40"
-              rx="8"
+              y="6"
+              width="58"
+              height="44"
+              rx="10"
               fill={fillColor}
               stroke={strokeColor}
-              strokeWidth={strokeWidth * 1.5}
+              strokeWidth={strokeWidth * 1.6}
               strokeLinejoin="round"
             />
-            {/* Inner lens cutout */}
+            {/* Inner lens cutout left */}
             <rect
-              x="10"
-              y="10"
-              width="38"
+              x="12"
+              y="14"
+              width="42"
               height="28"
-              rx="4"
+              rx="6"
               fill="none"
               stroke={strokeColor}
-              strokeWidth={strokeWidth * 0.5}
+              strokeWidth={strokeWidth * 0.4}
               opacity={0.3}
             />
-            {/* Right lens */}
+            {/* Right lens - thick oversized */}
             <rect
-              x="66"
-              y="4"
-              width="50"
-              height="40"
-              rx="8"
+              x="78"
+              y="6"
+              width="58"
+              height="44"
+              rx="10"
               fill={fillColor}
               stroke={strokeColor}
-              strokeWidth={strokeWidth * 1.5}
+              strokeWidth={strokeWidth * 1.6}
               strokeLinejoin="round"
             />
-            {/* Inner lens cutout */}
+            {/* Inner lens cutout right */}
             <rect
-              x="72"
-              y="10"
-              width="38"
+              x="86"
+              y="14"
+              width="42"
               height="28"
-              rx="4"
+              rx="6"
               fill="none"
               stroke={strokeColor}
-              strokeWidth={strokeWidth * 0.5}
+              strokeWidth={strokeWidth * 0.4}
               opacity={0.3}
             />
             {/* Bold bridge */}
-            <rect x="54" y="16" width="12" height="10" rx="3" fill={fillColor} stroke={strokeColor} strokeWidth={strokeWidth} />
+            <rect
+              x="62"
+              y="18"
+              width="16"
+              height="14"
+              rx="4"
+              fill={fillColor}
+              stroke={strokeColor}
+              strokeWidth={strokeWidth * 1.2}
+            />
+            {/* Thick temple arms */}
+            <rect x="0" y="18" width="6" height="8" rx="2" fill={accentFill} opacity={selected ? 0.5 : 0.3} />
+            <rect x="134" y="18" width="6" height="8" rx="2" fill={accentFill} opacity={selected ? 0.5 : 0.3} />
           </svg>
         );
 
       case "minimalist":
-        // Thin wire-frame style
+        // Minimalist wire frame - thin elegant rimless/semi-rimless
         return (
-          <svg viewBox="0 0 120 48" className={cn("w-full h-full", className)}>
-            {/* Left lens - thin wire frame oval */}
+          <svg viewBox="0 0 140 56" className={cn("w-full h-full", className)}>
+            {/* Left lens - thin oval wire */}
             <ellipse
-              cx="28"
-              cy="24"
-              rx="22"
-              ry="16"
+              cx="32"
+              cy="28"
+              rx="26"
+              ry="18"
               fill={fillColor}
               stroke={strokeColor}
-              strokeWidth={strokeWidth * 0.7}
+              strokeWidth={strokeWidth * 0.6}
             />
-            {/* Right lens */}
+            {/* Right lens - thin oval wire */}
             <ellipse
-              cx="92"
-              cy="24"
-              rx="22"
-              ry="16"
+              cx="108"
+              cy="28"
+              rx="26"
+              ry="18"
               fill={fillColor}
               stroke={strokeColor}
-              strokeWidth={strokeWidth * 0.7}
+              strokeWidth={strokeWidth * 0.6}
             />
-            {/* Thin bridge */}
+            {/* Delicate bridge - thin curved */}
             <path
-              d="M50 22 Q60 18 70 22"
+              d="M58 26 Q70 20 82 26"
               fill="none"
               stroke={strokeColor}
-              strokeWidth={strokeWidth * 0.7}
+              strokeWidth={strokeWidth * 0.6}
               strokeLinecap="round"
             />
-            {/* Delicate temples */}
-            <line x1="2" y1="22" x2="6" y2="22" stroke={strokeColor} strokeWidth={strokeWidth * 0.5} strokeLinecap="round" />
-            <line x1="114" y1="22" x2="118" y2="22" stroke={strokeColor} strokeWidth={strokeWidth * 0.5} strokeLinecap="round" />
+            {/* Thin temple wires */}
+            <line x1="6" y1="24" x2="0" y2="22" stroke={strokeColor} strokeWidth={strokeWidth * 0.5} strokeLinecap="round" />
+            <line x1="134" y1="24" x2="140" y2="22" stroke={strokeColor} strokeWidth={strokeWidth * 0.5} strokeLinecap="round" />
+            {/* Subtle nose pad arms */}
+            <path d="M58 28 L64 34" fill="none" stroke={strokeColor} strokeWidth={strokeWidth * 0.4} opacity={0.5} />
+            <path d="M82 28 L76 34" fill="none" stroke={strokeColor} strokeWidth={strokeWidth * 0.4} opacity={0.5} />
+            {/* Tiny nose pads */}
+            <circle cx="65" cy="36" r="2" fill={accentFill} opacity={selected ? 0.5 : 0.25} />
+            <circle cx="75" cy="36" r="2" fill={accentFill} opacity={selected ? 0.5 : 0.25} />
           </svg>
         );
 
       case "vintage":
-        // Round cat-eye retro style
+        // Vintage cat-eye / round retro style
         return (
-          <svg viewBox="0 0 120 48" className={cn("w-full h-full", className)}>
-            {/* Left lens - cat-eye shape */}
+          <svg viewBox="0 0 140 56" className={cn("w-full h-full", className)}>
+            {/* Left lens - cat-eye shape with upswept corners */}
             <path
-              d="M8 24 
-                 Q8 8 28 8 
-                 Q48 8 52 4 
-                 L52 12 
-                 Q52 40 28 40 
-                 Q8 40 8 24 
+              d="M10 28 
+                 Q10 14 22 10 
+                 Q36 8 48 8 
+                 L56 6 
+                 L56 14 
+                 Q56 20 54 28 
+                 Q54 42 40 46 
+                 Q26 48 16 44 
+                 Q10 40 10 28 
                  Z"
               fill={fillColor}
               stroke={strokeColor}
@@ -226,29 +255,38 @@ export const FrameStyleIllustration = ({
             />
             {/* Right lens - cat-eye mirror */}
             <path
-              d="M112 24 
-                 Q112 8 92 8 
-                 Q72 8 68 4 
-                 L68 12 
-                 Q68 40 92 40 
-                 Q112 40 112 24 
+              d="M130 28 
+                 Q130 14 118 10 
+                 Q104 8 92 8 
+                 L84 6 
+                 L84 14 
+                 Q84 20 86 28 
+                 Q86 42 100 46 
+                 Q114 48 124 44 
+                 Q130 40 130 28 
                  Z"
               fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
               strokeLinejoin="round"
             />
-            {/* Decorative cat-eye accent */}
-            <circle cx="48" cy="8" r="3" fill={selected ? strokeColor : "none"} stroke={strokeColor} strokeWidth={strokeWidth * 0.6} />
-            <circle cx="72" cy="8" r="3" fill={selected ? strokeColor : "none"} stroke={strokeColor} strokeWidth={strokeWidth * 0.6} />
-            {/* Bridge */}
+            {/* Decorative cat-eye accents */}
+            <circle cx="54" cy="10" r="4" fill={selected ? accentFill : "none"} stroke={strokeColor} strokeWidth={strokeWidth * 0.7} />
+            <circle cx="86" cy="10" r="4" fill={selected ? accentFill : "none"} stroke={strokeColor} strokeWidth={strokeWidth * 0.7} />
+            {/* Bridge - vintage curved */}
             <path
-              d="M52 18 Q60 14 68 18"
+              d="M56 22 Q70 16 84 22"
               fill="none"
               stroke={strokeColor}
               strokeWidth={strokeWidth}
               strokeLinecap="round"
             />
+            {/* Temple arms - classic curved */}
+            <path d="M10 24 Q6 22 2 24 L0 26" fill="none" stroke={strokeColor} strokeWidth={strokeWidth * 0.8} strokeLinecap="round" />
+            <path d="M130 24 Q134 22 138 24 L140 26" fill="none" stroke={strokeColor} strokeWidth={strokeWidth * 0.8} strokeLinecap="round" />
+            {/* Rhinestone/stud details on cat-eye tips */}
+            <circle cx="55" cy="9" r="1.5" fill={accentFill} opacity={selected ? 0.8 : 0.4} />
+            <circle cx="85" cy="9" r="1.5" fill={accentFill} opacity={selected ? 0.8 : 0.4} />
           </svg>
         );
 
