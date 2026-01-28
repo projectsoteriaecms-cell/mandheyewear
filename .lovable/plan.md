@@ -1,103 +1,143 @@
 
-# Fix Branch Manager Onboarding & RLS Issues
+# Security Hardening Plan
 
-## Problem Summary
+This plan addresses the security warnings identified in the project: permissive RLS policies, leaked password protection, and sensitive data exposure.
 
-There are two related issues occurring when a Branch Manager logs in:
+---
 
-1. **Onboarding Wizard Appears Incorrectly**: The wizard prompts the manager to select a branch even though they already have an assignment in the database (Lagos Lekki branch assigned on Jan 28)
-2. **RLS INSERT Error**: When the wizard tries to save, it fails with "new row violates row-level security policy for table 'branch_assignments'" because the manager cannot insert their own assignments
+## Summary of Issues
 
-## Root Cause Analysis
+| Issue | Severity | Impact |
+|-------|----------|--------|
+| Leaked Password Protection Disabled | Warning | Users can register with passwords that have appeared in data breaches |
+| Permissive RLS (`WITH CHECK (true)`) on `personalization_analytics` | Warning | Anyone can insert analytics records without validation |
+| Public inventory exposure | Warning | Competitors could view stock levels, bin locations, and business data |
+| Customer profile data accessible to all staff | Error | Potential for data misuse by staff members |
+| User invitation emails visible to managers | Warning | Email list could be exported for spam/phishing |
 
-**Database State**: The manager `manager@soteriaeyeclinic.com` already has a branch assignment:
-- Branch: Lagos Lekki (c97eae31-e697-44ca-be19-57745142cfaf)
-- is_primary: false
+---
 
-**RLS Policy Gap**: The `branch_assignments` table has these policies:
-- `Super admins full access` - ALL commands for super_admin only
-- `Branch managers can view branch assignments` - SELECT only, for viewing their branch's assignments
-- `Users can view own assignments` - SELECT only, for viewing own record
+## Solution Approach
 
-**Missing Policy**: There is NO INSERT policy for staff/managers. Only Super Admins can insert assignments.
+### 1. Enable Leaked Password Protection
 
-**Why Wizard Appears**: The `useBranchAssignments` hook query may be returning empty because of an RLS/timing issue, causing the Dashboard to show the wizard.
+Configure the authentication system to reject passwords that have been found in known data breaches. This is a configuration change in the backend authentication settings.
 
-## Solution
+**Impact**: New user registrations and password changes will be checked against breach databases.
 
-### 1. Remove Self-Onboarding from Staff/Managers
+---
 
-The onboarding wizard allowing staff to assign themselves to branches is a **security risk** - users should not self-assign branch access. Branch assignments should ONLY be managed by:
-- Super Admins (via User Management → Manage Branches)
-- Branch Managers (for their staff, within their authorized branches)
+### 2. Fix Permissive RLS on `personalization_analytics`
 
-**Changes**:
-- Remove the `StaffOnboardingWizard` component from the Dashboard entirely
-- Staff/managers without branch assignments should see a friendly message instead: "Please contact your administrator to assign you to a branch"
-
-### 2. Fix the Dashboard Experience
-
-Instead of showing an onboarding wizard, show an informative state when no branch is assigned:
+The current policy allows anyone to insert records:
 
 ```text
-╔════════════════════════════════════════════╗
-║  No Branch Assignment                       ║
-║                                            ║
-║  You haven't been assigned to a branch     ║
-║  yet. Please contact your administrator    ║
-║  to complete your setup.                   ║
-║                                            ║
-║  [Contact Admin]  (links to email/support) ║
-╚════════════════════════════════════════════╝
+Current: WITH CHECK (true)
 ```
 
-### 3. Ensure Existing Assignments Load Correctly
+**Solution**: Restrict inserts to authenticated users only (this table is for system analytics, should require authentication).
 
-Add error handling and retry logic to the branch assignments query to handle any edge cases.
+```sql
+-- Replace the overly permissive INSERT policy
+DROP POLICY IF EXISTS "System can insert analytics" ON public.personalization_analytics;
+
+CREATE POLICY "Authenticated users can insert analytics"
+ON public.personalization_analytics
+FOR INSERT
+TO authenticated
+WITH CHECK (true);
+```
+
+---
+
+### 3. Restrict Public Inventory Access
+
+Current state: Inventory is publicly readable via `USING (true)`.
+
+**Business context**: The storefront shows products but does NOT display inventory quantities to customers. Inventory data (stock levels, bin locations, reserved quantities) is only used in the admin panel.
+
+**Solution**: Remove public access and restrict inventory visibility to authenticated staff only.
+
+```sql
+-- Remove the public access policy
+DROP POLICY IF EXISTS "Anyone can view inventory levels" ON public.inventory;
+
+-- Keep the existing staff policy which already handles authenticated access
+-- (Staff can view inventory policy already exists)
+```
+
+---
+
+### 4. Address Profile Data Exposure (Informational Update)
+
+The current policy allows all staff to view all customer profiles. This is a business decision that requires input:
+
+**Options**:
+- **A) Keep as-is** (staff need to see customer data for orders/appointments)
+- **B) Add column-level masking** (hide full phone/email, show only partial)
+- **C) Restrict to order/appointment context** (staff can only see profiles for customers they're serving)
+
+**Recommendation**: Mark this as an acknowledged business requirement. Staff in an eye clinic/retail environment need access to customer contact information to provide service. Document this as an accepted risk.
+
+---
+
+### 5. Address User Invitation Email Exposure (Informational Update)
+
+Managers can view invitation emails, which is needed for the invitation workflow.
+
+**Recommendation**: Mark as an acknowledged business requirement since managers need to see who has been invited to manage the invitation process.
+
+---
 
 ## Implementation Steps
 
-### Step 1: Update Dashboard Component
-- Remove the `StaffOnboardingWizard` import and usage
-- Add a "No Branch Assignment" state that displays when `branchAssignments` is empty
-- Show a helpful message directing users to contact their administrator
-
-### Step 2: Delete or Archive the StaffOnboardingWizard
-- Remove `src/components/admin/onboarding/StaffOnboardingWizard.tsx`
-- Clean up any remaining references
-
-### Step 3: Update the `is_primary` Flag for Existing Assignment
-- Run a database migration to set `is_primary = true` for the manager's existing assignment since they only have one branch
-
-## Files to Modify
-
-| File | Change |
-|------|--------|
-| `src/pages/admin/Dashboard.tsx` | Remove wizard, add "No Assignment" state |
-| `src/components/admin/onboarding/StaffOnboardingWizard.tsx` | Delete file |
-
-## Database Change
-
-Set the existing manager's branch assignment to primary:
+### Database Migration
 
 ```sql
-UPDATE branch_assignments 
-SET is_primary = true 
-WHERE user_id = 'eaacf842-52b0-427e-92b4-375703138a0d' 
-  AND branch_id = 'c97eae31-e697-44ca-be19-57745142cfaf';
+-- 1. Fix permissive analytics INSERT policy
+DROP POLICY IF EXISTS "System can insert analytics" ON public.personalization_analytics;
+
+CREATE POLICY "Authenticated users can insert analytics"
+ON public.personalization_analytics
+FOR INSERT
+TO authenticated
+WITH CHECK (true);
+
+-- 2. Remove public inventory access (keep staff-only access)
+DROP POLICY IF EXISTS "Anyone can view inventory levels" ON public.inventory;
 ```
 
-## Security Benefits
+### Authentication Configuration
 
-- Prevents unauthorized self-assignment of branch access
-- Enforces proper chain of command for access provisioning
-- Super Admins assign managers → Managers assign staff
-- Maintains audit trail of who assigned whom
+Enable leaked password protection through the backend configuration to check new passwords against known breach databases.
 
-## Expected Outcome
+---
 
+## Technical Details
+
+### Files Affected
+- Database: 1 new migration file for RLS policy updates
+- Authentication: Configuration change for password protection
+
+### Risk Assessment
+- **Low risk**: These changes restrict access rather than expand it
+- **No application code changes** required since the storefront doesn't query inventory directly
+- **Admin panel** will continue to work since staff policies remain in place
+
+### Validation
 After implementation:
-- Branch Manager logs in → sees Dashboard with their branch data (no wizard)
-- Staff without assignment → sees friendly "Contact Admin" message
-- No RLS errors since users won't attempt to insert their own assignments
-- Clean, secure branch assignment workflow maintained
+1. Verify storefront products still load (no inventory queries there)
+2. Verify admin inventory pages work for logged-in staff
+3. Confirm new user registration rejects known breached passwords
+4. Check security scan shows reduced warnings
+
+---
+
+## Security Findings to Update
+
+After implementing the fixes, the following security findings will be updated:
+- **Delete**: `SUPA_rls_policy_always_true` (after fixing analytics policy)
+- **Delete**: `inventory_public_exposure` (after removing public access)
+- **Mark as acknowledged**: `profiles_table_public_exposure` (business requirement)
+- **Mark as acknowledged**: `user_invitations_email_exposure` (business requirement)
+- **Delete**: `SUPA_auth_leaked_password_protection` (after enabling protection)
