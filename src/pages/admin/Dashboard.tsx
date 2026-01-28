@@ -14,6 +14,7 @@ import {
   LowStockAlertsCard,
   QuickActionsCard,
 } from "@/shared/components/admin/dashboard";
+import { WelcomeBranchDialog } from "@/components/admin/onboarding/WelcomeBranchDialog";
 
 const NoBranchAssignmentCard = () => (
   <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
@@ -120,6 +121,9 @@ const AdminDashboard = () => {
           </>
         )}
       </div>
+      
+      {/* Welcome Dialog for newly assigned staff */}
+      <WelcomeBranchDialog />
     </AdminLayout>
   );
 };
