@@ -1,115 +1,171 @@
 
-# Product Images Manager Page
+# User Management Enhancement Plan
 
 ## Overview
 
-Create a dedicated admin page for managing product images with a visual grid interface showing all products and their image upload status. This page will provide quick inline upload capabilities, making it easy to see which products need images and upload them efficiently.
+This plan implements three key improvements to the User Management system:
+
+1. **Add a new "user" role** for unverified signups (can only browse)
+2. **Auto-assign "user" role** to all new signups via database trigger
+3. **Update Admin Users page** to show all profiles and organize by role categories
+4. **Hide Super Admin** from the general stats (only show one admin)
 
 ---
 
-## Current State Analysis
+## Role Hierarchy (Updated)
 
-| Component | Status |
-|-----------|--------|
-| `useAdminProducts` hook | Exists - fetches all products with image data |
-| `useProductImageUpload` hook | Exists - handles single/bulk image uploads |
-| `ProductImageUpload` component | Exists - drag-and-drop for single product |
-| `BulkImageUploadDialog` | Exists - SKU-based bulk upload |
-| Product schema | Has `image_url` (primary) and `additional_images` (array) |
-
----
-
-## Implementation Plan
-
-### Phase 1: Create the Product Images Manager Page
-
-**New File: `src/pages/admin/ProductImages.tsx`**
-
-A dedicated page with:
-- Visual grid layout showing product thumbnails
-- Upload status indicators (has images / missing images)
-- Quick filter options (all, with images, without images)
-- Search by product name or SKU
-- Inline upload via click or drag-and-drop on each product card
-
-### Phase 2: Create Product Image Card Component
-
-**New File: `src/components/admin/products/ProductImageCard.tsx`**
-
-A reusable card component for each product:
-- Shows product thumbnail or placeholder icon
-- Displays product name and SKU
-- Shows image count badge (e.g., "3/5 images")
-- Hover state reveals upload button
-- Direct drag-and-drop zone for quick upload
-- Click to open detailed image management modal
-
-### Phase 3: Create Quick Image Upload Modal
-
-**New File: `src/components/admin/products/QuickImageUploadModal.tsx`**
-
-A focused modal for single product image management:
-- Large preview of current images
-- Drag-and-drop zone for new images
-- Ability to set primary image
-- Delete individual images
-- Reorder additional images
-
-### Phase 4: Add Route and Navigation
-
-**Modify: `src/routes/admin.routes.tsx`**
-- Add route for `/admin/products/images`
-
-**Modify: `src/shared/components/admin/sidebar/nav-config.ts`**
-- Add "Product Images" as child under Products navigation
+| Role | Description | Access Level |
+|------|-------------|--------------|
+| **user** | Unverified signup | Browse products only |
+| **customer** | Verified user | Purchase, book appointments, wishlist, dashboard |
+| **branch_staff** | Store employee | Inventory operations, view orders |
+| **branch_manager** | Store manager | Approve orders, manage products |
+| **super_admin** | Platform owner | Full system access (hidden from user list) |
 
 ---
 
-## UI Design Details
+## Changes Summary
 
-### Grid Layout
+### Phase 1: Database Changes
 
-```text
-+--------------------------------------------------+
-|  Product Images Manager                          |
-|  "Manage product images for your catalog"        |
-+--------------------------------------------------+
-|                                                  |
-| [Search...] [Filter: All ▼] [Sort: Name ▼]       |
-|                                                  |
-| Stats: 1,272 products | 45 with images | 1,227   |
-|        missing images                            |
-+--------------------------------------------------+
-|                                                  |
-| +--------+  +--------+  +--------+  +--------+   |
-| | [img]  |  | [icon] |  | [img]  |  | [icon] |   |
-| | Name   |  | Name   |  | Name   |  | Name   |   |
-| | SKU    |  | SKU    |  | SKU    |  | SKU    |   |
-| | 3/5    |  | 0/5    |  | 1/5    |  | 0/5    |   |
-| +--------+  +--------+  +--------+  +--------+   |
-|                                                  |
-| +--------+  +--------+  +--------+  +--------+   |
-| | ...    |  | ...    |  | ...    |  | ...    |   |
-| +--------+  +--------+  +--------+  +--------+   |
-|                                                  |
-| [Show more]                                      |
-+--------------------------------------------------+
+**1. Add new "user" role to the enum**
+```sql
+ALTER TYPE app_role ADD VALUE 'user' BEFORE 'customer';
 ```
 
-### Product Image Card States
+**2. Update handle_new_user trigger**
+- New signups get "user" role instead of "customer"
+- Only invited users with pending invitation get their specified role
 
-1. **No Images**: Gray placeholder icon, upload prompt visible
-2. **Has Primary Only**: Shows primary thumbnail, badge "1/5"
-3. **Has Multiple**: Shows primary thumbnail, badge "X/5"
-4. **Full Set**: Green checkmark badge, all slots filled
+**3. Backfill existing profiles without roles**
+- Any profiles without a user_role entry get assigned "user" role
 
-### Upload Flow
+---
 
-1. Click card OR drag image onto card
-2. Quick upload modal opens with product details
-3. Drag-and-drop or click to select files
-4. Images upload with progress indicator
-5. Modal auto-closes on success (or stays open for more uploads)
+### Phase 2: Update User Manager UI
+
+**Modified file: `src/pages/admin/AdminUsers.tsx`**
+
+Changes:
+- Query from `profiles` table with LEFT JOIN to `user_roles`
+- Show all users including those without explicit roles
+- Update stats cards to show:
+  - **Staff** (branch_staff + branch_manager count)
+  - **Verified Customers** (customer role)
+  - **Unverified Users** (user role)
+  - *(Remove Super Admins stat card)*
+- Filter dropdown options:
+  - All Users
+  - Branch Managers
+  - Branch Staff  
+  - Customers (Verified)
+  - Users (Unverified)
+- Add "Verify User" action to convert user to customer
+- Super Admin row hidden from list (or shown with special styling at top)
+
+---
+
+### Phase 3: Update Permissions System
+
+**Modified file: `src/shared/lib/permissions.ts`**
+
+Changes:
+- Add "user" to AppRole type
+- Update role hierarchy to include user at level 0
+- Add helper: `canPurchase(role)` - requires customer or above
+- Add helper: `canBookAppointments(role)` - requires customer or above
+
+---
+
+### Phase 4: Update Frontend Access Control
+
+**Files to modify:**
+- `src/pages/Dashboard.tsx` - Show limited view for "user" role with verification prompt
+- `src/pages/Checkout.tsx` - Block checkout for unverified users
+- `src/pages/Booking.tsx` - Block appointment booking for unverified users
+- `src/hooks/useCart.ts` - Prevent adding to cart for unverified users
+
+---
+
+## Verification Flow
+
+When a "user" needs to become a "customer":
+
+1. **Admin Action**: In User Manager, admin clicks "Verify User" → updates role to "customer"
+2. **Future Enhancement**: Could add email verification or profile completion requirements
+
+---
+
+## Database Migration SQL
+
+```sql
+-- Add 'user' role to enum
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'user' BEFORE 'customer';
+
+-- Update trigger to assign 'user' role by default (not 'customer')
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  assigned_role app_role;
+  invitation_record RECORD;
+BEGIN
+  -- Insert profile
+  INSERT INTO public.profiles (user_id, email, full_name)
+  VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name');
+  
+  -- Check for pending invitation first
+  SELECT * INTO invitation_record
+  FROM public.user_invitations
+  WHERE email = NEW.email
+    AND accepted_at IS NULL
+    AND expires_at > now()
+  ORDER BY created_at DESC
+  LIMIT 1;
+  
+  IF invitation_record IS NOT NULL THEN
+    -- Use the invited role
+    assigned_role := invitation_record.role;
+    
+    -- Mark invitation as accepted
+    UPDATE public.user_invitations
+    SET accepted_at = now()
+    WHERE id = invitation_record.id;
+  ELSE
+    -- Default to 'user' (unverified) for public signups
+    assigned_role := 'user'::app_role;
+  END IF;
+  
+  -- Insert role
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES (NEW.id, assigned_role);
+  
+  RETURN NEW;
+END;
+$$;
+
+-- Backfill: assign 'user' role to any profiles without a role
+INSERT INTO public.user_roles (user_id, role)
+SELECT p.user_id, 'user'::app_role
+FROM public.profiles p
+LEFT JOIN public.user_roles ur ON p.user_id = ur.user_id
+WHERE ur.id IS NULL;
+```
+
+---
+
+## UI Mockup - Updated Stats Cards
+
+```text
++------------------+  +------------------+  +------------------+
+|  Staff Members   |  | Verified         |  | Unverified      |
+|        3         |  | Customers        |  | Users           |
+|                  |  |       45         |  |       12        |
++------------------+  +------------------+  +------------------+
+```
 
 ---
 
@@ -117,69 +173,19 @@ A focused modal for single product image management:
 
 | File | Action | Purpose |
 |------|--------|---------|
-| `src/pages/admin/ProductImages.tsx` | Create | Main page with grid layout |
-| `src/components/admin/products/ProductImageCard.tsx` | Create | Individual product card with upload zone |
-| `src/components/admin/products/QuickImageUploadModal.tsx` | Create | Focused image management modal |
-| `src/routes/admin.routes.tsx` | Modify | Add `/admin/products/images` route |
-| `src/shared/components/admin/sidebar/nav-config.ts` | Modify | Add navigation item |
+| Database migration | Create | Add 'user' role, update trigger |
+| `src/pages/admin/AdminUsers.tsx` | Modify | Updated UI with new role handling |
+| `src/shared/lib/permissions.ts` | Modify | Add user role and new permission helpers |
+| `src/integrations/supabase/types.ts` | Auto-update | Will reflect new enum value |
+| `src/pages/Dashboard.tsx` | Modify | Handle unverified user view |
+| `src/pages/Checkout.tsx` | Modify | Block unverified users |
+| `src/pages/Booking.tsx` | Modify | Block unverified users |
 
 ---
 
-## Technical Considerations
+## Technical Notes
 
-### Performance Optimizations
-
-- **Virtualized Grid**: Use pagination or infinite scroll for 1,200+ products
-- **Lazy Image Loading**: Load thumbnails as they scroll into view
-- **Batch Operations**: Allow selecting multiple products for bulk operations
-- **Optimistic Updates**: Show upload progress immediately, revert on failure
-
-### Image Stats Query
-
-Efficiently calculate image statistics:
-```text
-- Products with image_url set: COUNT WHERE image_url IS NOT NULL
-- Products with additional images: COUNT WHERE additional_images IS NOT NULL AND array_length > 0
-- Total image slots used: SUM of (1 if image_url + array_length of additional_images)
-```
-
-### Filter and Search
-
-- Real-time search filtering on product name and SKU
-- Dropdown filter for image status:
-  - All Products
-  - Missing Primary Image
-  - Missing Additional Images
-  - Complete (5/5 images)
-
----
-
-## Expected Outcome
-
-| Metric | Before | After |
-|--------|--------|-------|
-| Time to find products without images | Manual table scroll | Instant filter |
-| Time to upload single product image | Open edit dialog, switch tab | Single click |
-| Visual overview of image coverage | None | Dashboard with stats |
-| Bulk upload for multiple products | Navigate to separate dialog | Drag onto grid |
-
----
-
-## Component Structure
-
-```text
-ProductImages.tsx (Page)
-├── Header with stats
-├── Search + Filter controls
-├── Grid container
-│   └── ProductImageCard.tsx (repeated)
-│       ├── Thumbnail / Placeholder
-│       ├── Product info
-│       ├── Image count badge
-│       └── Upload dropzone
-└── QuickImageUploadModal.tsx
-    ├── Product header
-    ├── Primary image section
-    ├── Additional images grid
-    └── Upload dropzone
-```
+- The Super Admin account (admin@soteriaeyeclinic.com) will still function but won't appear in the regular user list
+- RLS policies remain unchanged as they already use `has_role()` function
+- Existing customers with the "customer" role are unaffected
+- The "Verify User" action is essentially a role change from "user" to "customer"
