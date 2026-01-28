@@ -1,8 +1,23 @@
 import { useState, useCallback } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
 import { Button } from "@/components/ui/button";
-import { X, Upload, Loader2, Image as ImageIcon } from "lucide-react";
+import { Upload, Loader2, Image as ImageIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { DraggableImageItem } from "./DraggableImageItem";
 
 export const IMAGE_POSITION_LABELS = [
   "Front View",
@@ -37,6 +52,22 @@ export const ProductImageUpload = ({
 }: ProductImageUploadProps) => {
   const [dragActive, setDragActive] = useState(false);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Combine primary and additional images for unified drag-and-drop
+  const allImages = primaryImage 
+    ? [primaryImage, ...images.filter(img => img !== primaryImage)]
+    : images;
+
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -57,16 +88,16 @@ export const ProductImageUpload = ({
         file.type.startsWith("image/")
       );
       if (files.length > 0) {
-        await onUpload(files.slice(0, maxImages - images.length));
+        await onUpload(files.slice(0, maxImages - allImages.length));
       }
     },
-    [onUpload, images.length, maxImages]
+    [onUpload, allImages.length, maxImages]
   );
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      await onUpload(files.slice(0, maxImages - images.length));
+      await onUpload(files.slice(0, maxImages - allImages.length));
     }
     e.target.value = "";
   };
@@ -76,143 +107,150 @@ export const ProductImageUpload = ({
     await onDelete(url, isPrimary);
     
     if (isPrimary && onPrimaryChange) {
-      onPrimaryChange(null);
+      // If deleting primary, promote first additional image
+      const remaining = images.filter(img => img !== url);
+      onPrimaryChange(remaining[0] || null);
     }
     
     onImagesChange(images.filter((img) => img !== url));
   };
 
-  const canAddMore = images.length < maxImages;
+  const handleSetPrimary = (url: string) => {
+    if (onPrimaryChange) {
+      onPrimaryChange(url);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = allImages.indexOf(active.id as string);
+      const newIndex = allImages.indexOf(over.id as string);
+      
+      const newOrder = arrayMove(allImages, oldIndex, newIndex);
+      
+      // First image becomes primary
+      const newPrimary = newOrder[0];
+      const newAdditional = newOrder.slice(1);
+      
+      if (onPrimaryChange) {
+        onPrimaryChange(newPrimary);
+      }
+      onImagesChange(newAdditional);
+    }
+  };
+
+  const canAddMore = allImages.length < maxImages;
 
   return (
     <div className="space-y-4">
-      {/* Primary Image */}
-      <div>
-        <label className="text-sm font-medium mb-2 block">Primary Image</label>
-        {primaryImage ? (
-          <div className="relative w-32 h-32 rounded-lg overflow-hidden border group">
-            <img
-              src={primaryImage}
-              alt="Primary"
-              className="w-full h-full object-cover"
-            />
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => handleDeleteImage(primaryImage)}
-              disabled={isUploading}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        ) : (
-          <div
-            className={cn(
-              "w-32 h-32 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors",
-              dragActive
-                ? "border-primary bg-primary/5"
-                : "border-muted-foreground/25 hover:border-primary/50"
-            )}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-          >
-            <label className="cursor-pointer flex flex-col items-center">
-              {isUploading ? (
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              ) : (
-                <>
-                  <ImageIcon className="h-6 w-6 text-muted-foreground mb-1" />
-                  <span className="text-xs text-muted-foreground">Upload</span>
-                </>
-              )}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handleFileSelect}
-                disabled={isUploading}
-              />
-            </label>
-          </div>
-        )}
-      </div>
-
-      {/* Additional Images */}
-      <div>
-        <label className="text-sm font-medium mb-2 block">
-          Additional Images ({images.length}/{maxImages})
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-medium">
+          Product Images ({allImages.length}/{maxImages})
         </label>
-        <div className="grid grid-cols-4 gap-3">
-          {images.map((url, idx) => (
-            <div
-              key={url}
-              className="relative rounded-lg overflow-hidden border group"
-            >
-              <div className="aspect-square">
-                <img
-                  src={url}
-                  alt={`Product ${idx + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <Badge 
-                variant="secondary" 
-                className="absolute bottom-1 left-1 text-[10px] px-1.5 py-0.5 bg-background/80 backdrop-blur-sm"
-              >
-                {IMAGE_POSITION_LABELS[idx] || `Image ${idx + 1}`}
-              </Badge>
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => handleDeleteImage(url)}
-                disabled={isUploading}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-          ))}
-
-          {canAddMore && (
-            <div
-              className={cn(
-                "w-20 h-20 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors",
-                dragActive
-                  ? "border-primary bg-primary/5"
-                  : "border-muted-foreground/25 hover:border-primary/50"
-              )}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-            >
-              <label className="cursor-pointer flex flex-col items-center">
-                {isUploading ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                ) : (
-                  <Upload className="h-5 w-5 text-muted-foreground" />
-                )}
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileSelect}
-                  disabled={isUploading}
-                />
-              </label>
-            </div>
-          )}
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          JPG, PNG, or WebP. Max 7MB each.
+        <p className="text-xs text-muted-foreground">
+          Drag to reorder • First image is primary
         </p>
       </div>
+
+      {allImages.length > 0 ? (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={allImages} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              {allImages.map((url, idx) => (
+                <DraggableImageItem
+                  key={url}
+                  id={url}
+                  url={url}
+                  index={idx}
+                  isPrimary={idx === 0}
+                  isUploading={isUploading}
+                  onDelete={handleDeleteImage}
+                  onSetPrimary={idx !== 0 ? handleSetPrimary : undefined}
+                />
+              ))}
+
+              {canAddMore && (
+                <div
+                  className={cn(
+                    "aspect-square rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors",
+                    dragActive
+                      ? "border-primary bg-primary/5"
+                      : "border-muted-foreground/25 hover:border-primary/50"
+                  )}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
+                  <label className="cursor-pointer flex flex-col items-center p-4">
+                    {isUploading ? (
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    ) : (
+                      <>
+                        <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                        <span className="text-xs text-muted-foreground text-center">
+                          Add Image
+                        </span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      multiple
+                      className="hidden"
+                      onChange={handleFileSelect}
+                      disabled={isUploading}
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+          </SortableContext>
+        </DndContext>
+      ) : (
+        <div
+          className={cn(
+            "h-40 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors",
+            dragActive
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-primary/50"
+          )}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          <label className="cursor-pointer flex flex-col items-center">
+            {isUploading ? (
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            ) : (
+              <>
+                <ImageIcon className="h-8 w-8 text-muted-foreground mb-2" />
+                <span className="text-sm text-muted-foreground">
+                  Drop images here or click to upload
+                </span>
+                <span className="text-xs text-muted-foreground mt-1">
+                  JPG, PNG, or WebP. Max 7MB each.
+                </span>
+              </>
+            )}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              className="hidden"
+              onChange={handleFileSelect}
+              disabled={isUploading}
+            />
+          </label>
+        </div>
+      )}
     </div>
   );
 };
