@@ -1471,6 +1471,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      branch_ids_for_user: {
+        Args: { _user_id: string }
+        Returns: {
+          branch_id: string
+        }[]
+      }
       create_staff_notification: {
         Args: {
           p_link?: string
