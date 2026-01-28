@@ -1,13 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-
-// Import placeholder images
-import frame1 from "@/assets/frame-1.jpg";
-import frame2 from "@/assets/frame-2.jpg";
-import frame3 from "@/assets/frame-3.jpg";
-import frame4 from "@/assets/frame-4.jpg";
-
-const placeholderImages = [frame1, frame2, frame3, frame4];
+import { ImageOff } from "lucide-react";
 
 interface ProductImageGalleryProps {
   mainImage: string | null;
@@ -20,24 +13,27 @@ export const ProductImageGallery = ({
   mainImage,
   additionalImages,
   productName,
-  productId,
 }: ProductImageGalleryProps) => {
-  // Generate placeholder images based on product ID
-  const getPlaceholders = () => {
-    const startIndex = productId.charCodeAt(0) % placeholderImages.length;
-    return [
-      placeholderImages[startIndex],
-      placeholderImages[(startIndex + 1) % placeholderImages.length],
-      placeholderImages[(startIndex + 2) % placeholderImages.length],
-      placeholderImages[(startIndex + 3) % placeholderImages.length],
-    ];
-  };
-
+  // Only use actual product images - no mixing with other products
+  const hasImages = mainImage || (additionalImages && additionalImages.length > 0);
   const images = mainImage
     ? [mainImage, ...(additionalImages || [])]
-    : getPlaceholders();
+    : additionalImages || [];
 
   const [selectedImage, setSelectedImage] = useState(0);
+
+  // No images - show placeholder state
+  if (!hasImages) {
+    return (
+      <div className="space-y-4">
+        <div className="aspect-square rounded-lg overflow-hidden bg-secondary flex flex-col items-center justify-center text-muted-foreground">
+          <ImageOff className="h-16 w-16 mb-3 opacity-50" />
+          <p className="text-sm font-medium">No images available</p>
+          <p className="text-xs mt-1">Product images coming soon</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -50,7 +46,7 @@ export const ProductImageGallery = ({
         />
       </div>
 
-      {/* Thumbnail Gallery */}
+      {/* Thumbnail Gallery - only show if multiple images of the SAME product */}
       {images.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-2">
           {images.map((image, index) => (
