@@ -52,6 +52,7 @@ import { InviteUserDialog } from "@/components/admin/users/InviteUserDialog";
 import { PendingInvitationsList } from "@/components/admin/users/PendingInvitationsList";
 import { BranchAssignmentDialog } from "@/components/admin/users/BranchAssignmentDialog";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { getInvitableRoles, canChangeUserRole, getRoleLabel, isAtLeast } from "@/lib/permissions";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -76,6 +77,7 @@ const roleBadgeVariants: Record<AppRole, "default" | "secondary" | "destructive"
 const AdminUsers = () => {
   const queryClient = useQueryClient();
   const { data: currentUserRole } = useUserRole();
+  const { user: currentUser } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [editingUser, setEditingUser] = useState<{ id: string; email: string; role: AppRole } | null>(null);
@@ -182,9 +184,14 @@ const AdminUsers = () => {
   const isManager = currentUserRole === "branch_manager";
   const isSuperAdmin = currentUserRole === "super_admin";
 
-  // For managers: filter to only show staff, customers, and unverified users they can manage
+  // For managers: filter to only show staff, customers, unverified users, AND themselves
   const managerVisibleUsers = isManager
-    ? visibleUsers.filter((u) => u.role === "branch_staff" || u.role === "customer" || u.role === "user")
+    ? visibleUsers.filter((u) => 
+        u.role === "branch_staff" || 
+        u.role === "customer" || 
+        u.role === "user" ||
+        u.user_id === currentUser?.id // Include their own profile
+      )
     : visibleUsers;
 
   // Recalculate stats based on what the user can see
