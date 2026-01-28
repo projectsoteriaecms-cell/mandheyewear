@@ -8,6 +8,12 @@ import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FaceShapeIllustration, FrameStyleIllustration } from "./illustrations";
 
+// Premium card styles with micro-animations
+const cardBaseStyles = "group relative cursor-pointer transition-all duration-300 ease-out";
+const cardHoverStyles = "hover:shadow-xl hover:-translate-y-1 hover:border-accent/60";
+const cardSelectedStyles = "border-accent bg-accent/5 ring-2 ring-accent shadow-lg shadow-accent/10 -translate-y-0.5";
+const cardUnselectedStyles = "hover:bg-muted/40";
+
 interface StyleQuizStepProps {
   onNext: () => void;
   onBack: () => void;
@@ -162,43 +168,56 @@ export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
               <p className="text-sm text-muted-foreground">This helps us recommend flattering frames</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {FACE_SHAPES.map((shape) => {
+              {FACE_SHAPES.map((shape, index) => {
                 const isSelected = answers.faceShape === shape.id;
                 return (
                   <Card
                     key={shape.id}
                     className={cn(
-                      "group relative p-4 cursor-pointer transition-all duration-300 hover:shadow-lg",
-                      isSelected
-                        ? "border-accent bg-accent/5 ring-2 ring-accent shadow-md"
-                        : "hover:border-accent/50 hover:bg-muted/30"
+                      cardBaseStyles,
+                      cardHoverStyles,
+                      "p-4",
+                      isSelected ? cardSelectedStyles : cardUnselectedStyles
                     )}
+                    style={{ 
+                      animationDelay: `${index * 50}ms`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                     onClick={() => handleSingleSelect("faceShape", shape.id)}
                   >
                     <div className="flex flex-col items-center text-center space-y-3">
                       <div className={cn(
-                        "w-16 h-20 transition-transform duration-300",
-                        "group-hover:scale-105",
-                        isSelected && "text-accent"
+                        "w-16 h-20 transition-all duration-300 ease-out",
+                        "group-hover:scale-110 group-hover:drop-shadow-md",
+                        isSelected && "text-accent scale-105 drop-shadow-lg"
                       )}>
                         <FaceShapeIllustration 
                           shape={shape.id as "oval" | "round" | "square" | "heart" | "oblong"} 
                           selected={isSelected}
                         />
                       </div>
-                      <div>
+                      <div className="transition-all duration-200">
                         <p className={cn(
-                          "font-medium transition-colors",
-                          isSelected && "text-accent"
+                          "font-medium transition-colors duration-200",
+                          isSelected ? "text-accent" : "group-hover:text-accent/80"
                         )}>{shape.label}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{shape.description}</p>
+                        <p className={cn(
+                          "text-xs text-muted-foreground mt-0.5 transition-colors duration-200",
+                          isSelected && "text-accent/70"
+                        )}>{shape.description}</p>
                       </div>
                     </div>
-                    {isSelected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
-                        <Check className="h-3 w-3 text-accent-foreground" />
-                      </div>
-                    )}
+                    <div className={cn(
+                      "absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300",
+                      isSelected 
+                        ? "bg-accent scale-100 opacity-100" 
+                        : "bg-accent/20 scale-0 opacity-0 group-hover:scale-75 group-hover:opacity-50"
+                    )}>
+                      <Check className={cn(
+                        "h-3 w-3 transition-colors duration-200",
+                        isSelected ? "text-accent-foreground" : "text-accent"
+                      )} />
+                    </div>
                   </Card>
                 );
               })}
@@ -214,43 +233,56 @@ export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
               <p className="text-sm text-muted-foreground">Select all that appeal to you</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {FRAME_STYLES.map((style) => {
+              {FRAME_STYLES.map((style, index) => {
                 const isSelected = answers.frameStyle.includes(style.id);
                 return (
                   <Card
                     key={style.id}
                     className={cn(
-                      "group relative p-5 cursor-pointer transition-all duration-300 hover:shadow-lg",
-                      isSelected
-                        ? "border-accent bg-accent/5 ring-2 ring-accent shadow-md"
-                        : "hover:border-accent/50 hover:bg-muted/30"
+                      cardBaseStyles,
+                      cardHoverStyles,
+                      "p-5",
+                      isSelected ? cardSelectedStyles : cardUnselectedStyles
                     )}
+                    style={{ 
+                      animationDelay: `${index * 50}ms`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                     onClick={() => handleMultiSelect("frameStyle", style.id)}
                   >
                     <div className="flex flex-col items-center text-center space-y-4">
                       <div className={cn(
-                        "w-full h-12 max-w-[140px] transition-transform duration-300",
-                        "group-hover:scale-105",
-                        isSelected && "text-accent"
+                        "w-full h-12 max-w-[140px] transition-all duration-300 ease-out",
+                        "group-hover:scale-110 group-hover:drop-shadow-md",
+                        isSelected && "text-accent scale-105 drop-shadow-lg"
                       )}>
                         <FrameStyleIllustration 
                           style={style.id as "classic" | "modern" | "bold" | "minimalist" | "vintage"} 
                           selected={isSelected}
                         />
                       </div>
-                      <div>
+                      <div className="transition-all duration-200">
                         <p className={cn(
-                          "font-medium transition-colors",
-                          isSelected && "text-accent"
+                          "font-medium transition-colors duration-200",
+                          isSelected ? "text-accent" : "group-hover:text-accent/80"
                         )}>{style.label}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{style.description}</p>
+                        <p className={cn(
+                          "text-xs text-muted-foreground mt-0.5 transition-colors duration-200",
+                          isSelected && "text-accent/70"
+                        )}>{style.description}</p>
                       </div>
                     </div>
-                    {isSelected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
-                        <Check className="h-3 w-3 text-accent-foreground" />
-                      </div>
-                    )}
+                    <div className={cn(
+                      "absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300",
+                      isSelected 
+                        ? "bg-accent scale-100 opacity-100" 
+                        : "bg-accent/20 scale-0 opacity-0 group-hover:scale-75 group-hover:opacity-50"
+                    )}>
+                      <Check className={cn(
+                        "h-3 w-3 transition-colors duration-200",
+                        isSelected ? "text-accent-foreground" : "text-accent"
+                      )} />
+                    </div>
                   </Card>
                 );
               })}
@@ -266,37 +298,49 @@ export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
               <p className="text-sm text-muted-foreground">Select your preferred frame colors</p>
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
-              {COLORS.map((color) => {
+              {COLORS.map((color, index) => {
                 const isSelected = answers.colors.includes(color.id);
                 return (
                   <Card
                     key={color.id}
                     className={cn(
-                      "group relative p-4 cursor-pointer transition-all duration-300 hover:shadow-lg",
-                      isSelected
-                        ? "border-accent ring-2 ring-accent shadow-md"
+                      cardBaseStyles,
+                      "p-4 hover:shadow-lg hover:-translate-y-1",
+                      isSelected 
+                        ? "border-accent ring-2 ring-accent shadow-lg shadow-accent/10 -translate-y-0.5" 
                         : "hover:border-accent/50"
                     )}
+                    style={{ 
+                      animationDelay: `${index * 30}ms`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                     onClick={() => handleMultiSelect("colors", color.id)}
                   >
                     <div className="flex flex-col items-center text-center space-y-2">
                       <div
                         className={cn(
-                          "w-12 h-12 rounded-full shadow-inner transition-transform duration-300",
-                          "group-hover:scale-110",
+                          "w-12 h-12 rounded-full shadow-inner transition-all duration-300 ease-out",
+                          "group-hover:scale-115 group-hover:shadow-lg",
+                          isSelected && "scale-110 ring-2 ring-accent/50 ring-offset-2 ring-offset-background",
                           color.gradient
                         )}
                       />
                       <p className={cn(
-                        "text-sm font-medium transition-colors",
-                        isSelected && "text-accent"
+                        "text-sm font-medium transition-colors duration-200",
+                        isSelected ? "text-accent" : "group-hover:text-accent/80"
                       )}>{color.label}</p>
                     </div>
-                    {isSelected && (
-                      <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-accent flex items-center justify-center">
-                        <Check className="h-2.5 w-2.5 text-accent-foreground" />
-                      </div>
-                    )}
+                    <div className={cn(
+                      "absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center transition-all duration-300",
+                      isSelected 
+                        ? "bg-accent scale-100 opacity-100" 
+                        : "bg-accent/20 scale-0 opacity-0 group-hover:scale-75 group-hover:opacity-50"
+                    )}>
+                      <Check className={cn(
+                        "h-2.5 w-2.5 transition-colors duration-200",
+                        isSelected ? "text-accent-foreground" : "text-accent"
+                      )} />
+                    </div>
                   </Card>
                 );
               })}
@@ -312,31 +356,44 @@ export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
               <p className="text-sm text-muted-foreground">Select all that apply</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              {USAGE.map((use) => {
+              {USAGE.map((use, index) => {
                 const isSelected = answers.usage.includes(use.id);
                 return (
                   <Card
                     key={use.id}
                     className={cn(
-                      "relative p-5 cursor-pointer transition-all duration-300 hover:shadow-lg",
-                      isSelected
-                        ? "border-accent bg-accent/5 ring-2 ring-accent shadow-md"
-                        : "hover:border-accent/50 hover:bg-muted/30"
+                      cardBaseStyles,
+                      cardHoverStyles,
+                      "p-5",
+                      isSelected ? cardSelectedStyles : cardUnselectedStyles
                     )}
+                    style={{ 
+                      animationDelay: `${index * 50}ms`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                     onClick={() => handleMultiSelect("usage", use.id)}
                   >
-                    <div className="text-center">
+                    <div className="text-center transition-all duration-200">
                       <p className={cn(
-                        "font-medium transition-colors",
-                        isSelected && "text-accent"
+                        "font-medium transition-colors duration-200",
+                        isSelected ? "text-accent" : "group-hover:text-accent/80"
                       )}>{use.label}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{use.description}</p>
+                      <p className={cn(
+                        "text-xs text-muted-foreground mt-1 transition-colors duration-200",
+                        isSelected && "text-accent/70"
+                      )}>{use.description}</p>
                     </div>
-                    {isSelected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
-                        <Check className="h-3 w-3 text-accent-foreground" />
-                      </div>
-                    )}
+                    <div className={cn(
+                      "absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300",
+                      isSelected 
+                        ? "bg-accent scale-100 opacity-100" 
+                        : "bg-accent/20 scale-0 opacity-0 group-hover:scale-75 group-hover:opacity-50"
+                    )}>
+                      <Check className={cn(
+                        "h-3 w-3 transition-colors duration-200",
+                        isSelected ? "text-accent-foreground" : "text-accent"
+                      )} />
+                    </div>
                   </Card>
                 );
               })}
@@ -352,32 +409,46 @@ export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
               <p className="text-sm text-muted-foreground">We'll prioritize frames in your range</p>
             </div>
             <div className="grid gap-3 max-w-md mx-auto">
-              {BUDGETS.map((budget) => {
+              {BUDGETS.map((budget, index) => {
                 const isSelected = answers.budget === budget.id;
                 return (
                   <Card
                     key={budget.id}
                     className={cn(
-                      "relative p-4 cursor-pointer transition-all duration-300 hover:shadow-lg",
-                      isSelected
-                        ? "border-accent bg-accent/5 ring-2 ring-accent shadow-md"
-                        : "hover:border-accent/50 hover:bg-muted/30"
+                      cardBaseStyles,
+                      "p-4 hover:shadow-lg hover:-translate-y-0.5",
+                      isSelected 
+                        ? "border-accent bg-accent/5 ring-2 ring-accent shadow-lg shadow-accent/10" 
+                        : "hover:border-accent/50 hover:bg-muted/40"
                     )}
+                    style={{ 
+                      animationDelay: `${index * 50}ms`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                     onClick={() => handleSingleSelect("budget", budget.id)}
                   >
                     <div className="flex justify-between items-center">
-                      <div>
+                      <div className="transition-all duration-200">
                         <p className={cn(
-                          "font-medium transition-colors",
-                          isSelected && "text-accent"
+                          "font-medium transition-colors duration-200",
+                          isSelected ? "text-accent" : "group-hover:text-accent/80"
                         )}>{budget.label}</p>
-                        <p className="text-xs text-muted-foreground">{budget.description}</p>
+                        <p className={cn(
+                          "text-xs text-muted-foreground transition-colors duration-200",
+                          isSelected && "text-accent/70"
+                        )}>{budget.description}</p>
                       </div>
-                      {isSelected && (
-                        <div className="w-6 h-6 rounded-full bg-accent flex items-center justify-center">
-                          <Check className="h-4 w-4 text-accent-foreground" />
-                        </div>
-                      )}
+                      <div className={cn(
+                        "w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300",
+                        isSelected 
+                          ? "bg-accent scale-100 opacity-100" 
+                          : "bg-accent/20 scale-0 opacity-0 group-hover:scale-75 group-hover:opacity-40"
+                      )}>
+                        <Check className={cn(
+                          "h-4 w-4 transition-colors duration-200",
+                          isSelected ? "text-accent-foreground" : "text-accent"
+                        )} />
+                      </div>
                     </div>
                   </Card>
                 );

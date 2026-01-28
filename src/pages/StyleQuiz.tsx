@@ -21,6 +21,12 @@ import {
 import { cn } from "@/lib/utils";
 import { FaceShapeIllustration, FrameStyleIllustration } from "@/components/onboarding/illustrations";
 
+// Premium card styles with micro-animations
+const cardBaseStyles = "group relative cursor-pointer transition-all duration-300 ease-out";
+const cardHoverStyles = "hover:shadow-xl hover:-translate-y-1 hover:border-accent/60";
+const cardSelectedStyles = "border-accent bg-accent/5 ring-2 ring-accent shadow-lg shadow-accent/10 -translate-y-0.5";
+const cardUnselectedStyles = "hover:bg-muted/40";
+
 type QuizStep = "welcome" | "face-shape" | "frame-style" | "colors" | "usage" | "budget" | "results";
 
 interface QuizAnswers {
@@ -202,43 +208,55 @@ const StyleQuiz = () => {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {faceShapes.map((shape) => {
+              {faceShapes.map((shape, index) => {
                 const selected = isSelected("faceShape", shape.id);
                 return (
                   <Card
                     key={shape.id}
                     className={cn(
-                      "group relative cursor-pointer transition-all duration-300 hover:shadow-lg",
-                      selected 
-                        ? "ring-2 ring-accent border-accent bg-accent/5 shadow-md" 
-                        : "hover:border-accent/50 hover:bg-muted/30"
+                      cardBaseStyles,
+                      cardHoverStyles,
+                      selected ? cardSelectedStyles : cardUnselectedStyles
                     )}
+                    style={{ 
+                      animationDelay: `${index * 50}ms`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                     onClick={() => handleSelect("faceShape", shape.id)}
                   >
                     <CardContent className="p-5 text-center space-y-3">
                       <div className={cn(
-                        "w-16 h-20 mx-auto transition-transform duration-300",
-                        "group-hover:scale-105",
-                        selected && "text-accent"
+                        "w-16 h-20 mx-auto transition-all duration-300 ease-out",
+                        "group-hover:scale-110 group-hover:drop-shadow-md",
+                        selected && "text-accent scale-105 drop-shadow-lg"
                       )}>
                         <FaceShapeIllustration 
                           shape={shape.id} 
                           selected={selected}
                         />
                       </div>
-                      <div>
+                      <div className="transition-all duration-200">
                         <p className={cn(
-                          "font-medium text-foreground transition-colors",
-                          selected && "text-accent"
+                          "font-medium text-foreground transition-colors duration-200",
+                          selected ? "text-accent" : "group-hover:text-accent/80"
                         )}>{shape.name}</p>
-                        <p className="text-xs text-muted-foreground">{shape.description}</p>
+                        <p className={cn(
+                          "text-xs text-muted-foreground transition-colors duration-200",
+                          selected && "text-accent/70"
+                        )}>{shape.description}</p>
                       </div>
                     </CardContent>
-                    {selected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
-                        <Check className="h-3 w-3 text-accent-foreground" weight="bold" />
-                      </div>
-                    )}
+                    <div className={cn(
+                      "absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300",
+                      selected 
+                        ? "bg-accent scale-100 opacity-100" 
+                        : "bg-accent/20 scale-0 opacity-0 group-hover:scale-75 group-hover:opacity-50"
+                    )}>
+                      <Check className={cn(
+                        "h-3 w-3 transition-colors duration-200",
+                        selected ? "text-accent-foreground" : "text-accent"
+                      )} weight="bold" />
+                    </div>
                   </Card>
                 );
               })}
@@ -268,43 +286,55 @@ const StyleQuiz = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {frameStyles.map((style) => {
+              {frameStyles.map((style, index) => {
                 const selected = isSelected("frameStyle", style.id);
                 return (
                   <Card
                     key={style.id}
                     className={cn(
-                      "group relative cursor-pointer transition-all duration-300 hover:shadow-lg",
-                      selected 
-                        ? "ring-2 ring-accent border-accent bg-accent/5 shadow-md" 
-                        : "hover:border-accent/50 hover:bg-muted/30"
+                      cardBaseStyles,
+                      cardHoverStyles,
+                      selected ? cardSelectedStyles : cardUnselectedStyles
                     )}
+                    style={{ 
+                      animationDelay: `${index * 50}ms`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                     onClick={() => handleSelect("frameStyle", style.id, true)}
                   >
                     <CardContent className="p-5 text-center space-y-4">
                       <div className={cn(
-                        "w-full h-12 max-w-[160px] mx-auto transition-transform duration-300",
-                        "group-hover:scale-105",
-                        selected && "text-accent"
+                        "w-full h-12 max-w-[160px] mx-auto transition-all duration-300 ease-out",
+                        "group-hover:scale-110 group-hover:drop-shadow-md",
+                        selected && "text-accent scale-105 drop-shadow-lg"
                       )}>
                         <FrameStyleIllustration 
                           style={style.id} 
                           selected={selected}
                         />
                       </div>
-                      <div>
+                      <div className="transition-all duration-200">
                         <p className={cn(
-                          "font-medium text-foreground transition-colors",
-                          selected && "text-accent"
+                          "font-medium text-foreground transition-colors duration-200",
+                          selected ? "text-accent" : "group-hover:text-accent/80"
                         )}>{style.name}</p>
-                        <p className="text-sm text-muted-foreground">{style.description}</p>
+                        <p className={cn(
+                          "text-sm text-muted-foreground transition-colors duration-200",
+                          selected && "text-accent/70"
+                        )}>{style.description}</p>
                       </div>
                     </CardContent>
-                    {selected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
-                        <Check className="h-3 w-3 text-accent-foreground" weight="bold" />
-                      </div>
-                    )}
+                    <div className={cn(
+                      "absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300",
+                      selected 
+                        ? "bg-accent scale-100 opacity-100" 
+                        : "bg-accent/20 scale-0 opacity-0 group-hover:scale-75 group-hover:opacity-50"
+                    )}>
+                      <Check className={cn(
+                        "h-3 w-3 transition-colors duration-200",
+                        selected ? "text-accent-foreground" : "text-accent"
+                      )} weight="bold" />
+                    </div>
                   </Card>
                 );
               })}
@@ -334,37 +364,49 @@ const StyleQuiz = () => {
             </div>
 
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
-              {colorOptions.map((color) => {
+              {colorOptions.map((color, index) => {
                 const selected = isSelected("colors", color.id);
                 return (
                   <Card
                     key={color.id}
                     className={cn(
-                      "group relative cursor-pointer transition-all duration-300 hover:shadow-lg p-4",
+                      cardBaseStyles,
+                      "p-4 hover:shadow-lg hover:-translate-y-1",
                       selected 
-                        ? "ring-2 ring-accent border-accent shadow-md" 
+                        ? "ring-2 ring-accent border-accent shadow-lg shadow-accent/10 -translate-y-0.5" 
                         : "hover:border-accent/50"
                     )}
+                    style={{ 
+                      animationDelay: `${index * 30}ms`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                     onClick={() => handleSelect("colors", color.id, true)}
                   >
                     <div className="flex flex-col items-center gap-3">
                       <div
                         className={cn(
-                          "w-12 h-12 rounded-full shadow-inner transition-transform duration-300",
-                          "group-hover:scale-110",
+                          "w-12 h-12 rounded-full shadow-inner transition-all duration-300 ease-out",
+                          "group-hover:scale-115 group-hover:shadow-lg",
+                          selected && "scale-110 ring-2 ring-accent/50 ring-offset-2 ring-offset-background",
                           color.gradient
                         )}
                       />
                       <span className={cn(
-                        "text-sm font-medium text-foreground transition-colors",
-                        selected && "text-accent"
+                        "text-sm font-medium text-foreground transition-colors duration-200",
+                        selected ? "text-accent" : "group-hover:text-accent/80"
                       )}>{color.name}</span>
                     </div>
-                    {selected && (
-                      <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-accent flex items-center justify-center">
-                        <Check className="h-2.5 w-2.5 text-accent-foreground" weight="bold" />
-                      </div>
-                    )}
+                    <div className={cn(
+                      "absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center transition-all duration-300",
+                      selected 
+                        ? "bg-accent scale-100 opacity-100" 
+                        : "bg-accent/20 scale-0 opacity-0 group-hover:scale-75 group-hover:opacity-50"
+                    )}>
+                      <Check className={cn(
+                        "h-2.5 w-2.5 transition-colors duration-200",
+                        selected ? "text-accent-foreground" : "text-accent"
+                      )} weight="bold" />
+                    </div>
                   </Card>
                 );
               })}
@@ -394,43 +436,55 @@ const StyleQuiz = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-              {usageOptions.map((option) => {
+              {usageOptions.map((option, index) => {
                 const Icon = option.icon;
                 const selected = isSelected("usage", option.id);
                 return (
                   <Card
                     key={option.id}
                     className={cn(
-                      "relative cursor-pointer transition-all duration-300 hover:shadow-lg",
-                      selected 
-                        ? "ring-2 ring-accent border-accent bg-accent/5 shadow-md" 
-                        : "hover:border-accent/50 hover:bg-muted/30"
+                      cardBaseStyles,
+                      cardHoverStyles,
+                      selected ? cardSelectedStyles : cardUnselectedStyles
                     )}
+                    style={{ 
+                      animationDelay: `${index * 50}ms`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                     onClick={() => handleSelect("usage", option.id, true)}
                   >
                     <CardContent className="p-5 flex items-center gap-4">
                       <div className={cn(
-                        "p-3 rounded-full transition-colors",
-                        selected ? "bg-accent/20" : "bg-muted"
+                        "p-3 rounded-full transition-all duration-300",
+                        selected ? "bg-accent/20 scale-110" : "bg-muted group-hover:bg-accent/10"
                       )}>
                         <Icon className={cn(
-                          "h-6 w-6 transition-colors",
-                          selected ? "text-accent" : "text-foreground"
+                          "h-6 w-6 transition-all duration-300",
+                          selected ? "text-accent" : "text-foreground group-hover:text-accent/80"
                         )} weight={selected ? "fill" : "light"} />
                       </div>
-                      <div>
+                      <div className="transition-all duration-200">
                         <p className={cn(
-                          "font-medium text-foreground transition-colors",
-                          selected && "text-accent"
+                          "font-medium text-foreground transition-colors duration-200",
+                          selected ? "text-accent" : "group-hover:text-accent/80"
                         )}>{option.name}</p>
-                        <p className="text-sm text-muted-foreground">{option.description}</p>
+                        <p className={cn(
+                          "text-sm text-muted-foreground transition-colors duration-200",
+                          selected && "text-accent/70"
+                        )}>{option.description}</p>
                       </div>
                     </CardContent>
-                    {selected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
-                        <Check className="h-3 w-3 text-accent-foreground" weight="bold" />
-                      </div>
-                    )}
+                    <div className={cn(
+                      "absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300",
+                      selected 
+                        ? "bg-accent scale-100 opacity-100" 
+                        : "bg-accent/20 scale-0 opacity-0 group-hover:scale-75 group-hover:opacity-50"
+                    )}>
+                      <Check className={cn(
+                        "h-3 w-3 transition-colors duration-200",
+                        selected ? "text-accent-foreground" : "text-accent"
+                      )} weight="bold" />
+                    </div>
                   </Card>
                 );
               })}
@@ -460,32 +514,46 @@ const StyleQuiz = () => {
             </div>
 
             <div className="grid gap-3 max-w-md mx-auto">
-              {budgetOptions.map((option) => {
+              {budgetOptions.map((option, index) => {
                 const selected = isSelected("budget", option.id);
                 return (
                   <Card
                     key={option.id}
                     className={cn(
-                      "relative cursor-pointer transition-all duration-300 hover:shadow-lg",
+                      cardBaseStyles,
+                      "hover:shadow-lg hover:-translate-y-0.5",
                       selected 
-                        ? "ring-2 ring-accent border-accent bg-accent/5 shadow-md" 
-                        : "hover:border-accent/50 hover:bg-muted/30"
+                        ? "ring-2 ring-accent border-accent bg-accent/5 shadow-lg shadow-accent/10" 
+                        : "hover:border-accent/50 hover:bg-muted/40"
                     )}
+                    style={{ 
+                      animationDelay: `${index * 50}ms`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                     onClick={() => handleSelect("budget", option.id)}
                   >
                     <CardContent className="p-5 flex justify-between items-center">
-                      <div>
+                      <div className="transition-all duration-200">
                         <p className={cn(
-                          "font-medium text-foreground transition-colors",
-                          selected && "text-accent"
+                          "font-medium text-foreground transition-colors duration-200",
+                          selected ? "text-accent" : "group-hover:text-accent/80"
                         )}>{option.name}</p>
-                        <p className="text-sm text-muted-foreground">{option.description}</p>
+                        <p className={cn(
+                          "text-sm text-muted-foreground transition-colors duration-200",
+                          selected && "text-accent/70"
+                        )}>{option.description}</p>
                       </div>
-                      {selected && (
-                        <div className="w-6 h-6 rounded-full bg-accent flex items-center justify-center">
-                          <Check className="h-4 w-4 text-accent-foreground" weight="bold" />
-                        </div>
-                      )}
+                      <div className={cn(
+                        "w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300",
+                        selected 
+                          ? "bg-accent scale-100 opacity-100" 
+                          : "bg-accent/20 scale-0 opacity-0 group-hover:scale-75 group-hover:opacity-40"
+                      )}>
+                        <Check className={cn(
+                          "h-4 w-4 transition-colors duration-200",
+                          selected ? "text-accent-foreground" : "text-accent"
+                        )} weight="bold" />
+                      </div>
                     </CardContent>
                   </Card>
                 );
