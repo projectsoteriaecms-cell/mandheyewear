@@ -86,11 +86,22 @@ export const BranchAssignmentDialog = ({
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      // Re-check existing assignments at save time to avoid duplicate-key errors
+      // when the UI state is stale or assignments were changed in another session.
+      const { data: existingNow, error: existingError } = await supabase
+        .from("branch_assignments")
+        .select("branch_id")
+        .eq("user_id", userId);
+
+      if (existingError) throw existingError;
+
+      const existingAssigned = new Set((existingNow ?? []).map((r) => r.branch_id));
+
       const toAssign: string[] = [];
       const toRemove: string[] = [];
 
       pendingChanges.forEach((isAssigned, branchId) => {
-        const wasAssigned = assignedBranchIds.has(branchId);
+        const wasAssigned = existingAssigned.has(branchId);
         if (isAssigned && !wasAssigned) {
           toAssign.push(branchId);
         } else if (!isAssigned && wasAssigned) {
@@ -111,7 +122,7 @@ export const BranchAssignmentDialog = ({
       // Add newly assigned branches (only if not already assigned)
       if (toAssign.length > 0) {
         // Filter out any branches that might already be assigned (edge case)
-        const actuallyNew = toAssign.filter(branchId => !assignedBranchIds.has(branchId));
+        const actuallyNew = toAssign.filter((branchId) => !existingAssigned.has(branchId));
         
         if (actuallyNew.length > 0) {
           const newAssignments = actuallyNew.map((branchId) => ({
@@ -126,6 +137,7 @@ export const BranchAssignmentDialog = ({
              .from("branch_assignments")
              .upsert(newAssignments, {
                onConflict: "user_id,branch_id",
+              ignoreDuplicates: true,
              });
            if (error) throw error;
         }
