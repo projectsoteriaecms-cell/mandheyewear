@@ -10,6 +10,7 @@ import {
   Buildings,
   Wrench,
   FolderSimple,
+  CalendarCheck,
 } from "@phosphor-icons/react";
 
 export interface NavItem {
@@ -66,6 +67,11 @@ export const navItems: NavItem[] = [
     href: "/admin/categories",
     icon: FolderSimple,
     requiresManager: true,
+  },
+  {
+    title: "Appointments",
+    href: "/admin/appointments",
+    icon: CalendarCheck,
   },
   {
     title: "Branches",
