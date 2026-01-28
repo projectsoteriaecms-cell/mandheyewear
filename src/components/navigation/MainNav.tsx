@@ -16,7 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import soteriaLogo from "@/assets/soteria-logo.png";
-import mhLogo from "@/assets/mh-logo.png";
+import soteriaLogoGold from "@/assets/soteria-logo-gold.png";
+import mhLogoGold from "@/assets/mh-logo-gold.png";
 
 const navLinks = [
   { name: "Style Quiz", path: "/style-quiz", highlight: true },
@@ -61,13 +62,18 @@ export const MainNav = () => {
             <img 
               src={soteriaLogo} 
               alt="Soteria Eye Clinic" 
-              className="h-10 w-auto dark:invert dark:brightness-[1.2]"
+              className="h-10 w-auto dark:hidden"
+            />
+            <img 
+              src={soteriaLogoGold} 
+              alt="Soteria Eye Clinic" 
+              className="h-10 w-auto hidden dark:block"
             />
             <span className="text-border text-2xl font-light">|</span>
             <img 
-              src={mhLogo} 
+              src={mhLogoGold} 
               alt="M&H Eyewear" 
-              className="h-10 w-auto dark:invert dark:brightness-[1.2]"
+              className="h-10 w-auto"
             />
           </Link>
 
