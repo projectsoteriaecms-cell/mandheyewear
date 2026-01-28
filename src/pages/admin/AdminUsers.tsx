@@ -165,17 +165,8 @@ const AdminUsers = () => {
     },
   });
 
-  // Filter out super_admin from the list, then apply other filters
+  // Filter out super_admin from the list
   const visibleUsers = users.filter((user) => user.role !== "super_admin");
-  
-  const filteredUsers = visibleUsers.filter((user) => {
-    const profile = user.profile as any;
-    const matchesSearch =
-      (profile?.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (profile?.full_name || "").toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    return matchesSearch && matchesRole;
-  });
 
   const handleUpdateRole = () => {
     if (editingUser) {
@@ -187,13 +178,32 @@ const AdminUsers = () => {
     updateRole.mutate({ userId, role: "customer" });
   };
 
-  // Calculate stats excluding super_admin
-  const staffCount = visibleUsers.filter((u) => u.role === "branch_staff" || u.role === "branch_manager").length;
-  const customerCount = visibleUsers.filter((u) => u.role === "customer").length;
-  const unverifiedCount = visibleUsers.filter((u) => u.role === "user").length;
+  // Check if current user is a manager (not super_admin)
+  const isManager = currentUserRole === "branch_manager";
+  const isSuperAdmin = currentUserRole === "super_admin";
+
+  // For managers: filter to only show staff, customers, and unverified users they can manage
+  const managerVisibleUsers = isManager
+    ? visibleUsers.filter((u) => u.role === "branch_staff" || u.role === "customer" || u.role === "user")
+    : visibleUsers;
+
+  // Recalculate stats based on what the user can see
+  const visibleStaffCount = managerVisibleUsers.filter((u) => u.role === "branch_staff" || u.role === "branch_manager").length;
+  const visibleCustomerCount = managerVisibleUsers.filter((u) => u.role === "customer").length;
+  const visibleUnverifiedCount = managerVisibleUsers.filter((u) => u.role === "user").length;
+
+  // Filter based on search and role filter
+  const displayedUsers = managerVisibleUsers.filter((user) => {
+    const profile = user.profile as any;
+    const matchesSearch =
+      (profile?.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (profile?.full_name || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
 
   return (
-    <RoleGuard allowedRoles={["super_admin"]}>
+    <RoleGuard allowedRoles={["super_admin", "branch_manager"]}>
       <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
@@ -220,7 +230,7 @@ const AdminUsers = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{staffCount}</p>
+              <p className="text-2xl font-bold">{visibleStaffCount}</p>
               <p className="text-xs text-muted-foreground">Managers & Staff</p>
             </CardContent>
           </Card>
@@ -232,7 +242,7 @@ const AdminUsers = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{customerCount}</p>
+              <p className="text-2xl font-bold">{visibleCustomerCount}</p>
               <p className="text-xs text-muted-foreground">Can purchase & book</p>
             </CardContent>
           </Card>
@@ -244,7 +254,7 @@ const AdminUsers = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{unverifiedCount}</p>
+              <p className="text-2xl font-bold">{visibleUnverifiedCount}</p>
               <p className="text-xs text-muted-foreground">Browse only</p>
             </CardContent>
           </Card>
@@ -284,7 +294,7 @@ const AdminUsers = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              All Users ({filteredUsers.length})
+              All Users ({displayedUsers.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -294,7 +304,7 @@ const AdminUsers = () => {
                   <Skeleton key={i} className="h-12 w-full" />
                 ))}
               </div>
-            ) : filteredUsers.length === 0 ? (
+            ) : displayedUsers.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Users className="mx-auto h-12 w-12 mb-4 opacity-50" />
                 <p>No users found</p>
@@ -312,7 +322,7 @@ const AdminUsers = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUsers.map((user) => {
+                    {displayedUsers.map((user) => {
                       const profile = user.profile as any;
                       const userBranches = branchAssignmentsByUser[user.user_id] || [];
                       const isStaffOrManager = isAtLeast(user.role, "branch_staff") && user.role !== "super_admin";

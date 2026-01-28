@@ -83,7 +83,7 @@ export const navItems: NavItem[] = [
     title: "Users",
     href: "/admin/users",
     icon: Users,
-    requiresSuperAdmin: true,
+    requiresManager: true, // Changed from requiresSuperAdmin to allow managers
   },
   {
     title: "Settings",
