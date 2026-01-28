@@ -1,9 +1,10 @@
 import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   ProfileSection, 
   OrderHistorySection, 
@@ -17,7 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAppointments } from "@/hooks/useAppointments";
 import { useUserRole } from "@/hooks/useUserRole";
-import { hasAdminAccess } from "@/lib/permissions";
+import { hasAdminAccess, isUnverifiedUser } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Loader2, 
@@ -28,7 +29,9 @@ import {
   Heart, 
   MapPin, 
   Sparkles, 
-  Settings 
+  Settings,
+  AlertCircle,
+  Clock,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -48,6 +51,9 @@ const Dashboard = () => {
   const upcomingAppointments = appointments?.filter(
     (a) => a.status !== "cancelled" && a.status !== "completed" && new Date(a.scheduled_date) >= new Date()
   ).length || 0;
+
+  // Check if user is unverified
+  const isUnverified = isUnverifiedUser(role ?? null);
 
   // Redirect staff users to admin panel (unless they're viewing their profile/settings)
   useEffect(() => {
@@ -94,6 +100,104 @@ const Dashboard = () => {
 
   if (!user) {
     return null;
+  }
+
+  // Unverified user view - limited dashboard
+  if (isUnverified) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        
+        {/* Spacer for fixed navigation */}
+        <div className="h-16 lg:h-[104px]" />
+
+        <div className="py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+              <div>
+                <h1 className="text-3xl font-display font-bold text-foreground">
+                  My Account
+                </h1>
+                <p className="text-muted-foreground mt-1">
+                  Your account is pending verification
+                </p>
+              </div>
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
+
+            {/* Verification Pending Card */}
+            <Card className="mb-8 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                  <Clock className="h-5 w-5" />
+                  Account Verification Pending
+                </CardTitle>
+                <CardDescription className="text-amber-600 dark:text-amber-500">
+                  Your account is being reviewed. Once verified, you'll be able to:
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-amber-700 dark:text-amber-400">
+                  <li className="flex items-center gap-2">
+                    <ShoppingBag className="h-4 w-4" />
+                    Purchase eyewear and accessories
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Book eye care appointments
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Heart className="h-4 w-4" />
+                    Save items to your wishlist
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Get personalized frame recommendations
+                  </li>
+                </ul>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  In the meantime, feel free to browse our collection!
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* What you can do now */}
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>What you can do now</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button variant="hero" className="w-full" asChild>
+                  <Link to="/eyewear">Browse Eyewear Collection</Link>
+                </Button>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/branches">Find Our Locations</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Profile Section - Always available */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Your Profile
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProfileSection userId={user.id} />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    );
   }
 
   return (
