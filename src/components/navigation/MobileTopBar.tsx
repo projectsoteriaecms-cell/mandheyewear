@@ -1,20 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { 
-  List, 
-  X, 
-  Heart, 
-  Bag, 
-  Moon, 
-  Sun, 
-  MapPin, 
-  Phone, 
-  Info, 
-  Question, 
-  Sparkle, 
-  Gear, 
-  SignOut 
-} from "@phosphor-icons/react";
+import { List, X, Heart, Bag, Moon, Sun, MapPin, Phone, Info, Question, Sparkle, Gear, SignOut } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
@@ -27,36 +13,61 @@ import { useCart } from "@/hooks/useCart";
 import { cn } from "@/lib/utils";
 import soteriaLogo from "@/assets/soteria-logo.png";
 import mhLogo from "@/assets/mh-logo.png";
-
-const menuItems = [
-  { name: "Style Quiz", path: "/style-quiz", icon: Sparkle, highlight: true, description: "Find your perfect frames" },
-  { name: "Find a Store", path: "/branches", icon: MapPin, description: "Visit us in person" },
-  { name: "Contact Us", path: "/contact", icon: Phone, description: "Get in touch" },
-  { name: "About Us", path: "/about", icon: Info, description: "Our story" },
-  { name: "FAQ", path: "/faq", icon: Question, description: "Common questions" },
-];
-
+const menuItems = [{
+  name: "Style Quiz",
+  path: "/style-quiz",
+  icon: Sparkle,
+  highlight: true,
+  description: "Find your perfect frames"
+}, {
+  name: "Find a Store",
+  path: "/branches",
+  icon: MapPin,
+  description: "Visit us in person"
+}, {
+  name: "Contact Us",
+  path: "/contact",
+  icon: Phone,
+  description: "Get in touch"
+}, {
+  name: "About Us",
+  path: "/about",
+  icon: Info,
+  description: "Our story"
+}, {
+  name: "FAQ",
+  path: "/faq",
+  icon: Question,
+  description: "Common questions"
+}];
 export const MobileTopBar = () => {
   const [open, setOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
-  const { user, loading, signOut, isAuthenticated } = useAuth();
-  const { data: role } = useUserRole();
-  const { toast } = useToast();
+  const {
+    user,
+    loading,
+    signOut,
+    isAuthenticated
+  } = useAuth();
+  const {
+    data: role
+  } = useUserRole();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
-  const { cartItems } = useCart();
-  
+  const {
+    cartItems
+  } = useCart();
   const isStaff = hasAdminAccess(role ?? null);
   const cartCount = cartItems?.length || 0;
-
   useEffect(() => {
     const isDarkMode = document.documentElement.classList.contains('dark');
     setIsDark(isDarkMode);
   }, []);
-
   const toggleTheme = () => {
     const newIsDark = !isDark;
     setIsDark(newIsDark);
-    
     if (newIsDark) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
@@ -65,27 +76,26 @@ export const MobileTopBar = () => {
       localStorage.setItem('theme', 'light');
     }
   };
-
   const handleSignOut = async () => {
-    const { error } = await signOut();
+    const {
+      error
+    } = await signOut();
     if (error) {
       toast({
         title: "Error",
         description: "Failed to sign out.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } else {
       toast({
         title: "Signed Out",
-        description: "You have been signed out.",
+        description: "You have been signed out."
       });
       navigate("/");
       setOpen(false);
     }
   };
-
-  return (
-    <div className="lg:hidden bg-background/95 backdrop-blur-lg border-b border-border relative">
+  return <div className="lg:hidden bg-background/95 backdrop-blur-lg border-b border-border relative">
       <div className="flex justify-between items-center h-14 px-4">
         {/* Left: Hamburger Menu + Theme Toggle */}
         <div className="flex items-center gap-1">
@@ -100,17 +110,9 @@ export const MobileTopBar = () => {
               <SheetHeader className="p-4 border-b border-border bg-primary">
                 <SheetTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <img 
-                      src={soteriaLogo} 
-                      alt="Soteria" 
-                      className="h-6 w-auto brightness-0 invert"
-                    />
+                    <img alt="Soteria" className="h-6 w-auto brightness-0 invert" src="/lovable-uploads/c6bc733f-cada-4635-b01a-c1aa00c8ba32.png" />
                     <span className="text-primary-foreground/40">|</span>
-                    <img 
-                      src={mhLogo} 
-                      alt="M&H" 
-                      className="h-6 w-auto brightness-0 invert"
-                    />
+                    <img src={mhLogo} alt="M&H" className="h-6 w-auto brightness-0 invert" />
                   </div>
                   <SheetClose asChild>
                     <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 -mr-2">
@@ -122,85 +124,48 @@ export const MobileTopBar = () => {
               
               {/* Menu Items */}
               <nav className="flex-1 overflow-y-auto py-2">
-                {menuItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.path}
-                      onClick={() => setOpen(false)}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted",
-                        item.highlight && "bg-accent/10"
-                      )}
-                    >
-                      <Icon 
-                        weight={item.highlight ? "duotone" : "light"}
-                        className={cn(
-                          "h-5 w-5",
-                          item.highlight ? "text-accent" : "text-muted-foreground"
-                        )} 
-                      />
+                {menuItems.map(item => {
+                const Icon = item.icon;
+                return <Link key={item.name} to={item.path} onClick={() => setOpen(false)} className={cn("flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted", item.highlight && "bg-accent/10")}>
+                      <Icon weight={item.highlight ? "duotone" : "light"} className={cn("h-5 w-5", item.highlight ? "text-accent" : "text-muted-foreground")} />
                       <div>
-                        <div className={cn(
-                          "font-medium text-sm",
-                          item.highlight ? "text-accent" : "text-foreground"
-                        )}>
+                        <div className={cn("font-medium text-sm", item.highlight ? "text-accent" : "text-foreground")}>
                           {item.name}
                         </div>
                         <p className="text-xs text-muted-foreground">{item.description}</p>
                       </div>
-                    </Link>
-                  );
-                })}
+                    </Link>;
+              })}
               </nav>
 
               {/* Theme & Account Section */}
               <div className="border-t border-border p-4 space-y-3">
                 {/* Theme Toggle */}
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={toggleTheme}
-                >
-                  {isDark ? (
-                    <>
+                <Button variant="outline" className="w-full justify-start" onClick={toggleTheme}>
+                  {isDark ? <>
                       <Sun weight="light" className="h-4 w-4 mr-2" />
                       Light Mode
-                    </>
-                  ) : (
-                    <>
+                    </> : <>
                       <Moon weight="light" className="h-4 w-4 mr-2" />
                       Dark Mode
-                    </>
-                  )}
+                    </>}
                 </Button>
 
                 <Separator />
 
                 {/* Account */}
-                {!loading && (
-                  isAuthenticated ? (
-                    <div className="space-y-2">
-                      {isStaff && (
-                        <Button variant="outline" className="w-full justify-start" asChild>
+                {!loading && (isAuthenticated ? <div className="space-y-2">
+                      {isStaff && <Button variant="outline" className="w-full justify-start" asChild>
                           <Link to="/admin" onClick={() => setOpen(false)}>
                             <Gear weight="light" className="h-4 w-4 mr-2" />
                             Admin Panel
                           </Link>
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={handleSignOut}
-                      >
+                        </Button>}
+                      <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
                         <SignOut weight="light" className="h-4 w-4 mr-2" />
                         Sign Out
                       </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
+                    </div> : <div className="space-y-2">
                       <Button className="w-full" asChild>
                         <Link to="/login" onClick={() => setOpen(false)}>
                           Sign In
@@ -211,41 +176,22 @@ export const MobileTopBar = () => {
                           Create Account
                         </Link>
                       </Button>
-                    </div>
-                  )
-                )}
+                    </div>)}
               </div>
             </SheetContent>
           </Sheet>
 
           {/* Theme Toggle Icon - Visible on top bar */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleTheme}
-            className="text-foreground/70 hover:text-foreground"
-          >
-            {isDark ? (
-              <Sun weight="light" className="h-5 w-5" />
-            ) : (
-              <Moon weight="light" className="h-5 w-5" />
-            )}
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-foreground/70 hover:text-foreground">
+            {isDark ? <Sun weight="light" className="h-5 w-5" /> : <Moon weight="light" className="h-5 w-5" />}
           </Button>
         </div>
 
         {/* Logo - Centered */}
         <Link to="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-          <img 
-            src={soteriaLogo} 
-            alt="Soteria" 
-            className="h-7 w-auto dark:invert dark:brightness-[1.2]"
-          />
+          <img src={soteriaLogo} alt="Soteria" className="h-7 w-auto dark:invert dark:brightness-[1.2]" />
           <span className="text-border text-lg">|</span>
-          <img 
-            src={mhLogo} 
-            alt="M&H" 
-            className="h-7 w-auto dark:invert dark:brightness-[1.2]"
-          />
+          <img src={mhLogo} alt="M&H" className="h-7 w-auto dark:invert dark:brightness-[1.2]" />
         </Link>
 
         {/* Right Actions */}
@@ -258,15 +204,12 @@ export const MobileTopBar = () => {
           <Button variant="ghost" size="icon" asChild className="text-foreground/70 hover:text-foreground relative">
             <Link to="/checkout">
               <Bag weight="light" className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-accent text-[10px] font-medium flex items-center justify-center text-accent-foreground">
+              {cartCount > 0 && <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-accent text-[10px] font-medium flex items-center justify-center text-accent-foreground">
                   {cartCount}
-                </span>
-              )}
+                </span>}
             </Link>
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
