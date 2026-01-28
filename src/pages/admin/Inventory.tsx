@@ -22,7 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MagnifyingGlass, Download, Warning, Package } from "@phosphor-icons/react";
+import { MagnifyingGlass, Download, Warning, Package, Upload } from "@phosphor-icons/react";
+import { BulkStockImportDialog } from "@/components/admin/inventory";
 
 const getStockStatus = (quantity: number, threshold: number) => {
   if (quantity === 0) return { label: "Out of Stock", variant: "destructive" as const };
@@ -54,6 +55,7 @@ const Inventory = () => {
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const { data: branches, isLoading: branchesLoading } = useBranches();
   const { data: inventory, isLoading: inventoryLoading } = useInventoryOverview(
@@ -100,10 +102,16 @@ const Inventory = () => {
               View and manage inventory across all branches
             </p>
           </div>
-          <Button onClick={handleExportCSV} variant="outline">
-            <Download className="mr-2 h-4 w-4" weight="light" />
-            Export CSV
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setImportDialogOpen(true)} variant="outline">
+              <Upload className="mr-2 h-4 w-4" weight="light" />
+              Import Stock
+            </Button>
+            <Button onClick={handleExportCSV} variant="outline">
+              <Download className="mr-2 h-4 w-4" weight="light" />
+              Export CSV
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -250,6 +258,11 @@ const Inventory = () => {
           </div>
         )}
       </div>
+
+      <BulkStockImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+      />
     </AdminLayout>
   );
 };
