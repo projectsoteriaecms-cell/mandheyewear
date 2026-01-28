@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { MapPin, Calendar, Moon, Sun } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { SyncStatusIndicator } from "@/components/pwa/SyncStatusIndicator";
 import soteriaLogo from "@/assets/soteria-logo.png";
 import mhLogo from "@/assets/mh-logo.png";
 
@@ -38,8 +39,11 @@ export const TopBar = () => {
           {/* Center: Unified Brand Logos */}
           
 
-          {/* Right: Theme Toggle + Book Eye Exam */}
+          {/* Right: Sync Status + Theme Toggle + Book Eye Exam */}
           <div className="flex items-center gap-2">
+            {/* Sync Status Indicator */}
+            <SyncStatusIndicator />
+
             {/* Theme Toggle */}
             <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-7 w-7 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}>
               {isDark ? <Sun weight="light" className="h-4 w-4" /> : <Moon weight="light" className="h-4 w-4" />}
