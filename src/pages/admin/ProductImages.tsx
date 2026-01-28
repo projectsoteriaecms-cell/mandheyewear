@@ -3,6 +3,7 @@ import { AdminLayout } from "@/shared/components/admin/AdminLayout";
 import { RoleGuard } from "@/shared/components/admin/RoleGuard";
 import { useAdminProducts } from "@/modules/products";
 import { ProductImageCard } from "@/components/admin/products/ProductImageCard";
+import { ProductImageListView } from "@/components/admin/products/ProductImageListView";
 import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,10 +15,12 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MagnifyingGlass, Images, CheckCircle, Warning } from "@phosphor-icons/react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { MagnifyingGlass, Images, CheckCircle, Warning, SquaresFour, List } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 
 type ImageFilter = "all" | "with_images" | "missing_primary" | "complete";
+type ViewMode = "grid" | "list";
 
 const ITEMS_PER_PAGE = 24;
 const MAX_ADDITIONAL = 8;
@@ -28,6 +31,7 @@ const ProductImages = () => {
   const [filter, setFilter] = useState<ImageFilter>("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   // Calculate image statistics
   const stats = useMemo(() => {
@@ -161,6 +165,19 @@ const ProductImages = () => {
                 <SelectItem value="complete">Complete (9/9)</SelectItem>
               </SelectContent>
             </Select>
+            <ToggleGroup
+              type="single"
+              value={viewMode}
+              onValueChange={(value) => value && setViewMode(value as ViewMode)}
+              className="flex-shrink-0"
+            >
+              <ToggleGroupItem value="grid" aria-label="Grid view">
+                <SquaresFour className="h-4 w-4" weight={viewMode === "grid" ? "fill" : "regular"} />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label="List view">
+                <List className="h-4 w-4" weight={viewMode === "list" ? "bold" : "regular"} />
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
 
           {/* Results Count */}
@@ -187,15 +204,23 @@ const ProductImages = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {visibleProducts.map((product) => (
-                  <ProductImageCard
-                    key={product.id}
-                    product={product}
-                    onClick={() => setSelectedProductId(product.id)}
-                  />
-                ))}
-              </div>
+              {viewMode === "grid" ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {visibleProducts.map((product) => (
+                    <ProductImageCard
+                      key={product.id}
+                      product={product}
+                      onClick={() => setSelectedProductId(product.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <ProductImageListView
+                  products={visibleProducts}
+                  onUploadClick={(id) => setSelectedProductId(id)}
+                  maxImages={MAX_ADDITIONAL + 1}
+                />
+              )}
 
               {hasMore && (
                 <div className="flex justify-center pt-4">
