@@ -10,8 +10,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { hasAdminAccess } from "@/lib/permissions";
 import type { Database } from "@/integrations/supabase/types";
+import { GoogleLogo } from "@phosphor-icons/react";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -20,9 +22,27 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { signIn } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    
+    if (error) {
+      setIsGoogleLoading(false);
+      toast({
+        title: "Google Sign In Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+    // If no error, the user will be redirected to Google, then back
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +111,30 @@ const Login = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleGoogleSignIn}
+                disabled={isLoading || isGoogleLoading}
+              >
+                {isGoogleLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <GoogleLogo weight="bold" className="mr-2 h-4 w-4" />
+                )}
+                Continue with Google
+              </Button>
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+                </div>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
@@ -100,7 +144,7 @@ const Login = () => {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isLoading || isGoogleLoading}
                     required
                   />
                 </div>
@@ -114,7 +158,7 @@ const Login = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      disabled={isLoading}
+                      disabled={isLoading || isGoogleLoading}
                       required
                     />
                     <Button
@@ -137,7 +181,7 @@ const Login = () => {
                   type="submit"
                   variant="hero"
                   className="w-full"
-                  disabled={isLoading}
+                  disabled={isLoading || isGoogleLoading}
                 >
                   {isLoading ? (
                     <>
