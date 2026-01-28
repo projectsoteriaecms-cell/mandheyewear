@@ -509,6 +509,45 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          metadata: Json | null
+          read: boolean
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message: string
+          metadata?: Json | null
+          read?: boolean
+          read_at?: string | null
+          title: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          metadata?: Json | null
+          read?: boolean
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -1292,6 +1331,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_staff_notification: {
+        Args: {
+          p_link?: string
+          p_message: string
+          p_metadata?: Json
+          p_title: string
+          p_type?: Database["public"]["Enums"]["notification_type"]
+        }
+        Returns: undefined
+      }
+      create_user_notification: {
+        Args: {
+          p_link?: string
+          p_message: string
+          p_metadata?: Json
+          p_title: string
+          p_type?: Database["public"]["Enums"]["notification_type"]
+          p_user_id: string
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1328,6 +1388,15 @@ export type Database = {
         | "other"
         | "cleanser"
         | "packaging"
+      notification_type:
+        | "info"
+        | "warning"
+        | "error"
+        | "success"
+        | "low_stock"
+        | "new_order"
+        | "transfer_request"
+        | "appointment"
       order_status:
         | "pending"
         | "confirmed"
@@ -1513,6 +1582,16 @@ export const Constants = {
         "other",
         "cleanser",
         "packaging",
+      ],
+      notification_type: [
+        "info",
+        "warning",
+        "error",
+        "success",
+        "low_stock",
+        "new_order",
+        "transfer_request",
+        "appointment",
       ],
       order_status: [
         "pending",
