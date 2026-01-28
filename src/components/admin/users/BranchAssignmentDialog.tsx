@@ -120,14 +120,14 @@ export const BranchAssignmentDialog = ({
             is_primary: branchId === primaryBranch && getAssignedCount() === 0,
           }));
           
-          // Use upsert to handle any race conditions
-          const { error } = await supabase
-            .from("branch_assignments")
-            .upsert(newAssignments, { 
-              onConflict: 'user_id,branch_id',
-              ignoreDuplicates: true 
-            });
-          if (error) throw error;
+           // Use upsert to avoid duplicate key crashes when re-assigning
+           // an already-assigned branch (unique: user_id + branch_id).
+           const { error } = await supabase
+             .from("branch_assignments")
+             .upsert(newAssignments, {
+               onConflict: "user_id,branch_id",
+             });
+           if (error) throw error;
         }
       }
 
