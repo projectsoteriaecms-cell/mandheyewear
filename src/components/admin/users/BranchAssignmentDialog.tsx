@@ -84,6 +84,31 @@ export const BranchAssignmentDialog = ({
     return count;
   };
 
+  // Helper to get branch name by ID for error messages
+  const getBranchName = (branchId: string): string => {
+    const branch = branches.find((b) => b.id === branchId);
+    return branch?.name || branchId.slice(0, 8) + "...";
+  };
+
+  // Helper to format Supabase errors with context
+  const formatError = (error: unknown, context: string, branchIds?: string[]): string => {
+    const baseMessage = error instanceof Error ? error.message : String(error);
+    const branchNames = branchIds?.map(getBranchName).join(", ");
+    
+    // Parse common Supabase error patterns
+    if (baseMessage.includes("duplicate key value violates unique constraint")) {
+      return `Duplicate assignment error: User is already assigned to ${branchNames || "one of the selected branches"}. Try refreshing the page.`;
+    }
+    if (baseMessage.includes("violates row-level security policy")) {
+      return `Permission denied: You don't have permission to ${context}. Contact a Super Admin.`;
+    }
+    if (baseMessage.includes("violates foreign key constraint")) {
+      return `Invalid reference: The branch ${branchNames || "selected"} may have been deleted.`;
+    }
+    
+    return `${context} failed${branchNames ? ` for ${branchNames}` : ""}: ${baseMessage}`;
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       // Re-check existing assignments at save time to avoid duplicate-key errors
@@ -93,7 +118,9 @@ export const BranchAssignmentDialog = ({
         .select("branch_id")
         .eq("user_id", userId);
 
-      if (existingError) throw existingError;
+      if (existingError) {
+        throw new Error(formatError(existingError, "Fetching current assignments"));
+      }
 
       const existingAssigned = new Set((existingNow ?? []).map((r) => r.branch_id));
 
@@ -116,7 +143,9 @@ export const BranchAssignmentDialog = ({
           .delete()
           .eq("user_id", userId)
           .in("branch_id", toRemove);
-        if (error) throw error;
+        if (error) {
+          throw new Error(formatError(error, "Removing branch assignments", toRemove));
+        }
       }
 
       // Add newly assigned branches (only if not already assigned)
@@ -131,43 +160,65 @@ export const BranchAssignmentDialog = ({
             is_primary: branchId === primaryBranch && getAssignedCount() === 0,
           }));
           
-           // Use upsert to avoid duplicate key crashes when re-assigning
-           // an already-assigned branch (unique: user_id + branch_id).
-           const { error } = await supabase
-             .from("branch_assignments")
-             .upsert(newAssignments, {
-               onConflict: "user_id,branch_id",
+          // Use upsert to avoid duplicate key crashes when re-assigning
+          // an already-assigned branch (unique: user_id + branch_id).
+          const { error } = await supabase
+            .from("branch_assignments")
+            .upsert(newAssignments, {
+              onConflict: "user_id,branch_id",
               ignoreDuplicates: true,
-             });
-           if (error) throw error;
+            });
+          if (error) {
+            throw new Error(formatError(error, "Adding branch assignments", actuallyNew));
+          }
         }
       }
 
       // Update primary branch if needed
       if (primaryBranch) {
         // First, set all to non-primary
-        await supabase
+        const { error: clearError } = await supabase
           .from("branch_assignments")
           .update({ is_primary: false })
           .eq("user_id", userId);
 
+        if (clearError) {
+          throw new Error(formatError(clearError, "Clearing primary branch"));
+        }
+
         // Then set the primary one
-        await supabase
+        const { error: setPrimaryError } = await supabase
           .from("branch_assignments")
           .update({ is_primary: true })
           .eq("user_id", userId)
           .eq("branch_id", primaryBranch);
+
+        if (setPrimaryError) {
+          throw new Error(formatError(setPrimaryError, "Setting primary branch", [primaryBranch]));
+        }
       }
+
+      // Log success details for debugging
+      console.log("[BranchAssignment] Save completed:", {
+        userId,
+        assigned: toAssign.map(getBranchName),
+        removed: toRemove.map(getBranchName),
+        primaryBranch: primaryBranch ? getBranchName(primaryBranch) : null,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-branch-assignments", userId] });
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["all-branch-assignments"] });
       toast.success("Branch assignments updated successfully");
       setPendingChanges(new Map());
       onOpenChange(false);
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to update branch assignments");
+      console.error("[BranchAssignment] Save failed:", error);
+      toast.error(error.message || "Failed to update branch assignments", {
+        duration: 6000, // Show longer for detailed errors
+      });
     },
   });
 
