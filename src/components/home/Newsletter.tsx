@@ -29,14 +29,18 @@ export const Newsletter = () => {
 
   return (
     <section className="py-24 feature-navy relative overflow-hidden">
-      {/* Decorative elements */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-primary/10 blur-3xl animate-float-slow" />
-      <div className="absolute bottom-0 right-1/4 w-64 h-64 rounded-full bg-accent/10 blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
+      {/* Animated orbit decorative elements */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/10 blur-3xl animate-orbit-slow" />
+      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full bg-accent/10 blur-3xl animate-orbit-reverse" />
+      
+      {/* Additional floating orbs */}
+      <div className="absolute top-20 right-20 w-32 h-32 rounded-full bg-accent/5 blur-2xl animate-float" style={{ animationDelay: '0.5s' }} />
+      <div className="absolute bottom-20 left-20 w-24 h-24 rounded-full bg-primary/5 blur-2xl animate-float-slow" style={{ animationDelay: '1s' }} />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-2xl mx-auto text-center">
-          {/* Icon */}
-          <div className="inline-flex p-4 rounded-2xl bg-white/5 border border-white/10 mb-8 animate-fade-in-up">
+          {/* Icon with glow */}
+          <div className="inline-flex p-4 rounded-2xl bg-white/5 border border-white/10 mb-8 animate-fade-in-up shadow-glow-accent">
             <Envelope weight="duotone" className="h-8 w-8 text-accent" />
           </div>
 
@@ -58,7 +62,7 @@ export const Newsletter = () => {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-14 pl-5 pr-5 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-accent focus:ring-accent/20 focus-glow rounded-xl transition-all"
+                className="h-14 pl-5 pr-5 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-accent focus:ring-accent/20 focus-glow rounded-xl transition-all hover:bg-white/10"
                 required
               />
             </div>
@@ -66,7 +70,7 @@ export const Newsletter = () => {
               type="submit" 
               size="lg" 
               disabled={isSubmitting} 
-              className="h-14 px-8 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl font-semibold shadow-float hover:scale-105 transition-all relative overflow-hidden"
+              className="h-14 px-8 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl font-semibold shadow-gold hover:shadow-glow-accent hover:scale-105 transition-all relative overflow-hidden"
             >
               {isSubmitting ? (
                 "Subscribing..."
@@ -80,20 +84,20 @@ export const Newsletter = () => {
             </Button>
           </form>
 
-          {/* Privacy Note with perks */}
+          {/* Privacy Note with perks - enhanced animations */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-white/50 text-sm animate-fade-in-up stagger-delay-4">
-            <div className="flex items-center gap-2 hover:text-white/70 transition-colors">
-              <Sparkle weight="fill" className="h-4 w-4 text-accent animate-pulse-soft" />
+            <div className="flex items-center gap-2 hover:text-white/70 transition-colors cursor-default group">
+              <Sparkle weight="fill" className="h-4 w-4 text-accent group-hover:animate-glow-pulse" />
               <span>Exclusive offers</span>
             </div>
-            <span className="hidden sm:inline">•</span>
-            <div className="flex items-center gap-2 hover:text-white/70 transition-colors">
-              <Sparkle weight="fill" className="h-4 w-4 text-accent animate-pulse-soft" style={{ animationDelay: '0.3s' }} />
+            <span className="hidden sm:inline text-white/30">•</span>
+            <div className="flex items-center gap-2 hover:text-white/70 transition-colors cursor-default group">
+              <Sparkle weight="fill" className="h-4 w-4 text-accent group-hover:animate-glow-pulse" style={{ animationDelay: '0.3s' }} />
               <span>Early access</span>
             </div>
-            <span className="hidden sm:inline">•</span>
-            <div className="flex items-center gap-2 hover:text-white/70 transition-colors">
-              <Sparkle weight="fill" className="h-4 w-4 text-accent animate-pulse-soft" style={{ animationDelay: '0.6s' }} />
+            <span className="hidden sm:inline text-white/30">•</span>
+            <div className="flex items-center gap-2 hover:text-white/70 transition-colors cursor-default group">
+              <Sparkle weight="fill" className="h-4 w-4 text-accent group-hover:animate-glow-pulse" style={{ animationDelay: '0.6s' }} />
               <span>Unsubscribe anytime</span>
             </div>
           </div>

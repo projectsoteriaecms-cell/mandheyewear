@@ -69,10 +69,18 @@ All colors MUST be HSL.
     --shadow-gold: 0 8px 24px -4px hsl(45 100% 45% / 0.3);
     --shadow-float: 0 20px 40px -12px hsl(220 50% 10% / 0.4);
     --shadow-card-hover: 0 24px 48px -12px hsl(220 50% 10% / 0.25);
+    --shadow-glow-accent: 0 0 30px -5px hsl(45 100% 45% / 0.4);
+    --shadow-glow-primary: 0 0 30px -5px hsl(210 85% 40% / 0.4);
+
+    /* Animation Easing */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --ease-expo-out: cubic-bezier(0.19, 1, 0.22, 1);
 
     /* Transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .dark {
@@ -116,6 +124,10 @@ All colors MUST be HSL.
     --destructive: 0 72% 55%;
     --destructive-foreground: 210 20% 95%;
 
+    /* Enhanced shadows for dark mode */
+    --shadow-glow-accent: 0 0 40px -5px hsl(45 100% 55% / 0.5);
+    --shadow-glow-primary: 0 0 40px -5px hsl(210 90% 60% / 0.5);
+
     /* Gradients - Dark Mode */
     --gradient-hero: linear-gradient(135deg, hsl(210 50% 20%) 0%, hsl(220 25% 8%) 100%);
     --gradient-gold: linear-gradient(135deg, hsl(45 80% 35%) 0%, hsl(45 60% 20%) 100%);
@@ -156,6 +168,7 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Gradient utilities */
   .gradient-hero {
     background: var(--gradient-hero);
   }
@@ -176,6 +189,7 @@ All colors MUST be HSL.
     background: var(--gradient-navy-radial);
   }
 
+  /* Shadow utilities */
   .shadow-elegant {
     box-shadow: var(--shadow-lg);
   }
@@ -192,6 +206,15 @@ All colors MUST be HSL.
     box-shadow: var(--shadow-card-hover);
   }
 
+  .shadow-glow-accent {
+    box-shadow: var(--shadow-glow-accent);
+  }
+
+  .shadow-glow-primary {
+    box-shadow: var(--shadow-glow-primary);
+  }
+
+  /* Transition utilities */
   .transition-smooth {
     transition: var(--transition-smooth);
   }
@@ -210,28 +233,73 @@ All colors MUST be HSL.
     border-color: hsl(var(--feature-border));
   }
 
+  /* Text shadow utilities for contrast */
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
+  }
+
+  .text-shadow-md {
+    text-shadow: 0 2px 4px hsl(0 0% 0% / 0.4);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px hsl(0 0% 0% / 0.5);
+  }
+
+  /* 3D Transform utilities */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .perspective-1500 {
+    perspective: 1500px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
   /* Animation stagger delays */
   .stagger-delay-1 { animation-delay: 0.1s; opacity: 0; }
   .stagger-delay-2 { animation-delay: 0.2s; opacity: 0; }
   .stagger-delay-3 { animation-delay: 0.3s; opacity: 0; }
   .stagger-delay-4 { animation-delay: 0.4s; opacity: 0; }
   .stagger-delay-5 { animation-delay: 0.5s; opacity: 0; }
+  .stagger-delay-6 { animation-delay: 0.6s; opacity: 0; }
 
-  /* Hover lift effect */
+  /* Hover lift effect - enhanced */
   .hover-lift {
-    @apply transition-all duration-300;
+    @apply transition-all duration-500;
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .hover-lift:hover {
-    @apply -translate-y-1;
-    box-shadow: var(--shadow-float);
+    @apply -translate-y-2;
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  /* 3D Card tilt effect */
+  .hover-tilt {
+    @apply transition-transform duration-300;
+    transform-style: preserve-3d;
+  }
+  .hover-tilt:hover {
+    transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) translateY(-8px);
   }
 
   /* Hover glow effect */
   .hover-glow {
-    @apply transition-shadow duration-300;
+    @apply transition-all duration-300;
   }
   .hover-glow:hover {
-    box-shadow: 0 0 24px hsl(var(--primary) / 0.25);
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.25);
+  }
+
+  .hover-glow-accent:hover {
+    box-shadow: var(--shadow-glow-accent);
   }
 
   /* Shimmer background for buttons */
@@ -252,14 +320,129 @@ All colors MUST be HSL.
     box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
   }
 
+  /* Glassmorphism utilities */
+  .glass {
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .glass-dark {
+    background: hsl(var(--foreground) / 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--foreground) / 0.1);
+  }
+
+  .glass-accent {
+    background: hsl(var(--accent) / 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--accent) / 0.2);
+  }
+
+  /* Scroll reveal animation helpers */
+  .reveal-hidden {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), 
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Magnetic button effect base */
+  .magnetic-hover {
+    @apply transition-transform duration-200;
+  }
+
+  /* Gradient mask for text reveal */
+  .gradient-mask-reveal {
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  }
+
+  .gradient-mask-visible {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    transition: clip-path 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Scan line animation for AI features */
+  .scan-line::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary)), transparent);
+    animation: scan-line 2.5s ease-in-out infinite;
+  }
+
+  /* Card hover 3D depth */
+  .card-3d-hover {
+    @apply transition-all duration-500;
+    transform-style: preserve-3d;
+  }
+  .card-3d-hover:hover {
+    transform: perspective(1000px) rotateX(3deg) rotateY(-3deg) translateZ(20px);
+    box-shadow: 
+      0 25px 50px -12px hsl(0 0% 0% / 0.25),
+      0 0 0 1px hsl(var(--primary) / 0.1);
+  }
+
+  /* Badge glow animation */
+  .badge-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Arrow button with gold accent */
+  .arrow-button-accent {
+    @apply bg-accent text-accent-foreground;
+    box-shadow: 0 4px 12px hsl(var(--accent) / 0.3);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .arrow-button-accent:hover {
+    @apply scale-110;
+    box-shadow: var(--shadow-glow-accent);
+  }
+
   /* Appear animation helper - for intersection observer */
   .appear {
     opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transform: translateY(30px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), 
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .appear.visible {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .stagger-delay-1,
+    .stagger-delay-2,
+    .stagger-delay-3,
+    .stagger-delay-4,
+    .stagger-delay-5,
+    .stagger-delay-6 {
+      animation-delay: 0s;
+      opacity: 1;
+    }
+
+    .hover-lift:hover,
+    .hover-tilt:hover,
+    .card-3d-hover:hover {
+      transform: none;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
