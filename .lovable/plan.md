@@ -1,104 +1,115 @@
 
-# Stock Update from ECMS Inventory Report
+# Product Images Manager Page
 
 ## Overview
 
-The uploaded `InventoryReport_11.xlsx` contains the actual stock quantities for all products in the ECMS system. This data needs to be used to update the inventory records that were previously initialized to zero.
+Create a dedicated admin page for managing product images with a visual grid interface showing all products and their image upload status. This page will provide quick inline upload capabilities, making it easy to see which products need images and upload them efficiently.
 
 ---
 
 ## Current State Analysis
 
-| Metric | Value |
-|--------|-------|
-| Total products in database | 1,272 |
-| Products with `external_id` (from import) | 1,250 |
-| Current inventory records | 1,360 |
-| Current total stock units | 1,144 (pre-existing demo data) |
-| Excel total stock units | **291,659** (actual from report) |
-
-### Excel File Structure
-
-| Column | Field | Example |
-|--------|-------|---------|
-| 1 (ProductId) | `external_id` match key | `2`, `403`, `346` |
-| 4 (Item Description) | Product name | `Frame : OAKLEY...` |
-| 7 (Sales Price) | Price | `N221,000.00` |
-| 8 (Qty) | **Stock quantity** | `0`, `8`, `2`, `199` |
-| 9 (Unit) | Unit type | `Frame`, `Bottle`, `Item` |
+| Component | Status |
+|-----------|--------|
+| `useAdminProducts` hook | Exists - fetches all products with image data |
+| `useProductImageUpload` hook | Exists - handles single/bulk image uploads |
+| `ProductImageUpload` component | Exists - drag-and-drop for single product |
+| `BulkImageUploadDialog` | Exists - SKU-based bulk upload |
+| Product schema | Has `image_url` (primary) and `additional_images` (array) |
 
 ---
 
 ## Implementation Plan
 
-### Phase 1: Create Bulk Stock Import Feature
+### Phase 1: Create the Product Images Manager Page
 
-**New File: `src/modules/inventory/hooks/useBulkStockUpdate.ts`**
+**New File: `src/pages/admin/ProductImages.tsx`**
 
-A new hook to handle parsing and updating stock from Excel files:
+A dedicated page with:
+- Visual grid layout showing product thumbnails
+- Upload status indicators (has images / missing images)
+- Quick filter options (all, with images, without images)
+- Search by product name or SKU
+- Inline upload via click or drag-and-drop on each product card
 
-```text
-Features:
-- Parse XLSX file and extract ProductId → Qty mapping
-- Match ProductId to products.external_id
-- Update inventory.quantity_on_hand for each match
-- Track progress with success/failure counts
-- Handle negative quantities (set to 0 with warning)
-- Create inventory_transaction records for audit trail
-```
+### Phase 2: Create Product Image Card Component
 
-### Phase 2: UI Integration
+**New File: `src/components/admin/products/ProductImageCard.tsx`**
 
-**New File: `src/components/admin/inventory/BulkStockImportDialog.tsx`**
+A reusable card component for each product:
+- Shows product thumbnail or placeholder icon
+- Displays product name and SKU
+- Shows image count badge (e.g., "3/5 images")
+- Hover state reveals upload button
+- Direct drag-and-drop zone for quick upload
+- Click to open detailed image management modal
 
-A dialog component for the bulk stock update:
+### Phase 3: Create Quick Image Upload Modal
 
-```text
-Features:
-- File upload for Excel/CSV
-- Preview of detected stock quantities
-- Branch selector (which branch to update)
-- Confirmation step showing affected records
-- Progress indicator during update
-- Summary of results
-```
+**New File: `src/components/admin/products/QuickImageUploadModal.tsx`**
 
-**Modify: `src/pages/admin/Inventory.tsx`**
+A focused modal for single product image management:
+- Large preview of current images
+- Drag-and-drop zone for new images
+- Ability to set primary image
+- Delete individual images
+- Reorder additional images
 
-Add "Import Stock Levels" button in the header actions.
+### Phase 4: Add Route and Navigation
 
-### Phase 3: Backend Processing Logic
+**Modify: `src/routes/admin.routes.tsx`**
+- Add route for `/admin/products/images`
 
-The update logic will:
-
-1. **Parse Excel**: Extract `ProductId` and `Qty` columns
-2. **Match products**: Join on `products.external_id = Excel.ProductId`
-3. **Batch update**: Update inventory in chunks of 50 to avoid timeouts
-4. **Audit trail**: Record each change as an `inventory_transaction` with type `count` (stock count adjustment)
-5. **Handle edge cases**:
-   - Negative quantities (4 found in Excel) → Set to 0, log warning
-   - Missing products → Skip with error log
-   - Missing inventory record → Create new record
+**Modify: `src/shared/components/admin/sidebar/nav-config.ts`**
+- Add "Product Images" as child under Products navigation
 
 ---
 
-## Data Mapping Details
+## UI Design Details
 
-From the Excel analysis:
+### Grid Layout
 
 ```text
-Products with stock > 0: ~300+ items
-Products with stock = 0: ~900+ items  
-Products with negative stock: 4 items (lens types with -1 to -3)
++--------------------------------------------------+
+|  Product Images Manager                          |
+|  "Manage product images for your catalog"        |
++--------------------------------------------------+
+|                                                  |
+| [Search...] [Filter: All ▼] [Sort: Name ▼]       |
+|                                                  |
+| Stats: 1,272 products | 45 with images | 1,227   |
+|        missing images                            |
++--------------------------------------------------+
+|                                                  |
+| +--------+  +--------+  +--------+  +--------+   |
+| | [img]  |  | [icon] |  | [img]  |  | [icon] |   |
+| | Name   |  | Name   |  | Name   |  | Name   |   |
+| | SKU    |  | SKU    |  | SKU    |  | SKU    |   |
+| | 3/5    |  | 0/5    |  | 1/5    |  | 0/5    |   |
+| +--------+  +--------+  +--------+  +--------+   |
+|                                                  |
+| +--------+  +--------+  +--------+  +--------+   |
+| | ...    |  | ...    |  | ...    |  | ...    |   |
+| +--------+  +--------+  +--------+  +--------+   |
+|                                                  |
+| [Show more]                                      |
++--------------------------------------------------+
 ```
 
-Sample matches verified:
-| Excel ProductId | Database external_id | Match | Excel Qty |
-|-----------------|----------------------|-------|-----------|
-| 2 | ✓ Found | OAKLEY OPTICAL... | 0 |
-| 403 | ✓ Found | DEW DROPS... | 8 |
-| 346 | ✓ Found | MACRUONA TM5030A... | 2 |
-| 1785 | ✓ Found | MATROPIN DROPS | 199 |
+### Product Image Card States
+
+1. **No Images**: Gray placeholder icon, upload prompt visible
+2. **Has Primary Only**: Shows primary thumbnail, badge "1/5"
+3. **Has Multiple**: Shows primary thumbnail, badge "X/5"
+4. **Full Set**: Green checkmark badge, all slots filled
+
+### Upload Flow
+
+1. Click card OR drag image onto card
+2. Quick upload modal opens with product details
+3. Drag-and-drop or click to select files
+4. Images upload with progress indicator
+5. Modal auto-closes on success (or stays open for more uploads)
 
 ---
 
@@ -106,97 +117,69 @@ Sample matches verified:
 
 | File | Action | Purpose |
 |------|--------|---------|
-| `src/modules/inventory/hooks/useBulkStockUpdate.ts` | Create | Core update logic with progress tracking |
-| `src/modules/inventory/hooks/index.ts` | Modify | Export new hook |
-| `src/modules/inventory/index.ts` | Modify | Export new hook |
-| `src/components/admin/inventory/BulkStockImportDialog.tsx` | Create | Upload and preview UI |
-| `src/components/admin/inventory/index.ts` | Create | Component exports |
-| `src/pages/admin/Inventory.tsx` | Modify | Add import button |
+| `src/pages/admin/ProductImages.tsx` | Create | Main page with grid layout |
+| `src/components/admin/products/ProductImageCard.tsx` | Create | Individual product card with upload zone |
+| `src/components/admin/products/QuickImageUploadModal.tsx` | Create | Focused image management modal |
+| `src/routes/admin.routes.tsx` | Modify | Add `/admin/products/images` route |
+| `src/shared/components/admin/sidebar/nav-config.ts` | Modify | Add navigation item |
 
 ---
 
-## Technical Implementation
+## Technical Considerations
 
-### Stock Update Flow
+### Performance Optimizations
 
+- **Virtualized Grid**: Use pagination or infinite scroll for 1,200+ products
+- **Lazy Image Loading**: Load thumbnails as they scroll into view
+- **Batch Operations**: Allow selecting multiple products for bulk operations
+- **Optimistic Updates**: Show upload progress immediately, revert on failure
+
+### Image Stats Query
+
+Efficiently calculate image statistics:
 ```text
-┌─────────────────────┐
-│   Upload Excel      │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Parse ProductId    │
-│  and Qty columns    │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Match to products  │
-│  via external_id    │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Preview changes    │
-│  (show mismatches)  │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Batch update       │
-│  inventory records  │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Create audit       │
-│  transactions       │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Show summary       │
-│  (updated/failed)   │
-└─────────────────────┘
+- Products with image_url set: COUNT WHERE image_url IS NOT NULL
+- Products with additional images: COUNT WHERE additional_images IS NOT NULL AND array_length > 0
+- Total image slots used: SUM of (1 if image_url + array_length of additional_images)
 ```
 
-### Update Query Pattern
+### Filter and Search
 
-For each matched product:
-```text
-1. Get current inventory: SELECT quantity_on_hand FROM inventory 
-   WHERE product_id = ? AND branch_id = ?
-
-2. Update stock: UPDATE inventory 
-   SET quantity_on_hand = [excel_qty], 
-       last_stock_count_date = CURRENT_DATE
-   WHERE product_id = ? AND branch_id = ?
-
-3. Log transaction: INSERT INTO inventory_transactions
-   (branch_id, product_id, transaction_type, quantity_before, 
-    quantity_after, quantity_change, performed_by, notes)
-   VALUES (?, ?, 'count', old_qty, new_qty, delta, user_id, 'Bulk stock import from ECMS')
-```
+- Real-time search filtering on product name and SKU
+- Dropdown filter for image status:
+  - All Products
+  - Missing Primary Image
+  - Missing Additional Images
+  - Complete (5/5 images)
 
 ---
 
 ## Expected Outcome
 
-After running the import:
-
 | Metric | Before | After |
 |--------|--------|-------|
-| Total stock units | 1,144 | ~291,659 |
-| Products with stock > 0 | ~22 | ~300+ |
-| Stock accuracy | 1.7% matched | 100% matched |
+| Time to find products without images | Manual table scroll | Instant filter |
+| Time to upload single product image | Open edit dialog, switch tab | Single click |
+| Visual overview of image coverage | None | Dashboard with stats |
+| Bulk upload for multiple products | Navigate to separate dialog | Drag onto grid |
 
 ---
 
-## Validation & Safety
+## Component Structure
 
-- **Preview before commit**: Show all changes before applying
-- **Audit trail**: Every change logged with before/after values
-- **Rollback capability**: Transaction logs enable manual reversal if needed
-- **Negative handling**: Clamp to 0 with warning notification
-- **Duplicate protection**: Only update, never create duplicate inventory records
+```text
+ProductImages.tsx (Page)
+├── Header with stats
+├── Search + Filter controls
+├── Grid container
+│   └── ProductImageCard.tsx (repeated)
+│       ├── Thumbnail / Placeholder
+│       ├── Product info
+│       ├── Image count badge
+│       └── Upload dropzone
+└── QuickImageUploadModal.tsx
+    ├── Product header
+    ├── Primary image section
+    ├── Additional images grid
+    └── Upload dropzone
+```
