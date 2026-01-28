@@ -1,231 +1,274 @@
 
 
-# Enhanced Animations & Sophisticated Typography Upgrade
+# Personalization & Face Measurement System
 
 ## Overview
 
-This plan adds sophisticated micro-animations across all homepage sections and upgrades the typography system to a more refined, luxury-grade font pairing. The goal is to create a premium, boutique eyewear experience with smooth, polished interactions.
+This plan creates a comprehensive personalization system that captures physical face measurements and style preferences during onboarding, then uses this data to power personalized shopping experiences and generate platform insights.
 
 ---
 
-## Typography Upgrade
+## What We're Building
 
-### Current Fonts
-- **Display**: Playfair Display (serif)
-- **Body**: Outfit (sans-serif)
+### For Customers
 
-### Proposed Font Pairing
+**Smart Onboarding Flow**
+After creating an account, new users will be guided through a personalization journey that includes:
+- Face scanning to capture measurements (face width, pupillary distance, bridge size)
+- Face shape detection (oval, round, square, heart, oblong)
+- Style preference questions (colors, usage, budget)
+- Lifestyle polls that help us understand their needs better
 
-| Role | New Font | Why |
-|------|----------|-----|
-| **Display** | **Cormorant Garamond** | Ultra-elegant, high-contrast serifs with a luxurious French feel. More refined than Playfair, with beautiful italics. Popular with luxury fashion and eyewear brands. |
-| **Body** | **Inter** | Clean, modern geometric sans-serif with excellent readability. Better letter-spacing and optical adjustments than Outfit. |
+**Personalized Shopping**
+Once we have their profile:
+- Products will be scored and ranked by how well they match
+- "Great Fit" and "Style Match" badges will appear on matching frames
+- A dedicated "For You" section shows personalized recommendations
+- Frame fit indicators (narrow, standard, wide) based on actual measurements
 
-### Alternative Options (if you prefer)
-- **DM Serif Display** - Bold, high-impact display font
-- **Libre Baskerville** - Classic book typography
-- **Lora** - Warm, balanced contemporary serif
+### For the Platform
 
-### File Changes
-
-**index.html**
-- Update Google Fonts import to include `Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700`
-
-**tailwind.config.ts**
-- Update `fontFamily.display` to `['Cormorant Garamond', 'serif']`
-- Update `fontFamily.body` to `['Inter', 'sans-serif']`
-
----
-
-## Animation System Expansion
-
-### New Keyframe Animations
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    ANIMATION LIBRARY                        │
-├─────────────────┬───────────────────────────────────────────┤
-│ fade-in-up      │ Slide up + fade (sections on scroll)     │
-│ fade-in-down    │ Slide down + fade (dropdowns/modals)     │
-│ fade-in-left    │ Slide from left + fade                   │
-│ fade-in-right   │ Slide from right + fade                  │
-│ scale-in        │ Zoom in gently (cards on hover)          │
-│ float           │ Subtle floating (hero decorative cards)  │
-│ shimmer         │ Shine effect (CTA buttons)               │
-│ pulse-soft      │ Gentle pulse (badges/highlights)         │
-│ stagger-in      │ Sequential entrance for lists            │
-│ blur-in         │ Blur-to-sharp reveal                     │
-└─────────────────┴───────────────────────────────────────────┘
-```
-
-### Animation Utility Classes
-
-| Class | Effect |
-|-------|--------|
-| `.animate-fade-in-up` | Slide up 20px + fade in |
-| `.animate-float` | Continuous gentle floating |
-| `.animate-shimmer` | Gold/light shimmer on buttons |
-| `.animate-pulse-soft` | Subtle pulse for badges |
-| `.hover-lift` | Lift + shadow on hover |
-| `.hover-glow` | Soft glow effect on hover |
-| `.stagger-delay-1` to `.stagger-delay-5` | Staggered entrance delays |
-
----
-
-## Component Animation Updates
-
-### HeroSection.tsx
-- Add `animate-fade-in-up` to main headline with staggered delays
-- Add `animate-float` to floating testimonial and product cards
-- Add `animate-shimmer` effect to primary CTA button
-- Animate trust indicators with staggered fade-in
-- Add subtle parallax effect to background pattern
-
-### CategoryCards.tsx
-- Add staggered `animate-fade-in-up` to category cards
-- Enhanced hover: lift + shadow + scale
-- Add shimmer overlay on image hover
-- Animate badges with `animate-pulse-soft`
-
-### QuizPromo.tsx
-- Animate benefit list items with staggered entrance
-- Add `hover-lift` to frame style cards
-- Float animation on decorative blur elements
-- CTA button shimmer effect
-
-### FeaturedFrames.tsx
-- Product cards: staggered entrance animation
-- Hover state: image zoom + shadow lift + quick action buttons slide-in
-- Price tag shimmer effect
-- Heart/Eye buttons scale on hover
-
-### VirtualTryOn.tsx
-- Float animation on detection badge and measurement card
-- Pulse animation on "Face detected" indicator
-- Feature pills: hover lift effect
-- CTA button shimmer
-
-### TrustBadges.tsx
-- Staggered card entrance animation
-- Icon container pulse on hover
-- Highlight badges float animation
-- Cards lift on hover
-
-### Newsletter.tsx
-- Decorative blur elements: slow float animation
-- Form input: focus glow effect
-- Submit button: shimmer + scale on hover
-- Perks list: fade-in with stagger
-
-### Footer
-- Links: underline slide animation on hover
-- Social icons: scale + glow on hover
+**Insights Dashboard** (Admin)
+- Aggregate data on popular face shapes, style preferences, budget ranges
+- Trends over time (what styles are gaining popularity)
+- Conversion rates by personalization completion
+- Data to inform inventory and product decisions
 
 ---
 
 ## Technical Implementation
 
-### File: tailwind.config.ts
+### Phase 1: Database Setup
 
-Add new keyframes and animations:
+Create tables to store personalization data and analytics:
 
-```text
-keyframes: {
-  "fade-in-up": {
-    "0%": { opacity: "0", transform: "translateY(20px)" },
-    "100%": { opacity: "1", transform: "translateY(0)" }
-  },
-  "float": {
-    "0%, 100%": { transform: "translateY(0)" },
-    "50%": { transform: "translateY(-10px)" }
-  },
-  "shimmer": {
-    "0%": { backgroundPosition: "-200% 0" },
-    "100%": { backgroundPosition: "200% 0" }
-  },
-  "pulse-soft": {
-    "0%, 100%": { opacity: "1" },
-    "50%": { opacity: "0.7" }
-  },
-  "blur-in": {
-    "0%": { opacity: "0", filter: "blur(10px)" },
-    "100%": { opacity: "1", filter: "blur(0)" }
-  }
-}
+| Table | Purpose |
+|-------|---------|
+| `user_measurements` | Store face scan results with timestamps |
+| `style_polls` | Define poll questions for collecting preferences |
+| `poll_responses` | Store user responses for analytics |
+| `personalization_analytics` | Aggregate insights for admin dashboard |
 
-animation: {
-  "fade-in-up": "fade-in-up 0.6s ease-out forwards",
-  "float": "float 3s ease-in-out infinite",
-  "shimmer": "shimmer 2s linear infinite",
-  "pulse-soft": "pulse-soft 2s ease-in-out infinite",
-  "blur-in": "blur-in 0.8s ease-out forwards"
-}
-```
+**Face Dimensions Structure** (stored in profiles.face_dimensions):
+- Face Width (mm)
+- Pupillary Distance / PD (mm)
+- Bridge Width (mm)
+- Temple-to-Temple Width (mm)
+- Face Shape (detected)
+- Confidence Score
+- Scan Date
 
-### File: src/index.css
+### Phase 2: Onboarding Flow
 
-Add animation delay utilities and hover effects:
+Create a multi-step wizard that appears after account creation:
 
 ```text
-.stagger-delay-1 { animation-delay: 0.1s; }
-.stagger-delay-2 { animation-delay: 0.2s; }
-.stagger-delay-3 { animation-delay: 0.3s; }
-.stagger-delay-4 { animation-delay: 0.4s; }
-.stagger-delay-5 { animation-delay: 0.5s; }
-
-.hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-float);
-}
-
-.hover-glow:hover {
-  box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
-}
-
-.animate-shimmer-bg {
-  background: linear-gradient(
-    90deg, 
-    transparent 0%, 
-    hsl(var(--accent) / 0.1) 50%, 
-    transparent 100%
-  );
-  background-size: 200% 100%;
-}
+Step 1: Welcome
+   "Let's personalize your experience"
+   ↓
+Step 2: Face Scan (Optional)
+   Camera access → AI detects landmarks → Calculate measurements
+   OR Skip for manual selection
+   ↓
+Step 3: Style Quiz (Existing, Enhanced)
+   Face shape, frame styles, colors
+   ↓
+Step 4: Lifestyle Poll
+   "What's most important to you?" (Comfort/Style/Durability/Price)
+   "How often do you change glasses?"
+   ↓
+Step 5: Complete
+   Show profile summary, redirect to recommendations
 ```
+
+### Phase 3: Face Scanning Technology
+
+**Approach: AI-Powered Analysis via Lovable AI**
+
+Instead of running heavy TensorFlow models in the browser, we'll:
+1. User uploads/captures a front-facing photo
+2. Send image to an edge function
+3. Edge function uses Lovable AI (Gemini with vision) to:
+   - Detect face landmarks
+   - Estimate face shape
+   - Calculate proportional measurements
+4. Return structured data to save in profile
+
+**Why this approach?**
+- No heavy client-side libraries (TensorFlow.js is 5MB+)
+- More accurate than browser-based models
+- Easier to improve and iterate
+- Works consistently across devices
+
+**Measurement Calculation:**
+Using reference points (standard iris diameter ~11.7mm), the AI can estimate:
+- Face width from temple-to-temple landmarks
+- PD from pupil centers
+- Bridge width from nose bridge landmarks
+
+### Phase 4: Personalization Engine
+
+Create a scoring algorithm that matches users to products:
+
+**Match Scoring (0-100 points):**
+
+| Factor | Points | Logic |
+|--------|--------|-------|
+| Frame Width Fit | 25 | User face width matches product frame_width |
+| Bridge Fit | 15 | User bridge measurement matches product bridge_size |
+| Style Match | 20 | User's preferred styles contain product style |
+| Color Match | 20 | User's preferred colors contain product color |
+| Budget Match | 20 | Product price tier matches user budget |
+
+**Fit Recommendations:**
+- "Perfect Fit" - Frame width within 2mm of face width
+- "Good Fit" - Frame width within 5mm
+- "Narrow Fit" - Frame is smaller than ideal
+- "Wide Fit" - Frame is larger than ideal
+
+### Phase 5: Enhanced UI Components
+
+**Product Cards:**
+- Add "Great Match 95%" badge for high-scoring products
+- Show fit indicator icon (checkmark for good fit)
+- Highlight matching attributes on hover
+
+**Eyewear Page:**
+- New "Recommended for You" section at top
+- Toggle: "All Products" | "For You"
+- Filter by fit type (Narrow/Standard/Wide)
+
+**Dashboard - Frame Profile:**
+- Show face scan results with visual diagram
+- Display all measurements with edit option
+- Show fit statistics (what % of catalog fits)
+
+### Phase 6: Polls & Ongoing Data Collection
+
+Periodic polls to gather insights:
+- In-app prompts after key actions (purchase, browse)
+- "Quick poll" widget in dashboard
+- Email surveys for engagement
+
+Poll data structure:
+- Question text and type (single/multi select)
+- Response options
+- Timestamps and user attribution
+- Analytics aggregation
+
+### Phase 7: Admin Insights Dashboard
+
+New section in Admin Reports:
+
+**Personalization Analytics:**
+- % of users with complete profiles
+- Most common face shapes (pie chart)
+- Popular style preferences (bar chart)
+- Budget distribution
+- Poll response summaries
+
+**Recommendation Performance:**
+- Conversion rate: personalized vs non-personalized users
+- Most recommended products
+- Fit match accuracy feedback
 
 ---
+
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/components/onboarding/OnboardingWizard.tsx` | Main onboarding flow container |
+| `src/components/onboarding/WelcomeStep.tsx` | Introduction screen |
+| `src/components/onboarding/FaceScanStep.tsx` | Camera/upload for face measurement |
+| `src/components/onboarding/StyleQuizStep.tsx` | Embedded style quiz |
+| `src/components/onboarding/LifestylePollStep.tsx` | Poll questions |
+| `src/components/onboarding/CompleteStep.tsx` | Summary and CTA |
+| `src/hooks/useFaceMeasurement.ts` | Hook for face scan logic |
+| `src/hooks/usePersonalizedProducts.ts` | Scoring and matching logic |
+| `src/hooks/useStylePolls.ts` | Poll fetching and responses |
+| `src/pages/Onboarding.tsx` | Onboarding page route |
+| `supabase/functions/analyze-face/index.ts` | Edge function for AI face analysis |
+| `src/components/eyewear/MatchBadge.tsx` | Visual match indicator |
+| `src/components/eyewear/FitIndicator.tsx` | Fit size indicator |
+| `src/components/admin/reports/PersonalizationInsights.tsx` | Admin analytics |
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `index.html` | Update Google Fonts import |
-| `tailwind.config.ts` | Add font families, keyframes, animations |
-| `src/index.css` | Add animation utilities, hover effects |
-| `src/components/home/HeroSection.tsx` | Add animations to elements |
-| `src/components/home/CategoryCards.tsx` | Staggered card animations |
-| `src/components/home/QuizPromo.tsx` | Benefit list + card animations |
-| `src/components/home/VirtualTryOn.tsx` | Float + pulse animations |
-| `src/components/home/TrustBadges.tsx` | Card entrance animations |
-| `src/components/home/Newsletter.tsx` | Float + form animations |
-| `src/components/storefront/FeaturedFrames.tsx` | Product card animations |
-| `src/pages/Index.tsx` | Fix Lucide import (Sparkles → Sparkle) |
+| `src/pages/Signup.tsx` | Redirect to onboarding after signup |
+| `src/pages/TryOn.tsx` | Integrate face scanning with measurement capture |
+| `src/components/dashboard/FrameProfileSection.tsx` | Display real measurements |
+| `src/components/eyewear/ProductCard.tsx` | Add match badge and fit indicator |
+| `src/pages/Eyewear.tsx` | Add "For You" section and personalization toggle |
+| `src/routes/public.routes.tsx` | Add `/onboarding` route |
+| `src/pages/admin/Reports.tsx` | Add personalization insights section |
 
 ---
 
-## Visual Impact Summary
+## User Journey Summary
 
-| Before | After |
-|--------|-------|
-| Static page load | Smooth cascading entrance animations |
-| Basic hover states | Lift, glow, shimmer effects |
-| Playfair Display font | Cormorant Garamond (more refined) |
-| Outfit body font | Inter (better readability) |
-| Static floating cards | Gentle continuous floating |
-| Plain CTA buttons | Shimmer effect on hover |
+```text
+New User Signs Up
+       ↓
+Redirected to Onboarding Wizard
+       ↓
+[Optional] Scan Face → Get Measurements
+       ↓
+Complete Style Quiz
+       ↓
+Answer Lifestyle Poll
+       ↓
+Profile Complete → See Recommendations
+       ↓
+Browse Eyewear with Personalized Badges
+       ↓
+Periodic Polls Gather More Insights
+       ↓
+Admin Sees Aggregate Analytics
+```
 
-This will give the website that polished, luxury boutique feel with smooth, sophisticated interactions that match the premium "Optics Elevation" visual style.
+---
+
+## Data Flow Diagram
+
+```text
+┌─────────────────┐     ┌──────────────────┐     ┌────────────────┐
+│   Face Photo    │────▶│  Edge Function   │────▶│ profiles table │
+│  (Camera/Upload)│     │  (Lovable AI)    │     │ face_dimensions│
+└─────────────────┘     └──────────────────┘     └────────────────┘
+                                                         │
+┌─────────────────┐     ┌──────────────────┐             │
+│   Style Quiz    │────▶│ profiles table   │◀────────────┘
+│   Responses     │     │ frame_preferences│
+└─────────────────┘     └──────────────────┘
+                                 │
+                                 ▼
+                        ┌──────────────────┐
+                        │ Personalization  │
+                        │ Scoring Engine   │
+                        └────────┬─────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              ▼                  ▼                  ▼
+       ┌────────────┐    ┌─────────────┐    ┌─────────────┐
+       │ Match Badges│   │ For You     │    │ Fit         │
+       │ on Products │   │ Section     │    │ Indicators  │
+       └────────────┘    └─────────────┘    └─────────────┘
+```
+
+---
+
+## Implementation Priority
+
+1. **Database migrations** - Create tables for measurements and polls
+2. **Onboarding wizard** - Core multi-step flow
+3. **Face scanning edge function** - AI-powered measurement
+4. **Personalization hook** - Product scoring logic
+5. **UI enhancements** - Badges, indicators, "For You" section
+6. **Admin insights** - Analytics dashboard
+7. **Polls system** - Ongoing data collection
+
+This creates a complete personalization ecosystem that improves with every user interaction while respecting privacy (all processing happens via secure backend, no external tracking).
 
