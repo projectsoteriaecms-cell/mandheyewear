@@ -28,6 +28,8 @@ import {
   MoreHorizontal,
   Edit,
   Building2,
+  UserCheck,
+  UserX,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,6 +58,7 @@ import type { Database } from "@/integrations/supabase/types";
 type AppRole = Database["public"]["Enums"]["app_role"];
 
 const roleLabels: Record<AppRole, string> = {
+  user: "User (Unverified)",
   customer: "Customer",
   branch_staff: "Branch Staff",
   branch_manager: "Branch Manager",
@@ -63,8 +66,9 @@ const roleLabels: Record<AppRole, string> = {
 };
 
 const roleBadgeVariants: Record<AppRole, "default" | "secondary" | "destructive" | "outline"> = {
-  customer: "outline",
-  branch_staff: "secondary",
+  user: "outline",
+  customer: "secondary",
+  branch_staff: "default",
   branch_manager: "default",
   super_admin: "destructive",
 };
@@ -151,7 +155,10 @@ const AdminUsers = () => {
     },
   });
 
-  const filteredUsers = users.filter((user) => {
+  // Filter out super_admin from the list, then apply other filters
+  const visibleUsers = users.filter((user) => user.role !== "super_admin");
+  
+  const filteredUsers = visibleUsers.filter((user) => {
     const profile = user.profile as any;
     const matchesSearch =
       (profile?.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -165,6 +172,15 @@ const AdminUsers = () => {
       updateRole.mutate({ userId: editingUser.id, role: newRole });
     }
   };
+
+  const handleVerifyUser = (userId: string) => {
+    updateRole.mutate({ userId, role: "customer" });
+  };
+
+  // Calculate stats excluding super_admin
+  const staffCount = visibleUsers.filter((u) => u.role === "branch_staff" || u.role === "branch_manager").length;
+  const customerCount = visibleUsers.filter((u) => u.role === "customer").length;
+  const unverifiedCount = visibleUsers.filter((u) => u.role === "user").length;
 
   return (
     <RoleGuard allowedRoles={["super_admin"]}>
@@ -184,52 +200,42 @@ const AdminUsers = () => {
           </Button>
         </div>
 
-        {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
+        {/* Stats - Updated to show Staff, Verified Customers, Unverified Users */}
+        <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Users
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{users.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Super Admins
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">
-                {users.filter((u) => u.role === "super_admin").length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Shield className="h-4 w-4" />
                 Staff Members
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">
-                {users.filter((u) => u.role === "branch_staff" || u.role === "branch_manager").length}
-              </p>
+              <p className="text-2xl font-bold">{staffCount}</p>
+              <p className="text-xs text-muted-foreground">Managers & Staff</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Customers
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <UserCheck className="h-4 w-4" />
+                Verified Customers
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">
-                {users.filter((u) => u.role === "customer").length}
-              </p>
+              <p className="text-2xl font-bold">{customerCount}</p>
+              <p className="text-xs text-muted-foreground">Can purchase & book</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <UserX className="h-4 w-4" />
+                Unverified Users
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{unverifiedCount}</p>
+              <p className="text-xs text-muted-foreground">Browse only</p>
             </CardContent>
           </Card>
         </div>
@@ -248,15 +254,15 @@ const AdminUsers = () => {
                 />
               </div>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[200px]">
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="super_admin">Super Admin</SelectItem>
-                  <SelectItem value="branch_manager">Branch Manager</SelectItem>
+                  <SelectItem value="all">All Users</SelectItem>
+                  <SelectItem value="branch_manager">Branch Managers</SelectItem>
                   <SelectItem value="branch_staff">Branch Staff</SelectItem>
-                  <SelectItem value="customer">Customer</SelectItem>
+                  <SelectItem value="customer">Customers (Verified)</SelectItem>
+                  <SelectItem value="user">Users (Unverified)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -300,13 +306,16 @@ const AdminUsers = () => {
                       const profile = user.profile as any;
                       const userBranches = branchAssignmentsByUser[user.user_id] || [];
                       const isStaffOrManager = isAtLeast(user.role, "branch_staff") && user.role !== "super_admin";
+                      const isUnverified = user.role === "user";
                       
                       return (
                         <TableRow key={user.id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Users className="h-5 w-5 text-primary" />
+                              <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                                isUnverified ? "bg-muted" : "bg-primary/10"
+                              }`}>
+                                <Users className={`h-5 w-5 ${isUnverified ? "text-muted-foreground" : "text-primary"}`} />
                               </div>
                               <div>
                                 <p className="font-medium">
@@ -320,7 +329,7 @@ const AdminUsers = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={roleBadgeVariants[user.role]}>
+                            <Badge variant={roleBadgeVariants[user.role]} className={isUnverified ? "border-dashed" : ""}>
                               <Shield className="mr-1 h-3 w-3" />
                               {roleLabels[user.role]}
                             </Badge>
@@ -370,6 +379,18 @@ const AdminUsers = () => {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                  {isUnverified && (
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() => handleVerifyUser(user.user_id)}
+                                        className="text-green-600"
+                                      >
+                                        <UserCheck className="mr-2 h-4 w-4" />
+                                        Verify User
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                    </>
+                                  )}
                                   <DropdownMenuItem
                                     onClick={() => {
                                       setEditingUser({
@@ -446,27 +467,31 @@ const AdminUsers = () => {
               </Button>
               <Button 
                 onClick={handleUpdateRole} 
-                disabled={updateRole.isPending || !canChangeUserRole(currentUserRole ?? null, editingUser?.role ?? "customer", newRole)}
+                disabled={updateRole.isPending}
               >
-                Update Role
+                {updateRole.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      <InviteUserDialog 
-        open={inviteDialogOpen} 
-        onOpenChange={setInviteDialogOpen} 
+      {/* Invite User Dialog */}
+      <InviteUserDialog
+        open={inviteDialogOpen}
+        onOpenChange={setInviteDialogOpen}
       />
 
-      <BranchAssignmentDialog
-        open={!!branchAssignmentUser}
-        onOpenChange={(open) => !open && setBranchAssignmentUser(null)}
-        userId={branchAssignmentUser?.userId || ""}
-        userEmail={branchAssignmentUser?.email || ""}
-        userName={branchAssignmentUser?.name || ""}
-      />
+      {/* Branch Assignment Dialog */}
+      {branchAssignmentUser && (
+        <BranchAssignmentDialog
+          open={!!branchAssignmentUser}
+          onOpenChange={() => setBranchAssignmentUser(null)}
+          userId={branchAssignmentUser.userId}
+          userEmail={branchAssignmentUser.email}
+          userName={branchAssignmentUser.name || branchAssignmentUser.email}
+        />
+      )}
       </AdminLayout>
     </RoleGuard>
   );

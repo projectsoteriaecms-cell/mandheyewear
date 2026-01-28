@@ -4,16 +4,32 @@ export type AppRole = Database["public"]["Enums"]["app_role"];
 
 // Role hierarchy for comparison
 const roleHierarchy: Record<AppRole, number> = {
-  customer: 0,
-  branch_staff: 1,
-  branch_manager: 2,
-  super_admin: 3,
+  user: 0,
+  customer: 1,
+  branch_staff: 2,
+  branch_manager: 3,
+  super_admin: 4,
 };
 
 // Check if a role is at least a certain level
 export const isAtLeast = (role: AppRole | null, minimumRole: AppRole): boolean => {
   if (!role) return false;
   return roleHierarchy[role] >= roleHierarchy[minimumRole];
+};
+
+// Check if user can purchase products (requires customer or above)
+export const canPurchase = (role: AppRole | null): boolean => {
+  return isAtLeast(role, "customer");
+};
+
+// Check if user can book appointments (requires customer or above)
+export const canBookAppointments = (role: AppRole | null): boolean => {
+  return isAtLeast(role, "customer");
+};
+
+// Check if user is unverified (has 'user' role only)
+export const isUnverifiedUser = (role: AppRole | null): boolean => {
+  return role === "user";
 };
 
 // Check if user can manage (CRUD) products
@@ -110,7 +126,7 @@ export const canChangeUserRole = (
   
   // Branch manager can only change staff/customer roles
   if (currentRole === "branch_manager") {
-    const allowedRoles: AppRole[] = ["branch_staff", "customer"];
+    const allowedRoles: AppRole[] = ["user", "branch_staff", "customer"];
     return allowedRoles.includes(targetCurrentRole) && allowedRoles.includes(targetNewRole);
   }
   
@@ -122,11 +138,11 @@ export const getInvitableRoles = (currentRole: AppRole | null): AppRole[] => {
   if (!currentRole) return [];
   
   if (currentRole === "super_admin") {
-    return ["customer", "branch_staff", "branch_manager", "super_admin"];
+    return ["user", "customer", "branch_staff", "branch_manager", "super_admin"];
   }
   
   if (currentRole === "branch_manager") {
-    return ["customer", "branch_staff"];
+    return ["user", "customer", "branch_staff"];
   }
   
   return [];
@@ -140,6 +156,7 @@ export const hasAdminAccess = (role: AppRole | null): boolean => {
 // Get role display label
 export const getRoleLabel = (role: AppRole): string => {
   const labels: Record<AppRole, string> = {
+    user: "User (Unverified)",
     customer: "Customer",
     branch_staff: "Branch Staff",
     branch_manager: "Branch Manager",

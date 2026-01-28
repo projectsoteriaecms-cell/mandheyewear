@@ -22,11 +22,14 @@ import {
   MapPin,
   Loader2,
   LogIn,
+  Clock,
 } from "lucide-react";
 import { useBranches } from "@/hooks/useBranches";
 import { useCreateAppointment, type Appointment } from "@/hooks/useAppointments";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useUserRole } from "@/hooks/useUserRole";
+import { canBookAppointments } from "@/lib/permissions";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -61,6 +64,7 @@ const Booking = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { data: profile } = useProfile(user?.id);
+  const { data: role, isLoading: roleLoading } = useUserRole();
   const { data: branches, isLoading: branchesLoading } = useBranches();
   const createAppointment = useCreateAppointment();
 
@@ -74,6 +78,9 @@ const Booking = () => {
 
   const selectedBranch = branches?.find((b) => b.id === selectedBranchId);
   const selectedServiceData = SERVICES.find((s) => s.value === selectedService);
+
+  // Check if user can book appointments
+  const userCanBook = canBookAppointments(role ?? null);
 
   const handleNext = () => {
     if (step < 4) setStep(step + 1);
@@ -118,7 +125,7 @@ const Booking = () => {
   };
 
   // Loading state
-  if (authLoading) {
+  if (authLoading || roleLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
@@ -145,6 +152,35 @@ const Booking = () => {
             <Button variant="hero" size="lg" asChild>
               <Link to="/login?redirect=/booking">Sign In to Book</Link>
             </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // User not verified - cannot book
+  if (!userCanBook) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md mx-auto text-center">
+            <div className="p-8 rounded-2xl bg-card border border-amber-200 dark:border-amber-900 shadow-float">
+              <Clock className="h-16 w-16 mx-auto text-amber-500 mb-4" />
+              <h1 className="text-2xl font-display font-semibold mb-2">Account Verification Required</h1>
+              <p className="text-muted-foreground mb-6">
+                Your account is pending verification. Once verified, you'll be able to book appointments at any of our locations.
+              </p>
+              <div className="space-y-3">
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/branches">View Our Locations</Link>
+                </Button>
+                <Button variant="ghost" className="w-full" asChild>
+                  <Link to="/dashboard">View Dashboard</Link>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
         <Footer />
@@ -428,20 +464,9 @@ const Booking = () => {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Service:</span>
-                        <span className="font-medium">
-                          {SERVICES.find(
-                            (s) => s.value === confirmedAppointment.service_type
-                          )?.label}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
                         <span className="text-muted-foreground">Date:</span>
                         <span className="font-medium">
-                          {format(
-                            new Date(confirmedAppointment.scheduled_date),
-                            "EEEE, MMMM d, yyyy"
-                          )}
+                          {format(new Date(confirmedAppointment.scheduled_date), "EEEE, MMMM d, yyyy")}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -452,11 +477,11 @@ const Booking = () => {
                       </div>
                     </CardContent>
                   </Card>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Button variant="hero" size="lg" asChild>
-                      <Link to="/dashboard">View My Appointments</Link>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button variant="outline" asChild>
+                      <Link to="/dashboard?tab=appointments">View My Appointments</Link>
                     </Button>
-                    <Button variant="outline" size="lg" asChild>
+                    <Button variant="hero" asChild>
                       <Link to="/">Back to Home</Link>
                     </Button>
                   </div>
@@ -465,16 +490,27 @@ const Booking = () => {
 
               {/* Navigation Buttons */}
               {step < 5 && (
-                <div className="flex justify-between pt-6 border-t">
+                <div className="flex justify-between pt-4">
                   <Button
                     variant="outline"
-                    onClick={handleBack}
-                    disabled={step === 1}
+                    onClick={step === 1 ? () => navigate(-1) : handleBack}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
+                    {step === 1 ? "Cancel" : "Back"}
                   </Button>
-                  {step === 4 ? (
+                  {step < 4 ? (
+                    <Button
+                      onClick={handleNext}
+                      disabled={
+                        (step === 1 && !selectedBranchId) ||
+                        (step === 2 && !selectedService) ||
+                        (step === 3 && (!date || !selectedTime))
+                      }
+                    >
+                      Continue
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  ) : (
                     <Button
                       variant="hero"
                       onClick={handleSubmit}
@@ -488,19 +524,6 @@ const Booking = () => {
                       ) : (
                         "Confirm Booking"
                       )}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="hero"
-                      onClick={handleNext}
-                      disabled={
-                        (step === 1 && !selectedBranchId) ||
-                        (step === 2 && !selectedService) ||
-                        (step === 3 && (!date || !selectedTime))
-                      }
-                    >
-                      Next
-                      <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   )}
                 </div>

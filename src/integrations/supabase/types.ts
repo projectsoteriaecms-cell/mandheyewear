@@ -1507,7 +1507,12 @@ export type Database = {
         | "expiry"
         | "write_off"
         | "other"
-      app_role: "customer" | "branch_staff" | "branch_manager" | "super_admin"
+      app_role:
+        | "user"
+        | "customer"
+        | "branch_staff"
+        | "branch_manager"
+        | "super_admin"
       appointment_status:
         | "scheduled"
         | "confirmed"
@@ -1700,7 +1705,13 @@ export const Constants = {
         "write_off",
         "other",
       ],
-      app_role: ["customer", "branch_staff", "branch_manager", "super_admin"],
+      app_role: [
+        "user",
+        "customer",
+        "branch_staff",
+        "branch_manager",
+        "super_admin",
+      ],
       appointment_status: [
         "scheduled",
         "confirmed",

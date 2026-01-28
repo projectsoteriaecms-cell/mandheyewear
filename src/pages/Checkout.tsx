@@ -18,8 +18,10 @@ import { OrderSummary } from "@/components/checkout/OrderSummary";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useUserRole } from "@/hooks/useUserRole";
+import { canPurchase } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, Clock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const NIGERIAN_STATES = [
@@ -34,6 +36,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { data: role, isLoading: roleLoading } = useUserRole();
   const { cartItems, cartTotal, isLoading: cartLoading } = useCart();
   const { data: profile } = useProfile(user?.id);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -49,6 +52,9 @@ const Checkout = () => {
   const fullName = profile?.full_name || "";
   const email = profile?.email || user?.email || "";
   const phone = profile?.phone_number || "";
+
+  // Check if user can purchase
+  const userCanPurchase = canPurchase(role ?? null);
 
   const handleConfirmAddress = () => {
     if (!address.trim() || address.length < 5) {
@@ -89,7 +95,7 @@ const Checkout = () => {
   };
 
   // Loading state
-  if (authLoading || cartLoading) {
+  if (authLoading || cartLoading || roleLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
@@ -119,6 +125,33 @@ const Checkout = () => {
               </Button>
               <Button variant="outline" className="w-full" asChild>
                 <Link to="/signup?redirect=/checkout">Create Account</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // User not verified - cannot checkout
+  if (!userCanPurchase) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-4 py-16 text-center max-w-md">
+          <div className="p-8 rounded-2xl bg-card border border-amber-200 dark:border-amber-900 shadow-float">
+            <Clock className="h-16 w-16 mx-auto text-amber-500 mb-4" />
+            <h1 className="text-2xl font-display font-semibold mb-2">Account Verification Required</h1>
+            <p className="text-muted-foreground mb-6">
+              Your account is pending verification. Once verified, you'll be able to make purchases and book appointments.
+            </p>
+            <div className="space-y-3">
+              <Button variant="outline" className="w-full" asChild>
+                <Link to="/eyewear">Continue Browsing</Link>
+              </Button>
+              <Button variant="ghost" className="w-full" asChild>
+                <Link to="/dashboard">View Dashboard</Link>
               </Button>
             </div>
           </div>
