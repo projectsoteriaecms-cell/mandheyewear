@@ -9,10 +9,7 @@ export const IMAGE_POSITION_LABELS = [
   "Side View (Left)",
   "Side View (Right)",
   "On-Model",
-  "Detail 1",
-  "Detail 2",
-  "Detail 3",
-  "Lifestyle",
+  "Detail",
 ] as const;
 
 export type ImagePosition = typeof IMAGE_POSITION_LABELS[number];
@@ -33,7 +30,7 @@ export const ProductImageUpload = ({
   onImagesChange,
   onUpload,
   onDelete,
-  maxImages = 8,
+  maxImages = 5,
   isUploading = false,
   primaryImage,
   onPrimaryChange,
@@ -213,7 +210,7 @@ export const ProductImageUpload = ({
           )}
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          JPG, PNG, or WebP. Max 5MB each.
+          JPG, PNG, or WebP. Max 7MB each.
         </p>
       </div>
     </div>

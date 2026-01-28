@@ -20,8 +20,8 @@ import {
 import { Loader2 } from "lucide-react";
 import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
 
-const MAX_IMAGES = 9; // 1 primary + 8 additional
-const MAX_ADDITIONAL = 8;
+const MAX_IMAGES = 6; // 1 primary + 5 additional
+const MAX_ADDITIONAL = 5;
 
 interface QuickImageUploadModalProps {
   product: {
