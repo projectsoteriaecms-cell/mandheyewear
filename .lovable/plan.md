@@ -1,191 +1,103 @@
 
-# User Management Enhancement Plan
+# Fix Branch Manager Onboarding & RLS Issues
 
-## Overview
+## Problem Summary
 
-This plan implements three key improvements to the User Management system:
+There are two related issues occurring when a Branch Manager logs in:
 
-1. **Add a new "user" role** for unverified signups (can only browse)
-2. **Auto-assign "user" role** to all new signups via database trigger
-3. **Update Admin Users page** to show all profiles and organize by role categories
-4. **Hide Super Admin** from the general stats (only show one admin)
+1. **Onboarding Wizard Appears Incorrectly**: The wizard prompts the manager to select a branch even though they already have an assignment in the database (Lagos Lekki branch assigned on Jan 28)
+2. **RLS INSERT Error**: When the wizard tries to save, it fails with "new row violates row-level security policy for table 'branch_assignments'" because the manager cannot insert their own assignments
 
----
+## Root Cause Analysis
 
-## Role Hierarchy (Updated)
+**Database State**: The manager `manager@soteriaeyeclinic.com` already has a branch assignment:
+- Branch: Lagos Lekki (c97eae31-e697-44ca-be19-57745142cfaf)
+- is_primary: false
 
-| Role | Description | Access Level |
-|------|-------------|--------------|
-| **user** | Unverified signup | Browse products only |
-| **customer** | Verified user | Purchase, book appointments, wishlist, dashboard |
-| **branch_staff** | Store employee | Inventory operations, view orders |
-| **branch_manager** | Store manager | Approve orders, manage products |
-| **super_admin** | Platform owner | Full system access (hidden from user list) |
+**RLS Policy Gap**: The `branch_assignments` table has these policies:
+- `Super admins full access` - ALL commands for super_admin only
+- `Branch managers can view branch assignments` - SELECT only, for viewing their branch's assignments
+- `Users can view own assignments` - SELECT only, for viewing own record
 
----
+**Missing Policy**: There is NO INSERT policy for staff/managers. Only Super Admins can insert assignments.
 
-## Changes Summary
+**Why Wizard Appears**: The `useBranchAssignments` hook query may be returning empty because of an RLS/timing issue, causing the Dashboard to show the wizard.
 
-### Phase 1: Database Changes
+## Solution
 
-**1. Add new "user" role to the enum**
-```sql
-ALTER TYPE app_role ADD VALUE 'user' BEFORE 'customer';
-```
+### 1. Remove Self-Onboarding from Staff/Managers
 
-**2. Update handle_new_user trigger**
-- New signups get "user" role instead of "customer"
-- Only invited users with pending invitation get their specified role
+The onboarding wizard allowing staff to assign themselves to branches is a **security risk** - users should not self-assign branch access. Branch assignments should ONLY be managed by:
+- Super Admins (via User Management → Manage Branches)
+- Branch Managers (for their staff, within their authorized branches)
 
-**3. Backfill existing profiles without roles**
-- Any profiles without a user_role entry get assigned "user" role
+**Changes**:
+- Remove the `StaffOnboardingWizard` component from the Dashboard entirely
+- Staff/managers without branch assignments should see a friendly message instead: "Please contact your administrator to assign you to a branch"
 
----
+### 2. Fix the Dashboard Experience
 
-### Phase 2: Update User Manager UI
-
-**Modified file: `src/pages/admin/AdminUsers.tsx`**
-
-Changes:
-- Query from `profiles` table with LEFT JOIN to `user_roles`
-- Show all users including those without explicit roles
-- Update stats cards to show:
-  - **Staff** (branch_staff + branch_manager count)
-  - **Verified Customers** (customer role)
-  - **Unverified Users** (user role)
-  - *(Remove Super Admins stat card)*
-- Filter dropdown options:
-  - All Users
-  - Branch Managers
-  - Branch Staff  
-  - Customers (Verified)
-  - Users (Unverified)
-- Add "Verify User" action to convert user to customer
-- Super Admin row hidden from list (or shown with special styling at top)
-
----
-
-### Phase 3: Update Permissions System
-
-**Modified file: `src/shared/lib/permissions.ts`**
-
-Changes:
-- Add "user" to AppRole type
-- Update role hierarchy to include user at level 0
-- Add helper: `canPurchase(role)` - requires customer or above
-- Add helper: `canBookAppointments(role)` - requires customer or above
-
----
-
-### Phase 4: Update Frontend Access Control
-
-**Files to modify:**
-- `src/pages/Dashboard.tsx` - Show limited view for "user" role with verification prompt
-- `src/pages/Checkout.tsx` - Block checkout for unverified users
-- `src/pages/Booking.tsx` - Block appointment booking for unverified users
-- `src/hooks/useCart.ts` - Prevent adding to cart for unverified users
-
----
-
-## Verification Flow
-
-When a "user" needs to become a "customer":
-
-1. **Admin Action**: In User Manager, admin clicks "Verify User" → updates role to "customer"
-2. **Future Enhancement**: Could add email verification or profile completion requirements
-
----
-
-## Database Migration SQL
-
-```sql
--- Add 'user' role to enum
-ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'user' BEFORE 'customer';
-
--- Update trigger to assign 'user' role by default (not 'customer')
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-DECLARE
-  assigned_role app_role;
-  invitation_record RECORD;
-BEGIN
-  -- Insert profile
-  INSERT INTO public.profiles (user_id, email, full_name)
-  VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name');
-  
-  -- Check for pending invitation first
-  SELECT * INTO invitation_record
-  FROM public.user_invitations
-  WHERE email = NEW.email
-    AND accepted_at IS NULL
-    AND expires_at > now()
-  ORDER BY created_at DESC
-  LIMIT 1;
-  
-  IF invitation_record IS NOT NULL THEN
-    -- Use the invited role
-    assigned_role := invitation_record.role;
-    
-    -- Mark invitation as accepted
-    UPDATE public.user_invitations
-    SET accepted_at = now()
-    WHERE id = invitation_record.id;
-  ELSE
-    -- Default to 'user' (unverified) for public signups
-    assigned_role := 'user'::app_role;
-  END IF;
-  
-  -- Insert role
-  INSERT INTO public.user_roles (user_id, role)
-  VALUES (NEW.id, assigned_role);
-  
-  RETURN NEW;
-END;
-$$;
-
--- Backfill: assign 'user' role to any profiles without a role
-INSERT INTO public.user_roles (user_id, role)
-SELECT p.user_id, 'user'::app_role
-FROM public.profiles p
-LEFT JOIN public.user_roles ur ON p.user_id = ur.user_id
-WHERE ur.id IS NULL;
-```
-
----
-
-## UI Mockup - Updated Stats Cards
+Instead of showing an onboarding wizard, show an informative state when no branch is assigned:
 
 ```text
-+------------------+  +------------------+  +------------------+
-|  Staff Members   |  | Verified         |  | Unverified      |
-|        3         |  | Customers        |  | Users           |
-|                  |  |       45         |  |       12        |
-+------------------+  +------------------+  +------------------+
+╔════════════════════════════════════════════╗
+║  No Branch Assignment                       ║
+║                                            ║
+║  You haven't been assigned to a branch     ║
+║  yet. Please contact your administrator    ║
+║  to complete your setup.                   ║
+║                                            ║
+║  [Contact Admin]  (links to email/support) ║
+╚════════════════════════════════════════════╝
 ```
 
----
+### 3. Ensure Existing Assignments Load Correctly
 
-## Files to Create/Modify
+Add error handling and retry logic to the branch assignments query to handle any edge cases.
 
-| File | Action | Purpose |
-|------|--------|---------|
-| Database migration | Create | Add 'user' role, update trigger |
-| `src/pages/admin/AdminUsers.tsx` | Modify | Updated UI with new role handling |
-| `src/shared/lib/permissions.ts` | Modify | Add user role and new permission helpers |
-| `src/integrations/supabase/types.ts` | Auto-update | Will reflect new enum value |
-| `src/pages/Dashboard.tsx` | Modify | Handle unverified user view |
-| `src/pages/Checkout.tsx` | Modify | Block unverified users |
-| `src/pages/Booking.tsx` | Modify | Block unverified users |
+## Implementation Steps
 
----
+### Step 1: Update Dashboard Component
+- Remove the `StaffOnboardingWizard` import and usage
+- Add a "No Branch Assignment" state that displays when `branchAssignments` is empty
+- Show a helpful message directing users to contact their administrator
 
-## Technical Notes
+### Step 2: Delete or Archive the StaffOnboardingWizard
+- Remove `src/components/admin/onboarding/StaffOnboardingWizard.tsx`
+- Clean up any remaining references
 
-- The Super Admin account (admin@soteriaeyeclinic.com) will still function but won't appear in the regular user list
-- RLS policies remain unchanged as they already use `has_role()` function
-- Existing customers with the "customer" role are unaffected
-- The "Verify User" action is essentially a role change from "user" to "customer"
+### Step 3: Update the `is_primary` Flag for Existing Assignment
+- Run a database migration to set `is_primary = true` for the manager's existing assignment since they only have one branch
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| `src/pages/admin/Dashboard.tsx` | Remove wizard, add "No Assignment" state |
+| `src/components/admin/onboarding/StaffOnboardingWizard.tsx` | Delete file |
+
+## Database Change
+
+Set the existing manager's branch assignment to primary:
+
+```sql
+UPDATE branch_assignments 
+SET is_primary = true 
+WHERE user_id = 'eaacf842-52b0-427e-92b4-375703138a0d' 
+  AND branch_id = 'c97eae31-e697-44ca-be19-57745142cfaf';
+```
+
+## Security Benefits
+
+- Prevents unauthorized self-assignment of branch access
+- Enforces proper chain of command for access provisioning
+- Super Admins assign managers → Managers assign staff
+- Maintains audit trail of who assigned whom
+
+## Expected Outcome
+
+After implementation:
+- Branch Manager logs in → sees Dashboard with their branch data (no wizard)
+- Staff without assignment → sees friendly "Contact Admin" message
+- No RLS errors since users won't attempt to insert their own assignments
+- Clean, secure branch assignment workflow maintained
