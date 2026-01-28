@@ -108,17 +108,27 @@ export const BranchAssignmentDialog = ({
         if (error) throw error;
       }
 
-      // Add newly assigned branches
+      // Add newly assigned branches (only if not already assigned)
       if (toAssign.length > 0) {
-        const newAssignments = toAssign.map((branchId) => ({
-          user_id: userId,
-          branch_id: branchId,
-          is_primary: branchId === primaryBranch,
-        }));
-        const { error } = await supabase
-          .from("branch_assignments")
-          .insert(newAssignments);
-        if (error) throw error;
+        // Filter out any branches that might already be assigned (edge case)
+        const actuallyNew = toAssign.filter(branchId => !assignedBranchIds.has(branchId));
+        
+        if (actuallyNew.length > 0) {
+          const newAssignments = actuallyNew.map((branchId) => ({
+            user_id: userId,
+            branch_id: branchId,
+            is_primary: branchId === primaryBranch && getAssignedCount() === 0,
+          }));
+          
+          // Use upsert to handle any race conditions
+          const { error } = await supabase
+            .from("branch_assignments")
+            .upsert(newAssignments, { 
+              onConflict: 'user_id,branch_id',
+              ignoreDuplicates: true 
+            });
+          if (error) throw error;
+        }
       }
 
       // Update primary branch if needed
