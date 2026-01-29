@@ -1,110 +1,94 @@
 
+# Seamless Navigation: Admin to Storefront
 
-# Dual-Theme Logo Implementation Plan
+## Current Problem
 
-## Summary
+When you enter the ECMS Admin panel, there's no obvious way to get back to the main store/home:
 
-You want:
-- **Soteria Logo**: Navy blue in light mode, golden yellow in dark mode (using the uploaded `Untitled_design_5.png`)
-- **M&H Logo**: Clean version without the "EYEWEAR & OPTICALS" tagline (using the uploaded `mandh.png` but cropped/modified)
+1. **Desktop**: The "Back to Store" link exists but it's tucked at the very bottom of the sidebar - easy to miss
+2. **Mobile**: The sidebar is completely hidden (fixed `w-64` with no responsive handling), leaving **zero navigation options** to return
 
-## Logo Strategy
+## Solution
 
-| Mode | Soteria Logo | M&H Logo |
-|------|--------------|----------|
-| Light Mode | Original navy blue (`soteria-logo.png`) | Golden M&H (without tagline) |
-| Dark Mode | Golden yellow (`Untitled_design_5.png`) | Golden M&H (without tagline) |
+Add a prominent, accessible "Back to Store" action in **two strategic locations**:
 
-## Implementation Approach
+### 1. Admin Header (Always Visible)
+Add a clear "Back to Store" or Home icon button in the header next to the title - this will be visible on both desktop and mobile.
 
-Since CSS filters cannot change blue to gold (only invert), we need **two separate logo files** for Soteria and display them conditionally based on theme.
+### 2. Mobile Hamburger Menu for Admin
+Create a collapsible mobile menu that slides in (like the storefront MobileNav), providing access to admin navigation AND the "Back to Store" link.
 
-For M&H, the uploaded `mandh.png` includes "EYEWEAR & OPTICALS" tagline. You mentioned you want the version "without echo" - this means we need a cropped version showing just the M&H symbol and letters.
+---
 
-## Files to Create/Copy
+## Implementation Details
 
-1. **Copy golden Soteria logo**: `user-uploads://Untitled_design_5.png` → `src/assets/soteria-logo-gold.png`
-2. **Copy M&H logo**: `user-uploads://mandh.png` → `src/assets/mh-logo-gold.png`
+### File: `src/shared/components/admin/AdminHeader.tsx`
 
-## Files to Modify
+**Changes:**
+- Add a "Store" or "Home" button on the left side of the header
+- Import necessary icons (`Storefront` or `House` from Phosphor)
+- Make it visually distinct but not intrusive
 
-### 1. `src/components/navigation/MobileTopBar.tsx`
-
-**Imports (add new gold logos):**
 ```tsx
-import soteriaLogo from "@/assets/soteria-logo.png";
-import soteriaLogoGold from "@/assets/soteria-logo-gold.png";
-import mhLogo from "@/assets/mh-logo.png";
-import mhLogoGold from "@/assets/mh-logo-gold.png";
-```
-
-**Center Logo Section (lines 191-195):**
-Show different logos based on `isDark` state:
-```tsx
-<Link to="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-  <img 
-    src={isDark ? soteriaLogoGold : soteriaLogo} 
-    alt="Soteria" 
-    className="h-7 w-auto" 
-  />
-  <span className="text-border text-lg">|</span>
-  <img 
-    src={mhLogoGold} 
-    alt="M&H" 
-    className="h-7 w-auto" 
-  />
-</Link>
-```
-
-**Hamburger Menu Panel (lines 112-116):**
-Since this panel has a primary (dark) background, we show the gold logos here:
-```tsx
-<div className="flex items-center gap-2">
-  <img src={soteriaLogoGold} alt="Soteria" className="h-6 w-auto" />
-  <span className="text-primary-foreground/40">|</span>
-  <img src={mhLogoGold} alt="M&H" className="h-6 w-auto" />
+// In the header's left section
+<div className="flex items-center gap-4">
+  <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+    <Storefront weight="light" className="h-5 w-5" />
+    <span className="hidden sm:inline text-sm">Store</span>
+  </Link>
+  <span className="text-border">|</span>
+  <h2 className="text-lg font-semibold">Inventory Management</h2>
 </div>
 ```
 
-### 2. `src/components/navigation/MainNav.tsx`
+### File: `src/shared/components/admin/AdminLayout.tsx`
 
-**Imports:**
-```tsx
-import soteriaLogo from "@/assets/soteria-logo.png";
-import soteriaLogoGold from "@/assets/soteria-logo-gold.png";
-import mhLogoGold from "@/assets/mh-logo-gold.png";
-```
+**Changes:**
+- Hide sidebar on mobile with `hidden md:flex`
+- Add mobile hamburger trigger in header area
 
-**Logo Section (lines 60-72):**
-Use a hook or CSS approach to conditionally show logos:
-```tsx
-<img 
-  src={soteriaLogo} 
-  alt="Soteria Eye Clinic" 
-  className="h-10 w-auto dark:hidden"
-/>
-<img 
-  src={soteriaLogoGold} 
-  alt="Soteria Eye Clinic" 
-  className="h-10 w-auto hidden dark:block"
-/>
-<span className="text-border text-2xl font-light">|</span>
-<img 
-  src={mhLogoGold} 
-  alt="M&H Eyewear" 
-  className="h-10 w-auto"
-/>
-```
+### File: `src/shared/components/admin/AdminMobileNav.tsx` (New)
 
-## Note About M&H Logo
+**Create a mobile navigation drawer for admin** that includes:
+- All admin navigation items
+- Prominent "Back to Store" link
+- Current user info
 
-The uploaded `mandh.png` includes "EYEWEAR & OPTICALS" text at the bottom. If you want a version without this tagline, you'll need to provide a cropped version or I can work with what's available. Currently, I'll use the full logo and we can adjust if needed.
+### File: `src/shared/components/admin/AdminHeader.tsx`
 
-## Visual Result
+**Additional Changes:**
+- Add hamburger menu button (visible on mobile only)
+- Import and use the new AdminMobileNav component
 
-| Location | Light Mode | Dark Mode |
-|----------|------------|-----------|
-| Mobile Center Bar | Navy blue Soteria + Gold M&H | Gold Soteria + Gold M&H |
-| Hamburger Menu Panel | Gold Soteria + Gold M&H | Gold Soteria + Gold M&H |
-| Desktop Nav | Navy blue Soteria + Gold M&H | Gold Soteria + Gold M&H |
+---
 
+## Visual Hierarchy
+
+| Location | Desktop | Mobile |
+|----------|---------|--------|
+| Header | "Store" link + title | Hamburger + "Store" icon + title |
+| Sidebar | Full nav + bottom "Back to Store" | Hidden (use mobile drawer) |
+| Mobile Drawer | N/A | Full admin nav + "Back to Store" |
+
+---
+
+## Files to Modify
+
+1. **`src/shared/components/admin/AdminHeader.tsx`**
+   - Add "Store" button/link on left side
+   - Add mobile hamburger trigger
+
+2. **`src/shared/components/admin/AdminLayout.tsx`**
+   - Make sidebar responsive (`hidden md:flex`)
+
+3. **`src/shared/components/admin/AdminMobileNav.tsx`** (New)
+   - Create mobile navigation drawer for admin
+
+4. **`src/shared/components/admin/index.ts`**
+   - Export the new AdminMobileNav component
+
+## Result
+
+- **Desktop**: Clear "Store" link in header + sidebar bottom link
+- **Mobile**: Hamburger menu with full navigation + prominent "Back to Store"
+- **Seamless flow**: Easy to switch between admin and storefront from anywhere
