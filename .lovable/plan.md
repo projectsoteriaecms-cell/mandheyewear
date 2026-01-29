@@ -1,225 +1,232 @@
 
 
-# Luxurious Designer Frames Promotional Card Redesign
+# Luxurious Frame Slideshow for 2026 Designer Frames Banner
 
-## Current Issues
+## What You Want
 
-1. **Card is too compact** - Current `p-6 lg:p-10` with `md:grid-cols-5` layout makes it feel cramped
-2. **Weak visual impact** - The featured product image is small (48x48 w-48 h-48) and uses a product with white background
-3. **Generic design** - Needs more sophisticated luxury feel (think Cartier, Gucci brand ads)
-4. **Poor image selection** - Currently pulling the first product, which may not be the most luxurious
+Replace the static single product image with a **sophisticated auto-advancing slideshow** of luxury frames that:
+- Shows multiple designer frames cycling through
+- Frames appear clean without distracting backgrounds
+- Creates an elegant, high-end visual experience
+- Feels luxurious and professional
 
 ---
 
-## The Solution: Full-Width Luxury Banner
+## The Solution: Elegant Cross-Fade Carousel
 
-Transform this into a **tall, square-ish hero card** (aspect ratio ~16:9 or closer to square on mobile) with:
+Transform the right side of the promotional banner into an auto-advancing slideshow featuring your top luxury frames.
 
-### Visual Design Concept
+### Visual Concept
 
 ```text
-┌─────────────────────────────────────────────────────────────────────────────────────────┐
-│                                                                                          │
-│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
-│  ░░░                                                                               ░░░ │
-│  ░░░                        ╔═══════════════════╗                                  ░░░ │
-│  ░░░   ✨ Exclusive         ║                   ║                                  ░░░ │
-│  ░░░                        ║    [CARTIER]      ║                                  ░░░ │
-│  ░░░   2026 Designer        ║    [DESIGNER]     ║                                  ░░░ │
-│  ░░░   Collection           ║    [FRAME]        ║   ← LARGE floating frame         ░░░ │
-│  ░░░                        ║    [IMAGE]        ║     with subtle animation        ░░░ │
-│  ░░░   Curated luxury       ║                   ║                                  ░░░ │
-│  ░░░   eyewear              ╚═══════════════════╝                                  ░░░ │
-│  ░░░                                                                               ░░░ │
-│  ░░░   [Explore Collection →]                                                      ░░░ │
-│  ░░░                                                                               ░░░ │
-│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
-│                                                                                          │
-│                    RICH BLUE GRADIENT + GOLD ACCENT ELEMENTS                            │
-└─────────────────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                      │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│  ░░░                                                                           ░░░ │
+│  ░░░   ✨ Exclusive Collection        ┌───────────────────────────────┐        ░░░ │
+│  ░░░                                  │                               │        ░░░ │
+│  ░░░   2026 Designer                  │    [CARTIER FRAME]            │        ░░░ │
+│  ░░░   Frames                         │                               │        ░░░ │
+│  ░░░                                  │    cross-fades to...          │ ← AUTO  ░░░ │
+│  ░░░   Curated luxury...              │                               │   SLIDE ░░░ │
+│  ░░░                                  │    [GUCCI FRAME]              │   (4s)  ░░░ │
+│  ░░░   [Explore Collection →]         │                               │        ░░░ │
+│  ░░░                                  └───────────────────────────────┘        ░░░ │
+│  ░░░                                         ● ○ ○ ○ ○  ← dot indicators       ░░░ │
+│  ░░░                                                                           ░░░ │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│                                                                                      │
+│                         RICH BLUE GRADIENT BACKGROUND                                │
+└─────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Implementation Details
 
-### 1. Card Size & Layout
+### 1. Fetch Multiple Luxury Frames
 
-**Current:**
-- `grid md:grid-cols-5` with `p-6 lg:p-10` 
-- Compact rectangular shape
-
-**New:**
-- **Min-height: 320px on mobile, 400px on desktop** (near-square feel)
-- **Full container width** with centered content
-- **Two-column layout on desktop** (50/50 split for text + image)
-- **Stacked on mobile** with image positioned behind text (overlay style)
-
-### 2. Background Treatment
-
-Sophisticated blue gradient with luxury accents:
-
-```tsx
-className="relative overflow-hidden rounded-3xl min-h-[320px] md:min-h-[400px] 
-           bg-gradient-to-br from-primary via-primary/95 to-primary/80"
-```
-
-Add layered decorative elements:
-- **Golden shimmer sweep** across the top (using `animate-shimmer-sweep`)
-- **Glassmorphic orbs** in corners
-- **Subtle gold border accent** on the frame/card
-
-### 3. Featured Product Selection
-
-**Change the query** to fetch specifically:
-- Designer brands (CARTIER, GUCCI, etc.) 
-- Higher-priced items (they're typically better photographed)
-- Filter for products with clean images
+Change the query to fetch **5-6 top luxury products** instead of just one:
 
 ```typescript
-// Prioritize luxury brands for the banner
-const { data: featuredProduct } = useQuery({
-  queryKey: ["featured-designer-product"],
+// Fetch multiple luxury frames for slideshow
+const { data: luxuryFrames } = useQuery({
+  queryKey: ["luxury-frames-slideshow"],
   queryFn: async () => {
     const { data } = await supabase
       .from("products")
       .select("id, name, brand, price, image_url")
       .eq("is_active", true)
       .eq("item_type", "frames")
-      .in("brand", ["CARTIER", "GUCCI", "DIOR", "VERSACE", "PRADA"])
       .not("image_url", "is", null)
       .order("price", { ascending: false })
-      .limit(1)
-      .single();
-    return data;
+      .limit(10);
+
+    // Filter for luxury brands first, then highest priced
+    const luxuryProducts = data?.filter(p => 
+      LUXURY_BRANDS.some(brand => p.brand?.toUpperCase().includes(brand))
+    ) || [];
+    
+    // Return luxury brands or top 5 highest priced
+    return luxuryProducts.length >= 3 ? luxuryProducts.slice(0, 5) : data?.slice(0, 5) || [];
   },
 });
 ```
 
-This ensures we get a high-end designer frame like the **GUCCI 785K** or **CARTIER**.
+### 2. Use Embla Carousel with Autoplay
 
-### 4. Image Presentation
+Leverage the existing carousel component with autoplay plugin:
 
-**Current:** `w-48 h-48` (small)
+```typescript
+import Autoplay from "embla-carousel-autoplay";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 
-**New:**
-- **Larger dimensions:** `w-64 h-64 md:w-80 md:h-80`
-- **Drop shadow enhancement:** `drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)]`
-- **Elegant float animation:** `animate-float-slow`
-- **Remove background effect:** Apply `mix-blend-multiply` for PNGs with white backgrounds, or use image with transparent background
-- **3D tilt effect on hover:** Subtle perspective rotation
+// Track current slide for indicators
+const [api, setApi] = useState<CarouselApi>();
+const [current, setCurrent] = useState(0);
 
-### 5. Typography Hierarchy
-
-Premium, elegant text styling:
-
-```tsx
-// Badge
-<span className="inline-flex items-center gap-2 px-4 py-2 rounded-full 
-                bg-accent/20 backdrop-blur-sm border border-accent/30 
-                text-accent text-xs font-medium tracking-wider uppercase">
-  <Sparkle weight="fill" className="w-4 h-4" />
-  Exclusive Collection
-</span>
-
-// Main heading - larger, more impactful
-<h3 className="text-3xl md:text-4xl lg:text-5xl font-display font-semibold text-white 
-               leading-tight tracking-tight">
-  2026 Designer Frames
-</h3>
-
-// Subtext with luxury feel
-<p className="text-white/70 text-base md:text-lg max-w-sm font-light">
-  Curated luxury eyewear from the world's most prestigious houses
-</p>
+useEffect(() => {
+  if (!api) return;
+  setCurrent(api.selectedScrollSnap());
+  api.on("select", () => setCurrent(api.selectedScrollSnap()));
+}, [api]);
 ```
 
-### 6. CTA Button Enhancement
+### 3. Slideshow Configuration
 
-```tsx
-<Button 
-  className="bg-accent hover:bg-accent/90 text-accent-foreground 
-             px-8 py-6 text-base font-medium shadow-lg shadow-accent/30
-             group transition-all duration-300 hover:shadow-xl hover:shadow-accent/40"
+- **Auto-advance every 4 seconds** - enough time to appreciate each frame
+- **Infinite loop** - seamlessly cycles back to first frame
+- **Smooth cross-fade transition** - elegant, not jarring
+- **Pause on hover** - user interaction pauses the carousel
+
+```typescript
+<Carousel
+  setApi={setApi}
+  opts={{ loop: true, align: "center" }}
+  plugins={[
+    Autoplay({
+      delay: 4000,
+      stopOnInteraction: false,
+      stopOnMouseEnter: true,
+    }),
+  ]}
+  className="w-full h-full"
 >
-  Explore Collection
-  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-</Button>
 ```
 
-### 7. Decorative Luxury Elements
+### 4. Frame Image Treatment
+
+Each frame displayed with sophisticated styling:
 
 ```tsx
-{/* Golden shimmer line at top */}
-<div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
+<CarouselItem className="flex items-center justify-center">
+  <div className="relative">
+    {/* Soft glow behind frame */}
+    <div className="absolute inset-0 bg-accent/15 rounded-full blur-3xl scale-90" />
+    
+    {/* Frame image - large and floating */}
+    <img 
+      src={frame.image_url}
+      alt={frame.name}
+      className="relative w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 
+                 object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.5)]
+                 animate-float-gentle"
+    />
+    
+    {/* Brand badge below */}
+    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 
+                    px-5 py-2 bg-white/10 backdrop-blur-md rounded-full 
+                    border border-white/20">
+      <span className="text-white/90 text-sm font-medium tracking-widest uppercase">
+        {frame.brand}
+      </span>
+    </div>
+  </div>
+</CarouselItem>
+```
 
-{/* Animated gold orbs */}
-<div className="absolute top-10 right-10 w-32 h-32 bg-accent/10 rounded-full blur-3xl animate-pulse-soft" />
-<div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-<div className="absolute top-1/2 right-1/4 w-20 h-20 bg-accent/5 rounded-full blur-2xl animate-float-gentle" />
+### 5. Elegant Dot Indicators
 
-{/* Luxury corner accent */}
-<div className="absolute top-4 right-4 w-12 h-12 border border-accent/20 rounded-lg opacity-50" />
-<div className="absolute bottom-4 left-4 w-8 h-8 border border-white/10 rounded opacity-30" />
+Subtle indicators showing which frame is currently displayed:
+
+```tsx
+{/* Slide indicators */}
+<div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+  {luxuryFrames.map((_, index) => (
+    <button
+      key={index}
+      onClick={() => api?.scrollTo(index)}
+      className={cn(
+        "w-2 h-2 rounded-full transition-all duration-300",
+        current === index 
+          ? "bg-accent w-6" // Active: gold, elongated pill
+          : "bg-white/30 hover:bg-white/50"
+      )}
+    />
+  ))}
+</div>
 ```
 
 ---
 
-## Mobile Design
+## Luxury Frames Available in Database
 
-On mobile, the banner becomes:
+Your current premium inventory for the slideshow:
 
-```text
-┌─────────────────────────────────┐
-│                                  │
-│   [DESIGNER FRAME IMAGE]         │
-│   Large, centered, floating      │
-│                                  │
-├─────────────────────────────────┤
-│                                  │
-│   ✨ Exclusive Collection        │
-│                                  │
-│   2026 Designer                  │
-│   Frames                         │
-│                                  │
-│   Curated luxury eyewear...      │
-│                                  │
-│   [Explore Collection →]         │
-│                                  │
-└─────────────────────────────────┘
-```
+| Brand | Frame | Price |
+|-------|-------|-------|
+| CARTIER | CT0344O 003 Rimless | ₦2,376,000 |
+| GUCCI | GG1504O 006 | ₦785,000 |
+| POLAROID | PLD D379 | ₦155,000 |
+| CARTIER | 30104 C9 | ₦130,000 |
+| CARTIER | CT0563S C2 | ₦130,000 |
 
-- Image moves above text content
-- Full-width container
-- Touch-friendly button
+These will cycle through automatically, showcasing your premium collection.
 
 ---
 
-## File Changes
+## Technical Changes
 
-### `src/components/home/QuickDiscovery.tsx`
+### File: `src/components/home/QuickDiscovery.tsx`
 
-**Lines 108-156** - Complete redesign of the Promotional Banner section:
-
-1. **New query** for featured designer product (separate from trending)
-2. **Increased dimensions** - min-height 320px mobile / 400px desktop
-3. **Enhanced gradient** with luxury decorative elements
-4. **Larger typography** - text-4xl to text-5xl heading
-5. **Bigger product image** - w-64 to w-80 with premium drop shadow
-6. **Refined animations** using existing keyframes (float-slow, shimmer, pulse-glow)
-7. **Mobile-first layout** with stacked content and image
+1. **Import Autoplay plugin and carousel components**
+2. **Change query** from single product to multiple luxury frames
+3. **Replace static image** with Embla Carousel + Autoplay
+4. **Add state** for tracking current slide (for dot indicators)
+5. **Add dot indicators** with gold accent for active slide
+6. **Increase image size** to w-96 for more visual impact
 
 ---
 
-## Expected Visual Result
+## Animation & Transitions
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| **Height** | ~200px | **320-400px** (near-square) |
-| **Product Image** | 192×192px, small | **256-320px**, prominent |
-| **Text Size** | text-2xl/3xl | **text-3xl/4xl/5xl** |
-| **Background** | Simple gradient | **Rich gradient + gold accents + shimmer** |
-| **Featured Product** | First product (random) | **Designer brand (Cartier/Gucci)** |
-| **Animations** | Basic float | **Float + shimmer + glow pulse** |
-| **Feel** | Generic | **Luxurious, sophisticated, high-end** |
+| Element | Animation | Duration |
+|---------|-----------|----------|
+| Slide transition | Smooth cross-fade | 400ms |
+| Auto-advance | Loop | Every 4 seconds |
+| Frame float | `animate-float-gentle` | 6s infinite |
+| Dot indicator | Width expansion | 300ms |
+| Glow pulse | `animate-pulse-soft` | 3s infinite |
+
+---
+
+## Mobile Behavior
+
+- Slideshow works on mobile with touch swipe support
+- Frames scale responsively (w-56 mobile → w-96 desktop)
+- Dot indicators positioned at bottom of card
+- Auto-advance continues on mobile
+
+---
+
+## Expected Result
+
+A sophisticated, luxurious slideshow that:
+
+1. **Showcases multiple designer frames** - not just one static image
+2. **Auto-advances smoothly** - elegant cross-fade transitions
+3. **Uses clean product images** - large, prominent with drop shadows
+4. **Includes brand badges** - CARTIER, GUCCI labels beneath each frame
+5. **Has subtle dot navigation** - gold accented indicators
+6. **Feels premium** - sophisticated animations, not flashy
 
