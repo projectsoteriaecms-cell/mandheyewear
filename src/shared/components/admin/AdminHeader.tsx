@@ -1,4 +1,4 @@
-import { Bell, SignOut, User, Gear, Check, Trash, Package, ShoppingCart, ArrowsLeftRight, Calendar, Warning, Info, CheckCircle, XCircle } from "@phosphor-icons/react";
+import { Bell, SignOut, User, Gear, Check, Trash, Package, ShoppingCart, ArrowsLeftRight, Calendar, Warning, Info, CheckCircle, XCircle, Storefront } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,12 +15,13 @@ import {
 } from "@/components/ui/popover";
 import { useAuth } from "@/shared/hooks/useAuth";
 import { useUserRole } from "@/shared/hooks/useUserRole";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNotifications, type NotificationType } from "@/hooks/admin/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AdminMobileNav } from "./AdminMobileNav";
 
 const getNotificationIcon = (type: NotificationType) => {
   switch (type) {
@@ -97,9 +98,23 @@ export const AdminHeader = () => {
   };
 
   return (
-    <header className="h-16 border-b bg-card flex items-center justify-between px-6">
-      <div>
-        <h2 className="text-lg font-semibold">Inventory Management</h2>
+    <header className="h-16 border-b bg-card flex items-center justify-between px-4 md:px-6">
+      <div className="flex items-center gap-3">
+        {/* Mobile hamburger menu */}
+        <AdminMobileNav />
+        
+        {/* Back to Store link */}
+        <Link 
+          to="/" 
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Storefront className="h-5 w-5" weight="light" />
+          <span className="hidden sm:inline text-sm">Store</span>
+        </Link>
+        
+        <span className="hidden sm:block text-border">|</span>
+        
+        <h2 className="text-lg font-semibold hidden sm:block">Inventory Management</h2>
       </div>
 
       <div className="flex items-center gap-4">
