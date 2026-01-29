@@ -112,7 +112,7 @@ export const MobileTopBar = () => {
               <SheetHeader className="p-4 border-b border-border bg-primary">
                 <SheetTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <img src={soteriaLogoGold} alt="Soteria" className="h-6 w-auto" />
+                    <img src={soteriaLogoGold} alt="Soteria" className="h-6 w-auto rounded-lg" />
                     <span className="text-primary-foreground/40">|</span>
                     <img src={mhLogoGold} alt="M&H" className="h-6 w-auto" />
                   </div>
