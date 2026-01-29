@@ -8,6 +8,7 @@ import {
   CurrencyCircleDollar,
   Camera,
   ArrowRight,
+  Diamond,
 } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,9 @@ const quickFilters = [
   { label: "Virtual Try-On", filter: "try-on-ready", icon: Camera },
   { label: "On Sale", filter: "on-sale", icon: Tag },
 ];
+
+// Luxury designer brands for featured banner
+const LUXURY_BRANDS = ["CARTIER", "GUCCI", "DIOR", "VERSACE", "PRADA", "CHANEL", "TOM FORD", "RAY-BAN", "OAKLEY"];
 
 export const QuickDiscovery = () => {
   // Fetch trending products with real images
@@ -40,8 +44,29 @@ export const QuickDiscovery = () => {
     },
   });
 
-  // Get featured product for banner (first product with image)
-  const featuredProduct = products?.[0];
+  // Fetch featured designer product for luxury banner
+  const { data: featuredProduct } = useQuery({
+    queryKey: ["featured-designer-product"],
+    queryFn: async () => {
+      // First try to get a luxury brand product
+      const { data: luxuryData } = await supabase
+        .from("products")
+        .select("id, name, brand, price, image_url")
+        .eq("is_active", true)
+        .eq("item_type", "frames")
+        .not("image_url", "is", null)
+        .order("price", { ascending: false })
+        .limit(10);
+
+      // Filter for luxury brands or high-priced items
+      const luxuryProduct = luxuryData?.find(p => 
+        LUXURY_BRANDS.some(brand => p.brand?.toUpperCase().includes(brand))
+      );
+
+      // Return luxury brand or highest priced product
+      return luxuryProduct || luxuryData?.[0] || null;
+    },
+  });
 
   return (
     <section className="py-8 lg:py-12 bg-gradient-to-b from-primary/5 via-background to-background">
@@ -105,53 +130,80 @@ export const QuickDiscovery = () => {
           )}
         </div>
 
-        {/* Promotional Banner - Rich Blue Gradient */}
+        {/* Luxurious Promotional Banner */}
         <div className="mb-8">
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary via-primary/95 to-primary/85">
-            {/* Decorative elements */}
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-            <div className="absolute -bottom-10 left-1/4 w-32 h-32 bg-accent/20 rounded-full blur-xl" />
-            <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-white/5 rounded-full blur-xl" />
+          <div className="relative overflow-hidden rounded-3xl min-h-[320px] md:min-h-[400px] bg-gradient-to-br from-primary via-primary/95 to-primary/80">
+            {/* Golden shimmer line at top */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
+            
+            {/* Decorative luxury elements */}
+            <div className="absolute top-10 right-10 w-40 h-40 bg-accent/15 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
+            <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-accent/10 rounded-full blur-2xl" />
+            <div className="absolute bottom-10 left-1/4 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
+            
+            {/* Luxury corner accents */}
+            <div className="absolute top-6 right-6 w-16 h-16 border border-accent/20 rounded-lg opacity-40" />
+            <div className="absolute bottom-6 left-6 w-10 h-10 border border-white/10 rounded opacity-30" />
             
             {/* Content grid */}
-            <div className="relative grid md:grid-cols-5 gap-6 p-6 lg:p-10">
-              <div className="md:col-span-3 space-y-4 z-10">
-                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white/90 text-xs font-medium">
-                  <Sparkle weight="fill" className="w-3.5 h-3.5 text-accent" />
-                  New Collection
+            <div className="relative grid md:grid-cols-2 gap-8 p-8 md:p-12 lg:p-16 h-full min-h-[320px] md:min-h-[400px]">
+              {/* Text content */}
+              <div className="flex flex-col justify-center space-y-6 z-10">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 backdrop-blur-sm border border-accent/30 text-accent text-xs font-medium tracking-wider uppercase w-fit">
+                  <Diamond weight="fill" className="w-4 h-4" />
+                  Exclusive Collection
                 </span>
-                <h3 className="text-2xl lg:text-3xl font-serif font-semibold text-white">
+                
+                <h3 className="text-3xl md:text-4xl lg:text-5xl font-serif font-semibold text-white leading-tight tracking-tight">
                   2026 Designer Frames
                 </h3>
-                <p className="text-white/80 text-sm lg:text-base max-w-md">
-                  Premium eyewear curated by M&H experts for the discerning customer
+                
+                <p className="text-white/70 text-base md:text-lg max-w-md font-light leading-relaxed">
+                  Curated luxury eyewear from the world's most prestigious houses
                 </p>
+                
                 <Button 
                   asChild
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground mt-2 shadow-gold"
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-6 text-base font-medium shadow-lg shadow-accent/30 w-fit group transition-all duration-300 hover:shadow-xl hover:shadow-accent/40"
                 >
                   <Link to="/eyewear?filter=new-arrivals">
-                    Shop Collection
-                    <ArrowRight weight="bold" className="w-4 h-4 ml-2" />
+                    Explore Collection
+                    <ArrowRight weight="bold" className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
               </div>
               
-              {/* Hero product image */}
-              <div className="md:col-span-2 relative hidden md:flex items-center justify-center">
+              {/* Hero product image - large and prominent */}
+              <div className="relative flex items-center justify-center">
                 {featuredProduct?.image_url ? (
-                  <img 
-                    src={featuredProduct.image_url}
-                    alt="Featured Frame"
-                    className="w-48 h-48 object-contain drop-shadow-2xl animate-float-slow"
-                  />
+                  <div className="relative">
+                    {/* Glow behind image */}
+                    <div className="absolute inset-0 bg-accent/20 rounded-full blur-3xl scale-75" />
+                    <img 
+                      src={featuredProduct.image_url}
+                      alt={featuredProduct.name || "Designer Frame"}
+                      className="relative w-64 h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.4)] animate-float-slow mix-blend-normal"
+                    />
+                    {/* Brand badge */}
+                    {featuredProduct.brand && (
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+                        <span className="text-white/90 text-sm font-medium tracking-wide">
+                          {featuredProduct.brand}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 ) : (
-                  <div className="w-48 h-48 flex items-center justify-center">
-                    <div className="text-white/20 text-6xl">🕶️</div>
+                  <div className="w-64 h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 flex items-center justify-center">
+                    <div className="text-white/20 text-8xl">🕶️</div>
                   </div>
                 )}
               </div>
             </div>
+            
+            {/* Bottom gold accent line */}
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
           </div>
         </div>
 
