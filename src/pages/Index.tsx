@@ -5,6 +5,7 @@ import { FeaturedFrames } from "@/components/storefront";
 import {
   HeroSection,
   CategoryCards,
+  QuickCategories,
   QuizPromo,
   VirtualTryOn,
   TrustBadges,
@@ -21,6 +22,9 @@ const Index = () => {
 
       {/* Hero Section */}
       <HeroSection />
+
+      {/* Quick-Access Categories */}
+      <QuickCategories />
 
       {/* Category Cards */}
       <CategoryCards />
