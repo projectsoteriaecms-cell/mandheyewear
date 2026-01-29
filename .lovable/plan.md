@@ -1,94 +1,140 @@
 
-# Seamless Navigation: Admin to Storefront
 
-## Current Problem
+# Quick-Access Categories Section Implementation
 
-When you enter the ECMS Admin panel, there's no obvious way to get back to the main store/home:
+## What We're Building
 
-1. **Desktop**: The "Back to Store" link exists but it's tucked at the very bottom of the sidebar - easy to miss
-2. **Mobile**: The sidebar is completely hidden (fixed `w-64` with no responsive handling), leaving **zero navigation options** to return
-
-## Solution
-
-Add a prominent, accessible "Back to Store" action in **two strategic locations**:
-
-### 1. Admin Header (Always Visible)
-Add a clear "Back to Store" or Home icon button in the header next to the title - this will be visible on both desktop and mobile.
-
-### 2. Mobile Hamburger Menu for Admin
-Create a collapsible mobile menu that slides in (like the storefront MobileNav), providing access to admin navigation AND the "Back to Store" link.
+A **mobile-first quick-access category navigation** section that appears immediately after the Hero, inspired by the Zenni interface. This provides rapid browsing paths before users scroll to the larger content sections.
 
 ---
 
-## Implementation Details
+## Component Structure
 
-### File: `src/shared/components/admin/AdminHeader.tsx`
+### New Component: `QuickCategories.tsx`
 
-**Changes:**
-- Add a "Store" or "Home" button on the left side of the header
-- Import necessary icons (`Storefront` or `House` from Phosphor)
-- Make it visually distinct but not intrusive
+Three distinct sub-sections:
 
-```tsx
-// In the header's left section
-<div className="flex items-center gap-4">
-  <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-    <Storefront weight="light" className="h-5 w-5" />
-    <span className="hidden sm:inline text-sm">Store</span>
-  </Link>
-  <span className="text-border">|</span>
-  <h2 className="text-lg font-semibold">Inventory Management</h2>
-</div>
+### 1. Category Bubbles (Circular Icons)
+- **Data source**: Fetch from `categories` table in database
+- **Layout**: Horizontally scrollable grid (2 rows on mobile, single row on desktop)
+- **Visual**: Circular containers with icons (using Phosphor icons) or could use product images
+- **Interaction**: Tap navigates to `/eyewear?category={slug}`
+
+### 2. Promotional Banner Carousel (Optional)
+- Embla carousel for promotional content
+- Could showcase seasonal offers, new arrivals, or special collections
+- This can be added later or configured from admin
+
+### 3. Quick Filter Pills
+- Horizontally scrollable chips for popular filters
+- Examples: "On Sale", "New Arrivals", "Best Sellers", "Under ₦30,000"
+- Each pill links to `/eyewear?filter={value}`
+
+---
+
+## Visual Design (Matching Your Aesthetic)
+
+Since your design philosophy emphasizes minimalism and elegance (Dieter Rams principles), we'll adapt the Zenni pattern with:
+
+| Zenni Style | Our Adaptation |
+|-------------|----------------|
+| Crowded 2-row grid | Single elegant row with subtle scroll indicators |
+| Bold product photos in circles | Clean icons with subtle backgrounds + hover effects |
+| Busy pill filters | Refined pill buttons with gold accents on hover |
+| Multiple carousels | One optional promo banner (can be hidden) |
+
+---
+
+## Technical Implementation
+
+### Files to Create
+
+**`src/components/home/QuickCategories.tsx`**
+- Main component with three sections
+- Fetches categories from database via existing `useCategories` hook
+- Horizontally scrollable with Embla carousel or native CSS scroll-snap
+- Responsive: compact on mobile, expanded on desktop
+
+### Files to Modify
+
+**`src/pages/Index.tsx`**
+- Import and add `QuickCategories` component between Hero and CategoryCards
+
+**`src/components/home/index.ts`**
+- Export the new component
+
+---
+
+## Database Considerations
+
+Your `categories` table already has:
+- `Prescription Glasses`, `Reading Glasses`, `Progressive Lenses`, `Blue Light Glasses`
+- `Designer Frames`, `Sunglasses`, `Aviator Collection`, `Cat-Eye Collection`
+- `Round Collection`, `Rectangular Collection`
+
+These 10 categories can populate the quick-access bubbles. We can add an `icon_name` column later to store Phosphor icon names per category.
+
+---
+
+## Component Mockup
+
+```
+┌────────────────────────────────────────────────────────┐
+│                     QUICK CATEGORIES                   │
+│  ┌───┐  ┌───┐  ┌───┐  ┌───┐  ┌───┐  ┌───┐  ┌───┐      │
+│  │ ○ │  │ ○ │  │ ○ │  │ ○ │  │ ○ │  │ ○ │  │ ○ │ →    │
+│  └───┘  └───┘  └───┘  └───┘  └───┘  └───┘  └───┘      │
+│ Glasses  Sun  Reading Progress  Blue  Designer  Round │
+├────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────┐  │
+│  │                                                  │  │
+│  │      NEW ARRIVALS 2026                          │  │
+│  │      Discover the latest frames  [Shop Now →]   │  │
+│  │                              ● ○ ○              │  │
+│  └─────────────────────────────────────────────────┘  │
+├────────────────────────────────────────────────────────┤
+│  [On Sale] [New In] [Best Sellers] [Under ₦30k] [→]   │
+└────────────────────────────────────────────────────────┘
 ```
 
-### File: `src/shared/components/admin/AdminLayout.tsx`
+---
 
-**Changes:**
-- Hide sidebar on mobile with `hidden md:flex`
-- Add mobile hamburger trigger in header area
+## Implementation Steps
 
-### File: `src/shared/components/admin/AdminMobileNav.tsx` (New)
+1. **Create `QuickCategories.tsx`** with:
+   - Category bubbles using database categories
+   - Phosphor icons mapped to category slugs (fallback icons for unmapped)
+   - Horizontal scroll with CSS scroll-snap or Embla
+   - Optional promo banner slot (can be empty initially)
+   - Quick filter pills with common filters
 
-**Create a mobile navigation drawer for admin** that includes:
-- All admin navigation items
-- Prominent "Back to Store" link
-- Current user info
+2. **Update Index.tsx** to include the new section
 
-### File: `src/shared/components/admin/AdminHeader.tsx`
+3. **Add icon mapping** - Create a utility to map category slugs to Phosphor icons
 
-**Additional Changes:**
-- Add hamburger menu button (visible on mobile only)
-- Import and use the new AdminMobileNav component
+4. **Style with your design system**:
+   - Card backgrounds with subtle gradients
+   - Gold accent on hover states
+   - Smooth scroll animations
+   - Mobile-optimized touch targets
 
 ---
 
-## Visual Hierarchy
+## Mobile vs Desktop Layout
 
-| Location | Desktop | Mobile |
-|----------|---------|--------|
-| Header | "Store" link + title | Hamburger + "Store" icon + title |
-| Sidebar | Full nav + bottom "Back to Store" | Hidden (use mobile drawer) |
-| Mobile Drawer | N/A | Full admin nav + "Back to Store" |
+| Element | Mobile | Desktop |
+|---------|--------|---------|
+| Category bubbles | Scrollable row, 6 visible | Full grid, all visible |
+| Promo banner | Full width carousel | Contained with max-width |
+| Filter pills | Scrollable row | May show all or scroll |
+| Overall padding | Compact (py-8) | Generous (py-16) |
 
 ---
 
-## Files to Modify
+## Dependencies
 
-1. **`src/shared/components/admin/AdminHeader.tsx`**
-   - Add "Store" button/link on left side
-   - Add mobile hamburger trigger
+- Uses existing Embla carousel (already installed)
+- Uses existing `useCategories` hook from modules
+- Phosphor icons (already installed)
+- No new packages needed
 
-2. **`src/shared/components/admin/AdminLayout.tsx`**
-   - Make sidebar responsive (`hidden md:flex`)
-
-3. **`src/shared/components/admin/AdminMobileNav.tsx`** (New)
-   - Create mobile navigation drawer for admin
-
-4. **`src/shared/components/admin/index.ts`**
-   - Export the new AdminMobileNav component
-
-## Result
-
-- **Desktop**: Clear "Store" link in header + sidebar bottom link
-- **Mobile**: Hamburger menu with full navigation + prominent "Back to Store"
-- **Seamless flow**: Easy to switch between admin and storefront from anywhere
