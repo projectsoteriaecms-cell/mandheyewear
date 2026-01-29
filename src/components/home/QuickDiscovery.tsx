@@ -21,6 +21,12 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
 
+// Import template frame images
+import frame1 from "@/assets/frame-1.jpg";
+import frame2 from "@/assets/frame-2.jpg";
+import frame3 from "@/assets/frame-3.jpg";
+import frame4 from "@/assets/frame-4.jpg";
+
 // Quick filter options - price tiers and discovery
 const quickFilters = [
   { label: "Best Sellers", filter: "best-sellers", icon: TrendUp },
@@ -31,8 +37,13 @@ const quickFilters = [
   { label: "Luxury", filter: "price-tier-luxury", icon: Sparkle },
 ];
 
-// Luxury designer brands for featured banner
-const LUXURY_BRANDS = ["CARTIER", "GUCCI", "DIOR", "VERSACE", "PRADA", "CHANEL", "TOM FORD", "RAY-BAN", "OAKLEY"];
+// Curated showcase frames for the luxury slideshow
+const SHOWCASE_FRAMES = [
+  { id: 1, src: frame1, name: "Classic Round", style: "Timeless Elegance" },
+  { id: 2, src: frame2, name: "Modern Square", style: "Contemporary Edge" },
+  { id: 3, src: frame3, name: "Bold Cat-Eye", style: "Statement Maker" },
+  { id: 4, src: frame4, name: "Aviator", style: "Iconic Style" },
+];
 
 export const QuickDiscovery = () => {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
@@ -66,28 +77,6 @@ export const QuickDiscovery = () => {
     },
   });
 
-  // Fetch multiple luxury frames for slideshow
-  const { data: luxuryFrames } = useQuery({
-    queryKey: ["luxury-frames-slideshow"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("products")
-        .select("id, name, brand, price, image_url")
-        .eq("is_active", true)
-        .eq("item_type", "frames")
-        .not("image_url", "is", null)
-        .order("price", { ascending: false })
-        .limit(10);
-
-      // Filter for luxury brands first, then highest priced
-      const luxuryProducts = data?.filter(p => 
-        LUXURY_BRANDS.some(brand => p.brand?.toUpperCase().includes(brand))
-      ) || [];
-      
-      // Return luxury brands or top 5 highest priced
-      return luxuryProducts.length >= 3 ? luxuryProducts.slice(0, 5) : data?.slice(0, 5) || [];
-    },
-  });
 
   return (
     <section className="py-8 lg:py-12 bg-gradient-to-b from-primary/5 via-background to-background">
@@ -153,7 +142,7 @@ export const QuickDiscovery = () => {
 
         {/* Luxurious Promotional Banner */}
         <div className="mb-8">
-          <div className="relative overflow-hidden rounded-3xl min-h-[320px] md:min-h-[400px] bg-gradient-to-br from-primary via-primary/95 to-primary/80">
+          <div className="relative overflow-hidden rounded-3xl min-h-[320px] md:min-h-[400px] bg-gradient-to-br from-[hsl(215_50%_22%)] via-[hsl(218_45%_18%)] to-[hsl(220_40%_15%)]">
             {/* Golden shimmer line at top */}
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
             
@@ -197,70 +186,62 @@ export const QuickDiscovery = () => {
               
               {/* Luxury Frames Slideshow */}
               <div className="relative flex items-center justify-center">
-                {luxuryFrames && luxuryFrames.length > 0 ? (
-                  <div className="relative w-full flex flex-col items-center">
-                    <Carousel
-                      setApi={setCarouselApi}
-                      opts={{ loop: true, align: "center" }}
-                      plugins={[
-                        Autoplay({
-                          delay: 4000,
-                          stopOnInteraction: false,
-                          stopOnMouseEnter: true,
-                        }),
-                      ]}
-                      className="w-full max-w-sm md:max-w-md"
-                    >
-                      <CarouselContent>
-                        {luxuryFrames.map((frame) => (
-                          <CarouselItem key={frame.id} className="flex items-center justify-center">
-                            <div className="relative">
-                              {/* Soft glow behind frame */}
-                              <div className="absolute inset-0 bg-accent/15 rounded-full blur-3xl scale-90" />
-                              
-                              {/* Frame image - large and floating */}
-                              <img 
-                                src={frame.image_url!}
-                                alt={frame.name || "Designer Frame"}
-                                className="relative w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.5)]"
-                              />
-                              
-                              {/* Brand badge below */}
-                              {frame.brand && (
-                                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-5 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
-                                  <span className="text-white/90 text-sm font-medium tracking-widest uppercase">
-                                    {frame.brand}
-                                  </span>
-                                </div>
-                              )}
+                <div className="relative w-full flex flex-col items-center">
+                  <Carousel
+                    setApi={setCarouselApi}
+                    opts={{ loop: true, align: "center" }}
+                    plugins={[
+                      Autoplay({
+                        delay: 4000,
+                        stopOnInteraction: false,
+                        stopOnMouseEnter: true,
+                      }),
+                    ]}
+                    className="w-full max-w-sm md:max-w-md"
+                  >
+                    <CarouselContent>
+                      {SHOWCASE_FRAMES.map((frame) => (
+                        <CarouselItem key={frame.id} className="flex items-center justify-center">
+                          <div className="relative">
+                            {/* Soft glow behind frame */}
+                            <div className="absolute inset-0 bg-accent/20 rounded-full blur-3xl scale-90" />
+                            
+                            {/* Frame image - large and floating */}
+                            <img 
+                              src={frame.src}
+                              alt={frame.name}
+                              className="relative w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.5)]"
+                            />
+                            
+                            {/* Style badge below */}
+                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-5 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+                              <span className="text-white/90 text-sm font-medium tracking-widest uppercase">
+                                {frame.style}
+                              </span>
                             </div>
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                    </Carousel>
-                    
-                    {/* Slide indicators */}
-                    <div className="flex gap-2 mt-8">
-                      {luxuryFrames.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => carouselApi?.scrollTo(index)}
-                          className={cn(
-                            "h-2 rounded-full transition-all duration-300",
-                            currentSlide === index 
-                              ? "bg-accent w-6" 
-                              : "bg-white/30 hover:bg-white/50 w-2"
-                          )}
-                          aria-label={`Go to slide ${index + 1}`}
-                        />
+                          </div>
+                        </CarouselItem>
                       ))}
-                    </div>
+                    </CarouselContent>
+                  </Carousel>
+                  
+                  {/* Slide indicators */}
+                  <div className="flex gap-2 mt-8">
+                    {SHOWCASE_FRAMES.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => carouselApi?.scrollTo(index)}
+                        className={cn(
+                          "h-2 rounded-full transition-all duration-300",
+                          currentSlide === index 
+                            ? "bg-accent w-6" 
+                            : "bg-white/30 hover:bg-white/50 w-2"
+                        )}
+                        aria-label={`Go to slide ${index + 1}`}
+                      />
+                    ))}
                   </div>
-                ) : (
-                  <div className="w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 flex items-center justify-center">
-                    <div className="text-white/20 text-8xl">🕶️</div>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
             
