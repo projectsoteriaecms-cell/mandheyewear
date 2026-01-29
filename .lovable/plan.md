@@ -1,140 +1,243 @@
 
 
-# Quick-Access Categories Section Implementation
+# Complete Redesign: Quick Discovery Section
 
-## What We're Building
+## Problems Identified
 
-A **mobile-first quick-access category navigation** section that appears immediately after the Hero, inspired by the Zenni interface. This provides rapid browsing paths before users scroll to the larger content sections.
-
----
-
-## Component Structure
-
-### New Component: `QuickCategories.tsx`
-
-Three distinct sub-sections:
-
-### 1. Category Bubbles (Circular Icons)
-- **Data source**: Fetch from `categories` table in database
-- **Layout**: Horizontally scrollable grid (2 rows on mobile, single row on desktop)
-- **Visual**: Circular containers with icons (using Phosphor icons) or could use product images
-- **Interaction**: Tap navigates to `/eyewear?category={slug}`
-
-### 2. Promotional Banner Carousel (Optional)
-- Embla carousel for promotional content
-- Could showcase seasonal offers, new arrivals, or special collections
-- This can be added later or configured from admin
-
-### 3. Quick Filter Pills
-- Horizontally scrollable chips for popular filters
-- Examples: "On Sale", "New Arrivals", "Best Sellers", "Under ₦30,000"
-- Each pill links to `/eyewear?filter={value}`
+1. **Generic Icons** - Using airplane, cat, circle icons is unprofessional and confusing
+2. **Empty Promo Card** - The 2026 banner has no visual interest, no glasses imagery
+3. **Missing Brand Colors** - Blue (your dominant clinical color) is barely used
+4. **Duplicate Purpose** - Two "Shop by Category" sections creates confusion
 
 ---
 
-## Visual Design (Matching Your Aesthetic)
+## The Solution: A Bold, Zenni-Inspired Transformation
 
-Since your design philosophy emphasizes minimalism and elegance (Dieter Rams principles), we'll adapt the Zenni pattern with:
-
-| Zenni Style | Our Adaptation |
-|-------------|----------------|
-| Crowded 2-row grid | Single elegant row with subtle scroll indicators |
-| Bold product photos in circles | Clean icons with subtle backgrounds + hover effects |
-| Busy pill filters | Refined pill buttons with gold accents on hover |
-| Multiple carousels | One optional promo banner (can be hidden) |
+We'll create a completely redesigned section called **QuickDiscovery** that looks professional, uses real imagery, and integrates your blue/gold brand colors.
 
 ---
 
-## Technical Implementation
+## New Design Structure
 
-### Files to Create
-
-**`src/components/home/QuickCategories.tsx`**
-- Main component with three sections
-- Fetches categories from database via existing `useCategories` hook
-- Horizontally scrollable with Embla carousel or native CSS scroll-snap
-- Responsive: compact on mobile, expanded on desktop
-
-### Files to Modify
-
-**`src/pages/Index.tsx`**
-- Import and add `QuickCategories` component between Hero and CategoryCards
-
-**`src/components/home/index.ts`**
-- Export the new component
-
----
-
-## Database Considerations
-
-Your `categories` table already has:
-- `Prescription Glasses`, `Reading Glasses`, `Progressive Lenses`, `Blue Light Glasses`
-- `Designer Frames`, `Sunglasses`, `Aviator Collection`, `Cat-Eye Collection`
-- `Round Collection`, `Rectangular Collection`
-
-These 10 categories can populate the quick-access bubbles. We can add an `icon_name` column later to store Phosphor icon names per category.
-
----
-
-## Component Mockup
-
-```
-┌────────────────────────────────────────────────────────┐
-│                     QUICK CATEGORIES                   │
-│  ┌───┐  ┌───┐  ┌───┐  ┌───┐  ┌───┐  ┌───┐  ┌───┐      │
-│  │ ○ │  │ ○ │  │ ○ │  │ ○ │  │ ○ │  │ ○ │  │ ○ │ →    │
-│  └───┘  └───┘  └───┘  └───┘  └───┘  └───┘  └───┘      │
-│ Glasses  Sun  Reading Progress  Blue  Designer  Round │
-├────────────────────────────────────────────────────────┤
-│  ┌─────────────────────────────────────────────────┐  │
-│  │                                                  │  │
-│  │      NEW ARRIVALS 2026                          │  │
-│  │      Discover the latest frames  [Shop Now →]   │  │
-│  │                              ● ○ ○              │  │
-│  └─────────────────────────────────────────────────┘  │
-├────────────────────────────────────────────────────────┤
-│  [On Sale] [New In] [Best Sellers] [Under ₦30k] [→]   │
-└────────────────────────────────────────────────────────┘
+```text
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│   QUICK DISCOVERY SECTION (Blue gradient background)                           │
+│                                                                                 │
+│   ┌──────────────────────────────────────────────────────────────────────────┐ │
+│   │ TRENDING FRAMES - Actual product thumbnails with real images             │ │
+│   │                                                                          │ │
+│   │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  →      │ │
+│   │  │[PRODUCT]│  │[PRODUCT]│  │[PRODUCT]│  │[PRODUCT]│  │[PRODUCT]│        │ │
+│   │  │ IMAGE   │  │ IMAGE   │  │ IMAGE   │  │ IMAGE   │  │ IMAGE   │        │ │
+│   │  │         │  │         │  │         │  │         │  │         │        │ │
+│   │  │ ₦55,000 │  │₦130,000 │  │₦155,000 │  │₦785,000 │  │ ₦30,000 │        │ │
+│   │  └─────────┘  └─────────┘  └─────────┘  └─────────┘  └─────────┘        │ │
+│   └──────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                 │
+│   ┌──────────────────────────────────────────────────────────────────────────┐ │
+│   │ PROMOTIONAL BANNER - Rich visual with glasses imagery                    │ │
+│   │                                                                          │ │
+│   │  ┌────────────────────────────────────────────────────────────────────┐ │ │
+│   │  │                                                    🕶️              │ │ │
+│   │  │   NEW 2026 COLLECTION                         [floating glasses]  │ │ │
+│   │  │   Premium Designer Frames                                          │ │ │
+│   │  │   Curated by M&H Eyewear experts                                  │ │ │
+│   │  │                                           [Shop Collection →]      │ │ │
+│   │  │   Blue gradient background with decorative eyewear silhouettes    │ │ │
+│   │  └────────────────────────────────────────────────────────────────────┘ │ │
+│   └──────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                 │
+│   ┌──────────────────────────────────────────────────────────────────────────┐ │
+│   │ QUICK FILTERS - Refined pills with blue/gold accents                     │ │
+│   │                                                                          │ │
+│   │  [🔥 Best Sellers]  [✨ New Arrivals]  [💰 Under ₦50k]  [🎯 Try-On] →   │ │
+│   └──────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                 │
+└────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Implementation Steps
+## Implementation Details
 
-1. **Create `QuickCategories.tsx`** with:
-   - Category bubbles using database categories
-   - Phosphor icons mapped to category slugs (fallback icons for unmapped)
-   - Horizontal scroll with CSS scroll-snap or Embla
-   - Optional promo banner slot (can be empty initially)
-   - Quick filter pills with common filters
+### 1. Trending Frames Row (Real Products)
 
-2. **Update Index.tsx** to include the new section
+**What changes:**
+- Replace icon circles with **actual product images** from the database
+- Show frames from products that have `image_url` defined
+- Each card shows: product photo, brand name, price
+- Rounded corners (not full circles) - more modern
+- Blue border on hover, gold price accent
 
-3. **Add icon mapping** - Create a utility to map category slugs to Phosphor icons
+**Data source:** Fetching from products table where `image_url IS NOT NULL AND item_type = 'frames'`
 
-4. **Style with your design system**:
-   - Card backgrounds with subtle gradients
-   - Gold accent on hover states
-   - Smooth scroll animations
-   - Mobile-optimized touch targets
-
----
-
-## Mobile vs Desktop Layout
-
-| Element | Mobile | Desktop |
-|---------|--------|---------|
-| Category bubbles | Scrollable row, 6 visible | Full grid, all visible |
-| Promo banner | Full width carousel | Contained with max-width |
-| Filter pills | Scrollable row | May show all or scroll |
-| Overall padding | Compact (py-8) | Generous (py-16) |
+**Styling:**
+- Horizontally scrollable with snap points
+- White background cards on subtle blue tinted section background
+- Blue glow on hover
+- Price displayed in gold (accent color)
 
 ---
 
-## Dependencies
+### 2. Promotional Banner (Designed Card)
 
-- Uses existing Embla carousel (already installed)
-- Uses existing `useCategories` hook from modules
-- Phosphor icons (already installed)
-- No new packages needed
+**What changes:**
+- Full-width card with **blue gradient background** (primary brand color)
+- Floating eyewear silhouettes/decorative elements (SVG or CSS)
+- Actual glasses imagery or a hero product image positioned right
+- Clear hierarchy: badge → headline → subtext → CTA
+- Gold accent button
+
+**Design approach:**
+```text
+┌──────────────────────────────────────────────────────────────────────────┐
+│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  [GLASSES IMAGE]   │
+│ ░░░                                              ░░░░                    │
+│ ░░░  ✨ New Collection                           ░░░░    🕶️              │
+│ ░░░                                              ░░░░                    │
+│ ░░░  2026 Designer Frames                        ░░░░                    │
+│ ░░░  Premium eyewear curated by experts          ░░░░                    │
+│ ░░░                                              ░░░░                    │
+│ ░░░  [Shop Collection →]                         ░░░░                    │
+│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░                    │
+└──────────────────────────────────────────────────────────────────────────┘
+        BLUE GRADIENT BACKGROUND                    PRODUCT/GLASSES IMAGE
+```
+
+**Color usage:**
+- Background: Primary blue gradient (`from-primary via-primary/90 to-primary/80`)
+- Text: White
+- Button: Gold (accent)
+- Decorative orbs: Gold/white glows
+
+---
+
+### 3. Quick Filter Pills (Enhanced)
+
+**What changes:**
+- Better icons from Phosphor (no abstract ones)
+- Blue border with gold hover state
+- Price-specific filters for Nigerian market (Under ₦30k, ₦50k, etc.)
+- Add "Virtual Try-On" filter (differentiator)
+
+**Filter options:**
+- Best Sellers (TrendUp icon)
+- New Arrivals (Sparkle icon)
+- Under ₦50k (CurrencyCircleDollar icon)
+- Virtual Try-On (Camera icon)
+- On Sale (Tag icon)
+
+---
+
+## Files to Modify
+
+### 1. `src/components/home/QuickCategories.tsx` → Rename to `QuickDiscovery.tsx`
+
+Complete rewrite with:
+- Trending products row (fetching real product data)
+- Rich promotional banner with blue gradient
+- Enhanced filter pills
+
+### 2. `src/components/home/index.ts`
+
+- Update export from `QuickCategories` to `QuickDiscovery`
+
+### 3. `src/pages/Index.tsx`
+
+- Update import to use `QuickDiscovery`
+
+---
+
+## Technical Details
+
+### Product Data Query
+
+```typescript
+// Fetch trending products with images
+const { data: products } = useQuery({
+  queryKey: ["trending-products"],
+  queryFn: async () => {
+    const { data } = await supabase
+      .from("products")
+      .select("id, name, brand, price, image_url")
+      .eq("is_active", true)
+      .eq("item_type", "frames")
+      .not("image_url", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(8);
+    return data;
+  },
+});
+```
+
+### Promotional Banner Styling
+
+```tsx
+<div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary via-primary/95 to-primary/85">
+  {/* Decorative orbs */}
+  <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+  <div className="absolute -bottom-10 left-1/4 w-32 h-32 bg-accent/20 rounded-full blur-xl" />
+  
+  {/* Content grid */}
+  <div className="grid md:grid-cols-5 gap-6 p-6 lg:p-10">
+    <div className="md:col-span-3 space-y-4">
+      <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white/90 text-xs font-medium">
+        <Sparkle weight="fill" className="w-3.5 h-3.5 text-accent" />
+        New Collection
+      </span>
+      <h3 className="text-2xl lg:text-3xl font-display font-semibold text-white">
+        2026 Designer Frames
+      </h3>
+      <p className="text-white/80 text-sm lg:text-base max-w-md">
+        Premium eyewear curated by M&H experts for the discerning customer
+      </p>
+      <Button className="bg-accent hover:bg-accent/90 text-accent-foreground mt-2">
+        Shop Collection <ArrowRight />
+      </Button>
+    </div>
+    
+    {/* Hero product image */}
+    <div className="md:col-span-2 relative hidden md:flex items-center justify-center">
+      <img 
+        src={featuredProduct?.image_url} 
+        alt="Featured Frame"
+        className="w-48 h-48 object-contain drop-shadow-2xl animate-float"
+      />
+    </div>
+  </div>
+</div>
+```
+
+---
+
+## Visual Comparison
+
+| Element | Before | After |
+|---------|--------|-------|
+| Section Background | Light gray (`bg-muted/30`) | Subtle blue tint or white with blue accents |
+| Category Icons | Abstract Phosphor icons (Airplane, Cat) | **Real product photos** from database |
+| Promo Banner | Text-only with faint gradient | **Rich blue gradient** with floating glasses image |
+| Filter Pills | Gray borders | Blue borders with gold hover |
+| Brand Identity | Neutral | **Blue dominant** with gold accents |
+
+---
+
+## Mobile Experience
+
+- Trending products: Horizontal scroll with snap, 2 visible at a time
+- Promo banner: Stack vertically, glasses image above content
+- Filter pills: Horizontal scroll, full-width touch targets
+
+---
+
+## Expected Result
+
+A professional, brand-aligned quick discovery section that:
+
+1. Uses **blue as the dominant color** (your clinical trust color)
+2. Shows **real product imagery** instead of generic icons
+3. Features a **visually designed promo card** with glasses imagery
+4. Feels **premium and mature** - not cartoonish
+5. **Eliminates redundancy** with the CategoryCards section below
 
