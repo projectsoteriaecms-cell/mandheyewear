@@ -79,7 +79,7 @@ export const MobileNav = () => {
               <List weight="light" className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0">
+          <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0" hideCloseButton>
             <SheetHeader className="p-4 border-b border-border bg-primary">
               <SheetTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
