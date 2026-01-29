@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,12 +7,19 @@ import {
   TrendUp,
   Tag,
   CurrencyCircleDollar,
-  Camera,
   ArrowRight,
   Diamond,
 } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { cn } from "@/lib/utils";
 
 // Quick filter options - price tiers and discovery
 const quickFilters = [
@@ -27,6 +35,19 @@ const quickFilters = [
 const LUXURY_BRANDS = ["CARTIER", "GUCCI", "DIOR", "VERSACE", "PRADA", "CHANEL", "TOM FORD", "RAY-BAN", "OAKLEY"];
 
 export const QuickDiscovery = () => {
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Track current slide
+  useEffect(() => {
+    if (!carouselApi) return;
+    
+    setCurrentSlide(carouselApi.selectedScrollSnap());
+    carouselApi.on("select", () => {
+      setCurrentSlide(carouselApi.selectedScrollSnap());
+    });
+  }, [carouselApi]);
+
   // Fetch trending products with real images
   const { data: products, isLoading } = useQuery({
     queryKey: ["trending-products"],
@@ -45,12 +66,11 @@ export const QuickDiscovery = () => {
     },
   });
 
-  // Fetch featured designer product for luxury banner
-  const { data: featuredProduct } = useQuery({
-    queryKey: ["featured-designer-product"],
+  // Fetch multiple luxury frames for slideshow
+  const { data: luxuryFrames } = useQuery({
+    queryKey: ["luxury-frames-slideshow"],
     queryFn: async () => {
-      // First try to get a luxury brand product
-      const { data: luxuryData } = await supabase
+      const { data } = await supabase
         .from("products")
         .select("id, name, brand, price, image_url")
         .eq("is_active", true)
@@ -59,13 +79,13 @@ export const QuickDiscovery = () => {
         .order("price", { ascending: false })
         .limit(10);
 
-      // Filter for luxury brands or high-priced items
-      const luxuryProduct = luxuryData?.find(p => 
+      // Filter for luxury brands first, then highest priced
+      const luxuryProducts = data?.filter(p => 
         LUXURY_BRANDS.some(brand => p.brand?.toUpperCase().includes(brand))
-      );
-
-      // Return luxury brand or highest priced product
-      return luxuryProduct || luxuryData?.[0] || null;
+      ) || [];
+      
+      // Return luxury brands or top 5 highest priced
+      return luxuryProducts.length >= 3 ? luxuryProducts.slice(0, 5) : data?.slice(0, 5) || [];
     },
   });
 
@@ -175,28 +195,69 @@ export const QuickDiscovery = () => {
                 </Button>
               </div>
               
-              {/* Hero product image - large and prominent */}
+              {/* Luxury Frames Slideshow */}
               <div className="relative flex items-center justify-center">
-                {featuredProduct?.image_url ? (
-                  <div className="relative">
-                    {/* Glow behind image */}
-                    <div className="absolute inset-0 bg-accent/20 rounded-full blur-3xl scale-75" />
-                    <img 
-                      src={featuredProduct.image_url}
-                      alt={featuredProduct.name || "Designer Frame"}
-                      className="relative w-64 h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.4)] animate-float-slow mix-blend-normal"
-                    />
-                    {/* Brand badge */}
-                    {featuredProduct.brand && (
-                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
-                        <span className="text-white/90 text-sm font-medium tracking-wide">
-                          {featuredProduct.brand}
-                        </span>
-                      </div>
-                    )}
+                {luxuryFrames && luxuryFrames.length > 0 ? (
+                  <div className="relative w-full flex flex-col items-center">
+                    <Carousel
+                      setApi={setCarouselApi}
+                      opts={{ loop: true, align: "center" }}
+                      plugins={[
+                        Autoplay({
+                          delay: 4000,
+                          stopOnInteraction: false,
+                          stopOnMouseEnter: true,
+                        }),
+                      ]}
+                      className="w-full max-w-sm md:max-w-md"
+                    >
+                      <CarouselContent>
+                        {luxuryFrames.map((frame) => (
+                          <CarouselItem key={frame.id} className="flex items-center justify-center">
+                            <div className="relative">
+                              {/* Soft glow behind frame */}
+                              <div className="absolute inset-0 bg-accent/15 rounded-full blur-3xl scale-90" />
+                              
+                              {/* Frame image - large and floating */}
+                              <img 
+                                src={frame.image_url!}
+                                alt={frame.name || "Designer Frame"}
+                                className="relative w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.5)]"
+                              />
+                              
+                              {/* Brand badge below */}
+                              {frame.brand && (
+                                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-5 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+                                  <span className="text-white/90 text-sm font-medium tracking-widest uppercase">
+                                    {frame.brand}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                    </Carousel>
+                    
+                    {/* Slide indicators */}
+                    <div className="flex gap-2 mt-8">
+                      {luxuryFrames.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => carouselApi?.scrollTo(index)}
+                          className={cn(
+                            "h-2 rounded-full transition-all duration-300",
+                            currentSlide === index 
+                              ? "bg-accent w-6" 
+                              : "bg-white/30 hover:bg-white/50 w-2"
+                          )}
+                          aria-label={`Go to slide ${index + 1}`}
+                        />
+                      ))}
+                    </div>
                   </div>
                 ) : (
-                  <div className="w-64 h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 flex items-center justify-center">
+                  <div className="w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 flex items-center justify-center">
                     <div className="text-white/20 text-8xl">🕶️</div>
                   </div>
                 )}
