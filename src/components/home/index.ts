@@ -1,6 +1,6 @@
 export { HeroSection } from "./HeroSection";
 export { CategoryCards } from "./CategoryCards";
-export { QuickCategories } from "./QuickCategories";
+export { QuickDiscovery } from "./QuickDiscovery";
 export { QuizPromo } from "./QuizPromo";
 export { VirtualTryOn } from "./VirtualTryOn";
 export { TrustBadges } from "./TrustBadges";
