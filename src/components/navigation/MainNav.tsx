@@ -1,13 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { MagnifyingGlass, Heart, User, SignOut, Gear, Sparkle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -18,88 +12,75 @@ import { cn } from "@/lib/utils";
 import soteriaLogo from "@/assets/soteria-logo.png";
 import soteriaLogoGold from "@/assets/soteria-logo-gold.png";
 import mhLogoGold from "@/assets/mh-logo-gold.png";
-
-const navLinks = [
-  { name: "Style Quiz", path: "/style-quiz", highlight: true },
-  { name: "Eyeglasses", path: "/eyewear?category=eyeglasses" },
-  { name: "Sunglasses", path: "/eyewear?category=sunglasses" },
-  { name: "Eye Exams", path: "/booking" },
-  { name: "Accessories", path: "/eyewear?category=accessories" },
-];
-
+const navLinks = [{
+  name: "Style Quiz",
+  path: "/style-quiz",
+  highlight: true
+}, {
+  name: "Eyeglasses",
+  path: "/eyewear?category=eyeglasses"
+}, {
+  name: "Sunglasses",
+  path: "/eyewear?category=sunglasses"
+}, {
+  name: "Eye Exams",
+  path: "/booking"
+}, {
+  name: "Accessories",
+  path: "/eyewear?category=accessories"
+}];
 export const MainNav = () => {
   const location = useLocation();
-  const { user, loading, signOut, isAuthenticated } = useAuth();
-  const { data: role } = useUserRole();
-  const { toast } = useToast();
+  const {
+    user,
+    loading,
+    signOut,
+    isAuthenticated
+  } = useAuth();
+  const {
+    data: role
+  } = useUserRole();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
-  
   const isStaff = hasAdminAccess(role ?? null);
-
   const handleSignOut = async () => {
-    const { error } = await signOut();
+    const {
+      error
+    } = await signOut();
     if (error) {
       toast({
         title: "Error",
         description: "Failed to sign out.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } else {
       toast({
         title: "Signed Out",
-        description: "You have been signed out.",
+        description: "You have been signed out."
       });
       navigate("/");
     }
   };
-
-  return (
-    <div className="bg-background border-b border-border">
+  return <div className="bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo - Unified Brand with Images */}
           <Link to="/" className="flex items-center gap-2">
-            <img 
-              src={soteriaLogo} 
-              alt="Soteria Eye Clinic" 
-              className="h-10 w-auto dark:hidden"
-            />
-            <img 
-              src={soteriaLogoGold} 
-              alt="Soteria Eye Clinic" 
-              className="h-10 w-auto hidden dark:block"
-            />
-            <span className="text-border text-2xl font-light">|</span>
-            <img 
-              src={mhLogoGold} 
-              alt="M&H Eyewear" 
-              className="h-[4.5rem] w-auto"
-            />
+            <img src={soteriaLogo} alt="Soteria Eye Clinic" className="h-10 w-auto dark:hidden" />
+            <img src={soteriaLogoGold} alt="Soteria Eye Clinic" className="h-10 w-auto hidden dark:block" />
+            <span className="text-border text-2xl font-light px-0 mx-0">|</span>
+            <img src={mhLogoGold} alt="M&H Eyewear" className="h-[4.5rem] w-auto" />
           </Link>
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                className={cn(
-                  "text-sm font-medium transition-smooth relative py-2",
-                  link.highlight 
-                    ? "text-accent hover:text-accent/80 flex items-center gap-1" 
-                    : "text-foreground/70 hover:text-foreground",
-                  location.pathname === link.path && "text-foreground"
-                )}
-              >
-                {link.highlight && (
-                  <Sparkle weight="duotone" className="h-3.5 w-3.5" />
-                )}
+            {navLinks.map(link => <Link key={link.name} to={link.path} className={cn("text-sm font-medium transition-smooth relative py-2", link.highlight ? "text-accent hover:text-accent/80 flex items-center gap-1" : "text-foreground/70 hover:text-foreground", location.pathname === link.path && "text-foreground")}>
+                {link.highlight && <Sparkle weight="duotone" className="h-3.5 w-3.5" />}
                 {link.name}
-                {location.pathname === link.path && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
-                )}
-              </Link>
-            ))}
+                {location.pathname === link.path && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+              </Link>)}
           </nav>
 
           {/* Icon Actions */}
@@ -120,9 +101,7 @@ export const MainNav = () => {
             <CartDrawer />
 
             {/* Account */}
-            {!loading && (
-              isAuthenticated ? (
-                <DropdownMenu>
+            {!loading && (isAuthenticated ? <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
                       <User weight="light" className="h-5 w-5" />
@@ -135,30 +114,23 @@ export const MainNav = () => {
                         My Account
                       </Link>
                     </DropdownMenuItem>
-                    {isStaff && (
-                      <DropdownMenuItem asChild>
+                    {isStaff && <DropdownMenuItem asChild>
                         <Link to="/admin" className="cursor-pointer">
                           <Gear weight="light" className="h-4 w-4 mr-2" />
                           Admin Panel
                         </Link>
-                      </DropdownMenuItem>
-                    )}
+                      </DropdownMenuItem>}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                       <SignOut weight="light" className="h-4 w-4 mr-2" />
                       Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button variant="ghost" size="sm" asChild className="text-foreground/70 hover:text-foreground">
+                </DropdownMenu> : <Button variant="ghost" size="sm" asChild className="text-foreground/70 hover:text-foreground">
                   <Link to="/login">Sign In</Link>
-                </Button>
-              )
-            )}
+                </Button>)}
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
