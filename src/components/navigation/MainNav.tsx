@@ -73,7 +73,7 @@ export const MainNav = () => {
             <img 
               src={mhLogoGold} 
               alt="M&H Eyewear" 
-              className="h-16 w-auto"
+              className="h-[4.5rem] w-auto"
             />
           </Link>
 
