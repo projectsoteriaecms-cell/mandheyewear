@@ -1,243 +1,225 @@
 
 
-# Complete Redesign: Quick Discovery Section
+# Luxurious Designer Frames Promotional Card Redesign
 
-## Problems Identified
+## Current Issues
 
-1. **Generic Icons** - Using airplane, cat, circle icons is unprofessional and confusing
-2. **Empty Promo Card** - The 2026 banner has no visual interest, no glasses imagery
-3. **Missing Brand Colors** - Blue (your dominant clinical color) is barely used
-4. **Duplicate Purpose** - Two "Shop by Category" sections creates confusion
-
----
-
-## The Solution: A Bold, Zenni-Inspired Transformation
-
-We'll create a completely redesigned section called **QuickDiscovery** that looks professional, uses real imagery, and integrates your blue/gold brand colors.
+1. **Card is too compact** - Current `p-6 lg:p-10` with `md:grid-cols-5` layout makes it feel cramped
+2. **Weak visual impact** - The featured product image is small (48x48 w-48 h-48) and uses a product with white background
+3. **Generic design** - Needs more sophisticated luxury feel (think Cartier, Gucci brand ads)
+4. **Poor image selection** - Currently pulling the first product, which may not be the most luxurious
 
 ---
 
-## New Design Structure
+## The Solution: Full-Width Luxury Banner
+
+Transform this into a **tall, square-ish hero card** (aspect ratio ~16:9 or closer to square on mobile) with:
+
+### Visual Design Concept
 
 ```text
-┌────────────────────────────────────────────────────────────────────────────────┐
-│                                                                                 │
-│   QUICK DISCOVERY SECTION (Blue gradient background)                           │
-│                                                                                 │
-│   ┌──────────────────────────────────────────────────────────────────────────┐ │
-│   │ TRENDING FRAMES - Actual product thumbnails with real images             │ │
-│   │                                                                          │ │
-│   │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  →      │ │
-│   │  │[PRODUCT]│  │[PRODUCT]│  │[PRODUCT]│  │[PRODUCT]│  │[PRODUCT]│        │ │
-│   │  │ IMAGE   │  │ IMAGE   │  │ IMAGE   │  │ IMAGE   │  │ IMAGE   │        │ │
-│   │  │         │  │         │  │         │  │         │  │         │        │ │
-│   │  │ ₦55,000 │  │₦130,000 │  │₦155,000 │  │₦785,000 │  │ ₦30,000 │        │ │
-│   │  └─────────┘  └─────────┘  └─────────┘  └─────────┘  └─────────┘        │ │
-│   └──────────────────────────────────────────────────────────────────────────┘ │
-│                                                                                 │
-│   ┌──────────────────────────────────────────────────────────────────────────┐ │
-│   │ PROMOTIONAL BANNER - Rich visual with glasses imagery                    │ │
-│   │                                                                          │ │
-│   │  ┌────────────────────────────────────────────────────────────────────┐ │ │
-│   │  │                                                    🕶️              │ │ │
-│   │  │   NEW 2026 COLLECTION                         [floating glasses]  │ │ │
-│   │  │   Premium Designer Frames                                          │ │ │
-│   │  │   Curated by M&H Eyewear experts                                  │ │ │
-│   │  │                                           [Shop Collection →]      │ │ │
-│   │  │   Blue gradient background with decorative eyewear silhouettes    │ │ │
-│   │  └────────────────────────────────────────────────────────────────────┘ │ │
-│   └──────────────────────────────────────────────────────────────────────────┘ │
-│                                                                                 │
-│   ┌──────────────────────────────────────────────────────────────────────────┐ │
-│   │ QUICK FILTERS - Refined pills with blue/gold accents                     │ │
-│   │                                                                          │ │
-│   │  [🔥 Best Sellers]  [✨ New Arrivals]  [💰 Under ₦50k]  [🎯 Try-On] →   │ │
-│   └──────────────────────────────────────────────────────────────────────────┘ │
-│                                                                                 │
-└────────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                          │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│  ░░░                                                                               ░░░ │
+│  ░░░                        ╔═══════════════════╗                                  ░░░ │
+│  ░░░   ✨ Exclusive         ║                   ║                                  ░░░ │
+│  ░░░                        ║    [CARTIER]      ║                                  ░░░ │
+│  ░░░   2026 Designer        ║    [DESIGNER]     ║                                  ░░░ │
+│  ░░░   Collection           ║    [FRAME]        ║   ← LARGE floating frame         ░░░ │
+│  ░░░                        ║    [IMAGE]        ║     with subtle animation        ░░░ │
+│  ░░░   Curated luxury       ║                   ║                                  ░░░ │
+│  ░░░   eyewear              ╚═══════════════════╝                                  ░░░ │
+│  ░░░                                                                               ░░░ │
+│  ░░░   [Explore Collection →]                                                      ░░░ │
+│  ░░░                                                                               ░░░ │
+│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│                                                                                          │
+│                    RICH BLUE GRADIENT + GOLD ACCENT ELEMENTS                            │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Implementation Details
 
-### 1. Trending Frames Row (Real Products)
+### 1. Card Size & Layout
 
-**What changes:**
-- Replace icon circles with **actual product images** from the database
-- Show frames from products that have `image_url` defined
-- Each card shows: product photo, brand name, price
-- Rounded corners (not full circles) - more modern
-- Blue border on hover, gold price accent
+**Current:**
+- `grid md:grid-cols-5` with `p-6 lg:p-10` 
+- Compact rectangular shape
 
-**Data source:** Fetching from products table where `image_url IS NOT NULL AND item_type = 'frames'`
+**New:**
+- **Min-height: 320px on mobile, 400px on desktop** (near-square feel)
+- **Full container width** with centered content
+- **Two-column layout on desktop** (50/50 split for text + image)
+- **Stacked on mobile** with image positioned behind text (overlay style)
 
-**Styling:**
-- Horizontally scrollable with snap points
-- White background cards on subtle blue tinted section background
-- Blue glow on hover
-- Price displayed in gold (accent color)
+### 2. Background Treatment
 
----
+Sophisticated blue gradient with luxury accents:
 
-### 2. Promotional Banner (Designed Card)
-
-**What changes:**
-- Full-width card with **blue gradient background** (primary brand color)
-- Floating eyewear silhouettes/decorative elements (SVG or CSS)
-- Actual glasses imagery or a hero product image positioned right
-- Clear hierarchy: badge → headline → subtext → CTA
-- Gold accent button
-
-**Design approach:**
-```text
-┌──────────────────────────────────────────────────────────────────────────┐
-│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  [GLASSES IMAGE]   │
-│ ░░░                                              ░░░░                    │
-│ ░░░  ✨ New Collection                           ░░░░    🕶️              │
-│ ░░░                                              ░░░░                    │
-│ ░░░  2026 Designer Frames                        ░░░░                    │
-│ ░░░  Premium eyewear curated by experts          ░░░░                    │
-│ ░░░                                              ░░░░                    │
-│ ░░░  [Shop Collection →]                         ░░░░                    │
-│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░                    │
-└──────────────────────────────────────────────────────────────────────────┘
-        BLUE GRADIENT BACKGROUND                    PRODUCT/GLASSES IMAGE
+```tsx
+className="relative overflow-hidden rounded-3xl min-h-[320px] md:min-h-[400px] 
+           bg-gradient-to-br from-primary via-primary/95 to-primary/80"
 ```
 
-**Color usage:**
-- Background: Primary blue gradient (`from-primary via-primary/90 to-primary/80`)
-- Text: White
-- Button: Gold (accent)
-- Decorative orbs: Gold/white glows
+Add layered decorative elements:
+- **Golden shimmer sweep** across the top (using `animate-shimmer-sweep`)
+- **Glassmorphic orbs** in corners
+- **Subtle gold border accent** on the frame/card
 
----
+### 3. Featured Product Selection
 
-### 3. Quick Filter Pills (Enhanced)
-
-**What changes:**
-- Better icons from Phosphor (no abstract ones)
-- Blue border with gold hover state
-- Price-specific filters for Nigerian market (Under ₦30k, ₦50k, etc.)
-- Add "Virtual Try-On" filter (differentiator)
-
-**Filter options:**
-- Best Sellers (TrendUp icon)
-- New Arrivals (Sparkle icon)
-- Under ₦50k (CurrencyCircleDollar icon)
-- Virtual Try-On (Camera icon)
-- On Sale (Tag icon)
-
----
-
-## Files to Modify
-
-### 1. `src/components/home/QuickCategories.tsx` → Rename to `QuickDiscovery.tsx`
-
-Complete rewrite with:
-- Trending products row (fetching real product data)
-- Rich promotional banner with blue gradient
-- Enhanced filter pills
-
-### 2. `src/components/home/index.ts`
-
-- Update export from `QuickCategories` to `QuickDiscovery`
-
-### 3. `src/pages/Index.tsx`
-
-- Update import to use `QuickDiscovery`
-
----
-
-## Technical Details
-
-### Product Data Query
+**Change the query** to fetch specifically:
+- Designer brands (CARTIER, GUCCI, etc.) 
+- Higher-priced items (they're typically better photographed)
+- Filter for products with clean images
 
 ```typescript
-// Fetch trending products with images
-const { data: products } = useQuery({
-  queryKey: ["trending-products"],
+// Prioritize luxury brands for the banner
+const { data: featuredProduct } = useQuery({
+  queryKey: ["featured-designer-product"],
   queryFn: async () => {
     const { data } = await supabase
       .from("products")
       .select("id, name, brand, price, image_url")
       .eq("is_active", true)
       .eq("item_type", "frames")
+      .in("brand", ["CARTIER", "GUCCI", "DIOR", "VERSACE", "PRADA"])
       .not("image_url", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(8);
+      .order("price", { ascending: false })
+      .limit(1)
+      .single();
     return data;
   },
 });
 ```
 
-### Promotional Banner Styling
+This ensures we get a high-end designer frame like the **GUCCI 785K** or **CARTIER**.
+
+### 4. Image Presentation
+
+**Current:** `w-48 h-48` (small)
+
+**New:**
+- **Larger dimensions:** `w-64 h-64 md:w-80 md:h-80`
+- **Drop shadow enhancement:** `drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)]`
+- **Elegant float animation:** `animate-float-slow`
+- **Remove background effect:** Apply `mix-blend-multiply` for PNGs with white backgrounds, or use image with transparent background
+- **3D tilt effect on hover:** Subtle perspective rotation
+
+### 5. Typography Hierarchy
+
+Premium, elegant text styling:
 
 ```tsx
-<div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary via-primary/95 to-primary/85">
-  {/* Decorative orbs */}
-  <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-  <div className="absolute -bottom-10 left-1/4 w-32 h-32 bg-accent/20 rounded-full blur-xl" />
-  
-  {/* Content grid */}
-  <div className="grid md:grid-cols-5 gap-6 p-6 lg:p-10">
-    <div className="md:col-span-3 space-y-4">
-      <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white/90 text-xs font-medium">
-        <Sparkle weight="fill" className="w-3.5 h-3.5 text-accent" />
-        New Collection
-      </span>
-      <h3 className="text-2xl lg:text-3xl font-display font-semibold text-white">
-        2026 Designer Frames
-      </h3>
-      <p className="text-white/80 text-sm lg:text-base max-w-md">
-        Premium eyewear curated by M&H experts for the discerning customer
-      </p>
-      <Button className="bg-accent hover:bg-accent/90 text-accent-foreground mt-2">
-        Shop Collection <ArrowRight />
-      </Button>
-    </div>
-    
-    {/* Hero product image */}
-    <div className="md:col-span-2 relative hidden md:flex items-center justify-center">
-      <img 
-        src={featuredProduct?.image_url} 
-        alt="Featured Frame"
-        className="w-48 h-48 object-contain drop-shadow-2xl animate-float"
-      />
-    </div>
-  </div>
-</div>
+// Badge
+<span className="inline-flex items-center gap-2 px-4 py-2 rounded-full 
+                bg-accent/20 backdrop-blur-sm border border-accent/30 
+                text-accent text-xs font-medium tracking-wider uppercase">
+  <Sparkle weight="fill" className="w-4 h-4" />
+  Exclusive Collection
+</span>
+
+// Main heading - larger, more impactful
+<h3 className="text-3xl md:text-4xl lg:text-5xl font-display font-semibold text-white 
+               leading-tight tracking-tight">
+  2026 Designer Frames
+</h3>
+
+// Subtext with luxury feel
+<p className="text-white/70 text-base md:text-lg max-w-sm font-light">
+  Curated luxury eyewear from the world's most prestigious houses
+</p>
+```
+
+### 6. CTA Button Enhancement
+
+```tsx
+<Button 
+  className="bg-accent hover:bg-accent/90 text-accent-foreground 
+             px-8 py-6 text-base font-medium shadow-lg shadow-accent/30
+             group transition-all duration-300 hover:shadow-xl hover:shadow-accent/40"
+>
+  Explore Collection
+  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+</Button>
+```
+
+### 7. Decorative Luxury Elements
+
+```tsx
+{/* Golden shimmer line at top */}
+<div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
+
+{/* Animated gold orbs */}
+<div className="absolute top-10 right-10 w-32 h-32 bg-accent/10 rounded-full blur-3xl animate-pulse-soft" />
+<div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+<div className="absolute top-1/2 right-1/4 w-20 h-20 bg-accent/5 rounded-full blur-2xl animate-float-gentle" />
+
+{/* Luxury corner accent */}
+<div className="absolute top-4 right-4 w-12 h-12 border border-accent/20 rounded-lg opacity-50" />
+<div className="absolute bottom-4 left-4 w-8 h-8 border border-white/10 rounded opacity-30" />
 ```
 
 ---
 
-## Visual Comparison
+## Mobile Design
 
-| Element | Before | After |
-|---------|--------|-------|
-| Section Background | Light gray (`bg-muted/30`) | Subtle blue tint or white with blue accents |
-| Category Icons | Abstract Phosphor icons (Airplane, Cat) | **Real product photos** from database |
-| Promo Banner | Text-only with faint gradient | **Rich blue gradient** with floating glasses image |
-| Filter Pills | Gray borders | Blue borders with gold hover |
-| Brand Identity | Neutral | **Blue dominant** with gold accents |
+On mobile, the banner becomes:
+
+```text
+┌─────────────────────────────────┐
+│                                  │
+│   [DESIGNER FRAME IMAGE]         │
+│   Large, centered, floating      │
+│                                  │
+├─────────────────────────────────┤
+│                                  │
+│   ✨ Exclusive Collection        │
+│                                  │
+│   2026 Designer                  │
+│   Frames                         │
+│                                  │
+│   Curated luxury eyewear...      │
+│                                  │
+│   [Explore Collection →]         │
+│                                  │
+└─────────────────────────────────┘
+```
+
+- Image moves above text content
+- Full-width container
+- Touch-friendly button
 
 ---
 
-## Mobile Experience
+## File Changes
 
-- Trending products: Horizontal scroll with snap, 2 visible at a time
-- Promo banner: Stack vertically, glasses image above content
-- Filter pills: Horizontal scroll, full-width touch targets
+### `src/components/home/QuickDiscovery.tsx`
+
+**Lines 108-156** - Complete redesign of the Promotional Banner section:
+
+1. **New query** for featured designer product (separate from trending)
+2. **Increased dimensions** - min-height 320px mobile / 400px desktop
+3. **Enhanced gradient** with luxury decorative elements
+4. **Larger typography** - text-4xl to text-5xl heading
+5. **Bigger product image** - w-64 to w-80 with premium drop shadow
+6. **Refined animations** using existing keyframes (float-slow, shimmer, pulse-glow)
+7. **Mobile-first layout** with stacked content and image
 
 ---
 
-## Expected Result
+## Expected Visual Result
 
-A professional, brand-aligned quick discovery section that:
-
-1. Uses **blue as the dominant color** (your clinical trust color)
-2. Shows **real product imagery** instead of generic icons
-3. Features a **visually designed promo card** with glasses imagery
-4. Feels **premium and mature** - not cartoonish
-5. **Eliminates redundancy** with the CategoryCards section below
+| Aspect | Before | After |
+|--------|--------|-------|
+| **Height** | ~200px | **320-400px** (near-square) |
+| **Product Image** | 192×192px, small | **256-320px**, prominent |
+| **Text Size** | text-2xl/3xl | **text-3xl/4xl/5xl** |
+| **Background** | Simple gradient | **Rich gradient + gold accents + shimmer** |
+| **Featured Product** | First product (random) | **Designer brand (Cartier/Gucci)** |
+| **Animations** | Basic float | **Float + shimmer + glow pulse** |
+| **Feel** | Generic | **Luxurious, sophisticated, high-end** |
 
