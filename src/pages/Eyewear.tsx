@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/eyewear/ProductCard";
@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { EmptyState, Pagination, ProductQuickView } from "@/components/storefront";
 import {
   Breadcrumb,
@@ -22,14 +23,24 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { House, Eye, SquaresFour, List } from "@phosphor-icons/react";
+import { House, Eye, SquaresFour, List, X } from "@phosphor-icons/react";
 import { Sparkles, ChevronRight } from "lucide-react";
 
 const PRODUCTS_PER_PAGE = 12;
 
 type ViewMode = "grid" | "list";
+type PriceTier = "budget" | "standard" | "premium" | "luxury";
+
+// Price tier display names
+const PRICE_TIER_LABELS: Record<PriceTier, string> = {
+  budget: "Budget",
+  standard: "Standard",
+  premium: "Premium",
+  luxury: "Luxury",
+};
 
 const Eyewear = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [genderFilter, setGenderFilter] = useState("all");
   const [styleFilter, setStyleFilter] = useState("all");
   const [priceSort, setPriceSort] = useState("featured");
@@ -37,8 +48,30 @@ const Eyewear = () => {
   const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
   const [showPersonalized, setShowPersonalized] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [priceTierFilter, setPriceTierFilter] = useState<PriceTier | null>(null);
 
   const { isAuthenticated } = useAuth();
+
+  // Parse price tier from URL params
+  useEffect(() => {
+    const filter = searchParams.get("filter");
+    if (filter?.startsWith("price-tier-")) {
+      const tier = filter.replace("price-tier-", "") as PriceTier;
+      if (["budget", "standard", "premium", "luxury"].includes(tier)) {
+        setPriceTierFilter(tier);
+      }
+    } else {
+      setPriceTierFilter(null);
+    }
+  }, [searchParams]);
+
+  // Clear price tier filter
+  const clearPriceTierFilter = () => {
+    setPriceTierFilter(null);
+    searchParams.delete("filter");
+    setSearchParams(searchParams);
+    setCurrentPage(1);
+  };
 
   // Fetch M&H Fashion products for the eyewear page
   const { data: products, isLoading, error } = useProducts("m_and_h_fashion");
@@ -64,6 +97,10 @@ const Eyewear = () => {
         if (styleFilter === "all") return true;
         return p.style === styleFilter;
       })
+      .filter((p) => {
+        if (!priceTierFilter) return true;
+        return p.price_tier === priceTierFilter;
+      })
       .sort((a, b) => {
         if (priceSort === "low-high") return a.price - b.price;
         if (priceSort === "high-low") return b.price - a.price;
@@ -75,7 +112,7 @@ const Eyewear = () => {
         }
         return 0;
       });
-  }, [products, genderFilter, styleFilter, priceSort, showPersonalized, hasPreferences, getProductScore]);
+  }, [products, genderFilter, styleFilter, priceSort, showPersonalized, hasPreferences, getProductScore, priceTierFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
@@ -137,6 +174,23 @@ const Eyewear = () => {
               </p>
             )}
           </div>
+
+          {/* Active Price Tier Filter Badge */}
+          {priceTierFilter && (
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <span className="text-sm text-muted-foreground">Filtering by:</span>
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                {PRICE_TIER_LABELS[priceTierFilter]} Frames
+                <button
+                  onClick={clearPriceTierFilter}
+                  className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
+                  aria-label="Clear price tier filter"
+                >
+                  <X weight="bold" className="h-3 w-3" />
+                </button>
+              </Badge>
+            </div>
+          )}
 
           {/* Personalization CTA for non-personalized users */}
           {isAuthenticated && !hasPreferences && (
