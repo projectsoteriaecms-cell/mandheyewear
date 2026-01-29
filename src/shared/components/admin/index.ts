@@ -2,6 +2,7 @@
 export { AdminLayout } from "./AdminLayout";
 export { AdminSidebar } from "./AdminSidebar";
 export { AdminHeader } from "./AdminHeader";
+export { AdminMobileNav } from "./AdminMobileNav";
 export { RoleGuard } from "./RoleGuard";
 
 // Dashboard components
