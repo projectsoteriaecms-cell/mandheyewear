@@ -13,13 +13,14 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
-// Quick filter options with meaningful icons
+// Quick filter options - price tiers and discovery
 const quickFilters = [
   { label: "Best Sellers", filter: "best-sellers", icon: TrendUp },
   { label: "New Arrivals", filter: "new-arrivals", icon: Sparkle },
-  { label: "Under ₦50k", filter: "under-50000", icon: CurrencyCircleDollar },
-  { label: "Virtual Try-On", filter: "try-on-ready", icon: Camera },
-  { label: "On Sale", filter: "on-sale", icon: Tag },
+  { label: "Budget", filter: "price-tier-budget", icon: Tag },
+  { label: "Standard", filter: "price-tier-standard", icon: CurrencyCircleDollar },
+  { label: "Premium", filter: "price-tier-premium", icon: Diamond },
+  { label: "Luxury", filter: "price-tier-luxury", icon: Sparkle },
 ];
 
 // Luxury designer brands for featured banner
