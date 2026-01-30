@@ -1,138 +1,139 @@
 
+# Paystack Payment Integration Plan
 
-# Deeper Blue Banner with Template Frame Slideshow
+## Overview
+This plan outlines the complete integration of Paystack payment processing into the checkout flow. The integration will enable customers to pay securely using cards, bank transfers, and USSD payments.
 
-## Changes Overview
+## Current State Analysis
+Your checkout infrastructure is already well-prepared:
+- **Checkout UI** (`src/pages/Checkout.tsx`) - Complete with address form, order summary, and payment button placeholder
+- **Cart System** (`src/hooks/useCart.ts`) - Fully functional with add/remove/clear operations
+- **Orders Database** - Tables exist for `orders` and `order_items` with proper enums for `payment_status` (pending, paid, failed, refunded) and `order_status`
+- **Order Confirmation Page** (`src/pages/OrderConfirmation.tsx`) - Ready to display successful orders
 
-### 1. Deeper Blue Background
+## Implementation Phases
 
-**Current**: The banner uses `bg-gradient-to-br from-primary via-primary/95 to-primary/80` which is `HSL 210 85% 40%` (medium blue)
+### Phase 1: Secret Configuration
+Before any code changes, you'll need to provide your Paystack Secret Key. I'll prompt you to add this securely to the backend.
 
-**New**: Create a deeper, richer navy-blue gradient that:
-- Is darker than the current primary (`210 85% 40%`)
-- Lighter than the page background in dark mode (`220 25% 8%`)
-- Has excellent contrast with white text and gold accents
+**What you need:**
+- Log into your [Paystack Dashboard](https://dashboard.paystack.com)
+- Navigate to Settings → API Keys
+- Copy your **Secret Key** (starts with `sk_test_` for test mode or `sk_live_` for production)
 
-**Proposed color values:**
+### Phase 2: Backend Function Creation
+Create a new backend function `paystack-payment` that handles:
+
+**Initialize Transaction Endpoint:**
+- Receives order details (amount, email, cart items, shipping address)
+- Creates an order in the database with `payment_status: 'pending'`
+- Calls Paystack API to initialize transaction
+- Returns authorization URL and reference to frontend
+
+**Verify Transaction Endpoint:**
+- Receives Paystack reference after payment
+- Calls Paystack API to verify transaction status
+- Updates order `payment_status` to 'paid' or 'failed'
+- Clears customer's cart on successful payment
+
+### Phase 3: Frontend Integration
+Install the `react-paystack` library and update the checkout page:
+
+**Payment Flow:**
+1. Customer clicks "Pay" button
+2. Frontend calls backend to initialize payment
+3. Paystack popup opens for secure payment
+4. On success, frontend calls backend to verify
+5. Customer redirected to Order Confirmation page
+
+```text
++----------------+     +------------------+     +-----------------+
+|   Checkout     | --> | Backend Function | --> |   Paystack API  |
+|   (Frontend)   |     | (Initialize)     |     |                 |
++----------------+     +------------------+     +-----------------+
+        |                                              |
+        v                                              v
++----------------+     +------------------+     +-----------------+
+| Paystack Popup | --> | Backend Function | --> | Update Order DB |
+| (User Pays)    |     | (Verify)         |     | Clear Cart      |
++----------------+     +------------------+     +-----------------+
+        |
+        v
++----------------+
+| Order          |
+| Confirmation   |
++----------------+
 ```
-from-[hsl(215_50%_22%)]  →  Deep navy blue
-via-[hsl(218_45%_18%)]   →  Darker mid-transition
-to-[hsl(220_40%_15%)]    →  Darkest edge (but still lighter than bg)
-```
 
-This creates a rich, sophisticated navy that:
-- Feels luxurious and premium
-- Has strong contrast with white text
-- Works well with gold accents
-- Is distinctly different from the page background
-
-### 2. Replace Database Products with Template Frames
-
-**Current**: Fetches luxury products from database using `useQuery`
-
-**New**: Use the 4 static template frame images you already have:
-- `src/assets/frame-1.jpg` - Rose gold round frames
-- `src/assets/frame-2.jpg` - Black square frames  
-- `src/assets/frame-3.jpg` - Tortoise cat-eye frames
-- `src/assets/frame-4.jpg` - Gold aviator frames
-
-These are the exact frames from your uploaded reference - professionally photographed with marble/clean backgrounds that look sophisticated.
-
-**Implementation:**
-```typescript
-import frame1 from "@/assets/frame-1.jpg";
-import frame2 from "@/assets/frame-2.jpg";
-import frame3 from "@/assets/frame-3.jpg";
-import frame4 from "@/assets/frame-4.jpg";
-
-const SHOWCASE_FRAMES = [
-  { id: 1, src: frame1, name: "Classic Round", style: "Timeless Elegance" },
-  { id: 2, src: frame2, name: "Modern Square", style: "Contemporary Edge" },
-  { id: 3, src: frame3, name: "Bold Cat-Eye", style: "Statement Maker" },
-  { id: 4, src: frame4, name: "Aviator", style: "Iconic Style" },
-];
-```
-
-### 3. Visual Comparison
-
-**Background Gradient Change:**
-| Element | Current | New |
-|---------|---------|-----|
-| Start color | `HSL 210 85% 40%` (bright blue) | `HSL 215 50% 22%` (deep navy) |
-| Mid color | 95% opacity of above | `HSL 218 45% 18%` (darker navy) |
-| End color | 80% opacity of above | `HSL 220 40% 15%` (richest navy) |
-| Feel | Corporate blue | Luxurious deep navy |
-
-**Slideshow Change:**
-| Aspect | Current | New |
-|--------|---------|-----|
-| Source | Database products | Static template images |
-| Images | Product photos (variable quality) | Professional frame photos |
-| Count | Up to 5 luxury brand items | 4 curated showcase frames |
-| Labels | Brand names (CARTIER, etc.) | Style descriptors |
+### Phase 4: Database Updates
+Add a `paystack_reference` field to track Paystack transaction references (the existing `payment_reference` column can be used for this).
 
 ---
 
-## Technical Changes
+## Files to Create/Modify
 
-### File: `src/components/home/QuickDiscovery.tsx`
-
-1. **Import static frame images** at the top of the file
-2. **Remove the `luxuryFrames` query** (no longer fetching from database)
-3. **Create static `SHOWCASE_FRAMES` array** with the 4 template images
-4. **Update the gradient** to use the deeper navy blue values
-5. **Update the carousel** to map over `SHOWCASE_FRAMES` instead of `luxuryFrames`
-6. **Adjust decorative elements** for better contrast on darker background
-
-### Code Changes Summary:
-
-**Line ~1-22**: Add frame imports
-```typescript
-import frame1 from "@/assets/frame-1.jpg";
-import frame2 from "@/assets/frame-2.jpg";
-import frame3 from "@/assets/frame-3.jpg";
-import frame4 from "@/assets/frame-4.jpg";
-```
-
-**Lines ~34-36**: Define showcase frames array
-```typescript
-const SHOWCASE_FRAMES = [
-  { id: 1, src: frame1, name: "Classic Round", style: "Timeless Elegance" },
-  { id: 2, src: frame2, name: "Modern Square", style: "Contemporary Edge" },
-  { id: 3, src: frame3, name: "Bold Cat-Eye", style: "Statement Maker" },
-  { id: 4, src: frame4, name: "Aviator", style: "Iconic Style" },
-];
-```
-
-**Lines ~69-90**: Remove the `luxuryFrames` useQuery hook entirely
-
-**Line ~156**: Update gradient to deeper navy
-```typescript
-className="... bg-gradient-to-br from-[hsl(215_50%_22%)] via-[hsl(218_45%_18%)] to-[hsl(220_40%_15%)]"
-```
-
-**Lines ~200-260**: Update carousel to use `SHOWCASE_FRAMES`
-```typescript
-{SHOWCASE_FRAMES.map((frame) => (
-  <CarouselItem key={frame.id}>
-    <img src={frame.src} alt={frame.name} ... />
-    <div className="badge">
-      <span>{frame.style}</span>
-    </div>
-  </CarouselItem>
-))}
-```
+| Action | File | Purpose |
+|--------|------|---------|
+| Create | `supabase/functions/paystack-payment/index.ts` | Backend function for initialize + verify |
+| Modify | `supabase/config.toml` | Register new edge function |
+| Modify | `src/pages/Checkout.tsx` | Integrate Paystack popup |
+| Create | `src/hooks/usePaystackPayment.ts` | Custom hook for payment logic |
 
 ---
 
-## Expected Visual Result
+## Technical Details
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| Background | Bright corporate blue | Rich, deep navy blue |
-| Contrast | Good | Excellent (darker bg, brighter gold) |
-| Frame images | Database product photos | Professional template frames |
-| Quality | Variable (depends on uploads) | Consistent, high-quality |
-| Brand labels | "CARTIER", "GUCCI" | "Timeless Elegance", "Contemporary Edge" |
-| Feel | Product catalog | Luxury showcase |
+### Backend Function Structure
+```text
+paystack-payment/index.ts
+├── POST /initialize
+│   ├── Validate user authentication
+│   ├── Validate cart items & calculate total
+│   ├── Create order with pending status
+│   ├── Call Paystack /transaction/initialize
+│   └── Return { authorization_url, reference, order_id }
+│
+└── POST /verify
+    ├── Receive { reference }
+    ├── Call Paystack /transaction/verify
+    ├── Update order payment_status
+    ├── Clear user's cart
+    └── Return { success, order_id }
+```
 
+### Security Measures
+- Secret key stored securely in backend secrets (never exposed to frontend)
+- JWT verification for authenticated users only
+- Server-side amount calculation (never trust frontend amounts)
+- Transaction verification prevents payment spoofing
+
+### Payment Flow States
+| State | Order Status | Payment Status | User Sees |
+|-------|--------------|----------------|-----------|
+| Cart confirmed | - | - | Checkout page |
+| Payment started | pending | pending | Paystack popup |
+| Payment success | confirmed | paid | Confirmation page |
+| Payment failed | pending | failed | Error message |
+| Payment cancelled | - | - | Checkout page |
+
+---
+
+## Testing Strategy
+After implementation:
+1. Test with Paystack test cards (provided by Paystack)
+2. Test payment cancellation flow
+3. Test network failure scenarios
+4. Verify order appears in customer dashboard
+5. Verify cart is cleared after payment
+
+---
+
+## What Happens When You Approve
+
+1. I'll prompt you to add your **PAYSTACK_SECRET_KEY** to the backend secrets
+2. Create the backend function with initialize and verify endpoints
+3. Update the checkout page with Paystack integration
+4. Create a custom hook for clean payment logic
+5. Test the complete flow end-to-end
+
+**Estimated implementation time:** 15-20 minutes after you provide the Paystack secret key
