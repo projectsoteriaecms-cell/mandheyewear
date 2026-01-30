@@ -2,3 +2,6 @@ project_id = "ispizamxlrukxmysgyjv"
 
 [functions.analyze-face]
 verify_jwt = true
+
+[functions.virtual-try-on]
+verify_jwt = false
