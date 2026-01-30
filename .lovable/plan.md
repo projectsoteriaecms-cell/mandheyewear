@@ -1,168 +1,220 @@
 
 
-# M&H Eyewear Rebranding Plan
+# Premium Footer Redesign Plan
 
 ## Overview
-This plan removes all Soteria Eye Clinic branding from the frontend, making M&H Eyewear the sole brand. The backend, database, and inventory will remain shared for the future Soteria frontend.
+Transform the current accordion-style footer into a sophisticated, premium design that matches M&H Eyewear's luxury brand positioning. The new footer will feature a clean multi-column layout, integrated newsletter signup, professional payment logos, and improved visual hierarchy.
 
-## Scope Clarification
-- **M&H becomes a full-service company** - offering both eyewear AND eye care services (not just the "luxury arm")
-- **No dual-brand references** - remove all "Soteria | M&H" combined branding
-- **Backend unchanged** - database tables, edge functions, and inventory remain intact
+## Current Issues to Address
+- Accordion sections feel utilitarian on mobile rather than premium
+- Theme toggle in footer is awkward placement for a luxury brand
+- Payment badges are plain text boxes instead of professional logos
+- Brand section is cluttered with logo + description + social + theme toggle
+- No newsletter integration in footer (it's a separate section above)
+- Visual hierarchy lacks the depth expected from a premium brand
+
+---
+
+## Design Approach
+
+### Structure (4-Column Layout)
+
+```text
++------------------------------------------------------------------+
+|                        NEWSLETTER SECTION                         |
+|  [Icon] Stay Updated — Exclusive offers, new arrivals & tips      |
+|  [Email Input                              ] [Subscribe Button]   |
++------------------------------------------------------------------+
+|                                                                    |
+|  [M&H Logo]           SHOP           SUPPORT         COMPANY      |
+|                       Eyeglasses     Contact Us      About Us     |
+|  Premium eye care     Sunglasses     FAQs            Our Stores   |
+|  and designer         Accessories    Order Tracking  Eye Care     |
+|  eyewear.             Eye Exams      Shipping        Careers      |
+|                       New Arrivals   Returns                      |
+|  [Social Icons]                                                   |
+|                                                                    |
++------------------------------------------------------------------+
+|  [Security] 100% Secure     [Visa] [Mastercard] [Paystack]        |
+|                                                                    |
+|              © 2026 M&H Eyewear. All rights reserved.             |
+|              Privacy Policy  •  Terms of Service                   |
++------------------------------------------------------------------+
+```
+
+### Mobile Layout (Stacked, Non-Accordion)
+On mobile, all columns become stacked single columns with visible links (no accordion). This feels more premium than collapsible sections.
 
 ---
 
 ## Files to Modify
 
-### Navigation & Headers
-
-| File | Changes |
-|------|---------|
-| `src/components/navigation/MainNav.tsx` | Remove Soteria logo imports, display only M&H logo, remove separator |
-| `src/components/navigation/MobileTopBar.tsx` | Same as above - M&H only in header and drawer |
-| `src/components/navigation/MobileNav.tsx` | Same as above - M&H only in header and drawer |
-| `src/components/navigation/TopBar.tsx` | Update any brand references (currently minimal Soteria refs) |
-| `src/components/Footer.tsx` | Remove Soteria logo, update copyright to "M&H Eyewear" |
-
-### Hero & Home
-
-| File | Changes |
-|------|---------|
-| `src/components/home/HeroSection.tsx` | Remove "Soteria Eye Clinic" slide, convert to single M&H slide (keeping eye care messaging), update badge text |
-
-### Pages
-
-| File | Changes |
-|------|---------|
-| `src/pages/About.tsx` | Rewrite as M&H-only story (remove dual-brand narrative, Soteria section) |
-| `src/pages/EyeCare.tsx` | Rename "Soteria Eye Care Services" to "M&H Eye Care Services" |
-| `src/pages/Branches.tsx` | Update descriptions to reference M&H locations only |
-| `src/pages/Privacy.tsx` | Replace "Soteria Eye Clinic & M&H Eyewear" with "M&H Eyewear" |
-| `src/pages/Terms.tsx` | Same replacement throughout |
-| `src/pages/Install.tsx` | Update app name to "M&H Eyewear" |
-| `src/pages/ProductDetail.tsx` | Update brand badge (Soteria Medical -> M&H Medical) |
-
-### PWA & Configuration
-
-| File | Changes |
-|------|---------|
-| `index.html` | Update title, meta tags, Open Graph tags - all to "M&H Eyewear" |
-| `public/manifest.json` | Update name and short_name |
-| `vite.config.ts` | Update PWA manifest settings |
-
-### Admin (Display Labels Only)
-
-| File | Changes |
-|------|---------|
-| `src/pages/admin/Settings.tsx` | Update default store name display |
-| `src/components/admin/products/CreateProductDialog.tsx` | Update brand line label: "Soteria Medical" -> "M&H Medical" |
-| `src/components/admin/products/EditProductDialog.tsx` | Same label update |
-| `src/components/admin/products/ProductListView.tsx` | Same label update |
-| `src/components/admin/categories/EditCategoryDialog.tsx` | Same label update |
-| `src/components/storefront/ProductQuickView.tsx` | Update badge display |
-
-### PWA Components
-
-| File | Changes |
-|------|---------|
-| `src/components/pwa/InstallPrompt.tsx` | Update app name display |
-
-### CSS & Theme (Optional Cleanup)
-
-| File | Changes |
-|------|---------|
-| `src/index.css` | Rename CSS variable comments from "Soteria Blue" to "M&H Blue" (optional, cosmetic) |
-| `tailwind.config.ts` | Rename `soteria` color namespace to `mh-primary` (optional, affects codebase-wide references) |
+| File | Action | Purpose |
+|------|--------|---------|
+| `src/components/Footer.tsx` | **Rewrite** | New premium layout with newsletter |
+| `src/components/home/Newsletter.tsx` | **Delete/Repurpose** | Move newsletter into footer |
+| `src/pages/Index.tsx` | **Update** | Remove standalone Newsletter section |
+| `src/components/dashboard/SettingsSection.tsx` | **Update** | Add theme toggle preference |
+| `src/components/navigation/TopBar.tsx` | **Keep** | Theme toggle already exists here |
 
 ---
 
-## Key Changes Detail
+## Technical Implementation
 
-### 1. Logo Implementation
-**Before:** Dual logo with separator (Soteria | M&H)
-**After:** Single M&H logo only
+### 1. Footer Structure Redesign
 
+**New Footer Sections:**
+- **Newsletter Banner** (top of footer) — Dark navy background with gold accent
+- **Main Content Grid** — 4 columns: Brand | Shop | Support | Company
+- **Bottom Bar** — Security badge, payment logos, copyright, legal links
+
+**Code Architecture:**
 ```text
-BEFORE: [Soteria Logo] | [M&H Logo]
-AFTER:  [M&H Logo]
+Footer.tsx
+├── NewsletterBanner (integrated component)
+│   ├── Headline + description
+│   ├── Email input
+│   └── Subscribe button with animation
+├── FooterContent (main grid)
+│   ├── BrandColumn (logo, tagline, social)
+│   ├── ShopColumn (product categories)
+│   ├── SupportColumn (help links)
+│   └── CompanyColumn (about links)
+└── FooterBottom
+    ├── SecurityBadge
+    ├── PaymentLogos (actual SVG icons)
+    ├── Copyright
+    └── LegalLinks
 ```
 
-The M&H logo assets (`mh-logo.png`, `mh-logo-gold.png`) are already in the project.
+### 2. Newsletter Integration
 
-### 2. Hero Section Transformation
-**Before:** Two-slide carousel alternating between Soteria (clinical) and M&H (fashion)
-**After:** Single cohesive M&H hero OR simplified two-slide showing M&H's dual offerings (eyewear + eye care)
+**Before:** Standalone section with animated background orbs
+**After:** Integrated into footer top with subtle styling
 
-The hero will emphasize that M&H offers:
-- Premium eyewear
-- Comprehensive eye care services
+The newsletter will move from a full-width section to a compact footer banner, maintaining the same functionality but with a more refined appearance.
 
-### 3. About Page Rewrite
-**Before:** Dual narrative explaining both brands separately
-**After:** Single M&H story covering:
-- Company history and mission
-- Full-service offering (eye care + eyewear)
-- Values and team
+### 3. Payment Provider Logos
 
-### 4. Brand Line Labels in Admin
-The database uses `soteria_medical` and `m_and_h_fashion` enum values - these will **NOT** change (backend stability).
-Only the UI labels will change:
-- "Soteria Medical" -> "M&H Medical" (for clinical/medical products)
-- "M&H Fashion" -> "M&H Lifestyle" or keep as-is
+Replace text boxes with professional SVG logos:
+- **Visa** — Clean card logo
+- **Mastercard** — Standard logo
+- **Paystack** — Official logo
+
+These will be inline SVGs for crisp rendering at any size, styled in monochrome/muted colors for sophistication.
+
+### 4. Theme Toggle Relocation
+
+**Current locations:** Footer + TopBar
+**New locations:** TopBar only (desktop) + User Settings (for persistence)
+
+The TopBar already has a theme toggle. We'll:
+1. Remove the footer theme toggle
+2. Add a "Display Preferences" card to SettingsSection with theme selection
+
+### 5. Social Links Enhancement
+
+Larger, more prominent social icons with hover effects:
+- Facebook, Instagram, X (Twitter) — using Phosphor Icons
+- Subtle hover glow animation for premium feel
 
 ---
 
-## Files NOT Modified (Backend Stability)
+## Link Structure Updates
 
-These files use `soteria_medical` enum values and will remain unchanged to ensure database compatibility:
+### Shop Column
+| Link | Path |
+|------|------|
+| Eyeglasses | `/eyewear?category=eyeglasses` |
+| Sunglasses | `/eyewear?category=sunglasses` |
+| Accessories | `/eyewear?category=accessories` |
+| Eye Exams | `/booking` |
+| New Arrivals | `/eyewear?sort=newest` |
 
-- `src/modules/products/lib/transformers.ts` - Parser logic using enum values
-- `src/integrations/supabase/types.ts` - Auto-generated from database
-- Database migrations - Enum values remain for backend compatibility
-- Edge functions - No Soteria branding exposed to users
+### Support Column
+| Link | Path |
+|------|------|
+| Contact Us | `/contact` |
+| FAQs | `/faq` |
+| Order Tracking | `/track-order` |
+| Shipping & Delivery | `/faq` |
+| Returns & Exchanges | `/returns` |
+
+### Company Column
+| Link | Path |
+|------|------|
+| About M&H | `/about` |
+| Our Locations | `/branches` |
+| Eye Care Services | `/eye-care` |
+| Careers | `/contact` (temp, until careers page exists) |
+
+---
+
+## Visual Design Details
+
+### Color Palette (from existing design system)
+- Newsletter banner: `feature-navy` (#1a1e2e)
+- Footer background: `bg-card` (white/dark navy)
+- Accent: `accent` (gold) for buttons and highlights
+- Text: `foreground` / `muted-foreground`
+
+### Typography
+- Column headers: `font-medium text-foreground`
+- Links: `text-sm text-muted-foreground hover:text-foreground`
+- Newsletter headline: `text-xl font-display font-semibold`
+
+### Spacing
+- Newsletter section: `py-10` (compact)
+- Footer content: `py-12`
+- Column gap: `gap-8 lg:gap-12`
+- Bottom bar: `py-6 border-t`
+
+---
+
+## Responsive Behavior
+
+### Desktop (lg+)
+- 4-column grid layout
+- Inline newsletter form
+- Horizontal payment logos
+
+### Tablet (md-lg)
+- 2x2 grid for link columns
+- Newsletter stacked above
+
+### Mobile (< md)
+- Single column, all links visible (no accordion)
+- Stacked newsletter form
+- Centered payment logos
+- Compact spacing
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Navigation & Footer (Core Branding)
-1. Update MainNav - M&H logo only
-2. Update MobileTopBar - M&H logo only  
-3. Update MobileNav - M&H logo only
-4. Update Footer - M&H branding, copyright
+### Phase 1: Footer Redesign
+1. Create new Footer.tsx with premium layout
+2. Integrate newsletter functionality (copy logic from Newsletter.tsx)
+3. Add SVG payment logos
+4. Remove theme toggle from footer
 
-### Phase 2: Home & Hero
-1. Simplify HeroSection to M&H focus
-2. Keep eye care messaging but as M&H service
+### Phase 2: Cleanup & Integration
+1. Remove or repurpose Newsletter.tsx component
+2. Update Index.tsx to remove standalone Newsletter section
+3. Add theme preference to SettingsSection
 
-### Phase 3: Content Pages
-1. Rewrite About page
-2. Update EyeCare page headings
-3. Update Branches page copy
-4. Update Privacy and Terms pages
-5. Update Install page
-
-### Phase 4: PWA & Meta
-1. Update index.html meta tags
-2. Update manifest.json
-3. Update vite.config.ts PWA settings
-
-### Phase 5: Admin Labels
-1. Update product brand line labels
-2. Update category brand line labels
-3. Update settings defaults
+### Phase 3: Polish
+1. Add subtle animations (fade-in on scroll)
+2. Test responsive behavior across breakpoints
+3. Verify all links work correctly
 
 ---
 
-## Post-Implementation Notes
+## Additional Notes
 
-### For Future Soteria Frontend
-When building the separate Soteria frontend:
-- Both apps will share the same backend database
-- Products with `brand_line: "soteria_medical"` can be filtered for Soteria
-- Products with `brand_line: "m_and_h_fashion"` can be filtered for M&H
-- User accounts, orders, and inventory sync across both frontends
+### Email Address
+The footer currently references `info@soteriaeyeclinic.com` in the "Email Us" link. This should be updated to an M&H email address when available. For now, I can use a placeholder or generic format like `hello@mheyewear.com` (you can update later).
 
-### Email References
-The footer currently has `info@soteriaeyeclinic.com` - this should be updated to a new M&H email address (you'll need to provide the new email).
+### Newsletter Functionality
+The existing newsletter uses a simulated API call. The real integration can be connected later when a newsletter service (like Mailchimp, Loops, etc.) is configured.
 
