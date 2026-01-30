@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
-import { Loader2, Save, Key } from "lucide-react";
+import { Loader2, Save, Key, Monitor, Moon, Sun } from "lucide-react";
 
 export const SettingsSection = () => {
   const { user } = useAuth();
@@ -29,6 +30,44 @@ export const SettingsSection = () => {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark" | "system">("light");
+
+  // Initialize theme from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (systemDark) {
+      setTheme("system");
+    }
+  }, []);
+
+  const handleThemeChange = (value: "light" | "dark" | "system") => {
+    setTheme(value);
+    
+    if (value === "system") {
+      const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (systemDark) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+      localStorage.removeItem("theme");
+    } else if (value === "dark") {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+    
+    toast({
+      title: "Theme updated",
+      description: `Display mode set to ${value}.`,
+    });
+  };
 
   // Update form when profile loads
   useState(() => {
@@ -130,6 +169,57 @@ export const SettingsSection = () => {
           <p className="text-sm text-muted-foreground mt-2">
             You'll receive an email to reset your password
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Display Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Display Preferences</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div>
+            <Label className="text-base">Theme</Label>
+            <p className="text-sm text-muted-foreground mb-4">
+              Choose how M&H Eyewear looks to you
+            </p>
+            <RadioGroup
+              value={theme}
+              onValueChange={(value) => handleThemeChange(value as "light" | "dark" | "system")}
+              className="grid grid-cols-3 gap-4"
+            >
+              <div>
+                <RadioGroupItem value="light" id="light" className="peer sr-only" />
+                <Label
+                  htmlFor="light"
+                  className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                >
+                  <Sun className="h-6 w-6 mb-2" />
+                  <span className="text-sm font-medium">Light</span>
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem value="dark" id="dark" className="peer sr-only" />
+                <Label
+                  htmlFor="dark"
+                  className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                >
+                  <Moon className="h-6 w-6 mb-2" />
+                  <span className="text-sm font-medium">Dark</span>
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem value="system" id="system" className="peer sr-only" />
+                <Label
+                  htmlFor="system"
+                  className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                >
+                  <Monitor className="h-6 w-6 mb-2" />
+                  <span className="text-sm font-medium">System</span>
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
         </CardContent>
       </Card>
 
