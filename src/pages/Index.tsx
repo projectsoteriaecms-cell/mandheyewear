@@ -9,7 +9,6 @@ import {
   QuizPromo,
   VirtualTryOn,
   TrustBadges,
-  Newsletter,
 } from "@/components/home";
 
 const Index = () => {
@@ -40,9 +39,6 @@ const Index = () => {
 
       {/* Trust Badges */}
       <TrustBadges />
-
-      {/* Newsletter Signup */}
-      <Newsletter />
 
       {/* Chat Assistant Launcher */}
       <button 
