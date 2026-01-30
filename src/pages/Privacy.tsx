@@ -25,7 +25,7 @@ const Privacy = () => {
                   Introduction
                 </h2>
                 <p className="text-muted-foreground">
-                  At Soteria Eye Clinic & M&H Eyewear, we are committed to protecting your privacy and 
+                  At M&H Eyewear, we are committed to protecting your privacy and 
                   ensuring the security of your personal information. This Privacy Policy explains how we 
                   collect, use, disclose, and safeguard your information when you visit our website or use 
                   our services.
@@ -99,8 +99,8 @@ const Privacy = () => {
                   If you have questions about this Privacy Policy, please contact us at:
                 </p>
                 <p className="text-muted-foreground">
-                  Email: privacy@soteria-mh.com<br />
-                  Phone: +1 (234) 567-890
+                  Email: info@mheyewear.com<br />
+                  Phone: 08063363506
                 </p>
               </section>
             </CardContent>

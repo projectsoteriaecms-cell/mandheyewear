@@ -1,7 +1,7 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
-import { Eye, Glasses, Heart, Award, Users, Sparkles } from "lucide-react";
+import { Heart, Award, Users, Sparkles, Eye, Glasses } from "lucide-react";
 
 const About = () => {
   const values = [
@@ -43,7 +43,7 @@ const About = () => {
           {/* Hero */}
           <div className="text-center mb-16">
             <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">
-              About Soteria & M&H
+              About M&H Eyewear
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Where clinical excellence meets fashion-forward eyewear in a unified experience
@@ -54,34 +54,14 @@ const About = () => {
           <div className="grid md:grid-cols-2 gap-12 mb-16">
             <Card className="overflow-hidden">
               <CardContent className="p-8 space-y-4">
-                <div className="inline-flex p-3 rounded-full bg-primary/10">
-                  <Eye className="h-8 w-8 text-primary" />
-                </div>
-                <h2 className="text-3xl font-display font-bold text-foreground">
-                  Soteria Eye Clinic
-                </h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  Founded over 15 years ago, Soteria Eye Clinic has been at the forefront of comprehensive eye care. 
-                  Our team of board-certified ophthalmologists and optometrists are dedicated to protecting and 
-                  enhancing your vision through advanced diagnostics, preventive care, and specialized treatments.
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  We believe that quality eye care should be accessible, convenient, and delivered with compassion. 
-                  From routine exams to complex procedures, we're here to ensure your eyes remain healthy for life.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="overflow-hidden">
-              <CardContent className="p-8 space-y-4">
                 <div className="inline-flex p-3 rounded-full bg-accent/10">
                   <Glasses className="h-8 w-8 text-accent" />
                 </div>
                 <h2 className="text-3xl font-display font-bold text-foreground">
-                  M & H Eyewear
+                  Premium Eyewear
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  M & H Eyewear brings designer fashion to your vision needs. Our curated collection features the 
+                  M&H Eyewear brings designer fashion to your vision needs. Our curated collection features the 
                   latest styles from premium brands, carefully selected to complement every face shape, personal 
                   style, and lifestyle requirement.
                 </p>
@@ -89,6 +69,26 @@ const About = () => {
                   With our revolutionary AI-powered try-on technology and expert fitting services, finding your 
                   perfect frames has never been easier. We merge fashion, function, and technology to help you 
                   look your absolute best while seeing clearly.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden">
+              <CardContent className="p-8 space-y-4">
+                <div className="inline-flex p-3 rounded-full bg-primary/10">
+                  <Eye className="h-8 w-8 text-primary" />
+                </div>
+                <h2 className="text-3xl font-display font-bold text-foreground">
+                  Comprehensive Eye Care
+                </h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  With over 15 years of experience, our eye care division has been at the forefront of comprehensive 
+                  eye health services. Our team of board-certified ophthalmologists and optometrists are dedicated to 
+                  protecting and enhancing your vision through advanced diagnostics and specialized treatments.
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                  We believe that quality eye care should be accessible, convenient, and delivered with compassion. 
+                  From routine exams to complex procedures, we're here to ensure your eyes remain healthy for life.
                 </p>
               </CardContent>
             </Card>

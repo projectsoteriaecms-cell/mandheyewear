@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "favicon.svg", "robots.txt"],
       manifest: {
-        name: "Soteria Eye Clinic | M & H Eyewear",
-        short_name: "Soteria | M&H",
+        name: "M&H Eyewear | Premium Eye Care & Designer Frames",
+        short_name: "M&H Eyewear",
         description: "See Better. Look Better. Premium eye care services and designer eyewear in one unified experience.",
         theme_color: "#2563eb",
         background_color: "#ffffff",

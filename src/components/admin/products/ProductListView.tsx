@@ -99,7 +99,7 @@ export const ProductListView = ({
                 </Badge>
               ) : (
                 <Badge variant="outline" className="text-xs">
-                  {product.brand_line === "soteria_medical" ? "Soteria" : "M&H"}
+                  {product.brand_line === "soteria_medical" ? "M&H Medical" : "M&H Lifestyle"}
                 </Badge>
               )}
               

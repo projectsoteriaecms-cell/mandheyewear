@@ -10,8 +10,8 @@ import { hasAdminAccess } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import soteriaLogo from "@/assets/soteria-logo.png";
 import mhLogo from "@/assets/mh-logo.png";
+import mhLogoGold from "@/assets/mh-logo-gold.png";
 
 const navLinks = [
   { name: "Style Quiz", path: "/style-quiz", highlight: true, description: "Find your perfect frames", icon: Sparkle },
@@ -82,19 +82,11 @@ export const MobileNav = () => {
           <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0" hideCloseButton>
             <SheetHeader className="p-4 border-b border-border bg-primary">
               <SheetTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <img 
-                    src={soteriaLogo} 
-                    alt="Soteria" 
-                    className="h-7 w-auto brightness-0 invert"
-                  />
-                  <span className="text-primary-foreground/50">|</span>
-                  <img 
-                    src={mhLogo} 
-                    alt="M&H" 
-                    className="h-7 w-auto brightness-0 invert"
-                  />
-                </div>
+                <img 
+                  src={mhLogoGold} 
+                  alt="M&H Eyewear" 
+                  className="h-8 w-auto"
+                />
                 <SheetClose asChild>
                   <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
                     <X weight="light" className="h-5 w-5" />
@@ -208,18 +200,12 @@ export const MobileNav = () => {
           </SheetContent>
         </Sheet>
 
-        {/* Logo - Using actual images */}
-        <Link to="/" className="flex items-center gap-2">
+        {/* Logo */}
+        <Link to="/">
           <img 
-            src={soteriaLogo} 
-            alt="Soteria" 
-            className="h-8 w-auto dark:invert dark:brightness-[1.2]"
-          />
-          <span className="text-border">|</span>
-          <img 
-            src={mhLogo} 
-            alt="M&H" 
-            className="h-8 w-auto dark:invert dark:brightness-[1.2]"
+            src={isDark ? mhLogoGold : mhLogo} 
+            alt="M&H Eyewear" 
+            className="h-9 w-auto"
           />
         </Link>
 
