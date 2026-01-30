@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, ShoppingBag } from "lucide-react";
+import { Sparkles, ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -64,6 +64,12 @@ export const ProductCard = ({
     addToCart.mutate({ productId: product.id, quantity: 1 });
   };
 
+  const handleTryOn = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/try-on?product=${product.id}`);
+  };
+
   return (
     <Link to={`/product/${product.id}`} className="block touch-feedback">
       <Card className="group overflow-hidden hover:shadow-gold transition-all cursor-pointer mobile-card">
@@ -87,16 +93,23 @@ export const ProductCard = ({
           {/* Desktop hover actions */}
           <div className="hidden sm:flex absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex-col gap-2">
             <WishlistButton productId={product.id} />
-            <Button size="icon" variant="secondary" className="shadow-lg touch-target">
-              <Camera className="h-4 w-4" />
+            <Button 
+              size="icon" 
+              variant="secondary" 
+              className="shadow-lg touch-target"
+              onClick={handleTryOn}
+              title="Virtual Try-On"
+            >
+              <Sparkles className="h-4 w-4" />
             </Button>
             <Button
               size="icon"
               variant="gold"
               className="shadow-lg touch-target"
               onClick={handleAddToCart}
+              title="Add to Cart"
             >
-              <ShoppingBag className="h-4 w-4" />
+              <ShoppingCart className="h-4 w-4" />
             </Button>
           </div>
 
@@ -114,7 +127,7 @@ export const ProductCard = ({
             ₦{product.price.toLocaleString()}
           </p>
           
-          {/* Mobile: Single action button */}
+          {/* Action buttons */}
           <div className="flex gap-2 pt-1 sm:pt-2">
             <Button 
               variant="outline" 
@@ -130,8 +143,8 @@ export const ProductCard = ({
               className="flex-1 text-xs sm:text-sm h-9 sm:h-10 touch-target"
               onClick={handleAddToCart}
             >
-              <ShoppingBag className="h-3.5 w-3.5 sm:hidden" />
-              <span className="hidden sm:inline">Try On</span>
+              <ShoppingCart className="h-3.5 w-3.5 mr-1" />
+              <span className="hidden sm:inline">Add to Cart</span>
             </Button>
           </div>
         </CardContent>

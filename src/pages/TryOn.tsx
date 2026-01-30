@@ -56,10 +56,10 @@ const TryOn = () => {
     }
   }, [preselectedProduct, selectedFrame]);
 
-  // Filter to only show frame products with images
-  const frameProducts = products?.filter(
-    (p) => p.item_type === "frames" && p.image_url
-  ) || [];
+  // Filter to only show frame products with images, sorted alphabetically
+  const frameProducts = products
+    ?.filter((p) => p.item_type === "frames" && p.image_url)
+    .sort((a, b) => a.name.localeCompare(b.name)) || [];
 
   const handleTryOn = async (frame: FrameDetails) => {
     if (!userPhoto) {
@@ -76,6 +76,9 @@ const TryOn = () => {
       generateTryOn(userPhoto, selectedFrame);
     }
   };
+
+  // Count of frames ready for try-on
+  const readyFramesCount = frameProducts.length;
 
   const handleAddToCart = () => {
     if (!isAuthenticated) {
@@ -128,6 +131,11 @@ const TryOn = () => {
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 Upload your photo and see how our frames look on you with AI-powered try-on technology
               </p>
+              {readyFramesCount > 0 && (
+                <p className="text-sm text-accent font-medium mt-2">
+                  {readyFramesCount} frames ready for virtual try-on
+                </p>
+              )}
             </div>
           </div>
 
