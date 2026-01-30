@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, ShoppingBag } from "lucide-react";
+import { Sparkles, ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -61,6 +61,12 @@ export const ProductListCard = ({
       return;
     }
     addToCart.mutate({ productId: product.id, quantity: 1 });
+  };
+
+  const handleTryOn = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/try-on?product=${product.id}`);
   };
 
   return (
@@ -127,16 +133,23 @@ export const ProductListCard = ({
                 ₦{product.price.toLocaleString()}
               </p>
               <div className="flex gap-2">
-                <Button size="icon" variant="secondary" className="h-9 w-9">
-                  <Camera className="h-4 w-4" />
+                <Button 
+                  size="icon" 
+                  variant="secondary" 
+                  className="h-9 w-9"
+                  onClick={handleTryOn}
+                  title="Virtual Try-On"
+                >
+                  <Sparkles className="h-4 w-4" />
                 </Button>
                 <Button
                   size="icon"
                   variant="gold"
                   className="h-9 w-9"
                   onClick={handleAddToCart}
+                  title="Add to Cart"
                 >
-                  <ShoppingBag className="h-4 w-4" />
+                  <ShoppingCart className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" size="sm">
                   View Details

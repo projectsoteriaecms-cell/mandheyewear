@@ -13,7 +13,7 @@ import { MobileActionBar } from "@/components/mobile";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, Star, ShoppingBag, Camera } from "lucide-react";
+import { ArrowLeft, Star, ShoppingBag, Sparkles } from "lucide-react";
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -190,7 +190,7 @@ const ProductDetail = () => {
                     className="flex-1"
                     onClick={() => navigate(`/try-on?product=${product.id}`)}
                   >
-                    <Camera className="h-4 w-4 mr-2" />
+                    <Sparkles className="h-4 w-4 mr-2" />
                     Try On
                   </Button>
                 </div>
@@ -204,7 +204,7 @@ const ProductDetail = () => {
                   className="w-full"
                   onClick={() => navigate(`/try-on?product=${product.id}`)}
                 >
-                  <Camera className="h-4 w-4 mr-2" />
+                  <Sparkles className="h-4 w-4 mr-2" />
                   Virtual Try-On
                 </Button>
               </div>
