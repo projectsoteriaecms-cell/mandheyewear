@@ -75,7 +75,7 @@ export const InstallPrompt = ({ variant = "banner", className }: InstallPromptPr
             <Smartphone className="h-5 w-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-medium text-sm">Install Soteria | M&H</h4>
+            <h4 className="font-medium text-sm">Install M&H Eyewear</h4>
             <p className="text-xs text-muted-foreground mt-0.5">
               Add to your home screen for quick access
             </p>

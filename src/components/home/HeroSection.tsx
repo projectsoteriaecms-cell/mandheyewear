@@ -15,28 +15,10 @@ import heroEyewear from "@/assets/hero-eyewear.jpg";
 import heroEyeCare from "@/assets/hero-eye-care.jpg";
 import { cn } from "@/lib/utils";
 
-// Slide data structure
+// Slide data structure - M&H Eyewear focused
 const slides = [
   {
     id: 1,
-    type: "clinic" as const,
-    image: heroEyeCare,
-    badge: "Soteria Eye Clinic",
-    badgeIcon: Eye,
-    headline: "Your path to clearer vision",
-    subheadline: "begins with us",
-    description: "Comprehensive eye exams, advanced diagnostics, and personalized care from Nigeria's trusted eye care specialists.",
-    primaryCTA: { text: "Book Eye Exam", link: "/booking", icon: Calendar },
-    secondaryCTA: { text: "Our Services", link: "/eye-care", icon: Eye },
-    accentColor: "primary",
-    trustIndicators: [
-      { icon: "✓", label: "Certified Optometrists", sublabel: "Board certified", bgColor: "bg-primary/10", textColor: "text-primary" },
-      { icon: "🏥", label: "5+ Locations", sublabel: "Across Nigeria", bgColor: "bg-green-500/10", textColor: "text-green-600" },
-      { icon: "⏰", label: "Same Day Exams", sublabel: "Walk-ins welcome", bgColor: "bg-accent/10", textColor: "text-accent" },
-    ],
-  },
-  {
-    id: 2,
     type: "eyewear" as const,
     image: heroEyewear,
     badge: "M&H Eyewear",
@@ -51,6 +33,24 @@ const slides = [
       { icon: "✓", label: "Free Eye Exams", sublabel: "At all locations", bgColor: "bg-green-500/10", textColor: "text-green-600" },
       { icon: "📷", label: "Virtual Try-On", sublabel: "AI-powered", bgColor: "bg-primary/10", textColor: "text-primary" },
       { icon: "🚚", label: "Free Shipping", sublabel: "Orders over ₦50k", bgColor: "bg-accent/10", textColor: "text-accent" },
+    ],
+  },
+  {
+    id: 2,
+    type: "clinic" as const,
+    image: heroEyeCare,
+    badge: "M&H Eye Care",
+    badgeIcon: Eye,
+    headline: "Your path to clearer vision",
+    subheadline: "begins with us",
+    description: "Comprehensive eye exams, advanced diagnostics, and personalized care from Nigeria's trusted eye care specialists.",
+    primaryCTA: { text: "Book Eye Exam", link: "/booking", icon: Calendar },
+    secondaryCTA: { text: "Our Services", link: "/eye-care", icon: Eye },
+    accentColor: "primary",
+    trustIndicators: [
+      { icon: "✓", label: "Certified Optometrists", sublabel: "Board certified", bgColor: "bg-primary/10", textColor: "text-primary" },
+      { icon: "🏥", label: "5+ Locations", sublabel: "Across Nigeria", bgColor: "bg-green-500/10", textColor: "text-green-600" },
+      { icon: "⏰", label: "Same Day Exams", sublabel: "Walk-ins welcome", bgColor: "bg-accent/10", textColor: "text-accent" },
     ],
   },
 ];
@@ -301,29 +301,11 @@ export const HeroSection = () => {
               />
             </div>
             
-            {/* Floating testimonial card - clinic slide */}
-            <div 
-              className={cn(
-                "absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm max-w-[280px] transition-all duration-700",
-                selectedIndex === 0 ? "opacity-100 animate-float translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
-              )}
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground font-bold text-lg shrink-0 animate-pulse-soft">
-                  10K+
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">Eye Exams Completed</p>
-                  <p className="text-sm text-muted-foreground mt-0.5">Trusted care for clearer vision</p>
-                </div>
-              </div>
-            </div>
-
             {/* Floating testimonial card - eyewear slide */}
             <div 
               className={cn(
                 "absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm max-w-[280px] transition-all duration-700",
-                selectedIndex === 1 ? "opacity-100 animate-float translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
+                selectedIndex === 0 ? "opacity-100 animate-float translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
               )}
             >
               <div className="flex items-start gap-4">
@@ -337,22 +319,20 @@ export const HeroSection = () => {
               </div>
             </div>
 
-            {/* Floating product card - top right (clinic slide) */}
+            {/* Floating testimonial card - clinic slide */}
             <div 
               className={cn(
-                "absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm transition-all duration-700",
-                selectedIndex === 0 ? "opacity-100 animate-float-slow translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
+                "absolute -bottom-6 -left-6 bg-card p-5 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm max-w-[280px] transition-all duration-700",
+                selectedIndex === 1 ? "opacity-100 animate-float translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
               )}
-              style={{ animationDelay: '0.5s' }}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
-                  👁️
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground font-bold text-lg shrink-0 animate-pulse-soft">
+                  10K+
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Book Now</p>
-                  <p className="font-semibold text-foreground">Eye Exam</p>
-                  <p className="text-sm font-bold text-primary">Free</p>
+                  <p className="font-semibold text-foreground">Eye Exams Completed</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">Trusted care for clearer vision</p>
                 </div>
               </div>
             </div>
@@ -361,7 +341,7 @@ export const HeroSection = () => {
             <div 
               className={cn(
                 "absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm transition-all duration-700",
-                selectedIndex === 1 ? "opacity-100 animate-float-slow translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
+                selectedIndex === 0 ? "opacity-100 animate-float-slow translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
               )}
               style={{ animationDelay: '0.5s' }}
             >
@@ -373,6 +353,26 @@ export const HeroSection = () => {
                   <p className="text-xs text-muted-foreground">New Arrival</p>
                   <p className="font-semibold text-foreground">Classic Aviator</p>
                   <p className="text-sm font-bold text-accent">₦45,000</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating product card - top right (clinic slide) */}
+            <div 
+              className={cn(
+                "absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-float border border-border/50 backdrop-blur-sm transition-all duration-700",
+                selectedIndex === 1 ? "opacity-100 animate-float-slow translate-y-0" : "opacity-0 pointer-events-none translate-y-4"
+              )}
+              style={{ animationDelay: '0.5s' }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
+                  👁️
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Book Now</p>
+                  <p className="font-semibold text-foreground">Eye Exam</p>
+                  <p className="text-sm font-bold text-primary">Free</p>
                 </div>
               </div>
             </div>

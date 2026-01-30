@@ -9,8 +9,7 @@ import { hasAdminAccess } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import soteriaLogo from "@/assets/soteria-logo.png";
-import soteriaLogoGold from "@/assets/soteria-logo-gold.png";
+import mhLogo from "@/assets/mh-logo.png";
 import mhLogoGold from "@/assets/mh-logo-gold.png";
 const navLinks = [{
   name: "Style Quiz",
@@ -66,12 +65,10 @@ export const MainNav = () => {
   return <div className="bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo - Unified Brand with Images */}
-          <Link to="/" className="flex items-center gap-2">
-            <img src={soteriaLogo} alt="Soteria Eye Clinic" className="h-10 w-auto dark:hidden" />
-            <img src={soteriaLogoGold} alt="Soteria Eye Clinic" className="h-10 w-auto hidden dark:block" />
-            <span className="text-border text-2xl font-light px-0 mx-0">|</span>
-            <img src={mhLogoGold} alt="M&H Eyewear" className="h-[4.5rem] w-auto" />
+          {/* Logo */}
+          <Link to="/" className="flex items-center">
+            <img src={mhLogo} alt="M&H Eyewear" className="h-12 w-auto dark:hidden" />
+            <img src={mhLogoGold} alt="M&H Eyewear" className="h-12 w-auto hidden dark:block" />
           </Link>
 
           {/* Desktop Navigation Links */}

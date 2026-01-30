@@ -85,7 +85,7 @@ export const ProductQuickView = ({ productId, isOpen, onClose }: ProductQuickVie
                     {product.style || "Eyewear"}
                   </Badge>
                   <Badge variant="outline">
-                    {product.brand_line === "m_and_h_fashion" ? "M&H" : "Soteria"}
+                    {product.brand_line === "m_and_h_fashion" ? "Lifestyle" : "Medical"}
                   </Badge>
                 </div>
 

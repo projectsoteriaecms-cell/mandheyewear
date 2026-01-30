@@ -48,7 +48,7 @@ const Install = () => {
         </div>
         
         <h1 className="text-3xl font-display font-semibold mb-3">
-          Install Soteria | M&H
+          Install M&H Eyewear
         </h1>
         
         <p className="text-muted-foreground max-w-md mb-8">

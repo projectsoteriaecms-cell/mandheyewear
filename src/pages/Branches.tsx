@@ -20,12 +20,10 @@ const Branches = () => {
               Our Locations
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Find a Soteria Eye Clinic & M&H Eyewear location across Lagos,
-              Delta and Uyo
+              Find an M&H Eyewear location across Lagos, Delta and Uyo
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              M&H Eyewear has a flagship boutique in Lekki and is also available
-              at all Soteria Eye Clinic locations
+              Visit us for premium eyewear and comprehensive eye care services
             </p>
           </div>
 

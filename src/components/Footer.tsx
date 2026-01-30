@@ -8,8 +8,8 @@ import {
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import soteriaLogo from "@/assets/soteria-logo.png";
 import mhLogo from "@/assets/mh-logo.png";
+import mhLogoGold from "@/assets/mh-logo-gold.png";
 
 const footerSections = [
   {
@@ -100,17 +100,16 @@ export const Footer = () => {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-4">
-            <Link to="/" className="flex items-center gap-3">
-              <img 
-                src={soteriaLogo} 
-                alt="Soteria Eye Clinic" 
-                className="h-10 w-auto dark:invert dark:brightness-[1.2]"
-              />
-              <span className="text-border text-xl font-light">|</span>
+            <Link to="/">
               <img 
                 src={mhLogo} 
                 alt="M&H Eyewear" 
-                className="h-10 w-auto dark:invert dark:brightness-[1.2]"
+                className="h-12 w-auto dark:hidden"
+              />
+              <img 
+                src={mhLogoGold} 
+                alt="M&H Eyewear" 
+                className="h-12 w-auto hidden dark:block"
               />
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs">
@@ -196,7 +195,7 @@ export const Footer = () => {
 
           {/* Copyright */}
           <p className="text-center text-sm text-muted-foreground mt-6">
-            &copy; {currentYear} Soteria Eye Clinic & M&H Eyewear. All rights reserved.
+            &copy; {currentYear} M&H Eyewear. All rights reserved.
           </p>
         </div>
       </div>

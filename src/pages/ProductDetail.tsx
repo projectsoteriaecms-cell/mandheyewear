@@ -130,8 +130,8 @@ const ProductDetail = () => {
                 </Badge>
                 <Badge variant="outline" className="text-xs">
                   {product.brand_line === "m_and_h_fashion"
-                    ? "M&H Eyewear"
-                    : "Soteria Medical"}
+                    ? "M&H Lifestyle"
+                    : "M&H Medical"}
                 </Badge>
               </div>
 

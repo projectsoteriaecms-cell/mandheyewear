@@ -32,8 +32,8 @@ import { Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const brandLines = [
-  { value: "soteria_medical", label: "Soteria Medical" },
-  { value: "m_and_h_fashion", label: "M&H Fashion" },
+  { value: "soteria_medical", label: "M&H Medical" },
+  { value: "m_and_h_fashion", label: "M&H Lifestyle" },
 ] as const;
 
 const itemTypes = [

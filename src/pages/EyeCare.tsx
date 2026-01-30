@@ -69,7 +69,7 @@ const EyeCare = () => {
           {/* Hero */}
           <div className="text-center mb-16">
             <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">
-              Soteria Eye Care Services
+              M&H Eye Care Services
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               Comprehensive eye health services backed by clinical excellence and advanced technology
@@ -121,7 +121,7 @@ const EyeCare = () => {
           <Card className="mb-16 bg-gradient-subtle">
             <CardContent className="p-8 sm:p-12">
               <h2 className="text-3xl font-display font-bold text-center text-foreground mb-8">
-                Why Choose Soteria Eye Clinic
+                Why Choose M&H Eye Care
               </h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {features.map((feature, index) => (

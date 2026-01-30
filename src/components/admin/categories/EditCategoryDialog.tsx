@@ -192,8 +192,8 @@ export const EditCategoryDialog = ({ category, onClose }: EditCategoryDialogProp
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="soteria_medical">Soteria Medical</SelectItem>
-                      <SelectItem value="m_and_h_fashion">M&H Fashion</SelectItem>
+                      <SelectItem value="soteria_medical">M&H Medical</SelectItem>
+                      <SelectItem value="m_and_h_fashion">M&H Lifestyle</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

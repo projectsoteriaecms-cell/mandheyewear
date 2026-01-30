@@ -40,8 +40,8 @@ import type { Database } from "@/integrations/supabase/types";
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
 const brandLines = [
-  { value: "soteria_medical", label: "Soteria Medical" },
-  { value: "m_and_h_fashion", label: "M&H Fashion" },
+  { value: "soteria_medical", label: "M&H Medical" },
+  { value: "m_and_h_fashion", label: "M&H Lifestyle" },
 ] as const;
 
 const itemTypes = [

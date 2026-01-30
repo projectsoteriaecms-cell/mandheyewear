@@ -25,7 +25,7 @@ const Terms = () => {
                   Agreement to Terms
                 </h2>
                 <p className="text-muted-foreground">
-                  By accessing or using Soteria Eye Clinic & M&H Eyewear services, you agree to be bound 
+                  By accessing or using M&H Eyewear services, you agree to be bound 
                   by these Terms of Service and all applicable laws and regulations. If you do not agree 
                   with any of these terms, you are prohibited from using our services.
                 </p>
@@ -77,8 +77,8 @@ const Terms = () => {
                   Intellectual Property
                 </h2>
                 <p className="text-muted-foreground">
-                  All content, including text, graphics, logos, and software, is the property of Soteria 
-                  Eye Clinic & M&H Eyewear and protected by copyright and trademark laws.
+                  All content, including text, graphics, logos, and software, is the property of M&H Eyewear 
+                  and protected by copyright and trademark laws.
                 </p>
               </section>
 
@@ -87,7 +87,7 @@ const Terms = () => {
                   Limitation of Liability
                 </h2>
                 <p className="text-muted-foreground">
-                  To the fullest extent permitted by law, Soteria Eye Clinic & M&H Eyewear shall not be 
+                  To the fullest extent permitted by law, M&H Eyewear shall not be 
                   liable for any indirect, incidental, or consequential damages arising from your use of 
                   our services.
                 </p>
