@@ -1,139 +1,168 @@
 
-# Paystack Payment Integration Plan
+
+# M&H Eyewear Rebranding Plan
 
 ## Overview
-This plan outlines the complete integration of Paystack payment processing into the checkout flow. The integration will enable customers to pay securely using cards, bank transfers, and USSD payments.
+This plan removes all Soteria Eye Clinic branding from the frontend, making M&H Eyewear the sole brand. The backend, database, and inventory will remain shared for the future Soteria frontend.
 
-## Current State Analysis
-Your checkout infrastructure is already well-prepared:
-- **Checkout UI** (`src/pages/Checkout.tsx`) - Complete with address form, order summary, and payment button placeholder
-- **Cart System** (`src/hooks/useCart.ts`) - Fully functional with add/remove/clear operations
-- **Orders Database** - Tables exist for `orders` and `order_items` with proper enums for `payment_status` (pending, paid, failed, refunded) and `order_status`
-- **Order Confirmation Page** (`src/pages/OrderConfirmation.tsx`) - Ready to display successful orders
+## Scope Clarification
+- **M&H becomes a full-service company** - offering both eyewear AND eye care services (not just the "luxury arm")
+- **No dual-brand references** - remove all "Soteria | M&H" combined branding
+- **Backend unchanged** - database tables, edge functions, and inventory remain intact
+
+---
+
+## Files to Modify
+
+### Navigation & Headers
+
+| File | Changes |
+|------|---------|
+| `src/components/navigation/MainNav.tsx` | Remove Soteria logo imports, display only M&H logo, remove separator |
+| `src/components/navigation/MobileTopBar.tsx` | Same as above - M&H only in header and drawer |
+| `src/components/navigation/MobileNav.tsx` | Same as above - M&H only in header and drawer |
+| `src/components/navigation/TopBar.tsx` | Update any brand references (currently minimal Soteria refs) |
+| `src/components/Footer.tsx` | Remove Soteria logo, update copyright to "M&H Eyewear" |
+
+### Hero & Home
+
+| File | Changes |
+|------|---------|
+| `src/components/home/HeroSection.tsx` | Remove "Soteria Eye Clinic" slide, convert to single M&H slide (keeping eye care messaging), update badge text |
+
+### Pages
+
+| File | Changes |
+|------|---------|
+| `src/pages/About.tsx` | Rewrite as M&H-only story (remove dual-brand narrative, Soteria section) |
+| `src/pages/EyeCare.tsx` | Rename "Soteria Eye Care Services" to "M&H Eye Care Services" |
+| `src/pages/Branches.tsx` | Update descriptions to reference M&H locations only |
+| `src/pages/Privacy.tsx` | Replace "Soteria Eye Clinic & M&H Eyewear" with "M&H Eyewear" |
+| `src/pages/Terms.tsx` | Same replacement throughout |
+| `src/pages/Install.tsx` | Update app name to "M&H Eyewear" |
+| `src/pages/ProductDetail.tsx` | Update brand badge (Soteria Medical -> M&H Medical) |
+
+### PWA & Configuration
+
+| File | Changes |
+|------|---------|
+| `index.html` | Update title, meta tags, Open Graph tags - all to "M&H Eyewear" |
+| `public/manifest.json` | Update name and short_name |
+| `vite.config.ts` | Update PWA manifest settings |
+
+### Admin (Display Labels Only)
+
+| File | Changes |
+|------|---------|
+| `src/pages/admin/Settings.tsx` | Update default store name display |
+| `src/components/admin/products/CreateProductDialog.tsx` | Update brand line label: "Soteria Medical" -> "M&H Medical" |
+| `src/components/admin/products/EditProductDialog.tsx` | Same label update |
+| `src/components/admin/products/ProductListView.tsx` | Same label update |
+| `src/components/admin/categories/EditCategoryDialog.tsx` | Same label update |
+| `src/components/storefront/ProductQuickView.tsx` | Update badge display |
+
+### PWA Components
+
+| File | Changes |
+|------|---------|
+| `src/components/pwa/InstallPrompt.tsx` | Update app name display |
+
+### CSS & Theme (Optional Cleanup)
+
+| File | Changes |
+|------|---------|
+| `src/index.css` | Rename CSS variable comments from "Soteria Blue" to "M&H Blue" (optional, cosmetic) |
+| `tailwind.config.ts` | Rename `soteria` color namespace to `mh-primary` (optional, affects codebase-wide references) |
+
+---
+
+## Key Changes Detail
+
+### 1. Logo Implementation
+**Before:** Dual logo with separator (Soteria | M&H)
+**After:** Single M&H logo only
+
+```text
+BEFORE: [Soteria Logo] | [M&H Logo]
+AFTER:  [M&H Logo]
+```
+
+The M&H logo assets (`mh-logo.png`, `mh-logo-gold.png`) are already in the project.
+
+### 2. Hero Section Transformation
+**Before:** Two-slide carousel alternating between Soteria (clinical) and M&H (fashion)
+**After:** Single cohesive M&H hero OR simplified two-slide showing M&H's dual offerings (eyewear + eye care)
+
+The hero will emphasize that M&H offers:
+- Premium eyewear
+- Comprehensive eye care services
+
+### 3. About Page Rewrite
+**Before:** Dual narrative explaining both brands separately
+**After:** Single M&H story covering:
+- Company history and mission
+- Full-service offering (eye care + eyewear)
+- Values and team
+
+### 4. Brand Line Labels in Admin
+The database uses `soteria_medical` and `m_and_h_fashion` enum values - these will **NOT** change (backend stability).
+Only the UI labels will change:
+- "Soteria Medical" -> "M&H Medical" (for clinical/medical products)
+- "M&H Fashion" -> "M&H Lifestyle" or keep as-is
+
+---
+
+## Files NOT Modified (Backend Stability)
+
+These files use `soteria_medical` enum values and will remain unchanged to ensure database compatibility:
+
+- `src/modules/products/lib/transformers.ts` - Parser logic using enum values
+- `src/integrations/supabase/types.ts` - Auto-generated from database
+- Database migrations - Enum values remain for backend compatibility
+- Edge functions - No Soteria branding exposed to users
+
+---
 
 ## Implementation Phases
 
-### Phase 1: Secret Configuration
-Before any code changes, you'll need to provide your Paystack Secret Key. I'll prompt you to add this securely to the backend.
+### Phase 1: Navigation & Footer (Core Branding)
+1. Update MainNav - M&H logo only
+2. Update MobileTopBar - M&H logo only  
+3. Update MobileNav - M&H logo only
+4. Update Footer - M&H branding, copyright
 
-**What you need:**
-- Log into your [Paystack Dashboard](https://dashboard.paystack.com)
-- Navigate to Settings → API Keys
-- Copy your **Secret Key** (starts with `sk_test_` for test mode or `sk_live_` for production)
+### Phase 2: Home & Hero
+1. Simplify HeroSection to M&H focus
+2. Keep eye care messaging but as M&H service
 
-### Phase 2: Backend Function Creation
-Create a new backend function `paystack-payment` that handles:
+### Phase 3: Content Pages
+1. Rewrite About page
+2. Update EyeCare page headings
+3. Update Branches page copy
+4. Update Privacy and Terms pages
+5. Update Install page
 
-**Initialize Transaction Endpoint:**
-- Receives order details (amount, email, cart items, shipping address)
-- Creates an order in the database with `payment_status: 'pending'`
-- Calls Paystack API to initialize transaction
-- Returns authorization URL and reference to frontend
+### Phase 4: PWA & Meta
+1. Update index.html meta tags
+2. Update manifest.json
+3. Update vite.config.ts PWA settings
 
-**Verify Transaction Endpoint:**
-- Receives Paystack reference after payment
-- Calls Paystack API to verify transaction status
-- Updates order `payment_status` to 'paid' or 'failed'
-- Clears customer's cart on successful payment
-
-### Phase 3: Frontend Integration
-Install the `react-paystack` library and update the checkout page:
-
-**Payment Flow:**
-1. Customer clicks "Pay" button
-2. Frontend calls backend to initialize payment
-3. Paystack popup opens for secure payment
-4. On success, frontend calls backend to verify
-5. Customer redirected to Order Confirmation page
-
-```text
-+----------------+     +------------------+     +-----------------+
-|   Checkout     | --> | Backend Function | --> |   Paystack API  |
-|   (Frontend)   |     | (Initialize)     |     |                 |
-+----------------+     +------------------+     +-----------------+
-        |                                              |
-        v                                              v
-+----------------+     +------------------+     +-----------------+
-| Paystack Popup | --> | Backend Function | --> | Update Order DB |
-| (User Pays)    |     | (Verify)         |     | Clear Cart      |
-+----------------+     +------------------+     +-----------------+
-        |
-        v
-+----------------+
-| Order          |
-| Confirmation   |
-+----------------+
-```
-
-### Phase 4: Database Updates
-Add a `paystack_reference` field to track Paystack transaction references (the existing `payment_reference` column can be used for this).
+### Phase 5: Admin Labels
+1. Update product brand line labels
+2. Update category brand line labels
+3. Update settings defaults
 
 ---
 
-## Files to Create/Modify
+## Post-Implementation Notes
 
-| Action | File | Purpose |
-|--------|------|---------|
-| Create | `supabase/functions/paystack-payment/index.ts` | Backend function for initialize + verify |
-| Modify | `supabase/config.toml` | Register new edge function |
-| Modify | `src/pages/Checkout.tsx` | Integrate Paystack popup |
-| Create | `src/hooks/usePaystackPayment.ts` | Custom hook for payment logic |
+### For Future Soteria Frontend
+When building the separate Soteria frontend:
+- Both apps will share the same backend database
+- Products with `brand_line: "soteria_medical"` can be filtered for Soteria
+- Products with `brand_line: "m_and_h_fashion"` can be filtered for M&H
+- User accounts, orders, and inventory sync across both frontends
 
----
+### Email References
+The footer currently has `info@soteriaeyeclinic.com` - this should be updated to a new M&H email address (you'll need to provide the new email).
 
-## Technical Details
-
-### Backend Function Structure
-```text
-paystack-payment/index.ts
-├── POST /initialize
-│   ├── Validate user authentication
-│   ├── Validate cart items & calculate total
-│   ├── Create order with pending status
-│   ├── Call Paystack /transaction/initialize
-│   └── Return { authorization_url, reference, order_id }
-│
-└── POST /verify
-    ├── Receive { reference }
-    ├── Call Paystack /transaction/verify
-    ├── Update order payment_status
-    ├── Clear user's cart
-    └── Return { success, order_id }
-```
-
-### Security Measures
-- Secret key stored securely in backend secrets (never exposed to frontend)
-- JWT verification for authenticated users only
-- Server-side amount calculation (never trust frontend amounts)
-- Transaction verification prevents payment spoofing
-
-### Payment Flow States
-| State | Order Status | Payment Status | User Sees |
-|-------|--------------|----------------|-----------|
-| Cart confirmed | - | - | Checkout page |
-| Payment started | pending | pending | Paystack popup |
-| Payment success | confirmed | paid | Confirmation page |
-| Payment failed | pending | failed | Error message |
-| Payment cancelled | - | - | Checkout page |
-
----
-
-## Testing Strategy
-After implementation:
-1. Test with Paystack test cards (provided by Paystack)
-2. Test payment cancellation flow
-3. Test network failure scenarios
-4. Verify order appears in customer dashboard
-5. Verify cart is cleared after payment
-
----
-
-## What Happens When You Approve
-
-1. I'll prompt you to add your **PAYSTACK_SECRET_KEY** to the backend secrets
-2. Create the backend function with initialize and verify endpoints
-3. Update the checkout page with Paystack integration
-4. Create a custom hook for clean payment logic
-5. Test the complete flow end-to-end
-
-**Estimated implementation time:** 15-20 minutes after you provide the Paystack secret key
