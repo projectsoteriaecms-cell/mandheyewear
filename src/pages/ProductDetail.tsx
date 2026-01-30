@@ -13,7 +13,7 @@ import { MobileActionBar } from "@/components/mobile";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, Star, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Star, ShoppingBag, Camera } from "lucide-react";
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -183,12 +183,30 @@ const ProductDetail = () => {
               {/* Desktop: Add to Cart & Wishlist */}
               <div className="hidden lg:block space-y-4">
                 <AddToCartSection product={product} />
-                <WishlistButton productId={product.id} variant="full" className="w-full" />
+                <div className="flex gap-3">
+                  <WishlistButton productId={product.id} variant="full" className="flex-1" />
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => navigate(`/try-on?product=${product.id}`)}
+                  >
+                    <Camera className="h-4 w-4 mr-2" />
+                    Try On
+                  </Button>
+                </div>
               </div>
 
-              {/* Mobile: Wishlist only (Cart is in sticky bar) */}
-              <div className="lg:hidden">
+              {/* Mobile: Wishlist and Try-On (Cart is in sticky bar) */}
+              <div className="lg:hidden space-y-3">
                 <WishlistButton productId={product.id} variant="full" className="w-full" />
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate(`/try-on?product=${product.id}`)}
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  Virtual Try-On
+                </Button>
               </div>
             </div>
           </div>
