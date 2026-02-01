@@ -16,7 +16,8 @@ import {
   Share2, 
   X,
   Maximize2,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TryOnResult as TryOnResultType } from "@/hooks/useVirtualTryOn";
@@ -152,8 +153,16 @@ export const TryOnResult = ({
       <Card className={cn("overflow-hidden", className)}>
         <CardContent className="p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">Try-On Result</h3>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-lg font-semibold text-foreground">Try-On Result</h3>
+                {result.usedFrameReference && (
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Verified Match
+                  </Badge>
+                )}
+              </div>
               {result.frameDetails && (
                 <p className="text-sm text-muted-foreground">
                   {result.frameDetails.name}
@@ -171,6 +180,21 @@ export const TryOnResult = ({
               </Button>
             )}
           </div>
+
+          {/* Frame Reference Thumbnail (when available) */}
+          {result.usedFrameReference && result.frameDetails?.imageUrl && (
+            <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-border/50">
+              <img 
+                src={result.frameDetails.imageUrl}
+                alt={`${result.frameDetails.name} reference`}
+                className="w-16 h-12 object-cover rounded border border-border"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-foreground truncate">Reference Frame</p>
+                <p className="text-xs text-muted-foreground">AI matched this exact design</p>
+              </div>
+            </div>
+          )}
 
           {/* Comparison View */}
           <div className="grid grid-cols-2 gap-4">
@@ -226,16 +250,28 @@ export const TryOnResult = ({
                   className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
                   style={{ imageOrientation: "from-image" }}
                 />
-                {result.frameDetails && (
-                  <div className="absolute bottom-4 left-4 right-4 bg-background/80 backdrop-blur-sm rounded-lg p-3 text-center">
-                    <p className="font-semibold text-foreground">{result.frameDetails.name}</p>
-                    {result.frameDetails.price && (
-                      <p className="text-accent font-medium">
-                        ₦{result.frameDetails.price.toLocaleString()}
-                      </p>
+                <div className="absolute bottom-4 left-4 right-4 bg-background/80 backdrop-blur-sm rounded-lg p-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 text-center">
+                      {result.frameDetails && (
+                        <>
+                          <p className="font-semibold text-foreground">{result.frameDetails.name}</p>
+                          {result.frameDetails.price && (
+                            <p className="text-accent font-medium">
+                              ₦{result.frameDetails.price.toLocaleString()}
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    {result.usedFrameReference && (
+                      <Badge variant="secondary" className="shrink-0 gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Verified
+                      </Badge>
                     )}
                   </div>
-                )}
+                </div>
               </div>
             </DialogContent>
           </Dialog>
