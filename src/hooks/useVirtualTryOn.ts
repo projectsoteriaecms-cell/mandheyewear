@@ -18,6 +18,7 @@ export interface TryOnResult {
   error?: string;
   frameDetails?: FrameDetails;
   timestamp: number;
+  usedFrameReference?: boolean;
 }
 
 export const useVirtualTryOn = () => {
@@ -76,6 +77,7 @@ export const useVirtualTryOn = () => {
         compositeImage: data.compositeImage,
         frameDetails: frameDetails,
         timestamp: Date.now(),
+        usedFrameReference: data.usedFrameReference ?? false,
       };
 
       setCurrentResult(result);

@@ -18,6 +18,7 @@ interface TryOnRequest {
 type GeneratedTryOn = {
   compositeImage: string;
   provider: "google_gemini" | "lovable_ai";
+  usedFrameReference: boolean;
 };
 
 const json = (body: unknown, status = 200, extraHeaders: HeadersInit = {}) =>
@@ -29,7 +30,42 @@ const json = (body: unknown, status = 200, extraHeaders: HeadersInit = {}) =>
 const stripDataUrlPrefix = (maybeDataUrl: string) =>
   maybeDataUrl.includes("base64,") ? maybeDataUrl.split("base64,")[1] : maybeDataUrl;
 
-const buildPrompt = (frameDetails: TryOnRequest["frameDetails"]) => {
+/**
+ * Fetches a frame image from URL and converts it to base64
+ */
+const fetchFrameImageAsBase64 = async (imageUrl: string): Promise<{ base64: string; mimeType: string } | null> => {
+  try {
+    console.log("Fetching frame reference image:", imageUrl);
+    const response = await fetch(imageUrl, { 
+      headers: { "Accept": "image/*" },
+      signal: AbortSignal.timeout(10000) // 10 second timeout
+    });
+    
+    if (!response.ok) {
+      console.warn("Failed to fetch frame image:", response.status);
+      return null;
+    }
+    
+    const contentType = response.headers.get("content-type") || "image/jpeg";
+    const arrayBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    
+    // Convert to base64
+    let binary = "";
+    for (let i = 0; i < uint8Array.length; i++) {
+      binary += String.fromCharCode(uint8Array[i]);
+    }
+    const base64 = btoa(binary);
+    
+    console.log("Frame image fetched successfully, size:", uint8Array.length);
+    return { base64, mimeType: contentType.split(";")[0] };
+  } catch (error) {
+    console.warn("Error fetching frame image:", error);
+    return null;
+  }
+};
+
+const buildPrompt = (frameDetails: TryOnRequest["frameDetails"], hasFrameReference: boolean) => {
   const frameDescription = [
     frameDetails.name,
     frameDetails.color && `in ${frameDetails.color} color`,
@@ -38,6 +74,31 @@ const buildPrompt = (frameDetails: TryOnRequest["frameDetails"]) => {
     .filter(Boolean)
     .join(" ");
 
+  if (hasFrameReference) {
+    // Enhanced prompt when we have the actual frame image
+    return `You are an expert eyewear designer and photo editor.
+
+IMPORTANT: You have been provided with TWO images:
+1. FIRST IMAGE: The exact eyeglasses frame that must be applied (reference frame)
+2. SECOND IMAGE: The user's front-facing face photo
+
+Your task:
+- Apply the EXACT glasses from the first image onto the person in the second image
+- You MUST replicate the exact frame design from the reference - same shape, color, material appearance, temple style, and all design details
+- Do NOT create a different frame design or modify the frame appearance
+- The glasses should be properly scaled to match the face width
+- Position the glasses correctly on the nose bridge, aligned with the eyes
+- Follow the natural perspective and lighting of the face photo
+- The result should look like a real photograph, not a digital overlay
+- Maintain the original photo quality and background
+- Ensure the frame temples extend naturally towards the ears
+
+Frame details for reference: ${frameDescription}
+
+Generate a complete, photorealistic image of the person wearing the EXACT glasses from the reference image.`;
+  }
+
+  // Fallback prompt when no frame reference image is available
   return `You are an expert eyewear designer and photo editor.
 
 Given this front-facing face photo, create a photorealistic image showing the person wearing eyeglasses with these specifications:
@@ -64,28 +125,42 @@ const extractInlineBase64FromGeminiGenerateContent = (result: any) => {
 
 const callGoogleGemini = async (opts: {
   apiKey: string;
-  imageBase64: string;
+  userImageBase64: string;
+  frameImageBase64?: string;
+  frameImageMimeType?: string;
   prompt: string;
 }): Promise<{ ok: true; data: GeneratedTryOn } | { ok: false; status: number; error: string; raw?: string }> => {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${opts.apiKey}`;
+
+  // Build parts array - frame image first (if available), then user photo, then text
+  const parts: any[] = [];
+  
+  if (opts.frameImageBase64 && opts.frameImageMimeType) {
+    // Add frame reference image first
+    parts.push({
+      inlineData: {
+        mimeType: opts.frameImageMimeType,
+        data: opts.frameImageBase64,
+      },
+    });
+  }
+  
+  // Add user photo
+  parts.push({
+    inlineData: {
+      mimeType: "image/jpeg",
+      data: opts.userImageBase64,
+    },
+  });
+  
+  // Add prompt text
+  parts.push({ text: opts.prompt });
 
   const resp = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            {
-              inlineData: {
-                mimeType: "image/jpeg",
-                data: opts.imageBase64,
-              },
-            },
-            { text: opts.prompt },
-          ],
-        },
-      ],
+      contents: [{ parts }],
       generationConfig: {
         responseModalities: ["image", "text"],
         temperature: 0.4,
@@ -120,12 +195,17 @@ const callGoogleGemini = async (opts: {
 
   return {
     ok: true,
-    data: { compositeImage: img, provider: "google_gemini" },
+    data: { 
+      compositeImage: img, 
+      provider: "google_gemini",
+      usedFrameReference: !!opts.frameImageBase64 
+    },
   };
 };
 
 const callLovableAIGateway = async (opts: {
-  imageDataUrl: string;
+  userImageDataUrl: string;
+  frameImageDataUrl?: string;
   prompt: string;
 }): Promise<{ ok: true; data: GeneratedTryOn } | { ok: false; status: number; error: string; raw?: string }> => {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -137,6 +217,19 @@ const callLovableAIGateway = async (opts: {
     };
   }
 
+  // Build content array with images
+  const content: any[] = [
+    { type: "text", text: opts.prompt },
+  ];
+  
+  // Add frame reference image first if available
+  if (opts.frameImageDataUrl) {
+    content.push({ type: "image_url", image_url: { url: opts.frameImageDataUrl } });
+  }
+  
+  // Add user photo
+  content.push({ type: "image_url", image_url: { url: opts.userImageDataUrl } });
+
   const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -144,16 +237,12 @@ const callLovableAIGateway = async (opts: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      // Use a second model/provider so we can stay available during Google quota spikes.
       model: "google/gemini-3-pro-image-preview",
       modalities: ["image", "text"],
       messages: [
         {
           role: "user",
-          content: [
-            { type: "text", text: opts.prompt },
-            { type: "image_url", image_url: { url: opts.imageDataUrl } },
-          ],
+          content,
         },
       ],
     }),
@@ -186,7 +275,11 @@ const callLovableAIGateway = async (opts: {
 
   return {
     ok: true,
-    data: { compositeImage: imageUrl, provider: "lovable_ai" },
+    data: { 
+      compositeImage: imageUrl, 
+      provider: "lovable_ai",
+      usedFrameReference: !!opts.frameImageDataUrl 
+    },
   };
 };
 
@@ -202,10 +295,7 @@ serve(async (req) => {
     const { userPhoto, frameDetails }: TryOnRequest = await req.json();
 
     if (!userPhoto) {
-      return new Response(
-        JSON.stringify({ success: false, error: "User photo is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return json({ success: false, error: "User photo is required" }, 400);
     }
 
     if (!frameDetails?.name) {
@@ -214,13 +304,26 @@ serve(async (req) => {
 
     console.log(`Processing virtual try-on for frame: ${frameDetails.name}`);
 
-    const prompt = buildPrompt(frameDetails);
+    // Try to fetch the frame reference image
+    let frameImage: { base64: string; mimeType: string } | null = null;
+    if (frameDetails.imageUrl) {
+      frameImage = await fetchFrameImageAsBase64(frameDetails.imageUrl);
+    }
+    
+    const hasFrameReference = !!frameImage;
+    console.log(`Frame reference image available: ${hasFrameReference}`);
+
+    const prompt = buildPrompt(frameDetails, hasFrameReference);
 
     // Prepare image inputs
-    const imageBase64 = stripDataUrlPrefix(userPhoto);
-    const imageDataUrl = userPhoto.startsWith("data:")
+    const userImageBase64 = stripDataUrlPrefix(userPhoto);
+    const userImageDataUrl = userPhoto.startsWith("data:")
       ? userPhoto
-      : `data:image/jpeg;base64,${imageBase64}`;
+      : `data:image/jpeg;base64,${userImageBase64}`;
+    
+    const frameImageDataUrl = frameImage 
+      ? `data:${frameImage.mimeType};base64,${frameImage.base64}`
+      : undefined;
 
     // Strategy:
     // 1) Try Google Gemini directly if a key is configured (fastest for your current setup)
@@ -232,7 +335,9 @@ serve(async (req) => {
     if (GEMINI_API_KEY) {
       const primary = await callGoogleGemini({
         apiKey: GEMINI_API_KEY,
-        imageBase64,
+        userImageBase64,
+        frameImageBase64: frameImage?.base64,
+        frameImageMimeType: frameImage?.mimeType,
         prompt,
       });
 
@@ -252,7 +357,11 @@ serve(async (req) => {
     }
 
     if (!generated) {
-      const fallback = await callLovableAIGateway({ imageDataUrl, prompt });
+      const fallback = await callLovableAIGateway({ 
+        userImageDataUrl, 
+        frameImageDataUrl,
+        prompt 
+      });
       if (fallback.ok) {
         generated = fallback.data;
       } else {
@@ -270,13 +379,17 @@ serve(async (req) => {
       );
     }
 
-    console.log("Virtual try-on generated successfully", { provider: generated.provider });
+    console.log("Virtual try-on generated successfully", { 
+      provider: generated.provider,
+      usedFrameReference: generated.usedFrameReference 
+    });
 
     return json({
       success: true,
       compositeImage: generated.compositeImage,
       frameDetails,
       provider: generated.provider,
+      usedFrameReference: generated.usedFrameReference,
     });
 
   } catch (error) {
