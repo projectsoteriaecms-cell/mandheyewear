@@ -1,7 +1,13 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   Download, 
   Heart, 
@@ -40,6 +46,7 @@ export const TryOnResult = ({
   onClear,
   className,
 }: TryOnResultProps) => {
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const handleDownload = () => {
     if (result?.compositeImage) {
       const link = document.createElement("a");
@@ -176,6 +183,7 @@ export const TryOnResult = ({
                     src={userPhoto}
                     alt="Original photo"
                     className="w-full h-full object-cover"
+                    style={{ imageOrientation: "from-image" }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -193,16 +201,44 @@ export const TryOnResult = ({
                   src={result.compositeImage}
                   alt="Try-on result"
                   className="w-full h-full object-cover"
+                  style={{ imageOrientation: "from-image" }}
                 />
                 <button 
                   className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center"
-                  onClick={() => window.open(result.compositeImage, "_blank")}
+                  onClick={() => setIsFullscreenOpen(true)}
                 >
                   <Maximize2 className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
               </div>
             </div>
           </div>
+
+          {/* Fullscreen Modal */}
+          <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
+            <DialogContent className="max-w-4xl w-[95vw] p-2 sm:p-4 bg-background/95 backdrop-blur-sm">
+              <DialogTitle className="sr-only">
+                Virtual Try-On Result - {result.frameDetails?.name}
+              </DialogTitle>
+              <div className="relative">
+                <img
+                  src={result.compositeImage}
+                  alt={`Virtual try-on with ${result.frameDetails?.name}`}
+                  className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                  style={{ imageOrientation: "from-image" }}
+                />
+                {result.frameDetails && (
+                  <div className="absolute bottom-4 left-4 right-4 bg-background/80 backdrop-blur-sm rounded-lg p-3 text-center">
+                    <p className="font-semibold text-foreground">{result.frameDetails.name}</p>
+                    {result.frameDetails.price && (
+                      <p className="text-accent font-medium">
+                        ₦{result.frameDetails.price.toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-2">
