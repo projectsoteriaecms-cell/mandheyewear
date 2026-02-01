@@ -1,54 +1,77 @@
 
-# Fix Virtual Try-On Edge Function
+# Virtual Try-On Quality Verification Plan
 
-## Problem Identified
+## Problem Analysis
+Currently, the Virtual Try-On feature only sends **text descriptions** (frame name, color, style) to the AI. The frame's actual image URL is passed but **not used** in the prompt. This means:
 
-The edge function is failing with a 500 error due to two issues with the Gemini API call:
+- The AI is generating glasses based solely on text, leading to potential mismatches
+- Users may see glasses that don't match the exact frame they selected
+- No verification that the generated image matches the product
 
-| Issue | Current (Broken) | Required (Fixed) |
-|-------|------------------|------------------|
-| Model endpoint | `gemini-2.0-flash-exp` | `gemini-2.0-flash-exp-image-generation` |
-| Response modalities | `["image", "text"]` (lowercase) | `["TEXT", "IMAGE"]` (uppercase) |
+## Solution Overview
+Implement a **multi-image reference system** that sends both the user's photo AND the actual frame image to the AI, ensuring visual consistency. Additionally, add a **quality indicator** in the UI to build user confidence.
 
-## Solution
+## Implementation Steps
 
-Update the Gemini API call in `supabase/functions/virtual-try-on/index.ts`:
+### 1. Enhanced Edge Function with Frame Image Reference
+Update the `virtual-try-on` edge function to:
+- Accept and download the frame's product image
+- Send BOTH images (user photo + frame reference) to the AI
+- Update the prompt to explicitly instruct the AI to replicate the exact frame appearance
 
-### Change 1: Fix Model Endpoint (Line 79)
-```typescript
-// FROM:
-`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`
-
-// TO:
-`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`
+**Key prompt enhancement:**
+```
+"Here is the exact eyeglasses frame to apply to the user's face. 
+You MUST replicate this exact frame design - same shape, color, 
+material appearance, and style. Do not create a different design."
 ```
 
-### Change 2: Fix Response Modalities Case (Line 102)
-```typescript
-// FROM:
-responseModalities: ["image", "text"],
+### 2. Convert Frame Image URL to Base64
+The edge function will:
+- Fetch the frame image from the product's `imageUrl`
+- Convert it to base64 for the AI API
+- Handle cases where no image URL exists (fallback to text-only mode)
 
-// TO:
-responseModalities: ["TEXT", "IMAGE"],
-```
+### 3. Updated AI Prompt Structure
+New multi-image prompt that:
+- First image: The reference frame (what glasses to apply)
+- Second image: The user's face photo
+- Clear instructions to match the frame exactly
+- Emphasis on preserving frame shape, color, and design details
 
-## Files to Modify
+### 4. UI Quality Indicator
+Add a subtle "Verified Match" badge in the `TryOnResult` component when:
+- A frame reference image was successfully used
+- This builds user confidence that the result matches their selection
 
-| File | Changes |
-|------|---------|
-| `supabase/functions/virtual-try-on/index.ts` | Update model name and fix modalities case |
+### 5. Show Reference Frame in Result
+Display a small thumbnail of the selected frame alongside the try-on result so users can easily compare the generated glasses with the original product image.
+
+---
 
 ## Technical Details
 
-- The `gemini-2.0-flash-exp` model is a general-purpose model that doesn't support image generation output
-- The `gemini-2.0-flash-exp-image-generation` model is specifically designed to generate images based on prompts and input images
-- The `responseModalities` parameter requires uppercase values (`"TEXT"`, `"IMAGE"`) per the Gemini API specification
-- Your existing `GEMINI_API_KEY` will continue to work with the corrected endpoint
+### Edge Function Changes (`supabase/functions/virtual-try-on/index.ts`)
+- Add `fetchFrameImageAsBase64()` helper function
+- Modify prompt to include two-image context
+- Update Gemini API call structure for multi-image input
+- Add `usedFrameReference: boolean` flag in response
 
-## After Implementation
+### Frontend Changes
+- `TryOnResult.tsx`: Add frame reference thumbnail for comparison
+- `TryOnResult.tsx`: Add "AI Generated with Frame Reference" indicator
+- `useVirtualTryOn.ts`: Pass through the `usedFrameReference` flag
 
-The edge function will be automatically deployed. You can then test the Virtual Try-On feature by:
-1. Going to `/try-on`
-2. Uploading a photo
-3. Selecting a frame with an image
-4. Clicking "Try This Frame"
+### Fallback Behavior
+If frame image URL is missing or fails to load:
+- Continue with text-only generation (current behavior)
+- Show indicator that frame reference wasn't available
+- Suggest user that results may vary
+
+---
+
+## Expected Outcome
+- AI will see the actual frame design and replicate it precisely
+- Users can compare the generated result with the original frame thumbnail
+- Confidence badge indicates when frame matching was verified
+- Reduced inconsistencies between selected frame and generated result
