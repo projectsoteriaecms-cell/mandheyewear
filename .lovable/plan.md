@@ -1,248 +1,201 @@
 
-# Snapchat Camera Kit AR Try-On Pilot Plan
+# Navigation Restructure & Virtual Try-On Onboarding Guide
 
-## Build Error Fix (Pre-requisite)
+## Overview
 
-**Issue**: The production build is failing with `disallowed-content-in-noscript-in-head` error, pointing to lines 22-24 in `index.html`. The current file has the noscript correctly in the `<body>`, but the build system appears to be using a cached/stale version.
-
-**Fix Required**: Force a clean rebuild by making a minor whitespace change to `index.html`. This will invalidate the build cache and use the correct version.
-
----
-
-## Overview: Minimal Camera Kit Pilot
-
-This plan adds a **complementary real-time AR try-on mode** to the existing `/try-on` page. The AI-powered VTO remains the primary experience; Camera Kit adds an optional "Live Mirror" mode for users who want instant, interactive feedback.
+This plan addresses three key improvements:
+1. **Eyewear Dropdown** - Combine Eyeglasses and Sunglasses under a single "Eyewear" dropdown menu
+2. **Virtual Try-On in Navigation** - Add Virtual Try-On as a highlighted feature next to Style Quiz
+3. **Try-On Page Guided Tour** - Add an interactive onboarding system to help users understand the VTO flow
 
 ---
 
-## What Stays the Same
+## 1. Eyewear Dropdown Menu
 
-The existing VTO system is preserved completely:
-- PhotoUpload component for static photos
-- FramePicker carousel with 77+ frames
-- AI generation via Gemini/Lovable AI Gateway
-- TryOnResult with comparison view and "Verified Match" badge
-- TryOnHistory for saved results
-- Add to Cart / Wishlist integration
-
----
-
-## What Gets Added
-
-### User Experience
+### Current State
 ```text
-/try-on Page Header
-┌─────────────────────────────────────────────────────┐
-│  Virtual Try-On                                     │
-│  ┌──────────────────┬──────────────────────┐        │
-│  │  📷 Photo Mode   │  ✨ Live AR Mode     │        │
-│  │    (default)     │    (new)             │        │
-│  └──────────────────┴──────────────────────┘        │
-└─────────────────────────────────────────────────────┘
-
-Photo Mode (existing):
-- Upload photo → Select frame → AI generates composite
-
-Live AR Mode (new):
-- Front camera feed → Real-time 3D glasses overlay
-- Swipe between lens presets → Instant frame switching
-- Capture button → Saves snapshot to TryOnHistory
+[ Style Quiz ] [ Eyeglasses ] [ Sunglasses ] [ Eye Exams ] [ Accessories ]
 ```
 
----
-
-## Technical Implementation
-
-### Phase 1: Core SDK Integration
-
-**1. Install Camera Kit SDK**
-
-Add to `package.json`:
-```json
-"@snap/camera-kit": "^0.10.0"
-```
-
-**2. Create TypeScript Definitions**
-
-File: `src/types/camera-kit.d.ts`
-- Declare global `CameraKitWebSDK` types
-- Define `CameraKitSession`, `Lens`, `Source` interfaces
-
-**3. Create Camera Kit Hook**
-
-File: `src/hooks/useCameraKit.ts`
+### New State
 ```text
-useCameraKit()
-├── isInitialized: boolean
-├── isLoading: boolean
-├── error: string | null
-├── currentLens: Lens | null
-├── availableLenses: Lens[]
-│
-├── initialize(canvasElement) → bootstraps SDK
-├── switchLens(lensId) → loads different eyewear
-├── captureFrame() → returns base64 snapshot
-└── cleanup() → stops session, releases resources
+[ Style Quiz ] [ Virtual Try-On ] [ Eyewear ▼ ] [ Eye Exams ] [ Accessories ]
+                                       │
+                                       ├── Eyeglasses
+                                       ├── Sunglasses
+                                       └── All Eyewear
 ```
 
-**4. Create Lens Configuration**
+### Changes to MainNav.tsx
+- Remove individual Eyeglasses/Sunglasses links from `navLinks` array
+- Add a new "Eyewear" item with dropdown menu
+- Add "Virtual Try-On" as a highlighted link beside Style Quiz
+- Use existing `DropdownMenu` component from Radix UI (already in use for account menu)
 
-File: `src/config/snap-lenses.ts`
+---
+
+## 2. Virtual Try-On Navigation Placement
+
+### Desktop (MainNav)
+- Add Virtual Try-On link after Style Quiz
+- Use highlight styling with icon (Camera/CameraRotate icon from Phosphor)
+- Links to `/try-on`
+
+### Mobile (MobileTopBar + MobileBottomNav)
+- Add Virtual Try-On to the hamburger menu with highlight styling
+- Optionally add to bottom navigation bar (replacing Search if needed, or as 6th item)
+
+---
+
+## 3. Try-On Page Guided Onboarding
+
+### Approach: Step-by-Step Tooltip Tour
+
+A lightweight onboarding system that guides first-time users through the VTO flow. Uses tooltips that appear sequentially, pointing to each key element.
+
+### Tour Steps
 ```text
-{
-  LENS_GROUP_ID: string,
-  demoLenses: [
-    { id: "demo_1", name: "Classic Aviator", snapLensId: "..." },
-    { id: "demo_2", name: "Round Frames", snapLensId: "..." }
-  ]
-}
+Step 1: "Upload Your Photo"
+   → Highlights PhotoUpload area
+   → "Start by uploading a clear, front-facing photo"
+
+Step 2: "Browse Our Frames"  
+   → Highlights FramePicker carousel
+   → "Scroll through 70+ frames or use filters to find your style"
+
+Step 3: "Try It On"
+   → Highlights a frame's "Try This Frame" button
+   → "Click to see the frame on your face using AI"
+
+Step 4: "View Your Result"
+   → Highlights TryOnResult area
+   → "See the realistic preview - add to cart or try another!"
+
+Step 5: "Save to History"
+   → Highlights TryOnHistory
+   → "Your try-ons are saved here for easy comparison"
 ```
 
-For the pilot, we'll use 1-2 Snap sample eyewear lenses. Full product mapping comes in Phase 2.
+### Technical Implementation
+
+**New Component: TryOnTour.tsx**
+- Manages tour state (current step, visibility)
+- Uses localStorage to track if user has completed tour
+- Positions spotlight/tooltip over each element
+- "Next" / "Skip" / "Finish" controls
+
+**Styling Approach**
+- Semi-transparent overlay to dim page
+- Spotlight cutout around active element
+- Animated tooltip with arrow pointing to element
+- Progress dots showing current step
+
+**State Management**
+- `hasSeenTour` stored in localStorage
+- Tour auto-starts on first visit
+- "?" button in header to restart tour anytime
 
 ---
 
-### Phase 2: UI Components
-
-**5. Mode Toggle Component**
-
-File: `src/components/try-on/TryOnModeToggle.tsx`
-- Tabs or segmented control: "Photo Mode" | "Live AR Mode"
-- Persists selection in component state
-- Shows "Beta" badge on AR mode
-
-**6. Live AR Container**
-
-File: `src/components/try-on/LiveARTryOn.tsx`
-```text
-┌────────────────────────────────────────────────────┐
-│  ┌──────────────────────────────────────────────┐  │
-│  │                                              │  │
-│  │           Live Camera + AR Overlay           │  │
-│  │                                              │  │
-│  │                                              │  │
-│  └──────────────────────────────────────────────┘  │
-│                                                    │
-│  ┌────────┐ ┌────────┐ ┌────────┐ ← Lens Selector │
-│  │ Lens 1 │ │ Lens 2 │ │ Lens 3 │                 │
-│  └────────┘ └────────┘ └────────┘                 │
-│                                                    │
-│  ┌─────────────────────────────────────────────┐  │
-│  │      [📸 Capture & Save to History]         │  │
-│  └─────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────┘
-```
-
-**7. Camera Kit Canvas**
-
-File: `src/components/try-on/CameraKitCanvas.tsx`
-- Canvas element for SDK rendering
-- Handles camera permissions gracefully
-- Shows loading skeleton during initialization
-- Fallback message for unsupported browsers
-
-**8. AR Lens Selector**
-
-File: `src/components/try-on/ARLensSelector.tsx`
-- Horizontal scroll of available lenses
-- Thumbnail + name for each lens
-- Active state indicator
-- Triggers `switchLens()` on selection
-
----
-
-### Phase 3: Integration
-
-**9. Modify TryOn Page**
-
-File: `src/pages/TryOn.tsx`
-
-Changes:
-- Add `tryOnMode` state: `"photo" | "ar"`
-- Import `TryOnModeToggle` and `LiveARTryOn`
-- Render mode toggle below header
-- Conditionally render Photo mode components OR LiveARTryOn
-- Share `TryOnHistory` between modes (captures go to same history)
-
-**10. Update Exports**
-
-File: `src/components/try-on/index.ts`
-- Export new components
-
----
-
-## Required Credentials
-
-### Snap Developer Setup (Required Before Implementation)
-
-| Item | Where to Get It | What It's For |
-|------|-----------------|---------------|
-| Camera Kit API Token | [Snap Kit Portal](https://kit.snap.com/) | SDK authentication |
-| Lens Group ID | Snap Kit Portal → Camera Kit app | Access to lenses |
-| Demo Lens ID(s) | Lens Studio export | At least 1 lens for pilot |
-
-These will need to be added as backend secrets:
-- `SNAP_CAMERA_KIT_API_TOKEN` - Used client-side (safe to expose)
-- Or configured in a public config file since Camera Kit tokens are designed for client-side use
-
----
-
-## Browser Support & Fallbacks
-
-### Supported Browsers
-- Chrome 95+ (desktop & Android)
-- Safari 16+ (macOS & iOS 15+)
-- Edge 95+
-
-### Fallback Strategy
-1. Check `navigator.mediaDevices.getUserMedia` support
-2. Check WebGL2 support (required for Camera Kit)
-3. If unsupported → Show message with link to Photo mode
-4. If camera denied → Show friendly prompt with retry option
-
----
-
-## Files Summary
+## File Changes Summary
 
 ### New Files
 | File | Purpose |
 |------|---------|
-| `src/types/camera-kit.d.ts` | TypeScript definitions |
-| `src/hooks/useCameraKit.ts` | SDK lifecycle hook |
-| `src/config/snap-lenses.ts` | Lens mapping config |
-| `src/components/try-on/TryOnModeToggle.tsx` | Mode switcher UI |
-| `src/components/try-on/LiveARTryOn.tsx` | AR mode container |
-| `src/components/try-on/CameraKitCanvas.tsx` | Canvas wrapper |
-| `src/components/try-on/ARLensSelector.tsx` | Lens carousel |
+| `src/components/try-on/TryOnTour.tsx` | Main tour controller component |
+| `src/components/try-on/TourStep.tsx` | Individual tooltip/spotlight step |
+| `src/hooks/useTryOnTour.ts` | Tour state management hook |
 
 ### Modified Files
 | File | Changes |
 |------|---------|
-| `index.html` | Whitespace fix to clear build cache |
-| `package.json` | Add `@snap/camera-kit` |
-| `src/pages/TryOn.tsx` | Add mode toggle, conditional rendering |
-| `src/components/try-on/index.ts` | Export new components |
+| `src/components/navigation/MainNav.tsx` | Add Eyewear dropdown, add Virtual Try-On link |
+| `src/components/navigation/MobileTopBar.tsx` | Add Virtual Try-On to menu |
+| `src/components/navigation/MobileNav.tsx` | Add Virtual Try-On to menu |
+| `src/components/navigation/MobileBottomNav.tsx` | Consider adding VTO icon |
+| `src/pages/TryOn.tsx` | Integrate TryOnTour component |
+| `src/components/try-on/index.ts` | Export new tour components |
+
+---
+
+## Technical Details
+
+### Eyewear Dropdown Implementation
+```text
+MainNav Changes:
+1. Import NavigationMenu or use DropdownMenu (already imported)
+2. Replace Eyeglasses/Sunglasses links with:
+   DropdownMenu
+   ├── DropdownMenuTrigger → "Eyewear" with CaretDown icon
+   └── DropdownMenuContent
+       ├── DropdownMenuItem → Eyeglasses
+       ├── DropdownMenuItem → Sunglasses
+       └── DropdownMenuItem → All Eyewear (links to /eyewear)
+```
+
+### Tour Component Architecture
+```text
+TryOnTour
+├── useTryOnTour hook (manages step state + localStorage)
+├── Overlay (semi-transparent backdrop)
+├── Spotlight (CSS clip-path around target element)
+└── TourStep (positioned tooltip)
+    ├── Title
+    ├── Description  
+    ├── Step indicator (1/5, 2/5, etc.)
+    └── Controls (Next, Skip, Finish)
+```
+
+### Element Targeting
+Tour steps target elements using:
+- `data-tour-step="upload"` attributes on components
+- Or refs passed to tour component
+- getBoundingClientRect() for positioning
+
+---
+
+## Visual Design
+
+### Dropdown Menu
+- Matches existing account dropdown styling
+- Uses same animation (fade-in, zoom-in-95)
+- High z-index (z-50) with solid background
+
+### Tour Tooltips
+- Glass-morphism background (blur + slight opacity)
+- Gold accent border for premium feel
+- Subtle entrance animations (fade + slide)
+- Clear progress indication
 
 ---
 
 ## Implementation Order
 
-1. **Fix build error** - Minor index.html edit to force cache clear
-2. **Install SDK + types** - Package + declarations
-3. **Create hook** - `useCameraKit` with full lifecycle
-4. **Create lens config** - Placeholder until real tokens
-5. **Build UI components** - Canvas, selector, container
-6. **Integrate into TryOn page** - Mode toggle + conditional render
-7. **Test with demo lens** - Verify AR overlay works
-8. **Connect capture to history** - Snapshots flow into TryOnHistory
+1. **Navigation changes** (MainNav, mobile navs)
+   - Add Eyewear dropdown
+   - Add Virtual Try-On link
+   
+2. **Tour hook and components**
+   - Create useTryOnTour hook
+   - Build TourStep component
+   - Build TryOnTour controller
+   
+3. **Integration**
+   - Add data attributes to TryOn page elements
+   - Integrate tour into TryOn page
+   - Add restart tour button
+
+4. **Testing**
+   - Verify dropdown works on desktop/mobile
+   - Test tour flow on different screen sizes
+   - Ensure tour doesn't block functionality
 
 ---
 
-## Next Steps After Approval
+## Benefits
 
-1. I'll fix the build error immediately
-2. Create the foundation files (types, hook, config)
-3. Build the UI components
-4. You'll need to: Apply for Camera Kit access at [kit.snap.com](https://kit.snap.com) and obtain your API Token + create at least one test lens in Lens Studio
-
-The pilot will be functional with demo/sample lenses initially, then you can add custom M&H frame lenses as 3D models become available.
+- **Discoverability**: Virtual Try-On becomes immediately visible in main navigation
+- **Organization**: Eyewear products grouped logically under one menu
+- **User Guidance**: First-time users understand the VTO flow without confusion
+- **Retention**: Help button allows users to replay tour anytime
+- **Mobile-friendly**: Tour works on all device sizes
