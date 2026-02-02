@@ -1437,6 +1437,50 @@ export type Database = {
         }
         Relationships: []
       }
+      vto_email_leads: {
+        Row: {
+          created_at: string
+          email: string
+          frame_id: string | null
+          frame_name: string | null
+          id: string
+          marketing_consent: boolean
+          source: string
+          try_on_image_url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          frame_id?: string | null
+          frame_name?: string | null
+          id?: string
+          marketing_consent?: boolean
+          source?: string
+          try_on_image_url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          frame_id?: string | null
+          frame_name?: string | null
+          id?: string
+          marketing_consent?: boolean
+          source?: string
+          try_on_image_url?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vto_email_leads_frame_id_fkey"
+            columns: ["frame_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishlist: {
         Row: {
           created_at: string
