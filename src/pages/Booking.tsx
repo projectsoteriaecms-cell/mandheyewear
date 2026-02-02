@@ -29,6 +29,7 @@ import { useCreateAppointment, type Appointment } from "@/hooks/useAppointments"
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 import { canBookAppointments } from "@/lib/permissions";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -67,6 +68,7 @@ const Booking = () => {
   const { data: role, isLoading: roleLoading } = useUserRole();
   const { data: branches, isLoading: branchesLoading } = useBranches();
   const createAppointment = useCreateAppointment();
+  const { trackSchedule } = useMetaPixel();
 
   const [step, setStep] = useState(1);
   const [selectedBranchId, setSelectedBranchId] = useState("");
@@ -119,6 +121,12 @@ const Booking = () => {
         },
       }).catch((err) => console.error("Email notification failed:", err));
     }
+
+    // Track Schedule event for Meta Pixel
+    trackSchedule({
+      content_category: selectedService,
+      content_name: selectedBranch?.name,
+    });
 
     setConfirmedAppointment(appointment);
     setStep(5);

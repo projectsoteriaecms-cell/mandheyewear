@@ -3,11 +3,18 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, useLocation } from "react-router-dom";
 import { AppRoutes } from "@/routes";
 import { InstallPrompt, OfflineIndicator } from "@/components/pwa";
+import { useMetaPixelPageView } from "@/hooks/useMetaPixel";
 
 const queryClient = new QueryClient();
+
+// Component to handle Meta Pixel page view tracking within Router context
+const MetaPixelTracker = () => {
+  useMetaPixelPageView();
+  return null;
+};
 
 const App = () => {
   // Initialize theme from localStorage or system preference
@@ -30,6 +37,7 @@ const App = () => {
         <OfflineIndicator />
         <InstallPrompt variant="toast" />
         <BrowserRouter>
+          <MetaPixelTracker />
           <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>

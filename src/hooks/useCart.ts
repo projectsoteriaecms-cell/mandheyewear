@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { canPurchase } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 import type { Tables } from "@/integrations/supabase/types";
 
 export type CartItem = Tables<"cart_items"> & {
@@ -14,6 +15,7 @@ export const useCart = () => {
   const { user } = useAuth();
   const { data: role } = useUserRole();
   const { toast } = useToast();
+  const { trackAddToCart } = useMetaPixel();
   const queryClient = useQueryClient();
 
   // Check if user can add to cart (must be verified customer or above)
@@ -89,8 +91,27 @@ export const useCart = () => {
         return data;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["cart", user?.id] });
+      
+      // Track AddToCart event for Meta Pixel
+      // Fetch product price for tracking
+      supabase
+        .from("products")
+        .select("price")
+        .eq("id", variables.productId)
+        .single()
+        .then(({ data: product }) => {
+          if (product) {
+            trackAddToCart({
+              content_ids: [variables.productId],
+              content_type: "product",
+              value: product.price * (variables.quantity || 1),
+              currency: "NGN",
+            });
+          }
+        });
+      
       toast({
         title: "Added to Cart",
         description: "Item has been added to your cart.",
