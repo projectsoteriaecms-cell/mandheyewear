@@ -6,3 +6,5 @@ export { TryOnModeToggle, type TryOnMode } from "./TryOnModeToggle";
 export { LiveARTryOn } from "./LiveARTryOn";
 export { CameraKitCanvas } from "./CameraKitCanvas";
 export { ARLensSelector } from "./ARLensSelector";
+export { TryOnTour } from "./TryOnTour";
+export { TourStep } from "./TourStep";

@@ -12,6 +12,7 @@ import {
   TryOnHistory,
   TryOnModeToggle,
   LiveARTryOn,
+  TryOnTour,
   type TryOnMode 
 } from "@/components/try-on";
 import { useVirtualTryOn, type FrameDetails, type TryOnResult as TryOnResultType } from "@/hooks/useVirtualTryOn";
@@ -137,12 +138,15 @@ const TryOn = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <Button variant="ghost" size="sm" asChild className="-ml-2 mb-4">
-              <a href="/eyewear">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Eyewear
-              </a>
-            </Button>
+            <div className="flex items-center justify-between mb-4">
+              <Button variant="ghost" size="sm" asChild className="-ml-2">
+                <a href="/eyewear">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Eyewear
+                </a>
+              </Button>
+              <TryOnTour />
+            </div>
 
             <div className="text-center">
               <div className="inline-flex p-3 rounded-full bg-accent/10 mb-4">
@@ -197,26 +201,30 @@ const TryOn = () => {
               {/* Main Content Grid */}
               <div className="grid lg:grid-cols-2 gap-8 mb-8">
                 {/* Left: Photo Upload */}
-                <PhotoUpload
-                  photo={userPhoto}
-                  onPhotoChange={setPhoto}
-                  isProcessing={isGenerating}
-                />
+                <div data-tour-step="upload">
+                  <PhotoUpload
+                    photo={userPhoto}
+                    onPhotoChange={setPhoto}
+                    isProcessing={isGenerating}
+                  />
+                </div>
 
                 {/* Right: Try-On Result */}
-                <TryOnResult
-                  result={currentResult}
-                  userPhoto={userPhoto}
-                  isGenerating={isGenerating}
-                  onRetry={handleRetry}
-                  onAddToCart={handleAddToCart}
-                  onAddToWishlist={handleAddToWishlist}
-                  onClear={clearResult}
-                />
+                <div data-tour-step="result">
+                  <TryOnResult
+                    result={currentResult}
+                    userPhoto={userPhoto}
+                    isGenerating={isGenerating}
+                    onRetry={handleRetry}
+                    onAddToCart={handleAddToCart}
+                    onAddToWishlist={handleAddToWishlist}
+                    onClear={clearResult}
+                  />
+                </div>
               </div>
 
               {/* Frame Picker */}
-              <div className="mb-8">
+              <div className="mb-8" data-tour-step="frames">
                 <FramePicker
                   products={frameProducts}
                   isLoading={productsLoading}
@@ -225,6 +233,7 @@ const TryOn = () => {
                   onTryOn={handleTryOn}
                   isGenerating={isGenerating}
                   disabled={!userPhoto}
+                  data-tour-step="try-button"
                 />
               </div>
 
@@ -246,12 +255,14 @@ const TryOn = () => {
           )}
 
           {/* Try-On History - shared between modes */}
-          <TryOnHistory
-            history={savedTryOns}
-            onSelect={handleSelectFromHistory}
-            onRemove={removeFromHistory}
-            onClearAll={clearHistory}
-          />
+          <div data-tour-step="history">
+            <TryOnHistory
+              history={savedTryOns}
+              onSelect={handleSelectFromHistory}
+              onRemove={removeFromHistory}
+              onClearAll={clearHistory}
+            />
+          </div>
         </div>
       </div>
 
