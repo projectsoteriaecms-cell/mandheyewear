@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.virtual-try-on]
 verify_jwt = false
+
+[functions.meta-product-feed]
+verify_jwt = false
