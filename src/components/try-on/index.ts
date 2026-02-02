@@ -2,3 +2,7 @@ export { FramePicker } from "./FramePicker";
 export { TryOnResult } from "./TryOnResult";
 export { TryOnHistory } from "./TryOnHistory";
 export { PhotoUpload } from "./PhotoUpload";
+export { TryOnModeToggle, type TryOnMode } from "./TryOnModeToggle";
+export { LiveARTryOn } from "./LiveARTryOn";
+export { CameraKitCanvas } from "./CameraKitCanvas";
+export { ARLensSelector } from "./ARLensSelector";
