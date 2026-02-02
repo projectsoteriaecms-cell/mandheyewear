@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Camera } from "lucide-react";
@@ -14,8 +15,8 @@ export const VirtualTryOnBanner = () => {
           Upload your photo and see how any frame looks on your face with our
           AI-powered try-on technology
         </p>
-        <Button variant="secondary" size="lg">
-          Start Virtual Try-On
+        <Button variant="secondary" size="lg" asChild>
+          <Link to="/try-on">Start Virtual Try-On</Link>
         </Button>
       </CardContent>
     </Card>
