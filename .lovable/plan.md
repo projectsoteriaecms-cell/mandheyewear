@@ -1,132 +1,218 @@
 
-# Meta Product Feed Generator Implementation Plan
+# Meta Pixel Implementation Plan
 
 ## Overview
-Create an edge function that generates a **Facebook/Instagram-compatible XML product feed** from your products database. This publicly accessible feed URL can be added to Meta Commerce Manager for automatic catalog synchronization.
+Install Meta Pixel (ID: `1429642005500083`) on the M&H Eyewear platform to enable conversion tracking, audience building, and attribution for Facebook/Instagram advertising campaigns.
 
-## Feed Specification
-The feed follows the [Meta Product Catalog RSS/XML specification](https://developers.facebook.com/docs/commerce-platform/catalog/fields) with these key fields:
+## Implementation Approach
 
-| Meta Field | Source | Notes |
-|------------|--------|-------|
-| `g:id` | `products.id` | Unique product identifier |
-| `g:title` | `products.name` | Product name |
-| `g:description` | `products.description` or auto-generated | Falls back to brand + style |
-| `g:link` | Published URL + `/product/{id}` | Deep link to product page |
-| `g:image_link` | `products.image_url` | Main product image |
-| `g:price` | `products.price` | Format: `25000.00 NGN` |
-| `g:availability` | Hardcoded | `in stock` for active products |
-| `g:brand` | `products.brand` | Brand name |
-| `g:condition` | Hardcoded | `new` |
-| `g:google_product_category` | Fixed | `2521` (Eyewear Frames) |
-| `g:product_type` | `products.style` | e.g., Rectangular, Aviator |
-| `g:gender` | `products.gender` | male/female/unisex |
-| `g:material` | `products.material` | Frame material |
-| `g:color` | `products.color` | Frame color |
+We'll implement Meta Pixel using a **React-native approach** rather than raw script injection. This provides:
+- Type-safe event tracking
+- Clean integration with existing hooks and components
+- Automatic SPA (Single Page Application) route change tracking
+- Easy maintenance and future customization
 
-## Implementation
+---
 
-### 1. Edge Function: `meta-product-feed`
-**File:** `supabase/functions/meta-product-feed/index.ts`
+## Files to Create
 
-```text
-Key features:
-├── Public endpoint (no JWT required)
-├── Returns Content-Type: application/xml
-├── Queries active products with images
-├── Generates Meta-compliant RSS 2.0 XML
-├── Includes deep links to your published domain
-├── Formats prices in NGN (Nigerian Naira)
-└── Caches response for performance
-```
+### 1. Meta Pixel Hook (`src/hooks/useMetaPixel.ts`)
+A custom hook that:
+- Initializes the Facebook Pixel SDK on first load
+- Exposes type-safe tracking methods for all standard events
+- Handles SPA route changes with automatic PageView tracking
 
-**Core Logic:**
-1. Query all active products with `is_active = true` and `image_url IS NOT NULL`
-2. Join with `frame_attributes` for additional metadata
-3. Generate XML with proper escaping for special characters
-4. Return with `Content-Type: application/xml` and CORS headers
+### 2. Type Definitions (`src/types/facebook-pixel.d.ts`)
+TypeScript declarations for the global `fbq` function to ensure type safety.
 
-### 2. Configuration Update
-**File:** `supabase/config.toml`
+---
 
-Add the new function with JWT verification disabled (feed must be publicly accessible for Meta to poll):
+## Files to Modify
 
-```toml
-[functions.meta-product-feed]
-verify_jwt = false
-```
+### 1. `index.html`
+Add the base Meta Pixel script in the `<head>` section (required for early initialization).
 
-### 3. Feed URL
-Once deployed, the feed will be accessible at:
-```
-https://ispizamxlrukxmysgyjv.supabase.co/functions/v1/meta-product-feed
-```
+### 2. `src/App.tsx`
+- Import and initialize the Meta Pixel hook
+- Enable automatic PageView tracking on route changes
 
-This URL can be added directly to Meta Commerce Manager as a "Scheduled Feed".
+### 3. `src/hooks/useCart.ts`
+Track **AddToCart** events when users add items to their cart.
+
+### 4. `src/pages/ProductDetail.tsx`
+Track **ViewContent** events when users view product pages.
+
+### 5. `src/pages/Checkout.tsx`
+Track **InitiateCheckout** events when users enter checkout.
+
+### 6. `src/pages/Signup.tsx`
+Track **CompleteRegistration** events when users create accounts.
+
+### 7. `src/pages/Booking.tsx`
+Track **Schedule** events when users book appointments.
+
+---
+
+## Events to Track
+
+| Event | Trigger | Data Sent |
+|-------|---------|-----------|
+| `PageView` | Every route change | URL, referrer |
+| `ViewContent` | Product detail page load | `content_ids`, `content_type`, `value`, `currency` |
+| `AddToCart` | Add to cart button click | `content_ids`, `content_type`, `value`, `currency` |
+| `InitiateCheckout` | Checkout page load | `content_ids`, `value`, `currency`, `num_items` |
+| `CompleteRegistration` | Successful signup | `status: "complete"` |
+| `Schedule` | Appointment confirmed | `branch`, `service` |
+| `Search` | Eyewear filter/search | `search_string` |
+| `Lead` | Contact form submission | `content_name` |
+
+---
 
 ## Technical Details
 
-### XML Structure
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
-  <channel>
-    <title>M&amp;H Eyewear - Product Catalog</title>
-    <link>https://soteriaeyeclinic.lovable.app</link>
-    <description>Premium eyewear collection from Soteria Eye Clinic</description>
-    <item>
-      <g:id>3e145666-bb55-4358-9de8-0fd0bc12d883</g:id>
-      <g:title>CARTIER 360K FRAME CT00630 135</g:title>
-      <g:description>Premium rectangular frame in metal/titanium</g:description>
-      <g:link>https://soteriaeyeclinic.lovable.app/product/3e145666-bb55-4358-9de8-0fd0bc12d883</g:link>
-      <g:image_link>https://ispizamxlrukxmysgyjv.supabase.co/storage/v1/object/public/product-images/...</g:image_link>
-      <g:price>360000.00 NGN</g:price>
-      <g:availability>in stock</g:availability>
-      <g:brand>CARTIER</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>2521</g:google_product_category>
-      <g:gender>unisex</g:gender>
-      <g:material>Metal/Titanium</g:material>
-      <g:color>Various</g:color>
-    </item>
-    <!-- Additional items... -->
-  </channel>
-</rss>
+### Base Pixel Script (index.html)
+
+```html
+<!-- Meta Pixel Code -->
+<script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1429642005500083');
+</script>
+<noscript>
+  <img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1429642005500083&ev=PageView&noscript=1"/>
+</noscript>
+<!-- End Meta Pixel Code -->
 ```
 
-### Error Handling
-- Returns proper error XML if database query fails
-- Logs errors for debugging in edge function logs
-- Returns empty feed (valid XML) if no products match criteria
+### useMetaPixel Hook Structure
 
-### Performance Considerations
-- Single database query with JOIN
-- No pagination needed (Meta handles incremental updates)
-- XML generated server-side, no client-side processing
+```text
+useMetaPixel()
+├── trackPageView() - Automatic on route changes
+├── trackViewContent(product) - Product pages
+├── trackAddToCart(product, quantity) - Cart additions
+├── trackInitiateCheckout(items, value) - Checkout entry
+├── trackCompleteRegistration() - Signups
+├── trackSchedule(branch, service) - Bookings
+├── trackSearch(query) - Search/filter actions
+└── trackLead(source) - Contact forms
+```
 
-## After Implementation
+### SPA Route Change Tracking
 
-### Adding to Meta Commerce Manager
-1. Go to Meta Commerce Manager → Catalog → Data Sources
-2. Select "Scheduled Feed"
-3. Enter the feed URL: `https://ispizamxlrukxmysgyjv.supabase.co/functions/v1/meta-product-feed`
-4. Set update schedule (recommended: daily)
-5. Map fields if needed (auto-mapping should work with g: prefix)
+Using `react-router-dom`'s `useLocation` hook:
 
-### Instagram Shopping Setup
-1. Connect your Instagram Business account to Commerce Manager
-2. Enable Shopping in Instagram settings
-3. Tag products in posts/stories using catalog items
+```text
+App.tsx
+├── useLocation() to detect route changes
+├── useEffect() to fire PageView on each change
+└── Ensures Meta sees every "page" visit in SPA
+```
 
-## Files to Create/Modify
-| File | Action |
-|------|--------|
-| `supabase/functions/meta-product-feed/index.ts` | Create - Main feed generator |
-| `supabase/config.toml` | Modify - Add function config |
+---
 
-## Future Enhancements (Phase 2+)
-- Add `additional_image_link` for galleries
-- Include inventory availability from `inventory` table
-- Add UTM parameters for attribution tracking
-- Create TikTok-specific feed format
-- Add Snapchat product catalog feed
+## Integration Points
+
+### Product Detail Page
+```text
+ProductDetail.tsx
+└── useEffect on product load
+    └── trackViewContent({
+          content_ids: [product.id],
+          content_type: 'product',
+          content_name: product.name,
+          value: product.price,
+          currency: 'NGN'
+        })
+```
+
+### Add to Cart
+```text
+useCart.ts → addToCart mutation
+└── onSuccess callback
+    └── trackAddToCart({
+          content_ids: [productId],
+          content_type: 'product',
+          value: product.price * quantity,
+          currency: 'NGN'
+        })
+```
+
+### Checkout
+```text
+Checkout.tsx
+└── useEffect on component mount
+    └── trackInitiateCheckout({
+          content_ids: cartItems.map(item => item.product_id),
+          value: cartTotal,
+          currency: 'NGN',
+          num_items: cartCount
+        })
+```
+
+### Registration
+```text
+Signup.tsx → handleSubmit success
+└── trackCompleteRegistration({ status: 'complete' })
+```
+
+### Appointment Booking
+```text
+Booking.tsx → step 5 (confirmation)
+└── trackSchedule({
+      content_category: selectedService,
+      content_name: selectedBranch.name
+    })
+```
+
+---
+
+## Performance Considerations
+
+1. **Async Loading**: Pixel script loads asynchronously, won't block page render
+2. **Deferred Initialization**: PageView fires after React hydration, not during SSR
+3. **No Duplicate Events**: Hook checks for existing `fbq` before initializing
+4. **Queue System**: Events queued if pixel hasn't loaded yet
+
+---
+
+## Privacy & Compliance
+
+The pixel will respect user consent if you later add:
+- Cookie consent banner
+- `fbq('consent', 'revoke')` for opted-out users
+- `fbq('consent', 'grant')` when consent given
+
+---
+
+## Testing & Verification
+
+After implementation:
+1. Install **Meta Pixel Helper** Chrome extension
+2. Visit the site and verify events fire correctly
+3. Check Events Manager in Meta Business Suite for real-time event logs
+4. Verify parameter data (content_ids, values, currency) is accurate
+
+---
+
+## Summary of Changes
+
+| File | Change Type | Purpose |
+|------|-------------|---------|
+| `index.html` | Modify | Add base pixel script |
+| `src/types/facebook-pixel.d.ts` | Create | TypeScript declarations |
+| `src/hooks/useMetaPixel.ts` | Create | Reusable tracking hook |
+| `src/App.tsx` | Modify | Initialize pixel + PageView tracking |
+| `src/pages/ProductDetail.tsx` | Modify | ViewContent event |
+| `src/hooks/useCart.ts` | Modify | AddToCart event |
+| `src/pages/Checkout.tsx` | Modify | InitiateCheckout event |
+| `src/pages/Signup.tsx` | Modify | CompleteRegistration event |
+| `src/pages/Booking.tsx` | Modify | Schedule event |
