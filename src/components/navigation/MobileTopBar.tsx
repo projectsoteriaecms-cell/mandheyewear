@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { List, X, Heart, Bag, Moon, Sun, MapPin, Phone, Info, Question, Sparkle, Gear, SignOut } from "@phosphor-icons/react";
+import { List, X, Heart, Bag, Moon, Sun, MapPin, Phone, Info, Question, Sparkle, Camera, Gear, SignOut } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
@@ -13,12 +13,19 @@ import { useCart } from "@/hooks/useCart";
 import { cn } from "@/lib/utils";
 import mhLogo from "@/assets/mh-logo.png";
 import mhLogoGold from "@/assets/mh-logo-gold.png";
+
 const menuItems = [{
   name: "Style Quiz",
   path: "/style-quiz",
   icon: Sparkle,
   highlight: true,
   description: "Find your perfect frames"
+}, {
+  name: "Virtual Try-On",
+  path: "/try-on",
+  icon: Camera,
+  highlight: true,
+  description: "See frames on your face"
 }, {
   name: "Find a Store",
   path: "/branches",

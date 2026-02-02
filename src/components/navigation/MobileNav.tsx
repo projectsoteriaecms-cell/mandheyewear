@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { List, X, MagnifyingGlass, User, SignOut, Gear, Sparkle, CaretRight, MapPin, Calendar, Moon, Sun } from "@phosphor-icons/react";
+import { List, X, MagnifyingGlass, User, SignOut, Gear, Sparkle, Camera, CaretRight, MapPin, Calendar, Moon, Sun } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { CartDrawer } from "@/components/cart/CartDrawer";
@@ -15,6 +15,7 @@ import mhLogoGold from "@/assets/mh-logo-gold.png";
 
 const navLinks = [
   { name: "Style Quiz", path: "/style-quiz", highlight: true, description: "Find your perfect frames", icon: Sparkle },
+  { name: "Virtual Try-On", path: "/try-on", highlight: true, description: "See frames on your face", icon: Camera },
   { name: "Eyeglasses", path: "/eyewear?category=eyeglasses", description: "Prescription frames" },
   { name: "Sunglasses", path: "/eyewear?category=sunglasses", description: "UV protection & style" },
   { name: "Eye Exams", path: "/booking", description: "Book an appointment", icon: Calendar },
