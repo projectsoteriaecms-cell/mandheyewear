@@ -20,6 +20,8 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmailCaptureModal } from "./EmailCaptureModal";
+import { useVTOEmailCapture } from "@/hooks/useVTOEmailCapture";
 import type { TryOnResult as TryOnResultType } from "@/hooks/useVirtualTryOn";
 
 interface TryOnResultProps {
@@ -29,8 +31,6 @@ interface TryOnResultProps {
   onRetry?: () => void;
   onAddToCart?: () => void;
   onAddToWishlist?: () => void;
-  onDownload?: () => void;
-  onShare?: () => void;
   onClear?: () => void;
   className?: string;
 }
@@ -42,13 +42,21 @@ export const TryOnResult = ({
   onRetry,
   onAddToCart,
   onAddToWishlist,
-  onDownload,
-  onShare,
   onClear,
   className,
 }: TryOnResultProps) => {
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
-  const handleDownload = () => {
+  const {
+    captureState,
+    isSubmitting,
+    initiateCapture,
+    closeModal,
+    handleSubmit,
+    skipCapture,
+  } = useVTOEmailCapture();
+
+  // Perform the actual download
+  const performDownload = () => {
     if (result?.compositeImage) {
       const link = document.createElement("a");
       link.href = result.compositeImage;
@@ -57,11 +65,32 @@ export const TryOnResult = ({
       link.click();
       document.body.removeChild(link);
     }
-    onDownload?.();
+  };
+
+  // Handle download button click - show email capture for guests
+  const handleDownload = () => {
+    if (result) {
+      const { shouldShowModal } = initiateCapture(result, "download");
+      // Always allow download (after modal or directly)
+      if (!shouldShowModal) {
+        performDownload();
+      }
+    }
+  };
+
+  // Handle skip and download
+  const handleSkipAndDownload = () => {
+    skipCapture();
+    performDownload();
   };
 
   const handleShare = async () => {
     if (result?.compositeImage && navigator.share) {
+      // First trigger email capture for guests
+      if (result) {
+        initiateCapture(result, "share");
+      }
+      
       try {
         // Convert base64 to blob for sharing
         const response = await fetch(result.compositeImage);
@@ -77,7 +106,6 @@ export const TryOnResult = ({
         console.log("Share cancelled or failed:", error);
       }
     }
-    onShare?.();
   };
 
   // Loading state
@@ -304,6 +332,16 @@ export const TryOnResult = ({
               </Button>
             )}
           </div>
+
+          {/* Email Capture Modal */}
+          <EmailCaptureModal
+            isOpen={captureState.isOpen}
+            onClose={closeModal}
+            onSubmit={handleSubmit}
+            onSkip={handleSkipAndDownload}
+            result={captureState.result}
+            isSubmitting={isSubmitting}
+          />
         </CardContent>
       </Card>
     );
