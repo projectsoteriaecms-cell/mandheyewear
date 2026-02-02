@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { lovable } from "@/integrations/lovable";
 import { GoogleLogo } from "@phosphor-icons/react";
@@ -25,6 +26,7 @@ const Signup = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { signUp } = useAuth();
   const { toast } = useToast();
+  const { trackCompleteRegistration } = useMetaPixel();
   const navigate = useNavigate();
 
   const handleGoogleSignIn = async () => {
@@ -91,6 +93,9 @@ const Signup = () => {
         variant: "destructive",
       });
     } else {
+      // Track CompleteRegistration event for Meta Pixel
+      trackCompleteRegistration();
+      
       toast({
         title: "Account Created!",
         description: "Let's personalize your experience.",

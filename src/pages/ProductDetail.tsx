@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -13,6 +14,7 @@ import { MobileActionBar } from "@/components/mobile";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 import { ArrowLeft, Star, ShoppingBag, Sparkles } from "lucide-react";
 
 const ProductDetail = () => {
@@ -21,7 +23,21 @@ const ProductDetail = () => {
   const { data: relatedProducts } = useProducts(product?.brand_line);
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
+  const { trackViewContent } = useMetaPixel();
   const navigate = useNavigate();
+
+  // Track ViewContent event when product loads
+  useEffect(() => {
+    if (product && !isLoading) {
+      trackViewContent({
+        content_ids: [product.id],
+        content_name: product.name,
+        content_type: "product",
+        value: product.price,
+        currency: "NGN",
+      });
+    }
+  }, [product, isLoading, trackViewContent]);
 
   // Filter out current product from related
   const filteredRelated = relatedProducts

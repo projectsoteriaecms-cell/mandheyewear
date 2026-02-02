@@ -19,6 +19,7 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 import { canPurchase } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, Clock } from "lucide-react";
@@ -39,7 +40,9 @@ const Checkout = () => {
   const { data: role, isLoading: roleLoading } = useUserRole();
   const { cartItems, cartTotal, isLoading: cartLoading } = useCart();
   const { data: profile } = useProfile(user?.id);
+  const { trackInitiateCheckout } = useMetaPixel();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasTrackedCheckout, setHasTrackedCheckout] = useState(false);
   
   // Shipping form state - pre-filled from profile
   const [address, setAddress] = useState("");
@@ -55,6 +58,19 @@ const Checkout = () => {
 
   // Check if user can purchase
   const userCanPurchase = canPurchase(role ?? null);
+
+  // Track InitiateCheckout event when user enters checkout with items
+  useEffect(() => {
+    if (!hasTrackedCheckout && cartItems.length > 0 && !cartLoading && isAuthenticated) {
+      trackInitiateCheckout({
+        content_ids: cartItems.map(item => item.product_id),
+        value: cartTotal,
+        currency: "NGN",
+        num_items: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+      });
+      setHasTrackedCheckout(true);
+    }
+  }, [cartItems, cartTotal, cartLoading, isAuthenticated, hasTrackedCheckout, trackInitiateCheckout]);
 
   const handleConfirmAddress = () => {
     if (!address.trim() || address.length < 5) {
