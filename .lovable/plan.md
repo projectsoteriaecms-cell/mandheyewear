@@ -1,99 +1,113 @@
 
-# Navigation Restructure & Virtual Try-On Onboarding Guide
+# Virtual Try-On Email Capture & Lead Generation Strategy
 
 ## Overview
 
-This plan addresses three key improvements:
-1. **Eyewear Dropdown** - Combine Eyeglasses and Sunglasses under a single "Eyewear" dropdown menu
-2. **Virtual Try-On in Navigation** - Add Virtual Try-On as a highlighted feature next to Style Quiz
-3. **Try-On Page Guided Tour** - Add an interactive onboarding system to help users understand the VTO flow
+This plan implements a smart email capture system that triggers when users want to download or share their VTO result. The goal is to capture leads for email marketing while providing genuine value (they receive a high-quality version of their try-on).
 
 ---
 
-## 1. Eyewear Dropdown Menu
+## Strategic Approach: "Email to Download"
 
-### Current State
+### Why This Works
+1. **Value Exchange**: User gets their try-on result via email (feels premium)
+2. **Higher Quality**: Email can include high-res version + frame details + purchase link
+3. **Permission Marketing**: User explicitly consents to receive their result
+4. **Remarketing**: Captured email enables follow-up campaigns for that specific frame
+
+### User Flow
 ```text
-[ Style Quiz ] [ Eyeglasses ] [ Sunglasses ] [ Eye Exams ] [ Accessories ]
+User completes VTO → Clicks "Download" or "Share"
+                           ↓
+              ┌─────────────────────────────────────┐
+              │  📧 Get Your Try-On via Email       │
+              │                                     │
+              │  We'll send you a high-quality      │
+              │  version with frame details and     │
+              │  a direct purchase link.            │
+              │                                     │
+              │  [________________@_______]         │
+              │                                     │
+              │  □ Send me style tips & offers      │
+              │                                     │
+              │  [  Send to My Email  ]             │
+              │  ─────────────────────────          │
+              │  Already have an account? Sign in   │
+              └─────────────────────────────────────┘
 ```
-
-### New State
-```text
-[ Style Quiz ] [ Virtual Try-On ] [ Eyewear ▼ ] [ Eye Exams ] [ Accessories ]
-                                       │
-                                       ├── Eyeglasses
-                                       ├── Sunglasses
-                                       └── All Eyewear
-```
-
-### Changes to MainNav.tsx
-- Remove individual Eyeglasses/Sunglasses links from `navLinks` array
-- Add a new "Eyewear" item with dropdown menu
-- Add "Virtual Try-On" as a highlighted link beside Style Quiz
-- Use existing `DropdownMenu` component from Radix UI (already in use for account menu)
 
 ---
 
-## 2. Virtual Try-On Navigation Placement
+## Technical Implementation
 
-### Desktop (MainNav)
-- Add Virtual Try-On link after Style Quiz
-- Use highlight styling with icon (Camera/CameraRotate icon from Phosphor)
-- Links to `/try-on`
+### Phase 1: Email Capture Modal
 
-### Mobile (MobileTopBar + MobileBottomNav)
-- Add Virtual Try-On to the hamburger menu with highlight styling
-- Optionally add to bottom navigation bar (replacing Search if needed, or as 6th item)
+**New Component: `src/components/try-on/EmailCaptureModal.tsx`**
+
+Features:
+- Appears when user clicks Download or Share (if not logged in)
+- Email input with validation
+- Optional marketing consent checkbox
+- Shows the try-on result preview
+- "Sign in" link for existing users
+- Skip option (allows direct download without email)
+
+**Behavior:**
+- **Logged-in users**: Skip modal, use profile email, send directly
+- **Guest users**: Show modal to capture email
+- **After submission**: Download begins + email is sent
 
 ---
 
-## 3. Try-On Page Guided Onboarding
+### Phase 2: Backend Edge Function
 
-### Approach: Step-by-Step Tooltip Tour
+**New Function: `supabase/functions/send-tryon-result/index.ts`**
 
-A lightweight onboarding system that guides first-time users through the VTO flow. Uses tooltips that appear sequentially, pointing to each key element.
+Sends a beautiful email containing:
+- High-resolution try-on image (base64 embedded or uploaded to storage)
+- Frame details (name, price, SKU)
+- "Shop This Frame" CTA button linking to product page
+- "View More Frames" link to /eyewear
+- Social sharing links
+- Unsubscribe link (for GDPR/CAN-SPAM compliance)
 
-### Tour Steps
-```text
-Step 1: "Upload Your Photo"
-   → Highlights PhotoUpload area
-   → "Start by uploading a clear, front-facing photo"
+---
 
-Step 2: "Browse Our Frames"  
-   → Highlights FramePicker carousel
-   → "Scroll through 70+ frames or use filters to find your style"
+### Phase 3: Lead Storage
 
-Step 3: "Try It On"
-   → Highlights a frame's "Try This Frame" button
-   → "Click to see the frame on your face using AI"
+**New Database Table: `vto_email_leads`**
 
-Step 4: "View Your Result"
-   → Highlights TryOnResult area
-   → "See the realistic preview - add to cart or try another!"
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary key |
+| email | text | Captured email |
+| created_at | timestamp | When captured |
+| frame_id | uuid | Frame they tried on (FK to products) |
+| frame_name | text | Frame name (denormalized for analytics) |
+| marketing_consent | boolean | Opted in for marketing |
+| source | text | 'vto_download' or 'vto_share' |
+| user_id | uuid | If later linked to account |
 
-Step 5: "Save to History"
-   → Highlights TryOnHistory
-   → "Your try-ons are saved here for easy comparison"
+RLS Policy: Insert allowed for anonymous, Select/Update for authenticated admins only.
+
+---
+
+### Phase 4: Analytics Integration
+
+**Meta Pixel Lead Tracking**
+
+When email is captured, fire the Lead event:
+```typescript
+trackLead({
+  content_name: result.frameDetails?.name,
+  content_category: "virtual_try_on",
+});
 ```
 
-### Technical Implementation
-
-**New Component: TryOnTour.tsx**
-- Manages tour state (current step, visibility)
-- Uses localStorage to track if user has completed tour
-- Positions spotlight/tooltip over each element
-- "Next" / "Skip" / "Finish" controls
-
-**Styling Approach**
-- Semi-transparent overlay to dim page
-- Spotlight cutout around active element
-- Animated tooltip with arrow pointing to element
-- Progress dots showing current step
-
-**State Management**
-- `hasSeenTour` stored in localStorage
-- Tour auto-starts on first visit
-- "?" button in header to restart tour anytime
+This enables:
+- Lookalike audiences from VTO leads
+- Retargeting campaigns
+- Conversion attribution for social ads
 
 ---
 
@@ -102,100 +116,99 @@ Step 5: "Save to History"
 ### New Files
 | File | Purpose |
 |------|---------|
-| `src/components/try-on/TryOnTour.tsx` | Main tour controller component |
-| `src/components/try-on/TourStep.tsx` | Individual tooltip/spotlight step |
-| `src/hooks/useTryOnTour.ts` | Tour state management hook |
+| `src/components/try-on/EmailCaptureModal.tsx` | Modal for capturing email before download |
+| `supabase/functions/send-tryon-result/index.ts` | Edge function to email the try-on result |
+| `src/hooks/useVTOEmailCapture.ts` | Hook managing capture logic + submissions |
 
 ### Modified Files
 | File | Changes |
 |------|---------|
-| `src/components/navigation/MainNav.tsx` | Add Eyewear dropdown, add Virtual Try-On link |
-| `src/components/navigation/MobileTopBar.tsx` | Add Virtual Try-On to menu |
-| `src/components/navigation/MobileNav.tsx` | Add Virtual Try-On to menu |
-| `src/components/navigation/MobileBottomNav.tsx` | Consider adding VTO icon |
-| `src/pages/TryOn.tsx` | Integrate TryOnTour component |
-| `src/components/try-on/index.ts` | Export new tour components |
+| `src/components/try-on/TryOnResult.tsx` | Wire Download/Share to trigger email capture |
+| `src/components/try-on/index.ts` | Export EmailCaptureModal |
+| `src/pages/TryOn.tsx` | Add email capture state management |
+
+### Database Changes
+| Change | Description |
+|--------|-------------|
+| Create `vto_email_leads` table | Store captured emails with frame context |
+| RLS policies | Secure insert for anon, read for admins |
 
 ---
 
-## Technical Details
+## Email Template Design
 
-### Eyewear Dropdown Implementation
-```text
-MainNav Changes:
-1. Import NavigationMenu or use DropdownMenu (already imported)
-2. Replace Eyeglasses/Sunglasses links with:
-   DropdownMenu
-   ├── DropdownMenuTrigger → "Eyewear" with CaretDown icon
-   └── DropdownMenuContent
-       ├── DropdownMenuItem → Eyeglasses
-       ├── DropdownMenuItem → Sunglasses
-       └── DropdownMenuItem → All Eyewear (links to /eyewear)
-```
+The email will include:
 
-### Tour Component Architecture
-```text
-TryOnTour
-├── useTryOnTour hook (manages step state + localStorage)
-├── Overlay (semi-transparent backdrop)
-├── Spotlight (CSS clip-path around target element)
-└── TourStep (positioned tooltip)
-    ├── Title
-    ├── Description  
-    ├── Step indicator (1/5, 2/5, etc.)
-    └── Controls (Next, Skip, Finish)
-```
+**Subject**: "Your Virtual Try-On: [Frame Name] 🕶️"
 
-### Element Targeting
-Tour steps target elements using:
-- `data-tour-step="upload"` attributes on components
-- Or refs passed to tour component
-- getBoundingClientRect() for positioning
-
----
-
-## Visual Design
-
-### Dropdown Menu
-- Matches existing account dropdown styling
-- Uses same animation (fade-in, zoom-in-95)
-- High z-index (z-50) with solid background
-
-### Tour Tooltips
-- Glass-morphism background (blur + slight opacity)
-- Gold accent border for premium feel
-- Subtle entrance animations (fade + slide)
-- Clear progress indication
+**Body Structure**:
+1. **Header**: Soteria/M&H branding
+2. **Hero Image**: The try-on result (full-width)
+3. **Frame Details Block**:
+   - Frame name
+   - Price
+   - Color/Style
+4. **Primary CTA**: "Shop This Frame" (links to product page)
+5. **Secondary CTA**: "Browse All Frames"
+6. **Social**: "Share your look" with social icons
+7. **Footer**: Contact info, unsubscribe, privacy policy
 
 ---
 
 ## Implementation Order
 
-1. **Navigation changes** (MainNav, mobile navs)
-   - Add Eyewear dropdown
-   - Add Virtual Try-On link
-   
-2. **Tour hook and components**
-   - Create useTryOnTour hook
-   - Build TourStep component
-   - Build TryOnTour controller
-   
-3. **Integration**
-   - Add data attributes to TryOn page elements
-   - Integrate tour into TryOn page
-   - Add restart tour button
-
-4. **Testing**
-   - Verify dropdown works on desktop/mobile
-   - Test tour flow on different screen sizes
-   - Ensure tour doesn't block functionality
+1. **Database table** - Create `vto_email_leads` with RLS
+2. **Edge function** - Build email template and sending logic
+3. **Email capture modal** - UI component with form validation
+4. **Hook** - `useVTOEmailCapture` for state + submission
+5. **Integration** - Wire into TryOnResult Download/Share
+6. **Analytics** - Fire Lead pixel event on capture
+7. **Testing** - Verify flow for both guests and logged-in users
 
 ---
 
-## Benefits
+## Alternative Approaches Considered
 
-- **Discoverability**: Virtual Try-On becomes immediately visible in main navigation
-- **Organization**: Eyewear products grouped logically under one menu
-- **User Guidance**: First-time users understand the VTO flow without confusion
-- **Retention**: Help button allows users to replay tour anytime
-- **Mobile-friendly**: Tour works on all device sizes
+### Option A: Require email for ALL try-ons (not recommended)
+- Higher friction, lower completion rates
+- Better for lead gen but damages UX
+
+### Option B: Email capture on second try-on
+- "Loved this one? Save it to your inbox"
+- Less intrusive but lower capture rate
+
+### Option C: Email capture on download (RECOMMENDED ✓)
+- User already showed high intent (wants to save)
+- Value exchange is clear (they get the result)
+- Non-blocking (skip option available)
+
+---
+
+## Future Enhancements
+
+Once email capture is live:
+
+1. **Automated Follow-up Sequence**:
+   - Day 1: "Still thinking about [Frame]?"
+   - Day 3: "Complete your purchase - 10% off"
+   - Day 7: "New arrivals similar to [Frame]"
+
+2. **Segment by Frame Style**:
+   - Tag leads by frame category (aviator, round, etc.)
+   - Personalized recommendations
+
+3. **Cart Abandonment for VTO**:
+   - If they captured email + added to cart but didn't buy
+   - Trigger recovery sequence
+
+---
+
+## Technical Requirements
+
+**Already Configured:**
+- RESEND_API_KEY ✓ (in secrets)
+- Meta Pixel with trackLead ✓
+
+**Needed:**
+- Verified sending domain (currently using `onboarding@resend.dev`)
+- For production, verify soteriaeyeclinic.com or mhopticians.com
