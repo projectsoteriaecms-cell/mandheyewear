@@ -1,3 +1,4 @@
+import { useSEO } from "@/hooks/useSEO";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Phone, Envelope, MapPin, Clock, ChatCircle } from "@phosphor-icons/react";
 
 const Contact = () => {
+  useSEO({
+    title: "Contact Us | M&H Eyewear",
+    description: "Get in touch with M&H Eyewear. Questions about orders, appointments, or eyewear products? Call, email, or visit any of our branches.",
+  });
+
   const contactMethods = [
     {
       icon: Phone,

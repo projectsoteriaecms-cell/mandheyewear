@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -23,6 +24,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const TryOn = () => {
+  useSEO({
+    title: "Virtual Try-On – See Frames on Your Face | M&H Eyewear",
+    description: "Upload your photo and try on 70+ frames instantly with our AI-powered virtual try-on. Find your perfect glasses online.",
+  });
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const preselectedProductId = searchParams.get("product");

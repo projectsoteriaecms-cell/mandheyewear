@@ -1,8 +1,10 @@
+import { useSEO } from "@/hooks/useSEO";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 
 const Privacy = () => {
+  useSEO({ title: "Privacy Policy | M&H Eyewear", description: "M&H Eyewear privacy policy. Learn how we collect, use, and protect your personal information." });
   return (
     <div className="min-h-screen bg-background">
       <Navigation />

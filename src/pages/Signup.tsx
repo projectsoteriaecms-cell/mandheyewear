@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -14,6 +15,7 @@ import { lovable } from "@/integrations/lovable";
 import { GoogleLogo } from "@phosphor-icons/react";
 
 const Signup = () => {
+  useSEO({ title: "Create Account | M&H Eyewear", description: "Join M&H Eyewear for premium eye care and designer eyewear.", noindex: true });
   const [searchParams] = useSearchParams();
   const invitedEmail = searchParams.get("email");
   

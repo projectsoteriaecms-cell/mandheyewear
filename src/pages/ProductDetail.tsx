@@ -1,4 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useSEO } from "@/hooks/useSEO";
+import { JsonLd } from "@/components/seo";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -20,6 +22,13 @@ import { ArrowLeft, Star, ShoppingBag, Sparkles } from "lucide-react";
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
   const { data: product, isLoading, error } = useProduct(productId || "");
+
+  useSEO({
+    title: product ? `${product.name}${product.brand ? ` – ${product.brand}` : ""} | M&H Eyewear` : "Loading... | M&H Eyewear",
+    description: product?.description || "Shop premium designer eyewear at M&H Eyewear Nigeria.",
+    ogImage: product?.image_url || undefined,
+    ogType: "product",
+  });
   const { data: relatedProducts } = useProducts(product?.brand_line);
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -53,6 +62,23 @@ const ProductDetail = () => {
       addToCart.mutate({ productId: product.id, quantity: 1 });
     }
   };
+
+  const productJsonLd = useMemo(() => product ? ({
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description,
+    image: product.image_url,
+    sku: product.sku,
+    brand: { "@type": "Brand", name: product.brand || "M&H Eyewear" },
+    offers: {
+      "@type": "Offer",
+      price: product.price,
+      priceCurrency: "NGN",
+      availability: "https://schema.org/InStock",
+      url: `https://soteriaeyeclinic.lovable.app/product/${product.id}`,
+    },
+  }) : null, [product]);
 
   if (isLoading) {
     return (
@@ -113,6 +139,7 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
+      {productJsonLd && <JsonLd data={productJsonLd} />}
 
       <div className="pt-20 sm:pt-24 pb-28 lg:pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">

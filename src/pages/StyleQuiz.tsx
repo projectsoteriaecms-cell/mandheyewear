@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -77,6 +78,11 @@ const budgetOptions = [
 ];
 
 const StyleQuiz = () => {
+  useSEO({
+    title: "Style Quiz – Find Your Perfect Frames | M&H Eyewear",
+    description: "Take our style quiz to discover frames that match your face shape, lifestyle, and personal style. Personalized eyewear recommendations.",
+  });
+
   const [currentStep, setCurrentStep] = useState<QuizStep>("welcome");
   const [answers, setAnswers] = useState<QuizAnswers>({});
   const [isSubmitting, setIsSubmitting] = useState(false);

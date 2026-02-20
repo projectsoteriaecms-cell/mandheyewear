@@ -1,9 +1,17 @@
+import { useMemo } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent } from "@/components/ui/card";
+import { useSEO } from "@/hooks/useSEO";
+import { JsonLd } from "@/components/seo";
 
 const FAQ = () => {
+  useSEO({
+    title: "Frequently Asked Questions | M&H Eyewear",
+    description: "Find answers to common questions about M&H Eyewear services, frames, appointments, contact lenses, and returns.",
+  });
+
   const faqs = [
     {
       category: "Eye Care Services",
@@ -79,9 +87,20 @@ const FAQ = () => {
     }
   ];
 
+  const faqJsonLd = useMemo(() => ({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.flatMap(cat => cat.questions.map(q => ({
+      "@type": "Question",
+      name: q.q,
+      acceptedAnswer: { "@type": "Answer", text: q.a },
+    }))),
+  }), []);
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
+      <JsonLd data={faqJsonLd} />
       
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">

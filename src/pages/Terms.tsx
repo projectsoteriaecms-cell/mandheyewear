@@ -1,8 +1,10 @@
+import { useSEO } from "@/hooks/useSEO";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 
 const Terms = () => {
+  useSEO({ title: "Terms of Service | M&H Eyewear", description: "M&H Eyewear terms of service. Read our terms and conditions for using our services and purchasing eyewear." });
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
