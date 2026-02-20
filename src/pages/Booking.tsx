@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { useNavigate, Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -62,6 +63,11 @@ const formatTimeSlot = (time: string) => {
 };
 
 const Booking = () => {
+  useSEO({
+    title: "Book an Eye Exam | M&H Eyewear Nigeria",
+    description: "Schedule your eye exam at any M&H branch. Professional optometry services across Nigeria. Book online in minutes.",
+  });
+
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { data: profile } = useProfile(user?.id);

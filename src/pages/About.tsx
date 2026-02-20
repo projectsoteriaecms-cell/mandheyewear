@@ -1,9 +1,15 @@
+import { useSEO } from "@/hooks/useSEO";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Award, Users, Sparkles, Eye, Glasses } from "lucide-react";
 
 const About = () => {
+  useSEO({
+    title: "About M&H Eyewear – Our Story",
+    description: "Learn about M&H Eyewear's mission to deliver premium eye care and designer frames across Nigeria. 15+ years of excellence.",
+  });
+
   const values = [
     {
       icon: Heart,

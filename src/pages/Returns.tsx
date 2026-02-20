@@ -1,9 +1,11 @@
+import { useSEO } from "@/hooks/useSEO";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle } from "lucide-react";
 
 const Returns = () => {
+  useSEO({ title: "Returns & Exchanges | M&H Eyewear", description: "M&H Eyewear 30-day satisfaction guarantee. Learn about our return and exchange policy for eyewear purchases." });
   return (
     <div className="min-h-screen bg-background">
       <Navigation />

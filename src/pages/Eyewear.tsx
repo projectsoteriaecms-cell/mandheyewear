@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { Link, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -40,6 +41,11 @@ const PRICE_TIER_LABELS: Record<PriceTier, string> = {
 };
 
 const Eyewear = () => {
+  useSEO({
+    title: "Shop Designer Eyewear – Prescription Glasses & Sunglasses | M&H",
+    description: "Browse 100+ premium frames. Prescription glasses, sunglasses, and fashion eyewear with free virtual try-on. Buy glasses online in Nigeria.",
+  });
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [genderFilter, setGenderFilter] = useState("all");
   const [styleFilter, setStyleFilter] = useState("all");

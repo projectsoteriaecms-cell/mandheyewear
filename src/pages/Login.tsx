@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { Link, useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -18,6 +19,7 @@ import { GoogleLogo } from "@phosphor-icons/react";
 type AppRole = Database["public"]["Enums"]["app_role"];
 
 const Login = () => {
+  useSEO({ title: "Sign In | M&H Eyewear", description: "Sign in to your M&H Eyewear account.", noindex: true });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
