@@ -1,49 +1,29 @@
 
 
-# Export Platform Delivery Report as a Document
+# Make the Delivery Report Accessible from the Admin Panel
 
-## Overview
-Create a dedicated page in the app that renders the full stakeholder report and provides a "Download as PDF" button using the browser's built-in print-to-PDF functionality. This is the simplest, zero-dependency approach that produces a professional document.
+## The Problem
+The Platform Delivery Report page exists at `/admin/delivery-report`, but there's no way to navigate to it from the admin dashboard -- no sidebar link, no button, nothing visible.
 
-## What You Will Get
-- A new `/admin/delivery-report` page accessible from the admin panel
-- The full 11-section report rendered with clean, print-optimized styling
-- A "Download as PDF" button that opens the browser print dialog (Save as PDF)
-- Professional formatting with proper page breaks, headers, and tables
+## What Will Change
 
-## Technical Approach
+### 1. Add a "Delivery Report" link to the admin sidebar
+- Add a new nav item under the existing "Reports" section in the sidebar navigation config
+- Restricted to Super Admin only (using `requiresSuperAdmin: true`)
+- Uses a document/file icon (e.g. `FileText` from Phosphor Icons)
 
-### 1. Create the Report Page
-- New file: `src/pages/admin/DeliveryReport.tsx`
-- Contains the full report content as structured React components
-- Includes a print-specific CSS stylesheet that hides navigation, adjusts margins, and adds page breaks between sections
-- "Download PDF" button triggers `window.print()` which allows saving as PDF
+### 2. Add a quick-access button on the Admin Dashboard
+- Add a prominent card or button on the dashboard home page for Super Admins
+- Label: "Platform Delivery Report" with a brief description and a "View & Download" action
+- This gives immediate visibility so you don't have to hunt through menus
 
-### 2. Add Route
-- Register the new page at `/admin/delivery-report` in `src/routes/admin.routes.tsx`
-- Accessible only to Super Admin role
+### File Changes
+- `src/shared/components/admin/sidebar/nav-config.ts` -- Add "Delivery Report" nav item with `requiresSuperAdmin: true`
+- `src/pages/admin/Dashboard.tsx` -- Add a quick-access card for the delivery report (visible to Super Admin only)
 
-### 3. Print Styling
-- Add `@media print` styles in the component or `src/index.css`
-- Hide sidebar, header, and download button during print
-- Ensure tables render cleanly with borders
-- Add page breaks before major sections
-- Use A4-friendly margins and font sizes
-
-### 4. Report Content
-All 11 sections from the approved plan will be rendered:
-1. Executive Summary and Platform at a Glance table
-2. Customer-Facing Storefront (all subsections)
-3. Admin Dashboard (all subsections)
-4. Role-Based Access Control table
-5. Backend Infrastructure (tables, triggers, edge functions)
-6. Branch Network table
-7. SEO and Marketing
-8. Progressive Web App
-9. Mobile Optimization
-10. Technical Architecture
-11. Pending/Future Work table
-12. Security
-
-No additional dependencies are needed -- this uses the browser's native print-to-PDF, which produces high-quality results.
+### Technical Details
+- Import `FileText` (or `File`) icon from `@phosphor-icons/react` in the nav config
+- Add the nav item after "Reports" in the sidebar array
+- On the dashboard, add a card below the Quick Actions section that links to `/admin/delivery-report` with a download icon and description
+- The existing `DeliveryReport.tsx` page and route remain unchanged -- it already has the "Download as PDF" button and print-optimized styling
 
