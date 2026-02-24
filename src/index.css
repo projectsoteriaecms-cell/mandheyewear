@@ -573,3 +573,24 @@ All colors MUST be HSL.
     opacity: 0.1;
   }
 }
+
+/* Print styles for Delivery Report */
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .delivery-report {
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+  .delivery-report .report-table th,
+  .delivery-report .report-table td {
+    border: 1px solid #d1d5db;
+    padding: 6px 10px;
+  }
+  .delivery-report .report-table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+}
