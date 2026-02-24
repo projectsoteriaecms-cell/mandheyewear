@@ -1,5 +1,5 @@
 import { AdminLayout } from "@/shared/components/admin";
-import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple } from "@phosphor-icons/react";
+import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple, FileText } from "@phosphor-icons/react";
 import { useInventoryStats, useLowStockAlerts } from "@/modules/inventory";
 import { usePurchaseOrders, useStockTransfers } from "@/modules/inventory";
 import { useBranchAssignments } from "@/modules/branches";
@@ -15,6 +15,7 @@ import {
   QuickActionsCard,
 } from "@/shared/components/admin/dashboard";
 import { WelcomeBranchDialog } from "@/components/admin/onboarding/WelcomeBranchDialog";
+import { Link } from "react-router-dom";
 
 const NoBranchAssignmentCard = () => (
   <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
@@ -118,6 +119,31 @@ const AdminDashboard = () => {
 
             {/* Quick Actions */}
             <QuickActionsCard />
+
+            {/* Delivery Report - Super Admin only */}
+            {isSuperAdmin && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                      <FileText className="h-5 w-5 text-primary" weight="duotone" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">Platform Delivery Report</CardTitle>
+                      <CardDescription>Full stakeholder rundown of everything built on the platform</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Button asChild>
+                    <Link to="/admin/delivery-report">
+                      <FileText className="mr-2 h-4 w-4" />
+                      View &amp; Download
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
       </div>
