@@ -11,6 +11,7 @@ import {
   Wrench,
   FolderSimple,
   CalendarCheck,
+  FileText,
 } from "@phosphor-icons/react";
 
 export interface NavItem {
@@ -84,6 +85,12 @@ export const navItems: NavItem[] = [
     href: "/admin/reports",
     icon: ChartBar,
     requiresManager: true,
+  },
+  {
+    title: "Delivery Report",
+    href: "/admin/delivery-report",
+    icon: FileText,
+    requiresSuperAdmin: true,
   },
   {
     title: "Users",
