@@ -19,6 +19,7 @@ const AdminAppointments = lazy(() => import("@/pages/admin/Appointments"));
 const Reports = lazy(() => import("@/pages/admin/Reports"));
 const Settings = lazy(() => import("@/pages/admin/Settings"));
 const Categories = lazy(() => import("@/pages/admin/Categories"));
+const DeliveryReport = lazy(() => import("@/pages/admin/DeliveryReport"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -49,4 +50,5 @@ export const adminRoutes = [
   <Route key="/admin/reports" path="/admin/reports" element={withSuspense(Reports)} />,
   <Route key="/admin/settings" path="/admin/settings" element={withSuspense(Settings)} />,
   <Route key="/admin/categories" path="/admin/categories" element={withSuspense(Categories)} />,
+  <Route key="/admin/delivery-report" path="/admin/delivery-report" element={withSuspense(DeliveryReport)} />,
 ];
