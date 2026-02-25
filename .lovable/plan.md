@@ -1,40 +1,40 @@
 
 
-# Swap Paystack to Test Mode
+# Fix: "Attribute callback must be a valid function" Error
 
-## Overview
-Replace the live Paystack keys with test keys so you can safely test the full checkout flow without real charges.
+## Root Cause
+In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
 
-## Changes
+## Solution
+Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
 
-### 1. Update the backend secret: `PAYSTACK_SECRET_KEY`
-- Replace the current live secret key with the test secret key: `sk_test_9951d2999cd0e6b7d7a0f6db4a52382e197a7160`
-- This is used by the `paystack-payment` backend function to initialize and verify transactions
+## File Change: `src/pages/Checkout.tsx`
 
-### 2. Update the frontend public key in `src/pages/Checkout.tsx`
-- Change `PAYSTACK_PUBLIC_KEY` from `pk_live_7151d5547951be5e9c6ebcdf5a113e01a85b9418` to `pk_test_b65019a2e28f286dd4906d6aaa80bff38f035460`
-- This is used by the Paystack popup in the browser
+**Line 172** -- Change from:
+```typescript
+callback: async (response) => {
+```
 
-### 3. Redeploy the backend function
-- Redeploy `paystack-payment` so it picks up the new secret value
+To:
+```typescript
+callback: (response) => {
+  (async () => {
+```
 
-## Testing After the Swap
-Once swapped, you can test with Paystack's test card:
-- Card number: `4084 0840 8408 4081`
-- Expiry: any future date
-- CVV: `408`
-- OTP: `123456`
+And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
+```typescript
+},
+```
+To:
+```typescript
+  })();
+},
+```
 
-No real money will be charged in test mode.
+This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
 
-## Technical Details
-
-**Files modified:**
-- `src/pages/Checkout.tsx` (line 29 -- swap public key constant)
-
-**Secrets updated:**
-- `PAYSTACK_SECRET_KEY` -- replaced with test secret key
-
-**Functions redeployed:**
-- `paystack-payment`
+## Technical Summary
+- **File:** `src/pages/Checkout.tsx`
+- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
+- **Risk:** None -- behavior is identical, only the function signature changes
 
