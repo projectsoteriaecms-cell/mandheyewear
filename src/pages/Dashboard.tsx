@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAppointments } from "@/hooks/useAppointments";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { hasAdminAccess, isUnverifiedUser } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -37,6 +38,7 @@ import {
 const Dashboard = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const { data: role, isLoading: roleLoading } = useUserRole();
+  const { needsOnboarding } = useOnboardingStatus(user?.id);
   const { wishlistCount } = useWishlist();
   const { data: appointments } = useAppointments();
   const { toast } = useToast();
@@ -224,6 +226,26 @@ const Dashboard = () => {
               Sign Out
             </Button>
           </div>
+
+          {/* Onboarding Banner */}
+          {needsOnboarding && (
+            <Card className="mb-8 border-primary/30 bg-primary/5">
+              <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-5">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="h-6 w-6 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <h3 className="font-semibold text-foreground">Complete Your Profile</h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Get personalized frame recommendations by completing your face scan and style quiz.
+                    </p>
+                  </div>
+                </div>
+                <Button variant="hero" size="sm" asChild className="shrink-0">
+                  <Link to="/onboarding">Get Started</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
