@@ -169,40 +169,42 @@ const Checkout = () => {
         amount: amountInKobo,
         currency: "NGN",
         access_code: initData.access_code,
-        callback: async (response) => {
-          // Verify payment via backend
-          try {
-            const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
-              "paystack-payment",
-              {
-                body: {
-                  action: "verify",
-                  reference: response.reference,
-                },
+        callback: (response) => {
+          (async () => {
+            // Verify payment via backend
+            try {
+              const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+                "paystack-payment",
+                {
+                  body: {
+                    action: "verify",
+                    reference: response.reference,
+                  },
+                }
+              );
+
+              if (verifyError || verifyData?.error) {
+                throw new Error(verifyData?.error || verifyError?.message || "Verification failed");
               }
-            );
 
-            if (verifyError || verifyData?.error) {
-              throw new Error(verifyData?.error || verifyError?.message || "Verification failed");
+              toast({
+                title: "Payment Successful! 🎉",
+                description: `Order ${verifyData.order_number} has been placed.`,
+              });
+
+              // Navigate to order confirmation
+              navigate(`/order-confirmation?order=${verifyData.order_id}`);
+            } catch (err: unknown) {
+              const message = err instanceof Error ? err.message : "Payment verification failed";
+              toast({
+                title: "Verification Error",
+                description: message,
+                variant: "destructive",
+              });
+            } finally {
+              setIsProcessing(false);
             }
-
-            toast({
-              title: "Payment Successful! 🎉",
-              description: `Order ${verifyData.order_number} has been placed.`,
-            });
-
-            // Navigate to order confirmation
-            navigate(`/order-confirmation?order=${verifyData.order_id}`);
-          } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : "Payment verification failed";
-            toast({
-              title: "Verification Error",
-              description: message,
-              variant: "destructive",
-            });
-          } finally {
-            setIsProcessing(false);
-          }
+          })();
         },
         onClose: () => {
           setIsProcessing(false);
