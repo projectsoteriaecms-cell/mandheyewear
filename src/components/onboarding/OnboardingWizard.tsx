@@ -8,6 +8,7 @@ import { StyleQuizStep } from "./StyleQuizStep";
 import { LifestylePollStep } from "./LifestylePollStep";
 import { CompleteStep } from "./CompleteStep";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "@/hooks/use-toast";
 
 export type OnboardingStep = "welcome" | "face-scan" | "style-quiz" | "lifestyle-poll" | "complete";
 
@@ -51,7 +52,11 @@ export const OnboardingWizard = () => {
   };
 
   const handleComplete = () => {
-    navigate("/eyewear");
+    toast({
+      title: "🎉 Profile Complete!",
+      description: "Your personalized recommendations are ready.",
+    });
+    navigate("/eyewear?from=onboarding");
   };
 
   if (authLoading) {

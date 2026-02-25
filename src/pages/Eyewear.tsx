@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSEO } from "@/hooks/useSEO";
 import { Link, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -57,6 +57,21 @@ const Eyewear = () => {
   const [priceTierFilter, setPriceTierFilter] = useState<PriceTier | null>(null);
 
   const { isAuthenticated } = useAuth();
+  const recommendationsRef = useRef<HTMLDivElement>(null);
+  const [highlightRecommendations, setHighlightRecommendations] = useState(false);
+
+  // Handle redirect from onboarding
+  useEffect(() => {
+    if (searchParams.get("from") === "onboarding") {
+      searchParams.delete("from");
+      setSearchParams(searchParams, { replace: true });
+      setHighlightRecommendations(true);
+      setTimeout(() => {
+        recommendationsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 500);
+      setTimeout(() => setHighlightRecommendations(false), 3000);
+    }
+  }, []);
 
   // Parse price tier from URL params
   useEffect(() => {
@@ -225,7 +240,10 @@ const Eyewear = () => {
 
           {/* Recommended For You Section */}
           {showRecommendationsSection && (
-            <div className="mb-12">
+            <div
+              ref={recommendationsRef}
+              className={`mb-12 rounded-xl transition-all duration-1000 ${highlightRecommendations ? "ring-2 ring-primary/50 bg-primary/5 p-4 -m-4" : ""}`}
+            >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <Sparkles className="w-6 h-6 text-primary" />
