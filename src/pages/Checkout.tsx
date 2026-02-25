@@ -26,7 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, Clock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const PAYSTACK_PUBLIC_KEY = "pk_live_7151d5547951be5e9c6ebcdf5a113e01a85b9418";
+const PAYSTACK_PUBLIC_KEY = "pk_test_b65019a2e28f286dd4906d6aaa80bff38f035460";
 
 const NIGERIAN_STATES = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
