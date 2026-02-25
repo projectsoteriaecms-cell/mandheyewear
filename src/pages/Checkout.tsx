@@ -22,8 +22,11 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useMetaPixel } from "@/hooks/useMetaPixel";
 import { canPurchase } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, Clock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+const PAYSTACK_PUBLIC_KEY = "pk_live_7151d5547951be5e9c6ebcdf5a113e01a85b9418";
 
 const NIGERIAN_STATES = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
@@ -33,18 +36,33 @@ const NIGERIAN_STATES = [
   "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
 ];
 
+// Load Paystack inline script
+const loadPaystackScript = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (typeof window !== "undefined" && window.PaystackPop) {
+      resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://js.paystack.co/v1/inline.js";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Paystack"));
+    document.head.appendChild(script);
+  });
+};
+
 const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { data: role, isLoading: roleLoading } = useUserRole();
-  const { cartItems, cartTotal, isLoading: cartLoading } = useCart();
+  const { cartItems, cartTotal, isLoading: cartLoading, clearCart } = useCart();
   const { data: profile } = useProfile(user?.id);
   const { trackInitiateCheckout } = useMetaPixel();
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasTrackedCheckout, setHasTrackedCheckout] = useState(false);
   
-  // Shipping form state - pre-filled from profile
+  // Shipping form state
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
@@ -56,10 +74,14 @@ const Checkout = () => {
   const email = profile?.email || user?.email || "";
   const phone = profile?.phone_number || "";
 
-  // Check if user can purchase
   const userCanPurchase = canPurchase(role ?? null);
 
-  // Track InitiateCheckout event when user enters checkout with items
+  // Load Paystack script on mount
+  useEffect(() => {
+    loadPaystackScript().catch(console.error);
+  }, []);
+
+  // Track InitiateCheckout event
   useEffect(() => {
     if (!hasTrackedCheckout && cartItems.length > 0 && !cartLoading && isAuthenticated) {
       trackInitiateCheckout({
@@ -100,14 +122,107 @@ const Checkout = () => {
 
     setIsProcessing(true);
 
-    // TODO: Integrate Paystack payment here
-    setTimeout(() => {
+    try {
+      // Ensure Paystack script is loaded
+      await loadPaystackScript();
+
+      const shippingFee = cartTotal > 50000 ? 0 : 3500;
+      const orderTotal = cartTotal + shippingFee;
+      const amountInKobo = Math.round(orderTotal * 100);
+
+      // Initialize transaction via backend
+      const { data: initData, error: initError } = await supabase.functions.invoke(
+        "paystack-payment",
+        {
+          body: {
+            action: "initialize",
+            email,
+            amount: amountInKobo,
+            metadata: {
+              cart_items: cartItems.map(item => ({
+                product_id: item.product_id,
+                quantity: item.quantity,
+                price: item.product?.price || 0,
+              })),
+              shipping_address: {
+                address,
+                city,
+                state,
+                full_name: fullName,
+                phone,
+              },
+              delivery_instructions: additionalInfo || undefined,
+              shipping_fee: shippingFee,
+            },
+          },
+        }
+      );
+
+      if (initError || initData?.error) {
+        throw new Error(initData?.error || initError?.message || "Failed to initialize payment");
+      }
+
+      // Open Paystack popup
+      const handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email,
+        amount: amountInKobo,
+        currency: "NGN",
+        access_code: initData.access_code,
+        callback: async (response) => {
+          // Verify payment via backend
+          try {
+            const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+              "paystack-payment",
+              {
+                body: {
+                  action: "verify",
+                  reference: response.reference,
+                },
+              }
+            );
+
+            if (verifyError || verifyData?.error) {
+              throw new Error(verifyData?.error || verifyError?.message || "Verification failed");
+            }
+
+            toast({
+              title: "Payment Successful! 🎉",
+              description: `Order ${verifyData.order_number} has been placed.`,
+            });
+
+            // Navigate to order confirmation
+            navigate(`/order-confirmation?order=${verifyData.order_id}`);
+          } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Payment verification failed";
+            toast({
+              title: "Verification Error",
+              description: message,
+              variant: "destructive",
+            });
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        onClose: () => {
+          setIsProcessing(false);
+          toast({
+            title: "Payment Cancelled",
+            description: "You closed the payment window. No charges were made.",
+          });
+        },
+      });
+
+      handler.openIframe();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Payment failed";
       toast({
-        title: "Payment Integration Pending",
-        description: "Paystack payment will be integrated soon. Your order details have been saved.",
+        title: "Payment Error",
+        description: message,
+        variant: "destructive",
       });
       setIsProcessing(false);
-    }, 1500);
+    }
   };
 
   // Loading state
@@ -150,7 +265,7 @@ const Checkout = () => {
     );
   }
 
-  // User not verified - cannot checkout
+  // User not verified
   if (!userCanPurchase) {
     return (
       <div className="min-h-screen bg-background">
@@ -206,7 +321,6 @@ const Checkout = () => {
       <Navigation />
 
       <main className="container mx-auto px-4 py-8">
-        {/* Back Button */}
         <Button
           variant="ghost"
           className="mb-6"
@@ -219,7 +333,6 @@ const Checkout = () => {
         <h1 className="text-3xl font-display font-semibold mb-8">Checkout</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - User Info & Shipping */}
           <div className="lg:col-span-2 space-y-6">
             {/* Logged In User Card */}
             <Card className="border-primary/20 bg-primary/5">
