@@ -69,14 +69,13 @@ const Login = () => {
         variant: "destructive",
       });
     } else {
-      // Fetch user role to determine redirect
+      // Fetch user role and profile to determine redirect
       const userId = data?.user?.id;
       if (userId) {
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId)
-          .maybeSingle();
+        const [{ data: roleData }, { data: profileData }] = await Promise.all([
+          supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
+          supabase.from("profiles").select("face_dimensions, frame_preferences").eq("user_id", userId).maybeSingle(),
+        ]);
 
         const role = roleData?.role as AppRole | null;
         
@@ -90,7 +89,16 @@ const Login = () => {
         if (hasAdminAccess(role)) {
           navigate("/admin");
         } else {
-          navigate("/dashboard");
+          // Check if customer needs onboarding
+          const faceDims = profileData?.face_dimensions;
+          const framePrefs = profileData?.frame_preferences;
+          const isEmpty = (v: unknown) => v == null || (typeof v === "object" && Object.keys(v as object).length === 0);
+          
+          if (isEmpty(faceDims) && isEmpty(framePrefs)) {
+            navigate("/onboarding");
+          } else {
+            navigate("/dashboard");
+          }
         }
       } else {
         setIsLoading(false);
