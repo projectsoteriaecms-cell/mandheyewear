@@ -76,6 +76,8 @@ type ViewMode = "grid" | "list";
 
 const Products = () => {
   const { products, isLoading, deleteProduct } = useAdminProducts();
+  const isSuperAdmin = useIsSuperAdmin();
+  const { status: syncStatus, pullItems } = useZohoSync();
   const [searchQuery, setSearchQuery] = useState("");
   const [brandFilter, setBrandFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
