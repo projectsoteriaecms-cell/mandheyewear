@@ -59,6 +59,7 @@ import { ImportHistoryPanel } from "@/components/admin/products/ImportHistoryPan
 import { ZohoSyncHistoryPanel } from "@/components/admin/products/ZohoSyncHistoryPanel";
 import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
 import { ProductListView } from "@/components/admin/products/ProductListView";
+import { LinkToZohoDialog } from "@/components/admin/products/LinkToZohoDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
