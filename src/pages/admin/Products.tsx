@@ -91,6 +91,7 @@ const Products = () => {
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [quickUploadProduct, setQuickUploadProduct] = useState<Product | null>(null);
+  const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
