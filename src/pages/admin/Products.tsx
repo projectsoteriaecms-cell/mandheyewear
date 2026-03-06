@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { AdminLayout, RoleGuard } from "@/shared/components/admin";
+import { useZohoSync } from "@/hooks/admin/useZohoSync";
+import { useIsSuperAdmin } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -44,6 +46,8 @@ import {
   Camera,
   List,
   SquaresFour,
+  ArrowsClockwise,
+  CloudArrowDown,
 } from "@phosphor-icons/react";
 import { useAdminProducts } from "@/modules/products";
 import { CreateProductDialog } from "@/components/admin/products/CreateProductDialog";
@@ -72,6 +76,8 @@ type ViewMode = "grid" | "list";
 
 const Products = () => {
   const { products, isLoading, deleteProduct } = useAdminProducts();
+  const isSuperAdmin = useIsSuperAdmin();
+  const { status: syncStatus, pullItems } = useZohoSync();
   const [searchQuery, setSearchQuery] = useState("");
   const [brandFilter, setBrandFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -126,6 +132,20 @@ const Products = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            {isSuperAdmin && (
+              <Button
+                variant="outline"
+                onClick={pullItems}
+                disabled={syncStatus === "syncing"}
+              >
+                {syncStatus === "syncing" ? (
+                  <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" weight="bold" />
+                ) : (
+                  <CloudArrowDown className="mr-2 h-4 w-4" weight="light" />
+                )}
+                {syncStatus === "syncing" ? "Syncing…" : "Zoho Sync"}
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setIsBulkImageUploadOpen(true)}>
               <ImageSquare className="mr-2 h-4 w-4" weight="light" />
               Upload Images
