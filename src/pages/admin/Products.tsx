@@ -206,6 +206,9 @@ const Products = () => {
         {/* Import History */}
         <ImportHistoryPanel />
 
+        {/* Zoho Sync History */}
+        <ZohoSyncHistoryPanel />
+
         {/* Products Table */}
         <Card>
           <CardHeader>
