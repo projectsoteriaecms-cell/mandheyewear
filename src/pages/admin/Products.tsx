@@ -424,6 +424,11 @@ const Products = () => {
         onOpenChange={setIsECMSImportOpen}
       />
 
+      <LinkToZohoDialog
+        open={isLinkDialogOpen}
+        onOpenChange={setIsLinkDialogOpen}
+      />
+
       <AlertDialog
         open={!!deleteProductId}
         onOpenChange={() => setDeleteProductId(null)}
