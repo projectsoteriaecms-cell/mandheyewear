@@ -18,6 +18,11 @@ export function ZohoSyncHistoryPanel() {
       if (error) throw error;
       return data;
     },
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      const hasPending = data?.some((log) => log.status === "pending");
+      return hasPending ? 5000 : false;
+    },
   });
 
   if (isLoading) {
@@ -31,14 +36,20 @@ export function ZohoSyncHistoryPanel() {
 
   if (!logs || logs.length === 0) return null;
 
-  const statusBadge = (status: string) => {
+  const statusBadge = (status: string, metadata: Record<string, unknown> | null) => {
     switch (status) {
-      case "completed":
+      case "success":
         return <Badge variant="default" className="bg-green-600">Completed</Badge>;
-      case "failed":
+      case "error":
         return <Badge variant="destructive">Failed</Badge>;
-      case "pending":
-        return <Badge variant="secondary">Pending</Badge>;
+      case "pending": {
+        const page = (metadata as any)?.current_page;
+        return (
+          <Badge variant="secondary" className="animate-pulse">
+            Syncing{page ? ` (page ${page})` : "…"}
+          </Badge>
+        );
+      }
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -60,7 +71,7 @@ export function ZohoSyncHistoryPanel() {
               className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
             >
               <div className="flex items-center gap-3">
-                {statusBadge(log.status)}
+                {statusBadge(log.status, log.metadata as Record<string, unknown> | null)}
                 <span className="capitalize text-muted-foreground">
                   {log.sync_type} · {log.direction}
                 </span>
