@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowsClockwise } from "@phosphor-icons/react";
+import { ArrowsClockwise, Link as LinkIcon, Plus, ArrowsDownUp } from "@phosphor-icons/react";
 import { formatDistanceToNow } from "date-fns";
 
 export function ZohoSyncHistoryPanel() {
@@ -65,32 +65,50 @@ export function ZohoSyncHistoryPanel() {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {logs.map((log) => (
-            <div
-              key={log.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
-            >
-              <div className="flex items-center gap-3">
-                {statusBadge(log.status, log.metadata as Record<string, unknown> | null)}
-                <span className="capitalize text-muted-foreground">
-                  {log.sync_type} · {log.direction}
-                </span>
+          {logs.map((log) => {
+            const meta = log.metadata as Record<string, unknown> | null;
+            const matched = (meta?.matched_existing as number) ?? 0;
+            const newProducts = (meta?.new_products as number) ?? 0;
+
+            return (
+              <div
+                key={log.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
+              >
+                <div className="flex items-center gap-3">
+                  {statusBadge(log.status, meta)}
+                  <span className="capitalize text-muted-foreground">
+                    {log.sync_type} · {log.direction}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 text-muted-foreground">
+                  {matched > 0 && (
+                    <span className="flex items-center gap-1 text-green-600">
+                      <LinkIcon className="h-3.5 w-3.5" weight="bold" />
+                      {matched} linked
+                    </span>
+                  )}
+                  {newProducts > 0 && (
+                    <span className="flex items-center gap-1 text-blue-600">
+                      <Plus className="h-3.5 w-3.5" weight="bold" />
+                      {newProducts} new
+                    </span>
+                  )}
+                  {log.records_processed != null && log.records_processed > 0 && matched === 0 && newProducts === 0 && (
+                    <span>{log.records_processed} processed</span>
+                  )}
+                  {log.records_failed != null && log.records_failed > 0 && (
+                    <span className="text-destructive">{log.records_failed} failed</span>
+                  )}
+                  <span>
+                    {log.started_at
+                      ? formatDistanceToNow(new Date(log.started_at), { addSuffix: true })
+                      : "—"}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-4 text-muted-foreground">
-                {log.records_processed != null && log.records_processed > 0 && (
-                  <span>{log.records_processed} processed</span>
-                )}
-                {log.records_failed != null && log.records_failed > 0 && (
-                  <span className="text-destructive">{log.records_failed} failed</span>
-                )}
-                <span>
-                  {log.started_at
-                    ? formatDistanceToNow(new Date(log.started_at), { addSuffix: true })
-                    : "—"}
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>

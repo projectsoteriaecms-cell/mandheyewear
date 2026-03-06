@@ -4,14 +4,18 @@ import { toast } from "sonner";
 
 type SyncStatus = "idle" | "syncing" | "success" | "error";
 
+export interface SyncResult {
+  records_processed?: number;
+  records_failed?: number;
+  matched_existing?: number;
+  new_products?: number;
+  current_page?: number;
+  error?: string;
+}
+
 export function useZohoSync() {
   const [status, setStatus] = useState<SyncStatus>("idle");
-  const [result, setResult] = useState<{
-    records_processed?: number;
-    records_failed?: number;
-    current_page?: number;
-    error?: string;
-  } | null>(null);
+  const [result, setResult] = useState<SyncResult | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const syncIdRef = useRef<string | null>(null);
 
@@ -22,7 +26,6 @@ export function useZohoSync() {
     }
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => stopPolling, [stopPolling]);
 
   const pollSyncLog = useCallback((syncId: string) => {
@@ -40,18 +43,20 @@ export function useZohoSync() {
       setResult({
         records_processed: data.records_processed ?? 0,
         records_failed: data.records_failed ?? 0,
+        matched_existing: (meta?.matched_existing as number) ?? 0,
+        new_products: (meta?.new_products as number) ?? 0,
         current_page: (meta?.current_page as number) ?? undefined,
       });
 
       if (data.status !== "pending") {
         stopPolling();
+        const matched = (meta?.matched_existing as number) ?? 0;
         if (data.status === "success") {
           setStatus("success");
-          toast.success(
-            `Sync complete: ${data.records_processed} items imported${
-              (data.records_failed ?? 0) > 0 ? `, ${data.records_failed} failed` : ""
-            }`
-          );
+          const parts = [`${data.records_processed} items synced`];
+          if (matched > 0) parts.push(`${matched} linked to existing`);
+          if ((data.records_failed ?? 0) > 0) parts.push(`${data.records_failed} failed`);
+          toast.success(`Sync complete: ${parts.join(", ")}`);
         } else {
           setStatus("error");
           toast.error(`Sync finished with errors. ${data.records_processed} processed, ${data.records_failed} failed.`);
@@ -73,15 +78,25 @@ export function useZohoSync() {
       if (error) throw error;
 
       if (data?.sync_id) {
-        // Start polling if there are more pages
         if (data.has_more) {
-          setResult({ records_processed: data.page_1_processed, current_page: 1 });
+          setResult({
+            records_processed: data.page_1_processed,
+            matched_existing: data.page_1_matched ?? 0,
+            new_products: data.page_1_new ?? 0,
+            current_page: 1,
+          });
           pollSyncLog(data.sync_id);
         } else {
-          // Single page — done immediately
           setStatus("success");
-          setResult({ records_processed: data.page_1_processed, records_failed: 0 });
-          toast.success(`Sync complete: ${data.page_1_processed} items imported`);
+          setResult({
+            records_processed: data.page_1_processed,
+            records_failed: 0,
+            matched_existing: data.page_1_matched ?? 0,
+            new_products: data.page_1_new ?? 0,
+          });
+          const parts = [`${data.page_1_processed} items synced`];
+          if ((data.page_1_matched ?? 0) > 0) parts.push(`${data.page_1_matched} linked to existing`);
+          toast.success(`Sync complete: ${parts.join(", ")}`);
         }
       } else {
         throw new Error(data?.error || "Sync returned no sync_id");
@@ -94,11 +109,20 @@ export function useZohoSync() {
     }
   }, [pollSyncLog]);
 
+  const linkProduct = useCallback(async (productId: string, zohoItemId: string) => {
+    const { data, error } = await supabase.functions.invoke("zoho-sync", {
+      body: { action: "link_product", product_id: productId, zoho_item_id: zohoItemId },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    return data;
+  }, []);
+
   const reset = useCallback(() => {
     stopPolling();
     setStatus("idle");
     setResult(null);
   }, [stopPolling]);
 
-  return { status, result, pullItems, reset };
+  return { status, result, pullItems, linkProduct, reset };
 }
