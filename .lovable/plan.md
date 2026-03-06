@@ -1,40 +1,23 @@
 
 
-# Fix: "Attribute callback must be a valid function" Error
+## Remove 22 Dummy Products
 
-## Root Cause
-In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
+I found exactly **22 dummy products** that were seeded before your ECMS import. They have no `external_id` and no `zoho_item_id`, all created on Jan 26, and none have images. Examples: "Aurora Gold" (MH-RND-001), "ClearView Standard" (SEC-PRX-001), etc.
 
-## Solution
-Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
+### Dependencies check
+Before deleting, I checked for references in other tables:
+- **Order items**: 0 (safe)
+- **Cart items**: 1 reference
+- **Wishlist**: 1 reference
+- **Inventory**: 110 records
+- **Frame attributes**: 0
 
-## File Change: `src/pages/Checkout.tsx`
+### Plan
 
-**Line 172** -- Change from:
-```typescript
-callback: async (response) => {
-```
+1. **Delete related records first** (cart_items, wishlist, inventory) that reference these 22 dummy product IDs
+2. **Delete the 22 dummy products** from the `products` table
 
-To:
-```typescript
-callback: (response) => {
-  (async () => {
-```
+All deletions will be done via SQL using the data insert tool, targeting only products where `zoho_item_id IS NULL AND external_id IS NULL` (the exact 22 dummy records).
 
-And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
-```typescript
-},
-```
-To:
-```typescript
-  })();
-},
-```
-
-This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
-
-## Technical Summary
-- **File:** `src/pages/Checkout.tsx`
-- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
-- **Risk:** None -- behavior is identical, only the function signature changes
+Your 1,250 ECMS-imported products and 2,194 Zoho-synced products will remain completely untouched.
 
