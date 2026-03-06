@@ -59,6 +59,7 @@ import { ImportHistoryPanel } from "@/components/admin/products/ImportHistoryPan
 import { ZohoSyncHistoryPanel } from "@/components/admin/products/ZohoSyncHistoryPanel";
 import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
 import { ProductListView } from "@/components/admin/products/ProductListView";
+import { LinkToZohoDialog } from "@/components/admin/products/LinkToZohoDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -90,6 +91,7 @@ const Products = () => {
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [quickUploadProduct, setQuickUploadProduct] = useState<Product | null>(null);
+  const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -145,6 +147,12 @@ const Products = () => {
                   <CloudArrowDown className="mr-2 h-4 w-4" weight="light" />
                 )}
                 {syncStatus === "syncing" ? "Syncing…" : "Zoho Sync"}
+              </Button>
+            )}
+            {isSuperAdmin && (
+              <Button variant="outline" onClick={() => setIsLinkDialogOpen(true)}>
+                <ArrowsClockwise className="mr-2 h-4 w-4" weight="light" />
+                Link to Zoho
               </Button>
             )}
             <Button variant="outline" onClick={() => setIsBulkImageUploadOpen(true)}>
@@ -414,6 +422,11 @@ const Products = () => {
       <ECMSImportDialog
         open={isECMSImportOpen}
         onOpenChange={setIsECMSImportOpen}
+      />
+
+      <LinkToZohoDialog
+        open={isLinkDialogOpen}
+        onOpenChange={setIsLinkDialogOpen}
       />
 
       <AlertDialog
