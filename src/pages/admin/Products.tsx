@@ -56,6 +56,7 @@ import { EditProductDialog } from "@/components/admin/products/EditProductDialog
 import { BulkImageUploadDialog } from "@/components/admin/products/BulkImageUploadDialog";
 import { ECMSImportDialog } from "@/components/admin/products/ECMSImportDialog";
 import { ImportHistoryPanel } from "@/components/admin/products/ImportHistoryPanel";
+import { ZohoSyncHistoryPanel } from "@/components/admin/products/ZohoSyncHistoryPanel";
 import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
 import { ProductListView } from "@/components/admin/products/ProductListView";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -204,6 +205,9 @@ const Products = () => {
 
         {/* Import History */}
         <ImportHistoryPanel />
+
+        {/* Zoho Sync History */}
+        <ZohoSyncHistoryPanel />
 
         {/* Products Table */}
         <Card>
