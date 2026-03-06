@@ -1,40 +1,27 @@
 
 
-# Fix: "Attribute callback must be a valid function" Error
+# Fix: Zoho "Invalid Redirect URL" Error
 
 ## Root Cause
-In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
+The redirect URI your edge function generates must **exactly** match what you registered in the Zoho API Console. Common mismatches include trailing slashes, protocol differences, or regional domain differences.
 
-## Solution
-Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
+## What to verify
 
-## File Change: `src/pages/Checkout.tsx`
-
-**Line 172** -- Change from:
-```typescript
-callback: async (response) => {
+The redirect URI your function uses is:
+```
+https://ispizamxlrukxmysgyjv.supabase.co/functions/v1/zoho-oauth
 ```
 
-To:
-```typescript
-callback: (response) => {
-  (async () => {
-```
+### Steps
+1. **Check Zoho API Console** — Go to [Zoho API Console](https://api-console.zoho.com/) → your app → Settings → Authorized Redirect URIs. The URI must be **exactly**: `https://ispizamxlrukxmysgyjv.supabase.co/functions/v1/zoho-oauth` (no trailing slash, no extra path).
 
-And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
-```typescript
-},
-```
-To:
-```typescript
-  })();
-},
-```
+2. **Check Zoho region** — If your Zoho account is on a regional domain (e.g., `.zoho.com.ng` for Nigeria, `.zoho.in` for India, `.zoho.eu` for EU), the OAuth endpoints must match. The current function uses `accounts.zoho.com`. If you're on a different region, I'll need to update the function to use the correct regional domain (e.g., `accounts.zoho.com.ng`).
 
-This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
+3. **Check app type** — In Zoho API Console, the app should be a **Server-based Application** (not Client-based or Self Client). Only server-based apps support redirect URIs.
 
-## Technical Summary
-- **File:** `src/pages/Checkout.tsx`
-- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
-- **Risk:** None -- behavior is identical, only the function signature changes
+## Plan
+- If it's a region mismatch: Update the `zoho-oauth` edge function to use the correct Zoho regional domain for both the auth URL and token URL.
+- If it's a redirect URI mismatch: Confirm the exact URI registered and ensure it matches.
+
+Before implementing, I need to know: **Which Zoho region/domain do you use?** (e.g., zoho.com, zoho.com.ng, zoho.in, zoho.eu) and **what type of app did you create in the API Console** (Server-based, Client-based, or Self Client)?
 
