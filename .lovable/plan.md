@@ -1,59 +1,40 @@
 
-Goal: fix the persistent Zoho “invalid redirect URL” error by making the OAuth redirect URI deterministic and exactly match what Zoho expects.
 
-What I found
-- The OAuth function currently builds redirect_uri from `req.url`:
-  - `const redirectUri = \`${url.origin}${url.pathname}\`;`
-- Live function output shows Zoho receiving:
-  - `redirect_uri=http://ispizamxlrukxmysgyjv.supabase.co/zoho-oauth`
-- That is incorrect for this app (wrong scheme + missing `/functions/v1/...`), so Zoho rejects it as invalid.
+# Fix: "Attribute callback must be a valid function" Error
 
-Implementation plan
-1) Make redirect URI canonical (code change in `supabase/functions/zoho-oauth/index.ts`)
-- Stop deriving redirect URI from `req.url`.
-- Build it from backend base URL:
-  - `const baseUrl = Deno.env.get("SUPABASE_URL")?.replace(/\/$/, "")`
-  - `const redirectUri = \`${baseUrl}/functions/v1/zoho-oauth\``
-- Optional override support:
-  - `ZOHO_REDIRECT_URI` secret (if present) takes priority.
-- Normalize trailing slash so Zoho comparison is exact.
+## Root Cause
+In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
 
-2) Keep Zoho US endpoints explicit
-- Continue using:
-  - `https://accounts.zoho.com/oauth/v2/auth`
-  - `https://accounts.zoho.com/oauth/v2/token`
-- Add a small constant block for endpoint clarity (and easier region switching later if needed).
+## Solution
+Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
 
-3) Improve robustness of the function
-- Add explicit checks for missing `ZOHO_CLIENT_ID` / `ZOHO_CLIENT_SECRET` and return a clear HTML error page.
-- Upgrade CORS header list to full standard set used by other backend functions in this project.
-- Preserve current success/error HTML UX.
+## File Change: `src/pages/Checkout.tsx`
 
-4) Add a debug mode to eliminate guesswork
-- Support `?action=debug` returning JSON with:
-  - computed `redirectUri`
-  - `authUrl` preview (without secrets)
-  - accounts domain in use
-- This gives a one-click verification that the exact redirect URI is correct before hitting Zoho login.
+**Line 172** -- Change from:
+```typescript
+callback: async (response) => {
+```
 
-5) Verify backend config
-- Confirm `supabase/config.toml` keeps:
-  - `[functions.zoho-oauth]`
-  - `verify_jwt = false`
-- No database schema/policy changes needed.
+To:
+```typescript
+callback: (response) => {
+  (async () => {
+```
 
-Validation plan
-1) Call `.../functions/v1/zoho-oauth?action=debug`
-- Confirm returned `redirectUri` is exactly:
-  - `https://ispizamxlrukxmysgyjv.supabase.co/functions/v1/zoho-oauth`
-2) Call `.../functions/v1/zoho-oauth?action=start`
-- Confirm Zoho auth URL contains the same encoded redirect URI.
-3) Complete consent flow
-- Confirm callback succeeds and refresh token appears.
-4) If still failing
-- Re-check Zoho app settings for exact redirect URI match (character-for-character, no trailing slash, correct app record).
+And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
+```typescript
+},
+```
+To:
+```typescript
+  })();
+},
+```
 
-User-side checklist after deploy
-- In Zoho API Console (Server-based app), Authorized Redirect URI must be exactly:
-  - `https://ispizamxlrukxmysgyjv.supabase.co/functions/v1/zoho-oauth`
-- Ensure you are editing the same Client ID/Secret pair currently stored in backend secrets.
+This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
+
+## Technical Summary
+- **File:** `src/pages/Checkout.tsx`
+- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
+- **Risk:** None -- behavior is identical, only the function signature changes
+
