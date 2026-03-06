@@ -132,6 +132,20 @@ const Products = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            {isSuperAdmin && (
+              <Button
+                variant="outline"
+                onClick={pullItems}
+                disabled={syncStatus === "syncing"}
+              >
+                {syncStatus === "syncing" ? (
+                  <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" weight="bold" />
+                ) : (
+                  <CloudArrowDown className="mr-2 h-4 w-4" weight="light" />
+                )}
+                {syncStatus === "syncing" ? "Syncing…" : "Zoho Sync"}
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setIsBulkImageUploadOpen(true)}>
               <ImageSquare className="mr-2 h-4 w-4" weight="light" />
               Upload Images
