@@ -149,6 +149,12 @@ const Products = () => {
                 {syncStatus === "syncing" ? "Syncing…" : "Zoho Sync"}
               </Button>
             )}
+            {isSuperAdmin && (
+              <Button variant="outline" onClick={() => setIsLinkDialogOpen(true)}>
+                <ArrowsClockwise className="mr-2 h-4 w-4" weight="light" />
+                Link to Zoho
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setIsBulkImageUploadOpen(true)}>
               <ImageSquare className="mr-2 h-4 w-4" weight="light" />
               Upload Images
