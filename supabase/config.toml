@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.zoho-oauth]
 verify_jwt = false
+
+[functions.zoho-sync]
+verify_jwt = false
+
+[functions.zoho-webhook]
+verify_jwt = false
