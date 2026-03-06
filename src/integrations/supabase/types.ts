@@ -782,6 +782,7 @@ export type Database = {
           temple_length: string | null
           unit: string | null
           updated_at: string
+          zoho_item_id: string | null
         }
         Insert: {
           additional_images?: string[] | null
@@ -817,6 +818,7 @@ export type Database = {
           temple_length?: string | null
           unit?: string | null
           updated_at?: string
+          zoho_item_id?: string | null
         }
         Update: {
           additional_images?: string[] | null
@@ -852,6 +854,7 @@ export type Database = {
           temple_length?: string | null
           unit?: string | null
           updated_at?: string
+          zoho_item_id?: string | null
         }
         Relationships: [
           {
@@ -1509,6 +1512,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      zoho_sync_log: {
+        Row: {
+          completed_at: string | null
+          direction: string
+          error_details: Json | null
+          id: string
+          metadata: Json | null
+          performed_by: string | null
+          records_failed: number | null
+          records_processed: number | null
+          started_at: string | null
+          status: string
+          sync_type: string
+        }
+        Insert: {
+          completed_at?: string | null
+          direction: string
+          error_details?: Json | null
+          id?: string
+          metadata?: Json | null
+          performed_by?: string | null
+          records_failed?: number | null
+          records_processed?: number | null
+          started_at?: string | null
+          status?: string
+          sync_type: string
+        }
+        Update: {
+          completed_at?: string | null
+          direction?: string
+          error_details?: Json | null
+          id?: string
+          metadata?: Json | null
+          performed_by?: string | null
+          records_failed?: number | null
+          records_processed?: number | null
+          started_at?: string | null
+          status?: string
+          sync_type?: string
+        }
+        Relationships: []
       }
     }
     Views: {
