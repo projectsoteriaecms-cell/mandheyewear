@@ -193,7 +193,7 @@ const Checkout = () => {
               });
 
               // Navigate to order confirmation
-              navigate(`/order-confirmation?order=${verifyData.order_id}`);
+              navigate(`/order/${verifyData.order_id}`);
             } catch (err: unknown) {
               const message = err instanceof Error ? err.message : "Payment verification failed";
               toast({
