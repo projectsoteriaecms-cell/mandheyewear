@@ -17,6 +17,16 @@ const getPlaceholderImage = (index: number) => {
   return placeholderImages[index % placeholderImages.length];
 };
 
+// For featured display, prefer a non-pouch product image
+const getFeaturedImage = (product: { image_url: string | null; additional_images: string[] | null }, index: number) => {
+  const primary = product.image_url || "";
+  const isPouch = primary.includes("/main.");
+  if (isPouch && product.additional_images && product.additional_images.length > 0) {
+    return product.additional_images[0];
+  }
+  return primary || getPlaceholderImage(index);
+};
+
 export const FeaturedFrames = () => {
   const { data: featuredProducts = [], isLoading } = useFeaturedProducts(4);
 
@@ -91,7 +101,7 @@ export const FeaturedFrames = () => {
               <Card className="group overflow-hidden rounded-2xl border-border hover:border-primary/30 card-3d-hover cursor-pointer h-full bg-card">
                 <div className="relative h-72 overflow-hidden bg-secondary/50">
                   <img 
-                    src={product.image_url || getPlaceholderImage(index)} 
+                    src={getFeaturedImage(product, index)} 
                     alt={product.name}
                     className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
                   />
