@@ -2,14 +2,7 @@ import { useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useProducts, Product } from "@/hooks/useProducts";
-
-interface FramePreferences {
-  faceShape?: string;
-  frameStyle?: string[];
-  colors?: string[];
-  usage?: string[];
-  budget?: string;
-}
+import type { QuizPreferences } from "@/components/onboarding/quiz-constants";
 
 interface FaceDimensions {
   faceWidthMm?: number;
@@ -25,27 +18,17 @@ export interface ScoredProduct extends Product {
   fitIndicator?: "perfect" | "good" | "narrow" | "wide" | null;
 }
 
-// Style mapping from quiz options to product styles
-const STYLE_MAPPING: Record<string, string[]> = {
-  classic: ["rectangular", "aviator", "wayfarer"],
-  modern: ["rectangular", "square", "geometric"],
-  bold: ["cat-eye", "oversized", "butterfly"],
-  minimalist: ["rectangular", "rimless", "round"],
-  vintage: ["round", "wayfarer", "cat-eye", "browline"],
-};
-
-// Color mapping from quiz options to product colors
-const COLOR_MAPPING: Record<string, string[]> = {
-  black: ["black", "matte black", "glossy black"],
-  tortoise: ["tortoise", "havana", "brown", "amber"],
-  gold: ["gold", "rose gold", "bronze"],
-  silver: ["silver", "gunmetal", "chrome"],
-  blue: ["blue", "navy", "transparent blue"],
-  clear: ["clear", "transparent", "crystal"],
-};
-
-// Budget mapping from quiz options to price tiers
+// Budget IDs → price_tier values (canonical IDs from quiz-constants)
 const BUDGET_MAPPING: Record<string, string[]> = {
+  under_50k: ["budget"],
+  "50k_150k": ["standard", "premium"],
+  "150k_300k": ["premium", "luxury"],
+  over_300k: ["luxury"],
+  // Legacy support for old quiz IDs
+  budget: ["budget"],
+  standard: ["standard", "premium"],
+  premium: ["premium", "luxury"],
+  luxury: ["luxury"],
   "under 50k": ["budget"],
   "50-150k": ["standard", "premium"],
   "150-300k": ["premium", "luxury"],
@@ -69,10 +52,14 @@ export const usePersonalizedProducts = () => {
   const { data: profile, isLoading: profileLoading } = useProfile(user?.id);
   const { data: products = [], isLoading: productsLoading } = useProducts();
 
-  const preferences = profile?.frame_preferences as FramePreferences | null;
+  const preferences = profile?.frame_preferences as QuizPreferences | null;
   const faceDimensions = profile?.face_dimensions as FaceDimensions | null;
   const hasPreferences = preferences && Object.keys(preferences).length > 0;
   const hasMeasurements = faceDimensions && Object.keys(faceDimensions).length > 0;
+
+  // Support both new "frameShape" and legacy "frameStyle" field names
+  const frameShapes = preferences?.frameShape || (preferences as any)?.frameStyle || [];
+  const materials = preferences?.material || [];
 
   const scoredProducts = useMemo(() => {
     if (!products.length) return [];
@@ -82,79 +69,90 @@ export const usePersonalizedProducts = () => {
       const reasons: string[] = [];
       let fitIndicator: ScoredProduct["fitIndicator"] = null;
 
-      // Color matching (20 points)
-      if (preferences?.colors?.length && product.color) {
-        const productColorLower = product.color.toLowerCase();
-        const matchedColor = preferences.colors.find((prefColor) => {
-          const mappedColors = COLOR_MAPPING[prefColor.toLowerCase()] || [prefColor.toLowerCase()];
-          return mappedColors.some((c) => productColorLower.includes(c));
-        });
-        if (matchedColor) {
-          score += 20;
-          reasons.push(`Matches your ${matchedColor} preference`);
-        }
-      }
-
-      // Style matching (20 points)
-      if (preferences?.frameStyle?.length && product.style) {
+      // Frame shape matching (30 points) — direct match against product.style
+      if (frameShapes.length && product.style) {
         const productStyleLower = product.style.toLowerCase();
-        const matchedStyle = preferences.frameStyle.find((prefStyle) => {
-          const mappedStyles = STYLE_MAPPING[prefStyle.toLowerCase()] || [prefStyle.toLowerCase()];
-          return mappedStyles.some((s) => productStyleLower.includes(s));
-        });
-        if (matchedStyle) {
-          score += 20;
-          reasons.push(`Suits your ${matchedStyle} style`);
+        const matchedShape = frameShapes.find((shape: string) =>
+          productStyleLower.includes(shape.toLowerCase())
+        );
+        if (matchedShape) {
+          score += 30;
+          reasons.push(`${matchedShape.charAt(0).toUpperCase() + matchedShape.slice(1)} frame`);
         }
       }
 
-      // Budget matching (20 points)
+      // Budget matching (30 points)
       if (preferences?.budget && product.price_tier) {
         const budgetKey = preferences.budget.toLowerCase();
         const allowedTiers = BUDGET_MAPPING[budgetKey] || [];
         if (allowedTiers.includes(product.price_tier)) {
-          score += 20;
+          score += 30;
           reasons.push("Within your budget");
         }
       }
 
-      // Frame width fit (25 points)
+      // Material matching (20 points) — match against product.material
+      if (materials.length && product.material) {
+        const productMaterialLower = product.material.toLowerCase();
+        const matchedMaterial = materials.find((mat: string) =>
+          productMaterialLower.includes(mat.toLowerCase())
+        );
+        if (matchedMaterial) {
+          score += 20;
+          reasons.push(`${matchedMaterial.charAt(0).toUpperCase() + matchedMaterial.slice(1)} material`);
+        }
+      }
+
+      // Gender matching (bonus 5 points, not part of main score)
+      if (preferences?.gender && product.gender) {
+        const productGender = product.gender.toLowerCase();
+        const prefGender = preferences.gender.toLowerCase();
+        if (
+          productGender === prefGender ||
+          productGender === "unisex" ||
+          prefGender === "unisex"
+        ) {
+          score += 5;
+        }
+      }
+
+      // Frame width fit (20 points)
       if (hasMeasurements && faceDimensions?.faceWidthMm && product.frame_width) {
         const productWidth = parseFrameWidth(product.frame_width);
         if (productWidth) {
           const userWidth = faceDimensions.faceWidthMm;
           const diff = Math.abs(productWidth - userWidth);
-          
+
           if (diff <= 2) {
-            score += 25;
+            score += 20;
             fitIndicator = "perfect";
             reasons.push("Perfect frame width fit");
           } else if (diff <= 5) {
-            score += 15;
+            score += 12;
             fitIndicator = "good";
             reasons.push("Good frame width fit");
           } else if (productWidth < userWidth - 5) {
-            score += 5;
+            score += 3;
             fitIndicator = "narrow";
           } else if (productWidth > userWidth + 5) {
-            score += 5;
+            score += 3;
             fitIndicator = "wide";
           }
         }
       }
 
-      // Bridge fit (15 points)
+      // Bridge fit (bonus 10 points)
       if (hasMeasurements && faceDimensions?.bridgeWidthMm && product.bridge_size) {
         const productBridge = parseBridgeSize(product.bridge_size);
         if (productBridge) {
           const userBridge = faceDimensions.bridgeWidthMm;
           const diff = Math.abs(productBridge - userBridge);
-          
+
           if (diff <= 2) {
-            score += 15;
+            score += 10;
             reasons.push("Good bridge fit");
           } else if (diff <= 4) {
-            score += 8;
+            score += 5;
           }
         }
       }
@@ -166,11 +164,11 @@ export const usePersonalizedProducts = () => {
         fitIndicator,
       };
     });
-  }, [products, preferences, faceDimensions, hasMeasurements]);
+  }, [products, preferences, faceDimensions, hasMeasurements, frameShapes, materials]);
 
   const recommendedProducts = useMemo(() => {
     return [...scoredProducts]
-      .filter((p) => p.matchScore >= 40)
+      .filter((p) => p.matchScore >= 20)
       .sort((a, b) => b.matchScore - a.matchScore);
   }, [scoredProducts]);
 

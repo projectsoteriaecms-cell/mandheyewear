@@ -2,18 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { usePersonalizedProducts } from "@/hooks/usePersonalizedProducts";
 import { CheckCircle2, Sparkles, Glasses, Target } from "lucide-react";
+import type { QuizPreferences } from "./quiz-constants";
 
 interface CompleteStepProps {
   onComplete: () => void;
-}
-
-interface FramePreferences {
-  faceShape?: string;
-  frameStyle?: string[];
-  colors?: string[];
-  usage?: string[];
-  budget?: string;
 }
 
 interface FaceDimensions {
@@ -27,8 +21,9 @@ interface FaceDimensions {
 export const CompleteStep = ({ onComplete }: CompleteStepProps) => {
   const { user } = useAuth();
   const { data: profile } = useProfile(user?.id);
+  const { topPicks } = usePersonalizedProducts();
 
-  const preferences = profile?.frame_preferences as FramePreferences | null;
+  const preferences = profile?.frame_preferences as QuizPreferences | null;
   const faceDimensions = profile?.face_dimensions as FaceDimensions | null;
 
   const hasPreferences = preferences && Object.keys(preferences).length > 0;
@@ -72,13 +67,43 @@ export const CompleteStep = ({ onComplete }: CompleteStepProps) => {
               <Sparkles className="w-8 h-8 text-accent mx-auto mb-2" />
               <h3 className="font-medium">Style Profile</h3>
               <p className="text-sm text-muted-foreground">
-                {preferences?.frameStyle?.slice(0, 2).join(", ")}
-                {preferences?.colors?.length ? ` • ${preferences.colors.length} colors` : ""}
+                {preferences?.frameShape?.slice(0, 2).join(", ")}
+                {preferences?.material?.length ? ` • ${preferences.material.join(", ")}` : ""}
               </p>
             </CardContent>
           </Card>
         )}
       </div>
+
+      {/* Top picks preview */}
+      {topPicks.length > 0 && (
+        <div className="max-w-xl mx-auto space-y-3">
+          <h3 className="font-medium text-foreground">
+            We found {topPicks.length} frames for you
+          </h3>
+          <div className="grid grid-cols-4 gap-2">
+            {topPicks.slice(0, 4).map((product) => (
+              <Card key={product.id} className="overflow-hidden">
+                <div className="aspect-square bg-muted flex items-center justify-center">
+                  {product.image_url ? (
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Glasses className="h-6 w-6 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="p-1.5">
+                  <p className="text-[10px] font-medium text-foreground truncate">{product.name}</p>
+                  <p className="text-[10px] text-accent">{product.matchScore}% match</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-primary/5 rounded-xl p-6 max-w-md mx-auto">
         <Glasses className="w-12 h-12 text-primary mx-auto mb-3" />
