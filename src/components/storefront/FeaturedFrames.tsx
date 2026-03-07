@@ -17,6 +17,16 @@ const getPlaceholderImage = (index: number) => {
   return placeholderImages[index % placeholderImages.length];
 };
 
+// For featured display, prefer a non-pouch product image
+const getFeaturedImage = (product: { image_url: string | null; additional_images: string[] | null }, index: number) => {
+  const primary = product.image_url || "";
+  const isPouch = primary.includes("/main.");
+  if (isPouch && product.additional_images && product.additional_images.length > 0) {
+    return product.additional_images[0];
+  }
+  return primary || getPlaceholderImage(index);
+};
+
 export const FeaturedFrames = () => {
   const { data: featuredProducts = [], isLoading } = useFeaturedProducts(4);
 
