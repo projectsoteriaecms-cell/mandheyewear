@@ -18,11 +18,6 @@ interface ProductCardProps {
   fitIndicator?: FitType;
 }
 
-const getPlaceholderImage = (productId: string) => {
-  // Use product ID to consistently select a placeholder
-  const index = productId.charCodeAt(0) % placeholderImages.length;
-  return placeholderImages[index];
-};
 
 const getCategoryLabel = (style: string | null): string => {
   if (!style) return "Eyewear";
