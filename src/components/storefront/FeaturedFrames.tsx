@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProducts } from "@/hooks/useProducts";
+import { useFeaturedProducts } from "@/hooks/useProducts";
 import { ArrowRight, Heart, Eye } from "@phosphor-icons/react";
 
 // Placeholder images for products without images
@@ -18,10 +18,7 @@ const getPlaceholderImage = (index: number) => {
 };
 
 export const FeaturedFrames = () => {
-  const { data: products, isLoading } = useProducts("m_and_h_fashion");
-
-  // Get first 4 active products
-  const featuredProducts = products?.slice(0, 4) || [];
+  const { data: featuredProducts = [], isLoading } = useFeaturedProducts(4);
 
   if (isLoading) {
     return (
