@@ -50,7 +50,7 @@ const parseBridgeSize = (bridgeSize: string | null): number | null => {
 export const usePersonalizedProducts = () => {
   const { user } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile(user?.id);
-  const { data: products = [], isLoading: productsLoading } = useProducts();
+  const { data: products = [], isLoading: productsLoading } = useProducts(undefined, true);
 
   const preferences = profile?.frame_preferences as QuizPreferences | null;
   const faceDimensions = profile?.face_dimensions as FaceDimensions | null;

@@ -10,13 +10,6 @@ import { MatchBadge } from "./MatchBadge";
 import { FitIndicator, FitType } from "./FitIndicator";
 import type { Product } from "@/hooks/useProducts";
 
-// Import placeholder images for products without images
-import frame1 from "@/assets/frame-1.jpg";
-import frame2 from "@/assets/frame-2.jpg";
-import frame3 from "@/assets/frame-3.jpg";
-import frame4 from "@/assets/frame-4.jpg";
-
-const placeholderImages = [frame1, frame2, frame3, frame4];
 
 interface ProductCardProps {
   product: Product;
@@ -25,11 +18,6 @@ interface ProductCardProps {
   fitIndicator?: FitType;
 }
 
-const getPlaceholderImage = (productId: string) => {
-  // Use product ID to consistently select a placeholder
-  const index = productId.charCodeAt(0) % placeholderImages.length;
-  return placeholderImages[index];
-};
 
 const getCategoryLabel = (style: string | null): string => {
   if (!style) return "Eyewear";
@@ -49,7 +37,7 @@ export const ProductCard = ({
   matchReasons = [],
   fitIndicator,
 }: ProductCardProps) => {
-  const imageUrl = product.image_url || getPlaceholderImage(product.id);
+  const imageUrl = product.image_url || "/placeholder.svg";
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();

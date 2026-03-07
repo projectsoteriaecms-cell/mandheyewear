@@ -1,38 +1,40 @@
 
 
-## Fix Eyewear Page: Show Real Products with Real Images
+# Fix: "Attribute callback must be a valid function" Error
 
-### Problems Found
+## Root Cause
+In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
 
-1. **Eyewear page main grid is empty or wrong** — Line 98 of `Eyewear.tsx` calls `useProducts("m_and_h_fashion")` which returns **0 products** (all 3,444 products are `soteria_medical`). The "Recommended For You" section works because `usePersonalizedProducts` calls `useProducts()` without filter.
+## Solution
+Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
 
-2. **Placeholder images showing for products without images** — `ProductCard.tsx` falls back to generic stock photos (`frame-1.jpg` through `frame-4.jpg`) when `image_url` is null. These don't match the product names, hurting credibility. Only ~334 products have real images out of 3,444.
+## File Change: `src/pages/Checkout.tsx`
 
-3. **Personalized recommendations show products without images** — `usePersonalizedProducts` scores ALL products regardless of whether they have images, so recommendations can include products with mismatched placeholder photos.
+**Line 172** -- Change from:
+```typescript
+callback: async (response) => {
+```
 
-### Plan
+To:
+```typescript
+callback: (response) => {
+  (async () => {
+```
 
-**1. Fix Eyewear page query** (`src/pages/Eyewear.tsx`)
-- Remove `"m_and_h_fashion"` filter from `useProducts()` call on line 98
-- Add a filter to only show products that have a real `image_url` (not null)
+And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
+```typescript
+},
+```
+To:
+```typescript
+  })();
+},
+```
 
-**2. Filter products with images only** (`src/hooks/useProducts.ts`)
-- Add a `withImages` option to `useProducts` hook, or add `.not("image_url", "is", null)` to the Eyewear query
-- This ensures only the ~334 products with real uploaded photos appear in the storefront
+This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
 
-**3. Remove placeholder image fallback from ProductCard** (`src/components/eyewear/ProductCard.tsx`)
-- Since we're now filtering to only show products with images, remove the placeholder fallback logic
-- Keep a simple fallback for edge cases but don't show unrelated stock photos
-
-**4. Filter personalized recommendations** (`src/hooks/usePersonalizedProducts.ts`)
-- Add `.not("image_url", "is", null)` filter so recommendations only include products with real images
-
-### Files to Change
-
-| File | Change |
-|---|---|
-| `src/pages/Eyewear.tsx` | Remove `"m_and_h_fashion"` from `useProducts()` call |
-| `src/hooks/useProducts.ts` | Add image filtering option to base `useProducts` hook |
-| `src/components/eyewear/ProductCard.tsx` | Remove misleading placeholder image fallback |
-| `src/hooks/usePersonalizedProducts.ts` | Filter to products with images only |
+## Technical Summary
+- **File:** `src/pages/Checkout.tsx`
+- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
+- **Risk:** None -- behavior is identical, only the function signature changes
 
