@@ -94,8 +94,8 @@ const Eyewear = () => {
     setCurrentPage(1);
   };
 
-  // Fetch M&H Fashion products for the eyewear page
-  const { data: products, isLoading, error } = useProducts("m_and_h_fashion");
+  // Fetch products with real images only
+  const { data: products, isLoading, error } = useProducts(undefined, true);
 
   // Get personalized products
   const {

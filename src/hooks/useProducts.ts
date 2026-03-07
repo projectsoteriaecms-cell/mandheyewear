@@ -4,9 +4,9 @@ import type { Tables } from "@/integrations/supabase/types";
 
 export type Product = Tables<"products">;
 
-export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion") => {
+export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion", withImagesOnly?: boolean) => {
   return useQuery({
-    queryKey: ["products", brandLine],
+    queryKey: ["products", brandLine, withImagesOnly],
     queryFn: async () => {
       let query = supabase
         .from("products")
@@ -15,6 +15,10 @@ export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion") =
 
       if (brandLine) {
         query = query.eq("brand_line", brandLine);
+      }
+
+      if (withImagesOnly) {
+        query = query.not("image_url", "is", null);
       }
 
       const { data, error } = await query.order("created_at", { ascending: false });

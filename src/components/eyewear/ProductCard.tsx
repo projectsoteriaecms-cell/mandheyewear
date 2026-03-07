@@ -37,7 +37,7 @@ export const ProductCard = ({
   matchReasons = [],
   fitIndicator,
 }: ProductCardProps) => {
-  const imageUrl = product.image_url || getPlaceholderImage(product.id);
+  const imageUrl = product.image_url || "/placeholder.svg";
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
