@@ -1,40 +1,33 @@
 
 
-# Fix: "Attribute callback must be a valid function" Error
+## Fix: Product Image Count Not Reflecting All 300+ Images
 
-## Root Cause
-In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
+### Problem
+The `useAdminProducts` hook in `src/modules/products/hooks/useAdminProducts.ts` fetches products without a `.range()` limit, so Supabase returns only the default 1,000 rows. With ~3,400 products, the Product Images Manager stats cards are computed from incomplete data, causing the "With Images" count to be wrong.
 
-## Solution
-Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
+### Solution
 
-## File Change: `src/pages/Checkout.tsx`
+Two changes:
 
-**Line 172** -- Change from:
-```typescript
-callback: async (response) => {
-```
+**1. Add `.range(0, 4999)` to the admin products query** (`src/modules/products/hooks/useAdminProducts.ts`)
+- Ensures all 3,400+ products are fetched for the grid view and client-side filtering
 
-To:
-```typescript
-callback: (response) => {
-  (async () => {
-```
+**2. Add a dedicated `useProductImageStats` hook** (`src/modules/products/hooks/useAdminProducts.ts`)
+- Uses server-side `count: "exact"` queries with `.not("image_url", "is", null)` filtering
+- Three separate lightweight count queries: total products, products with images, complete products (with 6+ images)
+- This guarantees accurate stats regardless of row limits
 
-And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
-```typescript
-},
-```
-To:
-```typescript
-  })();
-},
-```
+**3. Update Product Images page** (`src/pages/admin/ProductImages.tsx`)
+- Use `useProductImageStats` for the four stats cards instead of deriving from the client-side array
+- Keep existing client-side filtering for the product grid (which now gets all rows via the range fix)
 
-This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
+**4. Export new hook** (`src/modules/products/hooks/index.ts`, `src/modules/products/index.ts`)
 
-## Technical Summary
-- **File:** `src/pages/Checkout.tsx`
-- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
-- **Risk:** None -- behavior is identical, only the function signature changes
+### Files to Change
+| File | Change |
+|---|---|
+| `src/modules/products/hooks/useAdminProducts.ts` | Add `.range(0, 4999)` to query; add `useProductImageStats` hook |
+| `src/modules/products/hooks/index.ts` | Export `useProductImageStats` |
+| `src/modules/products/index.ts` | Export `useProductImageStats` |
+| `src/pages/admin/ProductImages.tsx` | Import and use `useProductImageStats` for stats cards |
 
