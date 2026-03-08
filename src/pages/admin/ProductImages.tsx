@@ -40,29 +40,12 @@ const MAX_ADDITIONAL = 5;
 
 const ProductImages = () => {
   const { products, isLoading } = useAdminProducts();
+  const stats = useProductImageStats();
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<ImageFilter>("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-
-  // Calculate image statistics
-  const stats = useMemo(() => {
-    const total = products.length;
-    const withPrimary = products.filter((p) => p.image_url).length;
-    const withAdditional = products.filter(
-      (p) => p.additional_images && p.additional_images.length > 0
-    ).length;
-    const complete = products.filter(
-      (p) =>
-        p.image_url &&
-        p.additional_images &&
-        p.additional_images.length >= MAX_ADDITIONAL
-    ).length;
-    const missingPrimary = total - withPrimary;
-
-    return { total, withPrimary, withAdditional, complete, missingPrimary };
-  }, [products]);
 
   // Filter and search products
   const filteredProducts = useMemo(() => {

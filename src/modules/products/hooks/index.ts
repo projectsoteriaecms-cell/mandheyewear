@@ -1,5 +1,5 @@
 // Products module hooks barrel export
-export { useAdminProducts } from "./useAdminProducts";
+export { useAdminProducts, useProductImageStats } from "./useAdminProducts";
 export { useECMSImport } from "./useECMSImport";
 export { useImportHistory, saveImportHistory } from "./useImportHistory";
 export { useFrameAttributes } from "./useFrameAttributes";
