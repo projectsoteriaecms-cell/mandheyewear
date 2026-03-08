@@ -109,6 +109,7 @@ export const useProductImageUpload = () => {
         if (updateError) throw updateError;
       }
 
+      invalidateImageQueries();
       return publicUrl;
     } catch (error) {
       console.error("Upload error:", error);
