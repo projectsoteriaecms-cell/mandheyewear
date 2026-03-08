@@ -1,40 +1,23 @@
 
 
-# Fix: "Attribute callback must be a valid function" Error
+## Assessment: Image Stats Are Already Working Correctly
 
-## Root Cause
-In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
+After thorough investigation, the code and data are both in good shape:
 
-## Solution
-Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
+- **Database confirms**: 3,444 total active products, **334 with primary images**, 333 complete (6/6)
+- **`useProductImageStats`** correctly uses server-side `count: "exact"` with `is_active = true` filter — bypasses the 1,000-row limit
+- **`useProductImageUpload`** has centralized query invalidation for `["product-image-stats"]` after every upload/delete
+- **Stats cards** on `/admin/products/images` show loading spinners during fetch, then display correct numbers
+- **All exports** are properly wired
 
-## File Change: `src/pages/Checkout.tsx`
+### No code changes needed
 
-**Line 172** -- Change from:
-```typescript
-callback: async (response) => {
-```
+The 300+ image count (specifically 334) should already be displaying correctly on the Product Images Manager page at `/admin/products/images`. 
 
-To:
-```typescript
-callback: (response) => {
-  (async () => {
-```
+### What to verify
 
-And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
-```typescript
-},
-```
-To:
-```typescript
-  })();
-},
-```
-
-This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
-
-## Technical Summary
-- **File:** `src/pages/Checkout.tsx`
-- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
-- **Risk:** None -- behavior is identical, only the function signature changes
+Navigate to `/admin/products/images` in the preview and confirm the "With Images" card shows **334**. If it shows a different number, please share a screenshot so I can identify whether this is:
+1. A role/permissions issue (branch_manager vs super_admin seeing different counts)
+2. A caching issue in the browser
+3. A different page than `/admin/products/images` where you expect to see the count
 
