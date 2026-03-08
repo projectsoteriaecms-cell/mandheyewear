@@ -217,6 +217,7 @@ export const useProductImageUpload = () => {
       }
     }
 
+    invalidateImageQueries();
     return { matched, failed };
   };
 
