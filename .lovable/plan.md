@@ -1,24 +1,21 @@
 
 
-## Analysis: Product Image Stats Already Fixed
+## Problem Found: Image Stats Not Refreshing After Uploads
 
-After reviewing the current codebase, the fix has **already been applied** in a previous session:
+The database confirms **334 products with images** and **333 complete** out of 3,444 total active products. The code for counting is correct -- it uses server-side `count: "exact"` queries that bypass the 1,000-row limit.
 
-1. **`src/modules/products/hooks/useAdminProducts.ts`** already contains:
-   - `useProductImageStats` hook using server-side `count: "exact"` queries (bypasses the 1,000-row limit)
-   - `.range(0, 4999)` on the admin products query
+**The bug**: After uploading/deleting images, the stats cards don't update because the `QuickImageUploadModal` (and other mutation handlers) only invalidate `["admin-products"]` but **never invalidate** `["product-image-stats"]`. This means the stats cards stay stale until a full page refresh.
 
-2. **`src/pages/admin/ProductImages.tsx`** already uses `useProductImageStats` for the stats cards
+### Fix
 
-3. **Exports** in `hooks/index.ts` and `products/index.ts` are already in place
+**File: `src/components/admin/products/QuickImageUploadModal.tsx`**
+- Add `queryClient.invalidateQueries({ queryKey: ["product-image-stats"] })` alongside every existing `queryClient.invalidateQueries({ queryKey: ["admin-products"] })` call (4 locations: upload, delete, set primary, reorder).
 
-### Possible Remaining Issue
+**File: `src/modules/products/hooks/useAdminProducts.ts`**
+- Add `queryClient.invalidateQueries({ queryKey: ["product-image-stats"] })` in `createProduct`, `updateProduct`, `bulkCreateProducts`, and `deleteProduct` mutation success handlers.
 
-If the stats are still showing incorrectly, it could be due to **RLS policy filtering**. The `products` table has a SELECT policy: `is_active = true` for non-super-admins. If you're logged in as a `branch_manager`, the count queries will only include active products -- inactive products with images won't be counted.
+**File: `src/modules/products/hooks/useECMSImport.ts`**
+- Add `queryClient.invalidateQueries({ queryKey: ["product-image-stats"] })` after ECMS import completion.
 
-### Recommended Next Step
-
-Navigate to `/admin/products/images` in the preview and verify whether the stats cards show the expected 300+ count. If they don't, share what numbers you're seeing so I can investigate further (e.g., whether inactive products are being excluded by RLS).
-
-No code changes are needed -- the fix is already deployed.
+This ensures the stats cards (Total Products, With Images, Missing Primary, Complete) refresh immediately after any image or product change.
 
