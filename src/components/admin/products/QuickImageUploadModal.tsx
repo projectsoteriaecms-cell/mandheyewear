@@ -195,6 +195,7 @@ export const QuickImageUploadModal = ({
 
         toast.success("Image order updated");
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       } catch (error) {
         console.error("Error reordering images:", error);
         toast.error("Failed to reorder images");

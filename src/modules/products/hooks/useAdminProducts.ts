@@ -159,6 +159,7 @@ export const useAdminProducts = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       toast.success("Product deactivated successfully");
     },
     onError: (error: Error) => {

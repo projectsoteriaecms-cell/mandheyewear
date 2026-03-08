@@ -369,6 +369,7 @@ export const useECMSImport = () => {
         // Invalidate queries to refresh product list
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         queryClient.invalidateQueries({ queryKey: ["products"] });
+        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
 
         result.success = result.failed === 0;
 
