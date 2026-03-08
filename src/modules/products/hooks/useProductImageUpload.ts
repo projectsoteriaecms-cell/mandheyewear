@@ -8,6 +8,14 @@ const MAX_FILE_SIZE = 7 * 1024 * 1024; // 7MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export const useProductImageUpload = () => {
+  const queryClient = useQueryClient();
+
+  const invalidateImageQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+    queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+  };
+
   const validateFile = (file: File): string | null => {
     if (!ALLOWED_TYPES.includes(file.type)) {
       return "Invalid file type. Please upload JPG, PNG, or WebP images.";
