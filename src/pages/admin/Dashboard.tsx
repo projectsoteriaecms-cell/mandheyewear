@@ -81,7 +81,7 @@ const AdminDashboard = () => {
         ) : (
           <>
             {/* Stats Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
               <StatCard
                 title="Total Stock Items"
                 value={stats?.totalItems.toLocaleString() || 0}
