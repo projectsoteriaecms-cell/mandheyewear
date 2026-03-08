@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { AdminLayout } from "@/shared/components/admin/AdminLayout";
 import { RoleGuard } from "@/shared/components/admin/RoleGuard";
-import { useAdminProducts } from "@/modules/products";
+import { useAdminProducts, useProductImageStats } from "@/modules/products";
 import { ProductImageCard } from "@/components/admin/products/ProductImageCard";
 import { ProductImageListView } from "@/components/admin/products/ProductImageListView";
 import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
