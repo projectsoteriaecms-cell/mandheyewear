@@ -131,6 +131,7 @@ export const useProductImageUpload = () => {
       }
     }
 
+    invalidateImageQueries();
     return uploadedUrls;
   };
 
