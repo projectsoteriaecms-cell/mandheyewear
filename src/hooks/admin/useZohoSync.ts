@@ -19,6 +19,13 @@ export function useZohoSync() {
   const [result, setResult] = useState<SyncResult | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const syncIdRef = useRef<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const invalidateProductQueries = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+  }, [queryClient]);
 
   const stopPolling = useCallback(() => {
     if (pollRef.current) {
