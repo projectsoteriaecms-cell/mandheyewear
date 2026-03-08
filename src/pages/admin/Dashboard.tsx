@@ -1,7 +1,8 @@
 import { AdminLayout } from "@/shared/components/admin";
-import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple, FileText } from "@phosphor-icons/react";
+import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple, FileText, Image } from "@phosphor-icons/react";
 import { useInventoryStats, useLowStockAlerts } from "@/modules/inventory";
 import { usePurchaseOrders, useStockTransfers } from "@/modules/inventory";
+import { useProductImageStats } from "@/modules/products";
 import { useBranchAssignments } from "@/modules/branches";
 import { useUserRole } from "@/shared/hooks/useUserRole";
 import { isAtLeast } from "@/shared/lib/permissions";
@@ -51,6 +52,7 @@ const NoBranchAssignmentCard = () => (
 const AdminDashboard = () => {
   const { data: stats, isLoading: statsLoading } = useInventoryStats();
   const { data: lowStockItems, isLoading: alertsLoading } = useLowStockAlerts();
+  const imageStats = useProductImageStats();
   const { data: pendingPOs } = usePurchaseOrders("submitted");
   const { data: pendingTransfers } = useStockTransfers("pending");
   const { data: branchAssignments, isLoading: assignmentsLoading } = useBranchAssignments();
@@ -79,7 +81,7 @@ const AdminDashboard = () => {
         ) : (
           <>
             {/* Stats Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
               <StatCard
                 title="Total Stock Items"
                 value={stats?.totalItems.toLocaleString() || 0}
@@ -100,6 +102,13 @@ const AdminDashboard = () => {
                 icon={TrendUp}
                 loading={statsLoading}
                 description="Active products"
+              />
+              <StatCard
+                title="With Images"
+                value={imageStats.isLoading ? "..." : imageStats.withPrimary.toLocaleString()}
+                icon={Image}
+                loading={imageStats.isLoading}
+                description={`${imageStats.complete} complete (6/6)`}
               />
               <StatCard
                 title="Suppliers"

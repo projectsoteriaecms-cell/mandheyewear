@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -18,6 +19,13 @@ export function useZohoSync() {
   const [result, setResult] = useState<SyncResult | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const syncIdRef = useRef<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const invalidateProductQueries = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+  }, [queryClient]);
 
   const stopPolling = useCallback(() => {
     if (pollRef.current) {
@@ -53,12 +61,14 @@ export function useZohoSync() {
         const matched = (meta?.matched_existing as number) ?? 0;
         if (data.status === "success") {
           setStatus("success");
+          invalidateProductQueries();
           const parts = [`${data.records_processed} items synced`];
           if (matched > 0) parts.push(`${matched} linked to existing`);
           if ((data.records_failed ?? 0) > 0) parts.push(`${data.records_failed} failed`);
           toast.success(`Sync complete: ${parts.join(", ")}`);
         } else {
           setStatus("error");
+          invalidateProductQueries();
           toast.error(`Sync finished with errors. ${data.records_processed} processed, ${data.records_failed} failed.`);
         }
       }
@@ -94,6 +104,7 @@ export function useZohoSync() {
             matched_existing: data.page_1_matched ?? 0,
             new_products: data.page_1_new ?? 0,
           });
+          invalidateProductQueries();
           const parts = [`${data.page_1_processed} items synced`];
           if ((data.page_1_matched ?? 0) > 0) parts.push(`${data.page_1_matched} linked to existing`);
           toast.success(`Sync complete: ${parts.join(", ")}`);

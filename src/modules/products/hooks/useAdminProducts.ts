@@ -1,9 +1,32 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Product, ProductInsert } from "../types";
 
+const IMAGE_STATS_REFETCH_MS = 30_000;
+
 export const useProductImageStats = () => {
+  const queryClient = useQueryClient();
+
+  // Realtime invalidation: any product row change refreshes stats
+  useEffect(() => {
+    const channel = supabase
+      .channel("product-image-stats-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   const totalQuery = useQuery({
     queryKey: ["product-image-stats", "total"],
     queryFn: async () => {
@@ -14,6 +37,9 @@ export const useProductImageStats = () => {
       if (error) throw error;
       return count ?? 0;
     },
+    refetchInterval: IMAGE_STATS_REFETCH_MS,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   const withImagesQuery = useQuery({
@@ -23,16 +49,19 @@ export const useProductImageStats = () => {
         .from("products")
         .select("*", { count: "exact", head: true })
         .eq("is_active", true)
-        .not("image_url", "is", null);
+        .not("image_url", "is", null)
+        .neq("image_url", "");
       if (error) throw error;
       return count ?? 0;
     },
+    refetchInterval: IMAGE_STATS_REFETCH_MS,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   const completeQuery = useQuery({
     queryKey: ["product-image-stats", "complete"],
     queryFn: async () => {
-      // Paginate to avoid the default row limit
       let completeCount = 0;
       let from = 0;
       const batchSize = 1000;
@@ -58,6 +87,9 @@ export const useProductImageStats = () => {
 
       return completeCount;
     },
+    refetchInterval: IMAGE_STATS_REFETCH_MS,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   const total = totalQuery.data ?? 0;
