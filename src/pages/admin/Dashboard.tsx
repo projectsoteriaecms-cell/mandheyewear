@@ -1,7 +1,8 @@
 import { AdminLayout } from "@/shared/components/admin";
-import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple, FileText } from "@phosphor-icons/react";
+import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple, FileText, Image } from "@phosphor-icons/react";
 import { useInventoryStats, useLowStockAlerts } from "@/modules/inventory";
 import { usePurchaseOrders, useStockTransfers } from "@/modules/inventory";
+import { useProductImageStats } from "@/modules/products";
 import { useBranchAssignments } from "@/modules/branches";
 import { useUserRole } from "@/shared/hooks/useUserRole";
 import { isAtLeast } from "@/shared/lib/permissions";
