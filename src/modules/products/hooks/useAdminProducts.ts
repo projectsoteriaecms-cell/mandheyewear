@@ -94,6 +94,7 @@ export const useAdminProducts = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       toast.success("Product created successfully");
     },
     onError: (error: Error) => {
@@ -116,6 +117,7 @@ export const useAdminProducts = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       toast.success("Product updated successfully");
     },
     onError: (error: Error) => {
@@ -136,6 +138,7 @@ export const useAdminProducts = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       toast.success(`${data.length} products imported successfully`);
     },
     onError: (error: Error) => {
@@ -156,6 +159,7 @@ export const useAdminProducts = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       toast.success("Product deactivated successfully");
     },
     onError: (error: Error) => {

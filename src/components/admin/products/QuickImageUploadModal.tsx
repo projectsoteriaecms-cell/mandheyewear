@@ -103,6 +103,7 @@ export const QuickImageUploadModal = ({
         }
         toast.success(`Uploaded ${validFiles.length} image(s)`);
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       } finally {
         setIsUploading(false);
       }
@@ -121,6 +122,7 @@ export const QuickImageUploadModal = ({
         if (success) {
           toast.success("Image deleted");
           queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+          queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
         }
       } finally {
         setIsUploading(false);
@@ -154,6 +156,7 @@ export const QuickImageUploadModal = ({
 
           toast.success("Primary image updated");
           queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+          queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
         }
       } catch (error) {
         console.error("Error setting primary:", error);
@@ -192,6 +195,7 @@ export const QuickImageUploadModal = ({
 
         toast.success("Image order updated");
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       } catch (error) {
         console.error("Error reordering images:", error);
         toast.error("Failed to reorder images");
