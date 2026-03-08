@@ -58,32 +58,6 @@ export const useProductImageStats = () => {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
-  const totalQuery = useQuery({
-    queryKey: ["product-image-stats", "total"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("products")
-        .select("*", { count: "exact", head: true })
-        .eq("is_active", true);
-      if (error) throw error;
-      return count ?? 0;
-    },
-  });
-
-  const withImagesQuery = useQuery({
-    queryKey: ["product-image-stats", "with-images"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("products")
-        .select("*", { count: "exact", head: true })
-        .eq("is_active", true)
-        .not("image_url", "is", null);
-      if (error) throw error;
-      return count ?? 0;
-    },
-  });
-
-  const completeQuery = useQuery({
     queryKey: ["product-image-stats", "complete"],
     queryFn: async () => {
       // Paginate to avoid the default row limit
