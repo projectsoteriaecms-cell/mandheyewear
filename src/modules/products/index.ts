@@ -2,6 +2,7 @@
 // Hooks
 export { 
   useAdminProducts,
+  useProductImageStats,
   useECMSImport,
   useImportHistory,
   saveImportHistory,

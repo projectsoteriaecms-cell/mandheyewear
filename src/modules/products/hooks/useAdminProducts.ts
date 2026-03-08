@@ -3,6 +3,60 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Product, ProductInsert } from "../types";
 
+export const useProductImageStats = () => {
+  const totalQuery = useQuery({
+    queryKey: ["product-image-stats", "total"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true });
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
+  const withImagesQuery = useQuery({
+    queryKey: ["product-image-stats", "with-images"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .not("image_url", "is", null);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
+  const completeQuery = useQuery({
+    queryKey: ["product-image-stats", "complete"],
+    queryFn: async () => {
+      // Can't filter array length server-side easily, so fetch ids of products with images + additional_images
+      // Use a lightweight approach: fetch only additional_images for products that have a primary image
+      const { data, error } = await supabase
+        .from("products")
+        .select("additional_images")
+        .not("image_url", "is", null)
+        .not("additional_images", "is", null)
+        .range(0, 4999);
+      if (error) throw error;
+      return (data ?? []).filter(
+        (p) => p.additional_images && p.additional_images.length >= 5
+      ).length;
+    },
+  });
+
+  const total = totalQuery.data ?? 0;
+  const withPrimary = withImagesQuery.data ?? 0;
+
+  return {
+    total,
+    withPrimary,
+    missingPrimary: total - withPrimary,
+    complete: completeQuery.data ?? 0,
+    isLoading: totalQuery.isLoading || withImagesQuery.isLoading || completeQuery.isLoading,
+  };
+};
+
 export const useAdminProducts = () => {
   const queryClient = useQueryClient();
 
@@ -18,7 +72,8 @@ export const useAdminProducts = () => {
           frame_attributes(*),
           lens_attributes(*)
         `)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range(0, 4999);
 
       if (error) throw error;
       return data;
