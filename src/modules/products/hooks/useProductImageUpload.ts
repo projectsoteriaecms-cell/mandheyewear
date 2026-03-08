@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { compressImage, formatBytes } from "../lib/image-compression";
 

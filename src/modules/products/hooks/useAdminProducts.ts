@@ -9,7 +9,8 @@ export const useProductImageStats = () => {
     queryFn: async () => {
       const { count, error } = await supabase
         .from("products")
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true);
       if (error) throw error;
       return count ?? 0;
     },
@@ -21,6 +22,7 @@ export const useProductImageStats = () => {
       const { count, error } = await supabase
         .from("products")
         .select("*", { count: "exact", head: true })
+        .eq("is_active", true)
         .not("image_url", "is", null);
       if (error) throw error;
       return count ?? 0;
@@ -30,18 +32,31 @@ export const useProductImageStats = () => {
   const completeQuery = useQuery({
     queryKey: ["product-image-stats", "complete"],
     queryFn: async () => {
-      // Can't filter array length server-side easily, so fetch ids of products with images + additional_images
-      // Use a lightweight approach: fetch only additional_images for products that have a primary image
-      const { data, error } = await supabase
-        .from("products")
-        .select("additional_images")
-        .not("image_url", "is", null)
-        .not("additional_images", "is", null)
-        .range(0, 4999);
-      if (error) throw error;
-      return (data ?? []).filter(
-        (p) => p.additional_images && p.additional_images.length >= 5
-      ).length;
+      // Paginate to avoid the default row limit
+      let completeCount = 0;
+      let from = 0;
+      const batchSize = 1000;
+
+      while (true) {
+        const { data, error } = await supabase
+          .from("products")
+          .select("additional_images")
+          .eq("is_active", true)
+          .not("image_url", "is", null)
+          .not("additional_images", "is", null)
+          .range(from, from + batchSize - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        completeCount += data.filter(
+          (p) => p.additional_images && p.additional_images.length >= 5
+        ).length;
+
+        if (data.length < batchSize) break;
+        from += batchSize;
+      }
+
+      return completeCount;
     },
   });
 
