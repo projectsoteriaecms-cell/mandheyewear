@@ -122,6 +122,7 @@ export const QuickImageUploadModal = ({
         if (success) {
           toast.success("Image deleted");
           queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+          queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
         }
       } finally {
         setIsUploading(false);
