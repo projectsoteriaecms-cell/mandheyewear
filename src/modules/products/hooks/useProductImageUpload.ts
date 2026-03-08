@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { compressImage, formatBytes } from "../lib/image-compression";
 
@@ -7,6 +8,14 @@ const MAX_FILE_SIZE = 7 * 1024 * 1024; // 7MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export const useProductImageUpload = () => {
+  const queryClient = useQueryClient();
+
+  const invalidateImageQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+    queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+  };
+
   const validateFile = (file: File): string | null => {
     if (!ALLOWED_TYPES.includes(file.type)) {
       return "Invalid file type. Please upload JPG, PNG, or WebP images.";
@@ -100,6 +109,7 @@ export const useProductImageUpload = () => {
         if (updateError) throw updateError;
       }
 
+      invalidateImageQueries();
       return publicUrl;
     } catch (error) {
       console.error("Upload error:", error);
@@ -121,6 +131,7 @@ export const useProductImageUpload = () => {
       }
     }
 
+    invalidateImageQueries();
     return uploadedUrls;
   };
 
@@ -171,6 +182,7 @@ export const useProductImageUpload = () => {
         if (updateError) throw updateError;
       }
 
+      invalidateImageQueries();
       return true;
     } catch (error) {
       console.error("Delete error:", error);
@@ -205,6 +217,7 @@ export const useProductImageUpload = () => {
       }
     }
 
+    invalidateImageQueries();
     return { matched, failed };
   };
 
