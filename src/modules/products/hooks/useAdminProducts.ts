@@ -138,6 +138,7 @@ export const useAdminProducts = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       toast.success(`${data.length} products imported successfully`);
     },
     onError: (error: Error) => {
