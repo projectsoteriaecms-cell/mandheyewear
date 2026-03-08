@@ -52,6 +52,7 @@ const NoBranchAssignmentCard = () => (
 const AdminDashboard = () => {
   const { data: stats, isLoading: statsLoading } = useInventoryStats();
   const { data: lowStockItems, isLoading: alertsLoading } = useLowStockAlerts();
+  const imageStats = useProductImageStats();
   const { data: pendingPOs } = usePurchaseOrders("submitted");
   const { data: pendingTransfers } = useStockTransfers("pending");
   const { data: branchAssignments, isLoading: assignmentsLoading } = useBranchAssignments();
