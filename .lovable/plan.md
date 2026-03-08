@@ -1,40 +1,24 @@
 
 
-# Fix: "Attribute callback must be a valid function" Error
+## Analysis: Product Image Stats Already Fixed
 
-## Root Cause
-In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
+After reviewing the current codebase, the fix has **already been applied** in a previous session:
 
-## Solution
-Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
+1. **`src/modules/products/hooks/useAdminProducts.ts`** already contains:
+   - `useProductImageStats` hook using server-side `count: "exact"` queries (bypasses the 1,000-row limit)
+   - `.range(0, 4999)` on the admin products query
 
-## File Change: `src/pages/Checkout.tsx`
+2. **`src/pages/admin/ProductImages.tsx`** already uses `useProductImageStats` for the stats cards
 
-**Line 172** -- Change from:
-```typescript
-callback: async (response) => {
-```
+3. **Exports** in `hooks/index.ts` and `products/index.ts` are already in place
 
-To:
-```typescript
-callback: (response) => {
-  (async () => {
-```
+### Possible Remaining Issue
 
-And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
-```typescript
-},
-```
-To:
-```typescript
-  })();
-},
-```
+If the stats are still showing incorrectly, it could be due to **RLS policy filtering**. The `products` table has a SELECT policy: `is_active = true` for non-super-admins. If you're logged in as a `branch_manager`, the count queries will only include active products -- inactive products with images won't be counted.
 
-This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
+### Recommended Next Step
 
-## Technical Summary
-- **File:** `src/pages/Checkout.tsx`
-- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
-- **Risk:** None -- behavior is identical, only the function signature changes
+Navigate to `/admin/products/images` in the preview and verify whether the stats cards show the expected 300+ count. If they don't, share what numbers you're seeing so I can investigate further (e.g., whether inactive products are being excluded by RLS).
+
+No code changes are needed -- the fix is already deployed.
 
