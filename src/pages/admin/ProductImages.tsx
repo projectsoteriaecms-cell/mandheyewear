@@ -118,28 +118,36 @@ const ProductImages = () => {
                 <Images className="h-4 w-4" />
                 Total Products
               </div>
-              <p className="text-2xl font-bold mt-1">{stats.total}</p>
+              <p className="text-2xl font-bold mt-1">
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.total}
+              </p>
             </div>
             <div className="bg-card rounded-lg border p-4">
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <CheckCircle className="h-4 w-4 text-green-500" />
                 With Images
               </div>
-              <p className="text-2xl font-bold mt-1 text-green-600">{stats.withPrimary}</p>
+              <p className="text-2xl font-bold mt-1 text-green-600">
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.withPrimary}
+              </p>
             </div>
             <div className="bg-card rounded-lg border p-4">
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <Warning className="h-4 w-4 text-amber-500" />
                 Missing Primary
               </div>
-              <p className="text-2xl font-bold mt-1 text-amber-600">{stats.missingPrimary}</p>
+              <p className="text-2xl font-bold mt-1 text-amber-600">
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.missingPrimary}
+              </p>
             </div>
             <div className="bg-card rounded-lg border p-4">
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <CheckCircle className="h-4 w-4 text-primary" />
                 Complete (6/6)
               </div>
-              <p className="text-2xl font-bold mt-1 text-primary">{stats.complete}</p>
+              <p className="text-2xl font-bold mt-1 text-primary">
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.complete}
+              </p>
             </div>
           </div>
 
