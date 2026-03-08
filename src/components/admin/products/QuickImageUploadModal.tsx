@@ -103,6 +103,7 @@ export const QuickImageUploadModal = ({
         }
         toast.success(`Uploaded ${validFiles.length} image(s)`);
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       } finally {
         setIsUploading(false);
       }
