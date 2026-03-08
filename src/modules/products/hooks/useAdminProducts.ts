@@ -1,9 +1,63 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Product, ProductInsert } from "../types";
 
+const IMAGE_STATS_REFETCH_MS = 30_000;
+
 export const useProductImageStats = () => {
+  const queryClient = useQueryClient();
+
+  // Realtime invalidation: any product row change refreshes stats
+  useEffect(() => {
+    const channel = supabase
+      .channel("product-image-stats-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  const totalQuery = useQuery({
+    queryKey: ["product-image-stats", "total"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true);
+      if (error) throw error;
+      return count ?? 0;
+    },
+    refetchInterval: IMAGE_STATS_REFETCH_MS,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+  });
+
+  const withImagesQuery = useQuery({
+    queryKey: ["product-image-stats", "with-images"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true)
+        .not("image_url", "is", null)
+        .neq("image_url", "");
+      if (error) throw error;
+      return count ?? 0;
+    },
+    refetchInterval: IMAGE_STATS_REFETCH_MS,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+  });
   const totalQuery = useQuery({
     queryKey: ["product-image-stats", "total"],
     queryFn: async () => {
