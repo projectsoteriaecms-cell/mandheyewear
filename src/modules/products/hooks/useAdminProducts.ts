@@ -58,9 +58,10 @@ export const useProductImageStats = () => {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
+
+  const completeQuery = useQuery({
     queryKey: ["product-image-stats", "complete"],
     queryFn: async () => {
-      // Paginate to avoid the default row limit
       let completeCount = 0;
       let from = 0;
       const batchSize = 1000;
