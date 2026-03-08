@@ -156,6 +156,7 @@ export const QuickImageUploadModal = ({
 
           toast.success("Primary image updated");
           queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+          queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
         }
       } catch (error) {
         console.error("Error setting primary:", error);
