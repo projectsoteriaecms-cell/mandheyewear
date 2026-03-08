@@ -61,12 +61,14 @@ export function useZohoSync() {
         const matched = (meta?.matched_existing as number) ?? 0;
         if (data.status === "success") {
           setStatus("success");
+          invalidateProductQueries();
           const parts = [`${data.records_processed} items synced`];
           if (matched > 0) parts.push(`${matched} linked to existing`);
           if ((data.records_failed ?? 0) > 0) parts.push(`${data.records_failed} failed`);
           toast.success(`Sync complete: ${parts.join(", ")}`);
         } else {
           setStatus("error");
+          invalidateProductQueries();
           toast.error(`Sync finished with errors. ${data.records_processed} processed, ${data.records_failed} failed.`);
         }
       }
