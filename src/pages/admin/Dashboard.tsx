@@ -104,6 +104,13 @@ const AdminDashboard = () => {
                 description="Active products"
               />
               <StatCard
+                title="With Images"
+                value={imageStats.isLoading ? "..." : imageStats.withPrimary.toLocaleString()}
+                icon={Image}
+                loading={imageStats.isLoading}
+                description={`${imageStats.complete} complete (6/6)`}
+              />
+              <StatCard
                 title="Suppliers"
                 value={stats?.supplierCount || 0}
                 icon={Users}

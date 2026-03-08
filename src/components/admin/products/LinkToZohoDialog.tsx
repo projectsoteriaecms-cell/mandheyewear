@@ -95,6 +95,8 @@ export function LinkToZohoDialog({ open, onOpenChange }: LinkToZohoDialogProps) 
       queryClient.invalidateQueries({ queryKey: ["unlinked-ecms"] });
       queryClient.invalidateQueries({ queryKey: ["zoho-unlinked"] });
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to link");
     } finally {

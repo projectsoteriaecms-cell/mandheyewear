@@ -58,6 +58,9 @@ export const useProductImageStats = () => {
 
       return completeCount;
     },
+    refetchInterval: IMAGE_STATS_REFETCH_MS,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   const total = totalQuery.data ?? 0;

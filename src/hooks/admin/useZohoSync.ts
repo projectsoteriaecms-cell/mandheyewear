@@ -104,6 +104,7 @@ export function useZohoSync() {
             matched_existing: data.page_1_matched ?? 0,
             new_products: data.page_1_new ?? 0,
           });
+          invalidateProductQueries();
           const parts = [`${data.page_1_processed} items synced`];
           if ((data.page_1_matched ?? 0) > 0) parts.push(`${data.page_1_matched} linked to existing`);
           toast.success(`Sync complete: ${parts.join(", ")}`);
