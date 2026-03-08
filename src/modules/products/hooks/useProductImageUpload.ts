@@ -182,6 +182,7 @@ export const useProductImageUpload = () => {
         if (updateError) throw updateError;
       }
 
+      invalidateImageQueries();
       return true;
     } catch (error) {
       console.error("Delete error:", error);
