@@ -361,7 +361,7 @@ serve(async (req) => {
           const prompt = buildNonFramePrompt(product);
           console.log(`  📸 ${product.sku} — generating single shot`);
 
-          const imageData = await generateImage(prompt, LOVABLE_API_KEY);
+          const imageData = await generateImage(prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
           const url = await uploadImage(supabase, SUPABASE_URL, product.id, "primary", imageData);
 
           const { error: updateErr } = await supabase
