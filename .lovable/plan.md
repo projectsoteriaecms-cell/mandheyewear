@@ -1,40 +1,20 @@
 
 
-# Fix: "Attribute callback must be a valid function" Error
+## Diagnosis Complete — No Further Code Changes Needed
 
-## Root Cause
-In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
+The previous two rounds of fixes are already in place and working:
 
-## Solution
-Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
+1. **Database function** `get_product_image_stats()` — confirmed working, returns `{ total: 3444, with_primary: 334, complete: 333 }` with `::int` casts
+2. **Hook** `useProductImageStats` — correctly calls `.rpc("get_product_image_stats")` and parses with `Number()` 
+3. **Dashboard StatCard** — correctly displays `imageStats.withPrimary` with error fallback
+4. **Permissions** — both `anon` and `authenticated` roles have EXECUTE privilege on the function
 
-## File Change: `src/pages/Checkout.tsx`
+### What to do now
 
-**Line 172** -- Change from:
-```typescript
-callback: async (response) => {
-```
+The code and database are both correct. The "With Images" card on `/admin` should display **334**. If you're still seeing "0":
 
-To:
-```typescript
-callback: (response) => {
-  (async () => {
-```
+- **Hard-refresh the page** (Ctrl+Shift+R / Cmd+Shift+R) to clear any cached JavaScript
+- **Check the browser console** for any `[useProductImageStats] RPC error:` messages — if you see one, share the error text so I can diagnose further
 
-And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
-```typescript
-},
-```
-To:
-```typescript
-  })();
-},
-```
-
-This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
-
-## Technical Summary
-- **File:** `src/pages/Checkout.tsx`
-- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
-- **Risk:** None -- behavior is identical, only the function signature changes
+No additional code changes are needed — the fix is already deployed.
 
