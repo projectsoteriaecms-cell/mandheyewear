@@ -108,11 +108,19 @@ const ProductImages = () => {
       <AdminLayout>
         <div className="space-y-6">
           {/* Header */}
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Product Images Manager</h1>
-            <p className="text-muted-foreground">
-              Manage product images for your catalog
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Product Images Manager</h1>
+              <p className="text-muted-foreground">
+                Manage product images for your catalog
+              </p>
+            </div>
+            {stats.missingPrimary > 0 && (
+              <Button onClick={() => setGenerateDialogOpen(true)} variant="gold">
+                <Lightning className="h-4 w-4" weight="fill" />
+                Generate Missing Images
+              </Button>
+            )}
           </div>
 
           {/* Stats Cards */}
