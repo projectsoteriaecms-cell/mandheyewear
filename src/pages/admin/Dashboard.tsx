@@ -105,10 +105,11 @@ const AdminDashboard = () => {
               />
               <StatCard
                 title="With Images"
-                value={imageStats.isLoading ? "..." : imageStats.withPrimary.toLocaleString()}
+                value={imageStats.error ? "⚠" : imageStats.isLoading ? "..." : imageStats.withPrimary.toLocaleString()}
                 icon={Image}
                 loading={imageStats.isLoading}
-                description={`${imageStats.complete} complete (6/6)`}
+                variant={imageStats.error ? "warning" : "default"}
+                description={imageStats.error ? "Failed to load stats" : `${imageStats.complete} complete (6/6)`}
               />
               <StatCard
                 title="Suppliers"

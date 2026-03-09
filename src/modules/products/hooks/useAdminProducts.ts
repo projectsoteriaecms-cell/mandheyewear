@@ -27,80 +27,35 @@ export const useProductImageStats = () => {
     };
   }, [queryClient]);
 
-  const totalQuery = useQuery({
-    queryKey: ["product-image-stats", "total"],
+  const statsQuery = useQuery({
+    queryKey: ["product-image-stats"],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("products")
-        .select("*", { count: "exact", head: true })
-        .eq("is_active", true);
-      if (error) throw error;
-      return count ?? 0;
-    },
-    refetchInterval: IMAGE_STATS_REFETCH_MS,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-  });
-
-  const withImagesQuery = useQuery({
-    queryKey: ["product-image-stats", "with-images"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("products")
-        .select("*", { count: "exact", head: true })
-        .eq("is_active", true)
-        .not("image_url", "is", null)
-        .neq("image_url", "");
-      if (error) throw error;
-      return count ?? 0;
-    },
-    refetchInterval: IMAGE_STATS_REFETCH_MS,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-  });
-
-  const completeQuery = useQuery({
-    queryKey: ["product-image-stats", "complete"],
-    queryFn: async () => {
-      let completeCount = 0;
-      let from = 0;
-      const batchSize = 1000;
-
-      while (true) {
-        const { data, error } = await supabase
-          .from("products")
-          .select("additional_images")
-          .eq("is_active", true)
-          .not("image_url", "is", null)
-          .not("additional_images", "is", null)
-          .range(from, from + batchSize - 1);
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-
-        completeCount += data.filter(
-          (p) => p.additional_images && p.additional_images.length >= 5
-        ).length;
-
-        if (data.length < batchSize) break;
-        from += batchSize;
+      const { data, error } = await supabase.rpc("get_product_image_stats");
+      if (error) {
+        console.error("[useProductImageStats] RPC error:", error);
+        throw error;
       }
-
-      return completeCount;
+      const result = data as { total: number; with_primary: number; complete: number } | null;
+      return {
+        total: result?.total ?? 0,
+        withPrimary: result?.with_primary ?? 0,
+        complete: result?.complete ?? 0,
+      };
     },
     refetchInterval: IMAGE_STATS_REFETCH_MS,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
 
-  const total = totalQuery.data ?? 0;
-  const withPrimary = withImagesQuery.data ?? 0;
+  const stats = statsQuery.data;
 
   return {
-    total,
-    withPrimary,
-    missingPrimary: total - withPrimary,
-    complete: completeQuery.data ?? 0,
-    isLoading: totalQuery.isLoading || withImagesQuery.isLoading || completeQuery.isLoading,
+    total: stats?.total ?? 0,
+    withPrimary: stats?.withPrimary ?? 0,
+    missingPrimary: (stats?.total ?? 0) - (stats?.withPrimary ?? 0),
+    complete: stats?.complete ?? 0,
+    isLoading: statsQuery.isLoading,
+    error: statsQuery.error,
   };
 };
 
