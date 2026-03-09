@@ -1,29 +1,40 @@
 
 
-# Switch Image Generation to Direct Gemini API (Lovable AI as Fallback Only)
+# Fix: "Attribute callback must be a valid function" Error
 
-## Problem
-The edge function currently routes all image generation through the Lovable AI gateway (`ai.gateway.lovable.dev`), consuming Lovable credits. You already have a `GEMINI_API_KEY` secret configured.
+## Root Cause
+In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
 
-## Changes
+## Solution
+Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
 
-### File: `supabase/functions/generate-product-image/index.ts`
+## File Change: `src/pages/Checkout.tsx`
 
-Rewrite the `generateImage` function to:
+**Line 172** -- Change from:
+```typescript
+callback: async (response) => {
+```
 
-1. **Primary**: Call Google Gemini API directly at `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent` using `GEMINI_API_KEY`
-   - Request body uses Gemini's native format: `{ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseModalities: ["IMAGE", "TEXT"] } }`
-   - Extract base64 image from `response.candidates[0].content.parts[].inlineData`
+To:
+```typescript
+callback: (response) => {
+  (async () => {
+```
 
-2. **Fallback** (on 429/5xx from Gemini): Fall back to Lovable AI gateway using `LOVABLE_API_KEY` with the current OpenAI-compatible format
+And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
+```typescript
+},
+```
+To:
+```typescript
+  })();
+},
+```
 
-3. **Update main handler**: Read both `GEMINI_API_KEY` and `LOVABLE_API_KEY`, pass both to `generateImage`. Only fail if neither key is available.
+This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
 
-### No other files need changes
-The admin UI and dialog remain the same.
-
-## Key Details
-- The Gemini native image generation response format differs from the Lovable gateway — the image comes back as `inlineData.data` (base64) + `inlineData.mimeType` in the `parts` array
-- Same retry/backoff logic applies, but primary path hits Google directly at zero Lovable credit cost
-- Fallback ensures generation still works if the Gemini API key hits quota limits
+## Technical Summary
+- **File:** `src/pages/Checkout.tsx`
+- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
+- **Risk:** None -- behavior is identical, only the function signature changes
 
