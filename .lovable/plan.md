@@ -1,40 +1,28 @@
 
 
-# Fix: "Attribute callback must be a valid function" Error
+# Fix Gemini API Model Name for Image Generation
 
-## Root Cause
-In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
+## Problem
+The edge function logs show the direct Gemini API returning **404** because `gemini-2.0-flash-exp` is no longer available. Every request falls back to Lovable AI, burning credits — the exact opposite of what we want.
 
-## Solution
-Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
+## Fix
+One-line change in `supabase/functions/generate-product-image/index.ts` (line 120):
 
-## File Change: `src/pages/Checkout.tsx`
+Change the model from `gemini-2.0-flash-exp` to `gemini-2.5-flash-preview-05-20` in the Gemini API URL.
 
-**Line 172** -- Change from:
-```typescript
-callback: async (response) => {
+The REST API endpoint becomes:
+```
+https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent
 ```
 
-To:
-```typescript
-callback: (response) => {
-  (async () => {
-```
+This model supports `responseModalities: ["IMAGE", "TEXT"]` for native image generation via the Gemini API.
 
-And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
-```typescript
-},
-```
-To:
-```typescript
-  })();
-},
-```
+## After Fix
+Will re-invoke the edge function with `batchSize: 1` to confirm:
+- Direct Gemini API returns an image (no fallback to Lovable)
+- Image uploads to storage successfully
+- Product record updates with the URL
 
-This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
-
-## Technical Summary
-- **File:** `src/pages/Checkout.tsx`
-- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
-- **Risk:** None -- behavior is identical, only the function signature changes
+## Files Modified
+- `supabase/functions/generate-product-image/index.ts` — line 120, model name update
 
