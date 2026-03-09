@@ -10,8 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { Lightning, Warning, CheckCircle, XCircle } from "@phosphor-icons/react";
-import { Loader2 } from "lucide-react";
+import { Lightning, Warning, CheckCircle, XCircle, Camera } from "@phosphor-icons/react";
 
 interface GenerateImagesDialogProps {
   open: boolean;
@@ -25,6 +24,7 @@ interface BatchResult {
   sku: string;
   success: boolean;
   error?: string;
+  shots?: number;
 }
 
 export const GenerateImagesDialog = ({
@@ -62,20 +62,16 @@ export const GenerateImagesDialog = ({
     while (!cancelRef.current) {
       try {
         const { data, error } = await supabase.functions.invoke("generate-product-image", {
-          body: { batchSize: 5 },
+          body: { batchSize: 1 },
         });
 
         if (error) {
           console.error("Edge function error:", error);
-          // Wait and retry
           await new Promise((r) => setTimeout(r, 3000));
           continue;
         }
 
-        if (!data || data.processed === 0) {
-          // All done
-          break;
-        }
+        if (!data || data.processed === 0) break;
 
         totalProcessed += data.processed;
         totalSucceeded += data.succeeded;
@@ -85,7 +81,6 @@ export const GenerateImagesDialog = ({
         setSucceeded(totalSucceeded);
         setFailed(totalFailed);
 
-        // Collect errors
         const batchErrors = (data.results || []).filter((r: BatchResult) => !r.success);
         if (batchErrors.length > 0) {
           allErrors.push(...batchErrors);
@@ -94,8 +89,8 @@ export const GenerateImagesDialog = ({
 
         if (data.remaining <= 0) break;
 
-        // Small delay between batches
-        await new Promise((r) => setTimeout(r, 500));
+        // Brief pause between products
+        await new Promise((r) => setTimeout(r, 1000));
       } catch (err) {
         console.error("Batch error:", err);
         await new Promise((r) => setTimeout(r, 3000));
@@ -111,27 +106,28 @@ export const GenerateImagesDialog = ({
   };
 
   const handleClose = () => {
-    if (status === "running") return; // Can't close while running
+    if (status === "running") return;
     reset();
     onOpenChange(false);
   };
 
   const progressPercent = total > 0 ? Math.min(100, (processed / total) * 100) : 0;
+  const estimatedMinutes = Math.ceil((total - processed) * 0.6); // ~35s per product
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Lightning className="h-5 w-5 text-primary" weight="fill" />
-            Generate Missing Product Images
+            <Camera className="h-5 w-5 text-primary" weight="fill" />
+            Generate Product Image Gallery
           </DialogTitle>
           <DialogDescription>
             {status === "idle" &&
-              `Use your Gemini API key to generate AI product images for ${missingCount.toLocaleString()} products missing primary images.`}
-            {status === "running" && "Generating images in batches of 5..."}
+              `Generate AI product images for ${missingCount.toLocaleString()} products missing primary images. Frame products get a full 6-shot luxury gallery.`}
+            {status === "running" && "Generating images — 1 product at a time..."}
             {status === "done" && "Image generation complete!"}
-            {status === "cancelled" && "Generation was cancelled."}
+            {status === "cancelled" && "Generation was cancelled. Progress is saved."}
           </DialogDescription>
         </DialogHeader>
 
@@ -141,10 +137,15 @@ export const GenerateImagesDialog = ({
               <div className="flex items-start gap-2">
                 <Warning className="h-4 w-4 mt-0.5 flex-shrink-0" weight="fill" />
                 <div>
-                  <p className="font-medium">This will use your Gemini API quota</p>
+                  <p className="font-medium">6-Shot Luxury Gallery for Frames</p>
                   <p className="mt-1 text-xs opacity-80">
-                    Approximately {missingCount.toLocaleString()} API calls will be made.
-                    Frames are processed first. You can cancel at any time.
+                    Each frame product generates 6 professional shots: Hero (3/4 view), Front, Side
+                    Profile, Rear/Interior, Macro Detail, and M&H Packaging. Non-frame products get a
+                    single studio shot. Branded frames preserve original logos.
+                  </p>
+                  <p className="mt-1 text-xs opacity-80">
+                    Estimated time: ~{Math.ceil(missingCount * 0.6)} minutes for all products.
+                    You can cancel and resume at any time.
                   </p>
                 </div>
               </div>
@@ -176,7 +177,8 @@ export const GenerateImagesDialog = ({
 
             {status === "running" && (
               <p className="text-xs text-muted-foreground text-center">
-                {Math.max(0, total - processed).toLocaleString()} remaining • Frames are processed first
+                {Math.max(0, total - processed).toLocaleString()} remaining •{" "}
+                ~{estimatedMinutes} min left • Frames → 6 shots, others → 1 shot
               </p>
             )}
 

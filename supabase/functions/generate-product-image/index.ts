@@ -3,7 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const json = (body: unknown, status = 200) =>
@@ -12,6 +13,92 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
+// ── Branded frames whose logos must be preserved on frames ──
+const LUXURY_BRANDS = new Set([
+  "GUCCI", "VERSACE", "PRADA", "EMPORIO ARMANI", "BURBERRY", "CARTIER",
+  "MONT BLANC", "DOLCE & GABBANA", "TOM FORD", "MARC JACOBS", "SWAROVSKI",
+  "MIU MIU", "CAROLINA HERRERA", "TIFFANY & CO", "BALENCIAGA", "BVLGARI",
+  "JIMMY CHOO", "CHOPARD", "GENTLE MONSTER", "CHROME HEART", "LINDA FARROW",
+  "MCM", "MOSCHINO",
+  "POLAROID", "CARRERA", "CARRERA DUCATI", "TED BAKER", "TOMMY HILFIGER",
+  "RAYBAN", "RAY-BAN", "POLO RALPH LAUREN", "HUGO", "HUGO BOSS",
+  "DAVID BECKHAM", "VICTORIA BECKHAM", "GUESS", "OAKLEY", "ARNETTE",
+  "VOGUE", "LEVI", "PUMA", "CALVIN KLEIN", "SANDRO", "DKNY",
+  "ARMANI EXCHANGE",
+  "DANIEL HECHTER", "JOHN RICHMOND", "LA MARTINA", "WILLIAMS MORRIS",
+  "COLUMBIA", "PIERRE CARDIN", "MIRAFLEX",
+]);
+
+function isBrandedFrame(brand: string | null): boolean {
+  if (!brand) return false;
+  return LUXURY_BRANDS.has(brand.toUpperCase().trim());
+}
+
+// ── Prompt builders for the 6-shot gallery ──
+
+function describeProduct(p: any): string {
+  const parts: string[] = [];
+  if (p.brand) parts.push(p.brand);
+  parts.push(p.name);
+  if (p.color) parts.push(`in ${p.color}`);
+  if (p.material) parts.push(`(${p.material})`);
+  if (p.style) parts.push(`${p.style} style`);
+  return parts.join(" ");
+}
+
+function buildFramePrompts(product: any): { slug: string; prompt: string }[] {
+  const desc = describeProduct(product);
+  const branded = isBrandedFrame(product.brand);
+  const brandNote = branded
+    ? `The frame is authentic ${product.brand}. You MUST visibly maintain any original subtle engravings, logos, or serial numbers on the frame itself. Do not remove them.`
+    : "";
+
+  const studioRule =
+    "Seamless pure white studio background, soft professional commercial lighting, high resolution e-commerce product photography. No model, frame only.";
+
+  return [
+    {
+      slug: "hero",
+      prompt: `Professional product photo of ${desc} eyeglasses frame. Classic three-quarter front view — the main e-commerce thumbnail. Sharp focus on the front frame and the near temple arm. The lighting emphasizes the premium material finish. ${brandNote} ${studioRule}`,
+    },
+    {
+      slug: "front",
+      prompt: `Direct head-on front view of ${desc} eyeglasses frame. Perfectly symmetrical composition. The temples are open and extending straight back, slightly blurred by depth of field. Purpose: clearly show the shape of the lenses and the bridge fit. ${brandNote} ${studioRule}`,
+    },
+    {
+      slug: "side",
+      prompt: `Pure 90-degree side profile view of ${desc} eyeglasses frame. Sharp focus along the entire length of the visible temple arm. Purpose: show the thickness of the frame, the design of the temple arm, and the ear bend. ${brandNote} ${studioRule}`,
+    },
+    {
+      slug: "rear",
+      prompt: `Slightly elevated rear view of ${desc} eyeglasses frame, looking at the back of the glasses. Purpose: show the hinges, the nose pads, and the inside of the temple arms. ${branded ? "This angle is crucial for showing inner-temple markings like model numbers or 'Made in Italy'. Ensure those original details are visible." : ""} ${studioRule}`,
+    },
+    {
+      slug: "macro",
+      prompt: `Extreme close-up macro shot of ${desc} eyeglasses frame, focusing tightly on the temple hinge area or lens corner where the most prominent branding detail is located${branded ? ` (the ${product.brand} logo)` : ""}. Use dramatic lighting to highlight the metallic or engraved texture to prove authenticity and quality. ${studioRule}`,
+    },
+    {
+      slug: "packaging",
+      prompt: `Luxurious studio shot of ${desc} eyeglasses frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather${product.color ? ` in a color complementing ${product.color}` : ""}. ${branded ? `The original ${product.brand} brand logo is still visible on the frame. The brand name "${product.brand}" is cleanly featured on the leather case, showing credibility and authenticity.` : `The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case.`} Seamless pure white studio background, soft professional commercial lighting, high resolution.`,
+    },
+  ];
+}
+
+function buildNonFramePrompt(product: any): string {
+  const { name, brand, item_type } = product;
+  switch (item_type) {
+    case "contact_lenses":
+      return `Product photo of ${name} contact lens box packaging${brand ? ` by ${brand}` : ""}. Clean studio shot, white background, e-commerce style, high resolution.`;
+    case "lenses":
+      return `Product photo of ${name} optical lens${brand ? ` by ${brand}` : ""}. Clean studio shot, white background, e-commerce style, high resolution.`;
+    case "solutions":
+      return `Product photo of ${name} eye care solution bottle${brand ? ` by ${brand}` : ""}. Clean studio shot, white background, e-commerce product photography.`;
+    default:
+      return `Professional product photo of ${name}${brand ? ` by ${brand}` : ""}. Studio shot, white background, e-commerce style, high resolution.`;
+  }
+}
+
+// ── Item-type priority for processing order ──
 const ITEM_TYPE_PRIORITY: Record<string, number> = {
   frames: 1,
   contact_lenses: 2,
@@ -24,71 +111,100 @@ const ITEM_TYPE_PRIORITY: Record<string, number> = {
   other: 9,
 };
 
-function buildPrompt(product: any): string {
-  const { name, brand, color, material, item_type, style } = product;
-  const parts: string[] = [];
+// ── Image generation via Lovable AI gateway ──
+async function generateImage(
+  prompt: string,
+  lovableApiKey: string
+): Promise<{ data: string; mimeType: string }> {
+  const resp = await fetch(
+    "https://ai.gateway.lovable.dev/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${lovableApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image",
+        messages: [{ role: "user", content: prompt }],
+        modalities: ["image", "text"],
+      }),
+    }
+  );
 
-  switch (item_type) {
-    case "frames":
-      parts.push("Professional product photo of");
-      if (brand) parts.push(brand);
-      parts.push(name);
-      parts.push("eyeglasses frame");
-      if (color) parts.push(`, ${color} color`);
-      if (material) parts.push(`, ${material} material`);
-      if (style) parts.push(`, ${style} style`);
-      parts.push(". Studio lighting, pure white background, e-commerce product photography, high resolution, no model, frame only, centered composition.");
-      break;
-    case "contact_lenses":
-      parts.push(`Product photo of ${name} contact lens box packaging`);
-      if (brand) parts.push(`by ${brand}`);
-      parts.push(". Clean studio shot, white background, e-commerce style, high resolution.");
-      break;
-    case "lenses":
-      parts.push(`Product photo of ${name} optical lens`);
-      if (brand) parts.push(`by ${brand}`);
-      parts.push(". Clean studio shot, white background, e-commerce style, high resolution.");
-      break;
-    case "solutions":
-      parts.push(`Product photo of ${name} eye care solution bottle`);
-      if (brand) parts.push(`by ${brand}`);
-      parts.push(". Clean studio shot, white background, e-commerce product photography.");
-      break;
-    default:
-      parts.push(`Professional product photo of ${name}`);
-      if (brand) parts.push(`by ${brand}`);
-      parts.push(". Studio shot, white background, e-commerce style, high resolution.");
-      break;
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => "");
+    if (resp.status === 429) {
+      throw { retryable: true, message: `Rate limited: ${resp.status}` };
+    }
+    throw new Error(`AI gateway error ${resp.status}: ${errText}`);
   }
 
-  return parts.join(" ");
+  const result = await resp.json();
+  const imageUrl =
+    result?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+  if (!imageUrl || !imageUrl.startsWith("data:image/")) {
+    throw new Error("No image returned from AI gateway");
+  }
+
+  // Parse data URL → base64 + mimeType
+  const match = imageUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+  if (!match) throw new Error("Invalid data URL format");
+
+  return { mimeType: match[1], data: match[2] };
 }
 
+async function uploadImage(
+  supabase: any,
+  supabaseUrl: string,
+  productId: string,
+  slug: string,
+  imageData: { data: string; mimeType: string }
+): Promise<string> {
+  const binaryStr = atob(imageData.data);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
+
+  const ext = imageData.mimeType.includes("png") ? "png" : "webp";
+  const filePath = `${productId}/${slug}.${ext}`;
+
+  const { error: uploadErr } = await supabase.storage
+    .from("product-images")
+    .upload(filePath, bytes, { contentType: imageData.mimeType, upsert: true });
+
+  if (uploadErr) throw new Error("Storage upload failed: " + uploadErr.message);
+
+  return `${supabaseUrl}/storage/v1/object/public/product-images/${filePath}`;
+}
+
+// ── Main handler ──
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) {
-      return json({ error: "GEMINI_API_KEY not configured" }, 500);
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      return json({ error: "LOVABLE_API_KEY not configured" }, 500);
     }
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { batchSize = 5 } = await req.json().catch(() => ({}));
+    const { batchSize = 1 } = await req.json().catch(() => ({}));
 
-    // Get count of remaining products
+    // Count remaining
     const { count: remaining } = await supabase
       .from("products")
       .select("id", { count: "exact", head: true })
       .eq("is_active", true)
       .or("image_url.is.null,image_url.eq.");
 
-    // Get batch of products missing images, ordered by item_type priority
+    // Get batch
     const { data: products, error: fetchErr } = await supabase
       .from("products")
       .select("id, name, brand, color, material, item_type, style, sku")
@@ -105,79 +221,95 @@ serve(async (req) => {
       return json({ processed: 0, succeeded: 0, failed: 0, remaining: 0, results: [] });
     }
 
-    // Sort by priority (since DB sort on enum may not match our desired order)
+    // Sort by priority
     products.sort((a: any, b: any) => {
       const pa = ITEM_TYPE_PRIORITY[a.item_type || "other"] || 99;
       const pb = ITEM_TYPE_PRIORITY[b.item_type || "other"] || 99;
       return pa - pb;
     });
 
-    const results: Array<{ productId: string; sku: string; success: boolean; error?: string }> = [];
+    const results: Array<{ productId: string; sku: string; success: boolean; error?: string; shots?: number }> = [];
     let succeeded = 0;
     let failed = 0;
 
     for (const product of products) {
       try {
-        const prompt = buildPrompt(product);
-        console.log(`Generating image for: ${product.sku} - ${product.name}`);
+        const isFrame = product.item_type === "frames";
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`;
+        if (isFrame) {
+          // ── 6-shot gallery ──
+          const shots = buildFramePrompts(product);
+          const urls: string[] = [];
+          let heroUrl = "";
 
-        const geminiResp = await fetch(geminiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              responseModalities: ["image", "text"],
-              temperature: 0.4,
-            },
-          }),
-        });
+          for (let i = 0; i < shots.length; i++) {
+            const shot = shots[i];
+            console.log(`  📸 ${product.sku} — generating ${shot.slug} (${i + 1}/6)`);
 
-        if (!geminiResp.ok) {
-          const errText = await geminiResp.text().catch(() => "");
-          if (geminiResp.status === 429) {
-            // Rate limited - wait and retry once
-            console.warn("Rate limited, waiting 5s before retry...");
-            await new Promise((r) => setTimeout(r, 5000));
-            const retryResp = await fetch(geminiUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                  responseModalities: ["image", "text"],
-                  temperature: 0.4,
-                },
-              }),
-            });
-            if (!retryResp.ok) {
-              const retryErr = await retryResp.text().catch(() => "");
-              throw new Error(`Gemini API error after retry: ${retryResp.status} - ${retryErr}`);
+            let imageData: { data: string; mimeType: string } | null = null;
+            let attempts = 0;
+
+            while (attempts < 3) {
+              try {
+                imageData = await generateImage(shot.prompt, LOVABLE_API_KEY);
+                break;
+              } catch (err: any) {
+                attempts++;
+                if (err?.retryable && attempts < 3) {
+                  console.warn(`  ⏳ Rate limited on ${shot.slug}, waiting ${5 * attempts}s...`);
+                  await new Promise((r) => setTimeout(r, 5000 * attempts));
+                } else {
+                  throw err instanceof Error ? err : new Error(err?.message || String(err));
+                }
+              }
             }
-            const retryResult = await retryResp.json();
-            const retryImg = extractImage(retryResult);
-            if (!retryImg) throw new Error("No image in retry response");
-            await uploadAndUpdate(supabase, SUPABASE_URL, product.id, retryImg);
-          } else {
-            throw new Error(`Gemini API error: ${geminiResp.status} - ${errText}`);
+
+            if (!imageData) throw new Error(`Failed to generate ${shot.slug} after retries`);
+
+            const url = await uploadImage(supabase, SUPABASE_URL, product.id, shot.slug, imageData);
+
+            if (shot.slug === "hero") {
+              heroUrl = url;
+            } else {
+              urls.push(url);
+            }
+
+            // 2-second delay between shots to avoid rate limits
+            if (i < shots.length - 1) {
+              await new Promise((r) => setTimeout(r, 2000));
+            }
           }
+
+          // Update product with hero + additional images
+          const { error: updateErr } = await supabase
+            .from("products")
+            .update({ image_url: heroUrl, additional_images: urls })
+            .eq("id", product.id);
+
+          if (updateErr) throw new Error("Product update failed: " + updateErr.message);
+
+          succeeded++;
+          results.push({ productId: product.id, sku: product.sku, success: true, shots: 6 });
+          console.log(`✓ Generated 6-shot gallery for ${product.sku}`);
         } else {
-          const result = await geminiResp.json();
-          const imageData = extractImage(result);
-          if (!imageData) {
-            throw new Error("No image data in Gemini response");
-          }
-          await uploadAndUpdate(supabase, SUPABASE_URL, product.id, imageData);
+          // ── Single shot for non-frames ──
+          const prompt = buildNonFramePrompt(product);
+          console.log(`  📸 ${product.sku} — generating single shot`);
+
+          const imageData = await generateImage(prompt, LOVABLE_API_KEY);
+          const url = await uploadImage(supabase, SUPABASE_URL, product.id, "primary", imageData);
+
+          const { error: updateErr } = await supabase
+            .from("products")
+            .update({ image_url: url })
+            .eq("id", product.id);
+
+          if (updateErr) throw new Error("Product update failed: " + updateErr.message);
+
+          succeeded++;
+          results.push({ productId: product.id, sku: product.sku, success: true, shots: 1 });
+          console.log(`✓ Generated image for ${product.sku}`);
         }
-
-        succeeded++;
-        results.push({ productId: product.id, sku: product.sku, success: true });
-        console.log(`✓ Generated image for ${product.sku}`);
-
-        // Small delay between items to avoid rate limiting
-        await new Promise((r) => setTimeout(r, 1000));
       } catch (err) {
         failed++;
         const errMsg = err instanceof Error ? err.message : "Unknown error";
@@ -201,55 +333,3 @@ serve(async (req) => {
     );
   }
 });
-
-function extractImage(result: any): { data: string; mimeType: string } | null {
-  const parts = result?.candidates?.[0]?.content?.parts || [];
-  for (const part of parts) {
-    if (part?.inlineData?.data && part?.inlineData?.mimeType) {
-      return { data: part.inlineData.data, mimeType: part.inlineData.mimeType };
-    }
-  }
-  return null;
-}
-
-async function uploadAndUpdate(
-  supabase: any,
-  supabaseUrl: string,
-  productId: string,
-  imageData: { data: string; mimeType: string }
-) {
-  // Decode base64 to Uint8Array
-  const binaryStr = atob(imageData.data);
-  const bytes = new Uint8Array(binaryStr.length);
-  for (let i = 0; i < binaryStr.length; i++) {
-    bytes[i] = binaryStr.charCodeAt(i);
-  }
-
-  const ext = imageData.mimeType.includes("png") ? "png" : "webp";
-  const filePath = `${productId}/primary.${ext}`;
-
-  // Upload to storage
-  const { error: uploadErr } = await supabase.storage
-    .from("product-images")
-    .upload(filePath, bytes, {
-      contentType: imageData.mimeType,
-      upsert: true,
-    });
-
-  if (uploadErr) {
-    throw new Error("Storage upload failed: " + uploadErr.message);
-  }
-
-  // Get public URL
-  const publicUrl = `${supabaseUrl}/storage/v1/object/public/product-images/${filePath}`;
-
-  // Update product record
-  const { error: updateErr } = await supabase
-    .from("products")
-    .update({ image_url: publicUrl })
-    .eq("id", productId);
-
-  if (updateErr) {
-    throw new Error("Product update failed: " + updateErr.message);
-  }
-}
