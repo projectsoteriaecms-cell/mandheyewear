@@ -17,8 +17,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { MagnifyingGlass, Images, CheckCircle, Warning, SquaresFour, List } from "@phosphor-icons/react";
+import { MagnifyingGlass, Images, CheckCircle, Warning, SquaresFour, List, Lightning } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 type ImageFilter = "all" | "with_images" | "missing_primary" | "complete";
 type ViewMode = "grid" | "list";
