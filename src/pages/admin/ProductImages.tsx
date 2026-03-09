@@ -5,6 +5,7 @@ import { useAdminProducts, useProductImageStats } from "@/modules/products";
 import { ProductImageCard } from "@/components/admin/products/ProductImageCard";
 import { ProductImageListView } from "@/components/admin/products/ProductImageListView";
 import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
+import { GenerateImagesDialog } from "@/components/admin/products/GenerateImagesDialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
