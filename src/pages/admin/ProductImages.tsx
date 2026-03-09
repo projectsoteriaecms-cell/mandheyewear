@@ -5,6 +5,7 @@ import { useAdminProducts, useProductImageStats } from "@/modules/products";
 import { ProductImageCard } from "@/components/admin/products/ProductImageCard";
 import { ProductImageListView } from "@/components/admin/products/ProductImageListView";
 import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
+import { GenerateImagesDialog } from "@/components/admin/products/GenerateImagesDialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -16,8 +17,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { MagnifyingGlass, Images, CheckCircle, Warning, SquaresFour, List } from "@phosphor-icons/react";
+import { MagnifyingGlass, Images, CheckCircle, Warning, SquaresFour, List, Lightning } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 type ImageFilter = "all" | "with_images" | "missing_primary" | "complete";
 type ViewMode = "grid" | "list";
@@ -46,6 +48,8 @@ const ProductImages = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Filter and search products
   const filteredProducts = useMemo(() => {
@@ -104,11 +108,19 @@ const ProductImages = () => {
       <AdminLayout>
         <div className="space-y-6">
           {/* Header */}
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Product Images Manager</h1>
-            <p className="text-muted-foreground">
-              Manage product images for your catalog
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Product Images Manager</h1>
+              <p className="text-muted-foreground">
+                Manage product images for your catalog
+              </p>
+            </div>
+            {stats.missingPrimary > 0 && (
+              <Button onClick={() => setGenerateDialogOpen(true)} variant="gold">
+                <Lightning className="h-4 w-4" weight="fill" />
+                Generate Missing Images
+              </Button>
+            )}
           </div>
 
           {/* Stats Cards */}
@@ -250,6 +262,16 @@ const ProductImages = () => {
           open={!!selectedProductId}
           onOpenChange={(open) => {
             if (!open) setSelectedProductId(null);
+          }}
+        />
+        {/* Generate Images Dialog */}
+        <GenerateImagesDialog
+          open={generateDialogOpen}
+          onOpenChange={setGenerateDialogOpen}
+          missingCount={stats.missingPrimary || 0}
+          onComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+            queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
           }}
         />
       </AdminLayout>
