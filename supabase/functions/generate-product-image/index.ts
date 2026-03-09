@@ -316,7 +316,7 @@ serve(async (req) => {
 
             while (attempts < 3) {
               try {
-                imageData = await generateImage(shot.prompt, LOVABLE_API_KEY);
+                imageData = await generateImage(shot.prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
                 break;
               } catch (err: any) {
                 attempts++;
