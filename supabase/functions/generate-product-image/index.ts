@@ -111,8 +111,46 @@ const ITEM_TYPE_PRIORITY: Record<string, number> = {
   other: 9,
 };
 
-// ── Image generation via Lovable AI gateway ──
-async function generateImage(
+// ── Image generation: Direct Gemini API (primary) → Lovable AI (fallback) ──
+async function generateImageViaGemini(
+  prompt: string,
+  geminiApiKey: string
+): Promise<{ data: string; mimeType: string }> {
+  const resp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseModalities: ["IMAGE", "TEXT"],
+        },
+      }),
+    }
+  );
+
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => "");
+    if (resp.status === 429 || resp.status >= 500) {
+      throw { retryable: true, fallback: true, message: `Gemini API ${resp.status}: ${errText}` };
+    }
+    throw new Error(`Gemini API error ${resp.status}: ${errText}`);
+  }
+
+  const result = await resp.json();
+  const parts = result?.candidates?.[0]?.content?.parts;
+  if (!parts) throw new Error("No parts in Gemini response");
+
+  for (const part of parts) {
+    if (part.inlineData?.data && part.inlineData?.mimeType?.startsWith("image/")) {
+      return { data: part.inlineData.data, mimeType: part.inlineData.mimeType };
+    }
+  }
+  throw new Error("No image returned from Gemini API");
+}
+
+async function generateImageViaLovable(
   prompt: string,
   lovableApiKey: string
 ): Promise<{ data: string; mimeType: string }> {
@@ -135,23 +173,48 @@ async function generateImage(
   if (!resp.ok) {
     const errText = await resp.text().catch(() => "");
     if (resp.status === 429) {
-      throw { retryable: true, message: `Rate limited: ${resp.status}` };
+      throw { retryable: true, message: `Lovable rate limited: ${resp.status}` };
     }
-    throw new Error(`AI gateway error ${resp.status}: ${errText}`);
+    throw new Error(`Lovable AI gateway error ${resp.status}: ${errText}`);
   }
 
   const result = await resp.json();
-  const imageUrl =
-    result?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+  const imageUrl = result?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
   if (!imageUrl || !imageUrl.startsWith("data:image/")) {
-    throw new Error("No image returned from AI gateway");
+    throw new Error("No image returned from Lovable AI gateway");
   }
 
-  // Parse data URL → base64 + mimeType
   const match = imageUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
   if (!match) throw new Error("Invalid data URL format");
-
   return { mimeType: match[1], data: match[2] };
+}
+
+async function generateImage(
+  prompt: string,
+  geminiApiKey: string | null,
+  lovableApiKey: string | null
+): Promise<{ data: string; mimeType: string }> {
+  // Try direct Gemini first
+  if (geminiApiKey) {
+    try {
+      const result = await generateImageViaGemini(prompt, geminiApiKey);
+      console.log("  ✓ Generated via direct Gemini API");
+      return result;
+    } catch (err: any) {
+      console.warn("  ⚠ Direct Gemini failed:", err?.message || err);
+      if (!err?.fallback && !err?.retryable) {
+        // Hard error from Gemini, still try Lovable
+      }
+    }
+  }
+
+  // Fallback to Lovable AI gateway
+  if (lovableApiKey) {
+    console.log("  → Falling back to Lovable AI gateway");
+    return generateImageViaLovable(prompt, lovableApiKey);
+  }
+
+  throw new Error("No API keys available for image generation");
 }
 
 async function uploadImage(
