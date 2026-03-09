@@ -48,6 +48,8 @@ const ProductImages = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Filter and search products
   const filteredProducts = useMemo(() => {
