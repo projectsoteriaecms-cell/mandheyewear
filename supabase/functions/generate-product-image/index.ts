@@ -121,7 +121,7 @@ serve(async (req) => {
         const prompt = buildPrompt(product);
         console.log(`Generating image for: ${product.sku} - ${product.name}`);
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`;
 
         const geminiResp = await fetch(geminiUrl, {
           method: "POST",
