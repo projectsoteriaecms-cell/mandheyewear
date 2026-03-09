@@ -264,6 +264,16 @@ const ProductImages = () => {
             if (!open) setSelectedProductId(null);
           }}
         />
+        {/* Generate Images Dialog */}
+        <GenerateImagesDialog
+          open={generateDialogOpen}
+          onOpenChange={setGenerateDialogOpen}
+          missingCount={stats.missingPrimary || 0}
+          onComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+            queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+          }}
+        />
       </AdminLayout>
     </RoleGuard>
   );
