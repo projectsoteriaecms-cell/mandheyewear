@@ -74,7 +74,8 @@ export const useAdminProducts = () => {
           frame_attributes(*),
           lens_attributes(*)
         `)
-        .order("created_at", { ascending: false })
+        .order("image_url", { ascending: false, nullsFirst: false })
+        .order("updated_at", { ascending: false })
         .range(0, 4999);
 
       if (error) throw error;

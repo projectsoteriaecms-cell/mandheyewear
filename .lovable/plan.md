@@ -1,19 +1,40 @@
 
 
-# Sort Products: Images First, Most Recent First
+# Fix: "Attribute callback must be a valid function" Error
 
-## Change
-In `src/modules/products/hooks/useAdminProducts.ts`, update the admin products query to sort by `image_url` (non-null first) then by `updated_at` descending. This ensures products with images appear at the top, with the most recently updated (i.e., just had images generated) first.
+## Root Cause
+In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
 
-### File: `src/modules/products/hooks/useAdminProducts.ts` (~line 77)
-Change the `.order("created_at", { ascending: false })` to a two-level sort:
+## Solution
+Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
+
+## File Change: `src/pages/Checkout.tsx`
+
+**Line 172** -- Change from:
 ```typescript
-.order("image_url", { ascending: false, nullsFirst: false })
-.order("updated_at", { ascending: false })
+callback: async (response) => {
 ```
 
-This uses Supabase's built-in ordering: `image_url DESC NULLS LAST` puts products with images first, then `updated_at DESC` ensures the most recently updated product (the one that just got images generated) appears at the very top.
+To:
+```typescript
+callback: (response) => {
+  (async () => {
+```
 
-## Files Modified
-- `src/modules/products/hooks/useAdminProducts.ts` — update query ordering
+And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
+```typescript
+},
+```
+To:
+```typescript
+  })();
+},
+```
+
+This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
+
+## Technical Summary
+- **File:** `src/pages/Checkout.tsx`
+- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
+- **Risk:** None -- behavior is identical, only the function signature changes
 
