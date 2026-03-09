@@ -35,11 +35,11 @@ export const useProductImageStats = () => {
         console.error("[useProductImageStats] RPC error:", error);
         throw error;
       }
-      const result = data as { total: number; with_primary: number; complete: number } | null;
+      const result = data as Record<string, unknown> | null;
       return {
-        total: result?.total ?? 0,
-        withPrimary: result?.with_primary ?? 0,
-        complete: result?.complete ?? 0,
+        total: Number(result?.total ?? 0),
+        withPrimary: Number(result?.with_primary ?? 0),
+        complete: Number(result?.complete ?? 0),
       };
     },
     refetchInterval: IMAGE_STATS_REFETCH_MS,
