@@ -1,40 +1,58 @@
 
 
-# Fix: "Attribute callback must be a valid function" Error
+# Upgrade Image Generation to 6-Shot Luxury Photography Prompt
 
-## Root Cause
-In `src/pages/Checkout.tsx` (line 172), the `callback` passed to `PaystackPop.setup()` is declared as `async (response) => {...}`. Paystack's JavaScript SDK does a type check on the callback and rejects async functions. This likely worked with the live key previously due to a different SDK version or caching, but fails now.
+## Overview
+Replace the current single-shot generic prompt with your M&H Opticals luxury photography meta-prompt that generates a 6-image gallery per product: Hero (3/4), Front, Side Profile, Rear/Interior, Macro Detail, and Luxury Packaging.
 
-## Solution
-Wrap the async logic inside a synchronous callback function. The callback itself will be a regular function, but internally it will call an async helper.
+## Key Design Decisions
 
-## File Change: `src/pages/Checkout.tsx`
+**Batch size drops to 1 product per edge function call** — generating 6 images per product takes ~30-50 seconds, which is near the edge function timeout. Processing 1 product at a time keeps it safe.
 
-**Line 172** -- Change from:
-```typescript
-callback: async (response) => {
+**Frames get the full 6-shot treatment; non-frames get a simpler 1-shot** — contact lenses, solutions, etc. don't need 6 angles of glasses photography.
+
+**Branded frames get brand-specific prompt enrichment** — the ~50 luxury/premium brands you listed will have their original logos preserved in prompts, and the packaging shot (Shot 6) features their real logo on the case instead of M&H.
+
+## Architecture
+
+```text
+Admin clicks "Generate Missing Images"
+        ↓
+Frontend calls edge function, 1 product per batch
+        ↓
+For frame products:
+  Shot 1 (Hero 3/4)     → uploaded as primary image_url
+  Shots 2-5 (Front, Side, Rear, Macro) → additional_images[0..3]
+  Shot 6 (Packaging)    → additional_images[4]
+        ↓
+For non-frame products:
+  Single product photo   → primary image_url only
 ```
 
-To:
-```typescript
-callback: (response) => {
-  (async () => {
-```
+## Changes
 
-And wrap the closing of the async block before the `finally` block ends (around line 206), changing:
-```typescript
-},
-```
-To:
-```typescript
-  })();
-},
-```
+### 1. Edge Function (`generate-product-image/index.ts`) — Full Rewrite
+- **Branded frames list**: Hardcode the ~50 luxury/premium brand names so the prompt knows to preserve their logos
+- **6-shot prompt builder for frames**: Implements prompts 3A–3F from your meta-prompt, each referencing M&H Opticals and the product's actual brand, color, material
+- **Shot 6 logic**: For branded frames, the packaging case shows the brand's real logo; for house-brand/unknown, it shows "M&H Opticals" embossed
+- **Sequential generation**: Calls Gemini 6 times per frame product, uploading each image to storage under `{productId}/hero.webp`, `{productId}/front.webp`, etc.
+- **Updates both fields**: Sets `image_url` to the hero shot URL, and `additional_images` to an array of the other 5 URLs
+- **Non-frame fallback**: Contact lenses, solutions, etc. keep the simple single-shot prompt
+- **Rate limit handling**: 2-second delay between shots, retry on 429
 
-This keeps the callback synchronous (satisfying Paystack's validation) while still running the async verification logic inside it.
+### 2. Admin UI (`GenerateImagesDialog.tsx`) — Minor Updates
+- Update batch size from 5 to 1 (since each product now generates 6 images)
+- Update description text to mention "6-image gallery per frame"
+- Add note about estimated time (~30s per frame product)
 
-## Technical Summary
-- **File:** `src/pages/Checkout.tsx`
-- **Change:** Convert async callback to synchronous wrapper with internal async IIFE
-- **Risk:** None -- behavior is identical, only the function signature changes
+### 3. Frontend Page (`ProductImages.tsx`) — No changes needed
+- Already handles `additional_images` display
+
+## Estimated Processing Time
+- ~3,100 products × ~35s average = ~30 hours total for all products
+- Can be run in segments, cancelled and resumed (idempotent — skips products with existing images)
+
+## Files Modified
+- `supabase/functions/generate-product-image/index.ts` — rewrite prompt builder + 6-shot loop
+- `src/components/admin/products/GenerateImagesDialog.tsx` — update batch size and copy
 
