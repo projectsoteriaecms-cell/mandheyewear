@@ -84,11 +84,13 @@ const ProductImages = () => {
         break;
     }
 
-    // Sort by item type priority (frames first, then contact lenses, lenses, then others)
+    // Sort: products with images first, then by most recently updated
     result = result.sort((a, b) => {
-      const priorityA = ITEM_TYPE_PRIORITY[a.item_type || 'other'] || 99;
-      const priorityB = ITEM_TYPE_PRIORITY[b.item_type || 'other'] || 99;
-      return priorityA - priorityB;
+      const aHasImage = a.image_url ? 1 : 0;
+      const bHasImage = b.image_url ? 1 : 0;
+      if (aHasImage !== bHasImage) return bHasImage - aHasImage;
+      // Within same image status, sort by updated_at descending
+      return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     });
 
     return result;
