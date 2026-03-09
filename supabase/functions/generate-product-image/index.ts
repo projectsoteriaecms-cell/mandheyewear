@@ -249,10 +249,12 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return json({ error: "LOVABLE_API_KEY not configured" }, 500);
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || null;
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") || null;
+    if (!GEMINI_API_KEY && !LOVABLE_API_KEY) {
+      return json({ error: "Neither GEMINI_API_KEY nor LOVABLE_API_KEY configured" }, 500);
     }
+    console.log(`Using: ${GEMINI_API_KEY ? "Direct Gemini API (primary)" : "Lovable AI only"}${GEMINI_API_KEY && LOVABLE_API_KEY ? " + Lovable AI (fallback)" : ""}`);
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
