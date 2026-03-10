@@ -21,22 +21,17 @@ const Branches = () => {
 
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-3">
               Our Locations
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Find an M&H Eyewear location across Lagos, Delta and Uyo
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Visit us for premium eyewear and comprehensive eye care services
             </p>
           </div>
 
-          <BranchMapPlaceholder />
-
-          {/* Branch Cards */}
-          <div className="space-y-8">
+          {/* Branch Cards - visible immediately */}
+          <div className="space-y-6">
             {isLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="p-6 border rounded-lg space-y-4">
@@ -72,6 +67,8 @@ const Branches = () => {
               </div>
             )}
           </div>
+
+          <BranchMapPlaceholder />
 
           <BranchExpansionCTA />
         </div>
