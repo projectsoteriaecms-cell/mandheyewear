@@ -4,6 +4,37 @@ import type { Tables } from "@/integrations/supabase/types";
 
 export type Product = Tables<"products">;
 
+export interface ProductFilters {
+  brandLine?: "soteria_medical" | "m_and_h_fashion";
+  withImagesOnly?: boolean;
+  categoryFilter?: string;
+  genderFilter?: string;
+  styleFilter?: string;
+  priceTierFilter?: string | null;
+  priceSort?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+const PAGE_SIZE = 12;
+
+async function fetchAllRows(query: any): Promise<Product[]> {
+  const batchSize = 1000;
+  let allData: Product[] = [];
+  let from = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data, error } = await query.range(from, from + batchSize - 1);
+    if (error) throw error;
+    allData = allData.concat(data || []);
+    hasMore = (data?.length || 0) === batchSize;
+    from += batchSize;
+  }
+
+  return allData;
+}
+
 export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion", withImagesOnly?: boolean) => {
   return useQuery({
     queryKey: ["products", brandLine, withImagesOnly],
@@ -11,7 +42,8 @@ export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion", w
       let query = supabase
         .from("products")
         .select("*")
-        .eq("is_active", true);
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
 
       if (brandLine) {
         query = query.eq("brand_line", brandLine);
@@ -21,11 +53,26 @@ export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion", w
         query = query.not("image_url", "is", null);
       }
 
-      const { data, error } = await query.order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data as Product[];
+      return fetchAllRows(query);
     },
+  });
+};
+
+export type CategoryCount = { category: string; count: number };
+
+export const useProductCategoryCounts = () => {
+  return useQuery({
+    queryKey: ["product-category-counts"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_product_category_counts");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      for (const row of (data || []) as CategoryCount[]) {
+        counts[row.category] = Number(row.count);
+      }
+      return counts;
+    },
+    staleTime: 60_000,
   });
 };
 

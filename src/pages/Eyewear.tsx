@@ -9,7 +9,7 @@ import { ShopCategoryBar } from "@/components/eyewear/ShopCategoryBar";
 import { ShopSidebar } from "@/components/eyewear/ShopSidebar";
 import { MobileFilterDrawer } from "@/components/eyewear/MobileFilterDrawer";
 import { VirtualTryOnBanner } from "@/components/eyewear/VirtualTryOnBanner";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts, useProductCategoryCounts } from "@/hooks/useProducts";
 import { usePersonalizedProducts } from "@/hooks/usePersonalizedProducts";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -100,6 +100,7 @@ const Eyewear = () => {
   };
 
   const { data: products, isLoading, error } = useProducts();
+  const { data: categoryCounts = {} } = useProductCategoryCounts();
 
   const {
     topPicks,
@@ -107,24 +108,6 @@ const Eyewear = () => {
     hasMeasurements,
     getProductScore,
   } = usePersonalizedProducts();
-
-  // Category counts
-  const categoryCounts = useMemo(() => {
-    if (!products) return {};
-    const counts: Record<string, number> = { all: products.length };
-    for (const p of products) {
-      const type = p.item_type || "other";
-      counts[type] = (counts[type] || 0) + 1;
-      if (type === "frames") {
-        if (p.is_prescription_compatible !== false) {
-          counts["eyeglasses"] = (counts["eyeglasses"] || 0) + 1;
-        } else {
-          counts["sunglasses"] = (counts["sunglasses"] || 0) + 1;
-        }
-      }
-    }
-    return counts;
-  }, [products]);
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];

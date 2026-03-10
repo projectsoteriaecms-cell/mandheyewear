@@ -1,44 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Fix: Category Bar Missing Items + Product Query Limit
+## Status: Ready for User Action
 
-### Problem
-The Supabase client returns a **maximum of 1000 rows** by default. With 2,967 frames in the database, the first 1000 results are all frames — so Accessories (20), Lenses (401), Contacts (10), Solutions (4), and Medications (11) never appear in the category bar or product grid.
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-### Solution
+### Transformation Prompt (for the new project)
 
-**1. Fix the product query to fetch all rows** (`src/hooks/useProducts.ts`)
-- Add a pagination loop or use `.range()` calls to fetch beyond the 1000-row limit
-- Alternative: fetch category counts separately with a lightweight query, and paginate the main product list server-side
+```text
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
 
-**2. Better approach — Server-side pagination + separate count query**
-Rather than loading 3,400+ products into memory:
-- Create a new `useProductCounts` hook that runs `SELECT item_type, is_prescription_compatible, COUNT(*) FROM products WHERE is_active = true GROUP BY item_type, is_prescription_compatible` via an RPC function — this powers the category bar counts accurately
-- Update `useProducts` to accept `categoryFilter` as a parameter and apply it server-side, fetching only the relevant slice with `.range(offset, offset + limit)`
-- This keeps the page fast and ensures all categories are visible
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
 
-**3. Files to change:**
-| File | Change |
-|------|--------|
-| Database migration | Create an RPC function `get_product_category_counts()` |
-| `src/hooks/useProducts.ts` | Add server-side category filtering, pagination with `.range()`, and a `useProductCounts` hook |
-| `src/pages/Eyewear.tsx` | Use `useProductCounts` for the category bar, pass filters to `useProducts` for server-side filtering |
-| `src/components/eyewear/ShopCategoryBar.tsx` | No changes needed (already works with counts) |
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
 
-### Technical Detail
-The RPC function:
-```sql
-CREATE OR REPLACE FUNCTION get_product_category_counts()
-RETURNS TABLE(category text, count bigint) AS $$
-  SELECT 'all', COUNT(*) FROM products WHERE is_active = true
-  UNION ALL
-  SELECT 'eyeglasses', COUNT(*) FROM products WHERE is_active = true AND item_type = 'frames' AND is_prescription_compatible IS NOT false
-  UNION ALL
-  SELECT 'sunglasses', COUNT(*) FROM products WHERE is_active = true AND item_type = 'frames' AND is_prescription_compatible = false
-  UNION ALL
-  SELECT item_type, COUNT(*) FROM products WHERE is_active = true AND item_type != 'frames' GROUP BY item_type
-$$ LANGUAGE sql STABLE;
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
+
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
+
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
+
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
+
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
 ```
 
-The updated `useProducts` hook will accept filter parameters and use `.range()` for true server-side pagination, eliminating the 1000-row ceiling entirely.
-
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx
