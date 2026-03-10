@@ -134,6 +134,12 @@ const Eyewear = () => {
         if (!priceTierFilter) return true;
         return p.price_tier === priceTierFilter;
       })
+      .filter((p) => {
+        if (!categoryFilter) return true;
+        if (categoryFilter === "eyeglasses") return p.item_type === "frames" && p.is_prescription_compatible !== false;
+        if (categoryFilter === "sunglasses") return p.item_type === "frames" && p.is_prescription_compatible === false;
+        return true;
+      })
       .sort((a, b) => {
         if (priceSort === "low-high") return a.price - b.price;
         if (priceSort === "high-low") return b.price - a.price;
