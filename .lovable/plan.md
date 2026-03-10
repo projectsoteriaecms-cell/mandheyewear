@@ -1,55 +1,55 @@
 
-# Soteria Eye Clinic — Remix & Transform Plan
 
-## Status: Ready for User Action
+## Enrich Product Metadata via AI Parsing
 
-### Next Step
-1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
-2. Name the new project **"Soteria Eye Clinic"**
-3. Paste the transformation prompt (saved below) into the new project's chat
+### Current State
+- **3,444** active products total
+- **773** already have `style`, `material`, `color` populated (Zoho-synced)
+- **2,671** are missing these fields — but their `name` and `description` fields contain parseable info like brand names, model codes, dimensions, and sometimes color hints (e.g. "Charlie Temple Jet Black Ct650", "Cheetah 35K Frame Chad 004 51 23 145")
+- **0** products have `description_raw` — the enrichment source is `name` + `description`
+- **773** frame_attributes records exist for the enriched products
 
-### Transformation Prompt (for the new project)
+### Approach
+Create a backend function that processes unenriched products in batches, sends them to Lovable AI (gemini-3-flash-preview) with tool calling to extract structured attributes, and writes the results back.
 
-```text
-Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
+### What the AI will extract per product
+| Field | Source signal | Example output |
+|-------|-------------|----------------|
+| `brand` | Name parsing ("Chanel 40K Frame...") | "Chanel" |
+| `style` | AI inference from model code + brand | "Rectangular" |
+| `material` | AI inference from brand knowledge | "Acetate" |
+| `color` | Name parsing ("Jet Black", color codes) | "Black" |
+| `gender` | AI inference from brand/name context | "unisex" |
 
-## 1. Branding & Colors
-- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
-- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
-- Accent color: keep the M&H gold as a secondary accent for partnership elements
-- Update CSS variables in index.css accordingly
-- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
-- Update favicon to use Soteria branding
-- Font: keep Cormorant Garamond for display but consider a more clinical feel
+The AI uses tool calling to return structured JSON, matching the existing vocabulary (Rectangular, Cat Eye, Aviator, Acetate, Metal, Titanium, etc.).
 
-## 2. Homepage Rewrite
-- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
-- Primary CTAs: "Book an Eye Exam" and "Our Services"
-- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
+### Implementation
 
-## 3. Navigation Updates
-- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
-- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
-- MobileBottomNav: Home, Services, Book, Branches, Account
+**1. Edge function: `supabase/functions/enrich-products/index.ts`**
+- Accepts `{ batchSize?: number, dryRun?: boolean }`
+- Queries products where `style IS NULL AND item_type = 'frames'` (frames first, ~2,200 products)
+- Processes in batches of 20 products per AI call (to stay within token limits)
+- Uses Lovable AI with tool calling to extract structured attributes
+- Updates products table with extracted values
+- Returns summary of enriched count + failures
+- Protected: requires authenticated admin/super_admin
 
-## 4. Pages to Update
-- About: Soteria's story + M&H Eyewear as premium eyewear partner
-- Partners: HMO partners + M&H Eyewear as strategic partner
-- Services/Eye Care: Primary service page
-- Branches: Show all locations from shared database
-- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
+**2. Admin UI trigger: `src/pages/admin/Products.tsx`**
+- Add an "Enrich Metadata" button that calls the edge function
+- Shows progress toast/indicator
+- Displays results summary when complete
 
-## 5. SEO & Meta
-- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
+**3. Database**: No schema changes needed — all target columns (`style`, `material`, `color`, `brand`, `gender`) already exist on the `products` table.
 
-## 6. Footer
-- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
+### Processing strategy
+- ~2,200 unenriched frames, 20 per AI call = ~110 API calls
+- Add 500ms delay between calls to avoid rate limiting
+- Total estimated time: ~2-3 minutes for full catalog
+- Edge function processes up to 100 products per invocation (5 AI calls), returns cursor for next batch
+- Admin UI calls repeatedly until all products are enriched
 
-## 7. Do NOT Change
-- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
-```
+### Safety
+- Only updates NULL fields — never overwrites existing enriched data
+- `dryRun` mode available to preview without writing
+- All updates logged with count of changes
 
-### Already Completed in This Project (M&H Eyewear)
-- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
-- ✅ About page updated with Soteria partnership section
-- ✅ Route registered in public.routes.tsx
