@@ -47,6 +47,7 @@ export const publicRoutes = [
   <Route key="/eye-care" path="/eye-care" element={withSuspense(EyeCare)} />,
   <Route key="/branches" path="/branches" element={withSuspense(Branches)} />,
   <Route key="/about" path="/about" element={withSuspense(About)} />,
+  <Route key="/partners" path="/partners" element={withSuspense(Partners)} />,
   <Route key="/contact" path="/contact" element={withSuspense(Contact)} />,
   <Route key="/faq" path="/faq" element={withSuspense(FAQ)} />,
   <Route key="/try-on" path="/try-on" element={withSuspense(TryOn)} />,
