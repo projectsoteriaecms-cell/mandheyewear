@@ -100,31 +100,7 @@ const Eyewear = () => {
   };
 
   const { data: products, isLoading, error } = useProducts();
-
-  const {
-    topPicks,
-    hasPreferences,
-    hasMeasurements,
-    getProductScore,
-  } = usePersonalizedProducts();
-
-  // Category counts
-  const categoryCounts = useMemo(() => {
-    if (!products) return {};
-    const counts: Record<string, number> = { all: products.length };
-    for (const p of products) {
-      const type = p.item_type || "other";
-      counts[type] = (counts[type] || 0) + 1;
-      if (type === "frames") {
-        if (p.is_prescription_compatible !== false) {
-          counts["eyeglasses"] = (counts["eyeglasses"] || 0) + 1;
-        } else {
-          counts["sunglasses"] = (counts["sunglasses"] || 0) + 1;
-        }
-      }
-    }
-    return counts;
-  }, [products]);
+  const { data: categoryCounts = {} } = useProductCategoryCounts();
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
