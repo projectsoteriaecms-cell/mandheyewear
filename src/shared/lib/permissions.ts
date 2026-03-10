@@ -8,7 +8,8 @@ const roleHierarchy: Record<AppRole, number> = {
   customer: 1,
   branch_staff: 2,
   branch_manager: 3,
-  super_admin: 4,
+  admin: 4,
+  super_admin: 5,
 };
 
 // Check if a role is at least a certain level
@@ -54,12 +55,22 @@ export const canManageBranches = (role: AppRole | null): boolean => {
 
 // Check if user can manage users
 export const canManageUsers = (role: AppRole | null): boolean => {
-  return role === "super_admin";
+  return isAtLeast(role, "admin");
 };
 
 // Check if user can manage settings
 export const canManageSettings = (role: AppRole | null): boolean => {
   return role === "super_admin";
+};
+
+// Check if user can sync Zoho products
+export const canSyncZoho = (role: AppRole | null): boolean => {
+  return isAtLeast(role, "admin");
+};
+
+// Check if user can generate product images
+export const canGenerateImages = (role: AppRole | null): boolean => {
+  return isAtLeast(role, "admin");
 };
 
 // Purchase Order permissions
@@ -104,6 +115,11 @@ export const canInviteRole = (currentRole: AppRole | null, targetRole: AppRole):
   // Super admin can invite any role
   if (currentRole === "super_admin") return true;
   
+  // Admin can invite up to branch_manager
+  if (currentRole === "admin") {
+    return ["user", "customer", "branch_staff", "branch_manager"].includes(targetRole);
+  }
+  
   // Branch manager can only invite staff and customers
   if (currentRole === "branch_manager") {
     return targetRole === "branch_staff" || targetRole === "customer";
@@ -124,6 +140,12 @@ export const canChangeUserRole = (
   // Super admin can change any role to any role
   if (currentRole === "super_admin") return true;
   
+  // Admin can change roles up to branch_manager
+  if (currentRole === "admin") {
+    const allowedRoles: AppRole[] = ["user", "customer", "branch_staff", "branch_manager"];
+    return allowedRoles.includes(targetCurrentRole) && allowedRoles.includes(targetNewRole);
+  }
+  
   // Branch manager can only change staff/customer roles
   if (currentRole === "branch_manager") {
     const allowedRoles: AppRole[] = ["user", "branch_staff", "customer"];
@@ -138,7 +160,11 @@ export const getInvitableRoles = (currentRole: AppRole | null): AppRole[] => {
   if (!currentRole) return [];
   
   if (currentRole === "super_admin") {
-    return ["user", "customer", "branch_staff", "branch_manager", "super_admin"];
+    return ["user", "customer", "branch_staff", "branch_manager", "admin", "super_admin"];
+  }
+  
+  if (currentRole === "admin") {
+    return ["user", "customer", "branch_staff", "branch_manager"];
   }
   
   if (currentRole === "branch_manager") {
@@ -160,6 +186,7 @@ export const getRoleLabel = (role: AppRole): string => {
     customer: "Customer",
     branch_staff: "Branch Staff",
     branch_manager: "Branch Manager",
+    admin: "Admin",
     super_admin: "Super Admin",
   };
   return labels[role];

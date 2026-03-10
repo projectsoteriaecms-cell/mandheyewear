@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AdminLayout, RoleGuard } from "@/shared/components/admin";
 import { useZohoSync } from "@/hooks/admin/useZohoSync";
-import { useIsSuperAdmin } from "@/hooks/useUserRole";
+import { useIsAdmin } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -78,7 +78,7 @@ type ViewMode = "grid" | "list";
 
 const Products = () => {
   const { products, isLoading, deleteProduct } = useAdminProducts();
-  const isSuperAdmin = useIsSuperAdmin();
+  const { isAdmin } = useIsAdmin();
   const { status: syncStatus, pullItems } = useZohoSync();
   const [searchQuery, setSearchQuery] = useState("");
   const [brandFilter, setBrandFilter] = useState<string>("all");
@@ -123,7 +123,7 @@ const Products = () => {
   };
 
   return (
-    <RoleGuard allowedRoles={["branch_manager", "super_admin"]}>
+    <RoleGuard allowedRoles={["branch_manager", "admin", "super_admin"]}>
       <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
@@ -135,7 +135,7 @@ const Products = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {isSuperAdmin && (
+            {isAdmin && (
               <Button
                 variant="outline"
                 onClick={pullItems}
@@ -149,7 +149,7 @@ const Products = () => {
                 {syncStatus === "syncing" ? "Syncing…" : "Zoho Sync"}
               </Button>
             )}
-            {isSuperAdmin && (
+            {isAdmin && (
               <Button variant="outline" onClick={() => setIsLinkDialogOpen(true)}>
                 <ArrowsClockwise className="mr-2 h-4 w-4" weight="light" />
                 Link to Zoho

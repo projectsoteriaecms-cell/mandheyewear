@@ -1,0 +1,1 @@
+ALTER TYPE public.app_role ADD VALUE 'admin' BEFORE 'super_admin';

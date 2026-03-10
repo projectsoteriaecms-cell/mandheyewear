@@ -2,11 +2,12 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Package, ArrowsLeftRight } from "@phosphor-icons/react";
 import { cn } from "@/shared/lib/utils";
-import { useIsManager, useIsSuperAdmin } from "@/shared/hooks/useUserRole";
+import { useIsManager, useIsAdmin, useIsSuperAdmin } from "@/shared/hooks/useUserRole";
 import { NavMenuItem, navItems, filterNavItems } from "./sidebar";
 
 export const AdminSidebar = () => {
   const { isManager } = useIsManager();
+  const { isAdmin } = useIsAdmin();
   const { isSuperAdmin } = useIsSuperAdmin();
   const [openMenus, setOpenMenus] = useState<string[]>(["Inventory"]);
 
@@ -18,7 +19,7 @@ export const AdminSidebar = () => {
     );
   };
 
-  const filteredItems = filterNavItems(navItems, isManager, isSuperAdmin);
+  const filteredItems = filterNavItems(navItems, isManager, isSuperAdmin, isAdmin);
 
   return (
     <aside className="w-64 border-r bg-card min-h-screen flex flex-col">

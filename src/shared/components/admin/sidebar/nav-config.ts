@@ -20,6 +20,7 @@ export interface NavItem {
   icon: React.ElementType;
   children?: { title: string; href: string }[];
   requiresManager?: boolean;
+  requiresAdmin?: boolean;
   requiresSuperAdmin?: boolean;
 }
 
@@ -96,7 +97,7 @@ export const navItems: NavItem[] = [
     title: "Users",
     href: "/admin/users",
     icon: Users,
-    requiresManager: true, // Changed from requiresSuperAdmin to allow managers
+    requiresManager: true,
   },
   {
     title: "Settings",
@@ -109,10 +110,12 @@ export const navItems: NavItem[] = [
 export const filterNavItems = (
   items: NavItem[],
   isManager: boolean,
-  isSuperAdmin: boolean
+  isSuperAdmin: boolean,
+  isAdmin?: boolean
 ): NavItem[] => {
   return items.filter((item) => {
     if (item.requiresSuperAdmin && !isSuperAdmin) return false;
+    if (item.requiresAdmin && !isAdmin && !isSuperAdmin) return false;
     if (item.requiresManager && !isManager) return false;
     return true;
   });

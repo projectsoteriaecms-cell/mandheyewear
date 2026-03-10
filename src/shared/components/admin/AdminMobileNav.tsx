@@ -20,9 +20,10 @@ export const AdminMobileNav = () => {
   const location = useLocation();
   const { data: role } = useUserRole();
 
-  const isManager = role === "branch_manager" || role === "super_admin";
+  const isManager = role === "branch_manager" || role === "admin" || role === "super_admin";
+  const isAdmin = role === "admin" || role === "super_admin";
   const isSuperAdmin = role === "super_admin";
-  const filteredNavItems = filterNavItems(navItems, isManager, isSuperAdmin);
+  const filteredNavItems = filterNavItems(navItems, isManager, isSuperAdmin, isAdmin);
 
   const toggleExpanded = (title: string) => {
     setExpandedItems((prev) =>

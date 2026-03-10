@@ -63,6 +63,7 @@ const roleLabels: Record<AppRole, string> = {
   customer: "Customer",
   branch_staff: "Branch Staff",
   branch_manager: "Branch Manager",
+  admin: "Admin",
   super_admin: "Super Admin",
 };
 
@@ -71,6 +72,7 @@ const roleBadgeVariants: Record<AppRole, "default" | "secondary" | "destructive"
   customer: "secondary",
   branch_staff: "default",
   branch_manager: "default",
+  admin: "destructive",
   super_admin: "destructive",
 };
 
