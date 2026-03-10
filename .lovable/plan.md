@@ -1,32 +1,26 @@
 
 
-# Invite jerryadeyemi20@gmail.com as Admin
+# Add "Admin" Role to User Management Page
 
-The invitation system is already fully built. Here's what needs to happen:
+After reviewing the code, the "Admin" role **can already be assigned** by Super Admin in the role change dialog — `getInvitableRoles` already includes it. However, there are a few gaps that make the Admin role feel incomplete on this page:
 
-## Approach
+## Issues Found
 
-Since you're currently logged in as Super Admin on the `/admin` page, the fastest path is to **use the existing Invite User UI** on the Admin Users page:
+1. **RoleGuard** (line 215): The Users page only allows `super_admin` and `branch_manager` — Admin users **cannot access** this page even though they should be able to manage users.
+2. **Role filter dropdown** (lines 289-296): Missing "Admin" as a filter option.
+3. **Visible users filter** (lines 190-197): When a `branch_manager` is viewing, admin-role users are hidden. Admin-role users should also be able to see relevant users.
+4. **Stats cards**: Don't account for admin-role users in the counts.
 
-1. Navigate to **Admin → Users** in the sidebar
-2. Click **"Invite User"** button
-3. Enter `jerryadeyemi20@gmail.com`
-4. Select **Admin** role
-5. Click **Send Invitation**
+## Changes
 
-This will:
-- Create an invitation record in the `user_invitations` table with role = `admin`
-- Send an email via the `send-user-invitation` edge function (using Resend) with a signup link
-- When Jerry signs up using that link, the `handle_new_user` database trigger automatically assigns the `admin` role
+### 1. `src/pages/admin/AdminUsers.tsx`
+- Add `"admin"` to the RoleGuard's `allowedRoles` array
+- Add `<SelectItem value="admin">Admin</SelectItem>` to the role filter dropdown
+- Update the `managerVisibleUsers` logic to handle the `admin` role (admin users should see staff, customers, managers, and unverified users — but not other admins or super_admin)
+- Include admin users in the staff stats count
 
-## No Code Changes Needed
+### 2. `src/shared/components/admin/sidebar/nav-config.ts`
+- The Users nav item currently has `requiresManager: true` — update to also be visible for admin-role users (this already works since the `filterNavItems` function checks `isManager` which includes admin in most implementations). Verify no changes needed here.
 
-The entire flow is already implemented:
-- `InviteUserDialog` creates the invitation and sends the email
-- `handle_new_user()` trigger checks for pending invitations on signup and assigns the invited role
-- RLS policies allow admin/super_admin to create invitations
-
-## Action
-
-You can do this right now from your admin panel — go to **Users** in the sidebar and click **Invite User**. Would you like me to walk you through it, or would you prefer I send the invitation programmatically via the backend?
+These are minor UI-level additions — no database or RLS changes required since the permissions system already supports the admin role.
 
