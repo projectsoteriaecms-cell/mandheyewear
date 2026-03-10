@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSEO } from "@/hooks/useSEO";
 import { Link, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -10,11 +10,7 @@ import { ShopSidebar } from "@/components/eyewear/ShopSidebar";
 import { MobileFilterDrawer } from "@/components/eyewear/MobileFilterDrawer";
 import { VirtualTryOnBanner } from "@/components/eyewear/VirtualTryOnBanner";
 import { useProducts, useProductCategoryCounts } from "@/hooks/useProducts";
-import { usePersonalizedProducts } from "@/hooks/usePersonalizedProducts";
-import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState, Pagination, ProductQuickView } from "@/components/storefront";
 import {
   Breadcrumb,
@@ -26,7 +22,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { House, Eye, SquaresFour, List } from "@phosphor-icons/react";
-import { Sparkles, ChevronRight } from "lucide-react";
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -45,27 +40,9 @@ const Eyewear = () => {
   const [priceSort, setPriceSort] = useState("featured");
   const [currentPage, setCurrentPage] = useState(1);
   const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
-  const [showPersonalized, setShowPersonalized] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [priceTierFilter, setPriceTierFilter] = useState<PriceTier | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-
-  const { isAuthenticated } = useAuth();
-  const recommendationsRef = useRef<HTMLDivElement>(null);
-  const [highlightRecommendations, setHighlightRecommendations] = useState(false);
-
-  // Handle redirect from onboarding
-  useEffect(() => {
-    if (searchParams.get("from") === "onboarding") {
-      searchParams.delete("from");
-      setSearchParams(searchParams, { replace: true });
-      setHighlightRecommendations(true);
-      setTimeout(() => {
-        recommendationsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 500);
-      setTimeout(() => setHighlightRecommendations(false), 3000);
-    }
-  }, []);
 
   // Parse price tier and category from URL params
   useEffect(() => {
@@ -102,13 +79,6 @@ const Eyewear = () => {
   const { data: products, isLoading, error } = useProducts();
   const { data: categoryCounts = {} } = useProductCategoryCounts();
 
-  const {
-    topPicks,
-    hasPreferences,
-    hasMeasurements,
-    getProductScore,
-  } = usePersonalizedProducts();
-
   const filteredProducts = useMemo(() => {
     if (!products) return [];
     return products
@@ -124,14 +94,9 @@ const Eyewear = () => {
       .sort((a, b) => {
         if (priceSort === "low-high") return a.price - b.price;
         if (priceSort === "high-low") return b.price - a.price;
-        if (showPersonalized && hasPreferences) {
-          const scoreA = getProductScore(a.id)?.matchScore || 0;
-          const scoreB = getProductScore(b.id)?.matchScore || 0;
-          return scoreB - scoreA;
-        }
         return 0;
       });
-  }, [products, genderFilter, styleFilter, priceSort, showPersonalized, hasPreferences, getProductScore, priceTierFilter, categoryFilter]);
+  }, [products, genderFilter, styleFilter, priceSort, priceTierFilter, categoryFilter]);
 
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
   const paginatedProducts = useMemo(() => {
@@ -147,8 +112,6 @@ const Eyewear = () => {
   const handleQuickView = (productId: string) => {
     setQuickViewProductId(productId);
   };
-
-  const showRecommendationsSection = isAuthenticated && hasPreferences && topPicks.length > 0;
 
   // Count active filters
   const activeFilterCount = [
@@ -267,64 +230,6 @@ const Eyewear = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-          {/* Personalization CTA */}
-          {isAuthenticated && !hasPreferences && (
-            <Card className="mb-8 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
-              <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-lg">Find Your Perfect Frames</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Complete your style profile and get personalized recommendations
-                    </p>
-                  </div>
-                </div>
-                <Button asChild>
-                  <Link to="/onboarding">
-                    Get Personalized
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Recommended For You */}
-          {showRecommendationsSection && (
-            <div
-              ref={recommendationsRef}
-              className={`mb-12 rounded-xl transition-all duration-1000 ${highlightRecommendations ? "ring-2 ring-primary/50 bg-primary/5 p-4 -m-4" : ""}`}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <Sparkles className="w-6 h-6 text-primary" />
-                  <h2 className="text-2xl font-display font-bold">Recommended For You</h2>
-                </div>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/dashboard?tab=frame-profile">
-                    Edit Preferences
-                    <ChevronRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {topPicks.slice(0, 4).map((product) => (
-                  <div key={product.id} onDoubleClick={() => handleQuickView(product.id)}>
-                    <ProductCard
-                      product={product}
-                      matchScore={product.matchScore}
-                      matchReasons={product.matchReasons}
-                      fitIndicator={product.fitIndicator}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Two-column layout: Sidebar + Products */}
           <div className="flex gap-8">
             {/* Desktop Sidebar */}
@@ -397,35 +302,19 @@ const Eyewear = () => {
                 <>
                   {viewMode === "grid" ? (
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {paginatedProducts.map((product) => {
-                        const scored = getProductScore(product.id);
-                        return (
-                          <div key={product.id} onDoubleClick={() => handleQuickView(product.id)}>
-                            <ProductCard
-                              product={product}
-                              matchScore={hasPreferences ? scored?.matchScore : undefined}
-                              matchReasons={scored?.matchReasons}
-                              fitIndicator={hasMeasurements ? scored?.fitIndicator : undefined}
-                            />
-                          </div>
-                        );
-                      })}
+                      {paginatedProducts.map((product) => (
+                        <div key={product.id} onDoubleClick={() => handleQuickView(product.id)}>
+                          <ProductCard product={product} />
+                        </div>
+                      ))}
                     </div>
                   ) : (
                     <div className="flex flex-col gap-4">
-                      {paginatedProducts.map((product) => {
-                        const scored = getProductScore(product.id);
-                        return (
-                          <div key={product.id} onDoubleClick={() => handleQuickView(product.id)}>
-                            <ProductListCard
-                              product={product}
-                              matchScore={hasPreferences ? scored?.matchScore : undefined}
-                              matchReasons={scored?.matchReasons}
-                              fitIndicator={hasMeasurements ? scored?.fitIndicator : undefined}
-                            />
-                          </div>
-                        );
-                      })}
+                      {paginatedProducts.map((product) => (
+                        <div key={product.id} onDoubleClick={() => handleQuickView(product.id)}>
+                          <ProductListCard product={product} />
+                        </div>
+                      ))}
                     </div>
                   )}
 

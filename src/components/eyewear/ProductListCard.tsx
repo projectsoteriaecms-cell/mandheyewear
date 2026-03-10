@@ -6,11 +6,8 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
-import { MatchBadge } from "./MatchBadge";
-import { FitIndicator, FitType } from "./FitIndicator";
 import type { Product } from "@/hooks/useProducts";
 
-// Import placeholder images for products without images
 import frame1 from "@/assets/frame-1.jpg";
 import frame2 from "@/assets/frame-2.jpg";
 import frame3 from "@/assets/frame-3.jpg";
@@ -20,9 +17,6 @@ const placeholderImages = [frame1, frame2, frame3, frame4];
 
 interface ProductListCardProps {
   product: Product;
-  matchScore?: number;
-  matchReasons?: string[];
-  fitIndicator?: FitType;
 }
 
 const getPlaceholderImage = (productId: string) => {
@@ -42,12 +36,7 @@ const getCategoryLabel = (style: string | null): string => {
   return styleMap[style] || style.charAt(0).toUpperCase() + style.slice(1);
 };
 
-export const ProductListCard = ({
-  product,
-  matchScore,
-  matchReasons = [],
-  fitIndicator,
-}: ProductListCardProps) => {
+export const ProductListCard = ({ product }: ProductListCardProps) => {
   const imageUrl = product.image_url || getPlaceholderImage(product.id);
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -81,14 +70,6 @@ export const ProductListCard = ({
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all" />
-            
-            {/* Match & Fit Badges */}
-            {(matchScore !== undefined && matchScore >= 40) && (
-              <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-                <MatchBadge score={matchScore} reasons={matchReasons} />
-                {fitIndicator && <FitIndicator fit={fitIndicator} />}
-              </div>
-            )}
             
             {/* Wishlist button on image */}
             <div className="absolute top-3 right-3">
