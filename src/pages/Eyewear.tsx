@@ -9,7 +9,7 @@ import { ShopCategoryBar } from "@/components/eyewear/ShopCategoryBar";
 import { ShopSidebar } from "@/components/eyewear/ShopSidebar";
 import { MobileFilterDrawer } from "@/components/eyewear/MobileFilterDrawer";
 import { VirtualTryOnBanner } from "@/components/eyewear/VirtualTryOnBanner";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts, useProductCategoryCounts } from "@/hooks/useProducts";
 import { usePersonalizedProducts } from "@/hooks/usePersonalizedProducts";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
