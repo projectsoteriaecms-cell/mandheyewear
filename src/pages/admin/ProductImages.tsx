@@ -21,6 +21,18 @@ import { MagnifyingGlass, Images, CheckCircle, Warning, SquaresFour, List, Light
 import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
+const ITEM_TYPE_LABELS: Record<string, string> = {
+  frames: "Frames",
+  contact_lenses: "Contact Lenses",
+  lenses: "Lenses",
+  solutions: "Solutions",
+  medications: "Medications",
+  accessories: "Accessories",
+  cleanser: "Cleanser",
+  packaging: "Packaging",
+  other: "Other",
+};
+
 type ImageFilter = "all" | "with_images" | "missing_primary" | "complete";
 type ViewMode = "grid" | "list";
 
@@ -50,6 +62,25 @@ const ProductImages = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  // Compute per-category missing image counts
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    products.forEach((p) => {
+      if (!p.image_url) {
+        const type = p.item_type || "other";
+        counts[type] = (counts[type] || 0) + 1;
+      }
+    });
+    return Object.entries(counts)
+      .map(([type, missing]) => ({
+        type,
+        label: ITEM_TYPE_LABELS[type] || type,
+        missing,
+        shots: type === "frames" ? 6 : 1,
+      }))
+      .sort((a, b) => b.missing - a.missing);
+  }, [products]);
 
   // Filter and search products
   const filteredProducts = useMemo(() => {
@@ -270,7 +301,7 @@ const ProductImages = () => {
         <GenerateImagesDialog
           open={generateDialogOpen}
           onOpenChange={setGenerateDialogOpen}
-          missingCount={stats.missingPrimary || 0}
+          categoryCounts={categoryCounts}
           onComplete={() => {
             queryClient.invalidateQueries({ queryKey: ["admin-products"] });
             queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });

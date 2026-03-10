@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,13 +9,28 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { Lightning, Warning, CheckCircle, XCircle, Camera } from "@phosphor-icons/react";
+
+interface CategoryCount {
+  type: string;
+  label: string;
+  missing: number;
+  shots: number;
+}
 
 interface GenerateImagesDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  missingCount: number;
+  categoryCounts: CategoryCount[];
   onComplete: () => void;
 }
 
@@ -27,20 +42,46 @@ interface BatchResult {
   shots?: number;
 }
 
+const BATCH_LIMITS = [
+  { value: "10", label: "10 products" },
+  { value: "25", label: "25 products" },
+  { value: "50", label: "50 products" },
+  { value: "100", label: "100 products" },
+  { value: "all", label: "All" },
+];
+
 export const GenerateImagesDialog = ({
   open,
   onOpenChange,
-  missingCount,
+  categoryCounts,
   onComplete,
 }: GenerateImagesDialogProps) => {
   const [status, setStatus] = useState<"idle" | "running" | "done" | "cancelled">("idle");
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [batchLimit, setBatchLimit] = useState("50");
   const [processed, setProcessed] = useState(0);
   const [succeeded, setSucceeded] = useState(0);
   const [failed, setFailed] = useState(0);
   const [errors, setErrors] = useState<BatchResult[]>([]);
   const cancelRef = useRef(false);
 
-  const total = missingCount;
+  const totalSelected = useMemo(
+    () => categoryCounts.filter((c) => selectedTypes.includes(c.type)).reduce((sum, c) => sum + c.missing, 0),
+    [categoryCounts, selectedTypes]
+  );
+
+  const effectiveLimit = batchLimit === "all" ? totalSelected : Math.min(Number(batchLimit), totalSelected);
+  const estimatedMinutes = Math.ceil(
+    selectedTypes.includes("frames")
+      ? effectiveLimit * 0.6
+      : effectiveLimit * 0.15
+  );
+
+  const toggleType = (type: string) => {
+    setSelectedTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
 
   const reset = useCallback(() => {
     setStatus("idle");
@@ -48,6 +89,8 @@ export const GenerateImagesDialog = ({
     setSucceeded(0);
     setFailed(0);
     setErrors([]);
+    setSelectedTypes([]);
+    setBatchLimit("50");
     cancelRef.current = false;
   }, []);
 
@@ -58,11 +101,12 @@ export const GenerateImagesDialog = ({
     let totalSucceeded = 0;
     let totalFailed = 0;
     const allErrors: BatchResult[] = [];
+    const maxProducts = batchLimit === "all" ? undefined : Number(batchLimit);
 
     while (!cancelRef.current) {
       try {
         const { data, error } = await supabase.functions.invoke("generate-product-image", {
-          body: { batchSize: 1 },
+          body: { batchSize: 1, itemTypes: selectedTypes, maxProducts },
         });
 
         if (error) {
@@ -88,8 +132,8 @@ export const GenerateImagesDialog = ({
         }
 
         if (data.remaining <= 0) break;
+        if (maxProducts && totalProcessed >= maxProducts) break;
 
-        // Brief pause between products
         await new Promise((r) => setTimeout(r, 1000));
       } catch (err) {
         console.error("Batch error:", err);
@@ -99,7 +143,7 @@ export const GenerateImagesDialog = ({
 
     setStatus(cancelRef.current ? "cancelled" : "done");
     onComplete();
-  }, [onComplete]);
+  }, [onComplete, selectedTypes, batchLimit]);
 
   const handleCancel = () => {
     cancelRef.current = true;
@@ -111,8 +155,7 @@ export const GenerateImagesDialog = ({
     onOpenChange(false);
   };
 
-  const progressPercent = total > 0 ? Math.min(100, (processed / total) * 100) : 0;
-  const estimatedMinutes = Math.ceil((total - processed) * 0.6); // ~35s per product
+  const progressPercent = effectiveLimit > 0 ? Math.min(100, (processed / effectiveLimit) * 100) : 0;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -120,11 +163,10 @@ export const GenerateImagesDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Camera className="h-5 w-5 text-primary" weight="fill" />
-            Generate Product Image Gallery
+            Generate Product Images
           </DialogTitle>
           <DialogDescription>
-            {status === "idle" &&
-              `Generate AI product images for ${missingCount.toLocaleString()} products missing primary images. Frame products get a full 6-shot luxury gallery.`}
+            {status === "idle" && "Select which product categories to generate images for."}
             {status === "running" && "Generating images — 1 product at a time..."}
             {status === "done" && "Image generation complete!"}
             {status === "cancelled" && "Generation was cancelled. Progress is saved."}
@@ -132,24 +174,74 @@ export const GenerateImagesDialog = ({
         </DialogHeader>
 
         {status === "idle" && (
-          <div className="space-y-3">
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-              <div className="flex items-start gap-2">
-                <Warning className="h-4 w-4 mt-0.5 flex-shrink-0" weight="fill" />
-                <div>
-                  <p className="font-medium">6-Shot Luxury Gallery for Frames</p>
-                  <p className="mt-1 text-xs opacity-80">
-                    Each frame product generates 6 professional shots: Hero (3/4 view), Front, Side
-                    Profile, Rear/Interior, Macro Detail, and M&H Packaging. Non-frame products get a
-                    single studio shot. Branded frames preserve original logos.
+          <div className="space-y-4">
+            {/* Category checkboxes */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">Select product categories:</p>
+              <div className="space-y-1.5 rounded-lg border p-3">
+                {categoryCounts.filter((c) => c.missing > 0).map((cat) => (
+                  <label
+                    key={cat.type}
+                    className="flex items-center justify-between cursor-pointer py-1 hover:bg-muted/50 rounded px-1 -mx-1"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={selectedTypes.includes(cat.type)}
+                        onCheckedChange={() => toggleType(cat.type)}
+                      />
+                      <span className="text-sm">{cat.label}</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({cat.missing.toLocaleString()})
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {cat.shots === 6 ? "6-shot gallery" : "1 shot"}
+                    </span>
+                  </label>
+                ))}
+                {categoryCounts.filter((c) => c.missing > 0).length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    All products have images!
                   </p>
-                  <p className="mt-1 text-xs opacity-80">
-                    Estimated time: ~{Math.ceil(missingCount * 0.6)} minutes for all products.
-                    You can cancel and resume at any time.
-                  </p>
-                </div>
+                )}
               </div>
             </div>
+
+            {/* Batch limit */}
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-foreground whitespace-nowrap">
+                Batch limit:
+              </label>
+              <Select value={batchLimit} onValueChange={setBatchLimit}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {BATCH_LIMITS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Summary */}
+            {selectedTypes.length > 0 && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                <div className="flex items-start gap-2">
+                  <Warning className="h-4 w-4 mt-0.5 flex-shrink-0" weight="fill" />
+                  <div>
+                    <p className="font-medium">
+                      {effectiveLimit.toLocaleString()} product{effectiveLimit !== 1 ? "s" : ""} selected
+                    </p>
+                    <p className="text-xs opacity-80 mt-0.5">
+                      Estimated time: ~{estimatedMinutes} min. You can cancel and resume anytime.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -177,8 +269,8 @@ export const GenerateImagesDialog = ({
 
             {status === "running" && (
               <p className="text-xs text-muted-foreground text-center">
-                {Math.max(0, total - processed).toLocaleString()} remaining •{" "}
-                ~{estimatedMinutes} min left • Frames → 6 shots, others → 1 shot
+                {Math.max(0, effectiveLimit - processed).toLocaleString()} remaining •{" "}
+                ~{Math.ceil((effectiveLimit - processed) * 0.3)} min left
               </p>
             )}
 
@@ -203,7 +295,7 @@ export const GenerateImagesDialog = ({
               <Button variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button onClick={handleStart}>
+              <Button onClick={handleStart} disabled={selectedTypes.length === 0}>
                 <Lightning className="h-4 w-4 mr-1" weight="fill" />
                 Start Generating
               </Button>
