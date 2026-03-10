@@ -184,20 +184,29 @@ const AdminUsers = () => {
 
   // Check if current user is a manager (not super_admin)
   const isManager = currentUserRole === "branch_manager";
+  const isAdmin = currentUserRole === "admin";
   const isSuperAdmin = currentUserRole === "super_admin";
 
-  // For managers: filter to only show staff, customers, unverified users, AND themselves
+  // Filter visible users based on current user's role
   const managerVisibleUsers = isManager
     ? visibleUsers.filter((u) => 
         u.role === "branch_staff" || 
         u.role === "customer" || 
         u.role === "user" ||
-        u.user_id === currentUser?.id // Include their own profile
+        u.user_id === currentUser?.id
+      )
+    : isAdmin
+    ? visibleUsers.filter((u) => 
+        u.role === "branch_staff" || 
+        u.role === "branch_manager" || 
+        u.role === "customer" || 
+        u.role === "user" ||
+        u.user_id === currentUser?.id
       )
     : visibleUsers;
 
   // Recalculate stats based on what the user can see
-  const visibleStaffCount = managerVisibleUsers.filter((u) => u.role === "branch_staff" || u.role === "branch_manager").length;
+  const visibleStaffCount = managerVisibleUsers.filter((u) => u.role === "branch_staff" || u.role === "branch_manager" || u.role === "admin").length;
   const visibleCustomerCount = managerVisibleUsers.filter((u) => u.role === "customer").length;
   const visibleUnverifiedCount = managerVisibleUsers.filter((u) => u.role === "user").length;
 
@@ -212,7 +221,7 @@ const AdminUsers = () => {
   });
 
   return (
-    <RoleGuard allowedRoles={["super_admin", "branch_manager"]}>
+    <RoleGuard allowedRoles={["super_admin", "admin", "branch_manager"]}>
       <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
@@ -288,6 +297,7 @@ const AdminUsers = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Users</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="branch_manager">Branch Managers</SelectItem>
                   <SelectItem value="branch_staff">Branch Staff</SelectItem>
                   <SelectItem value="customer">Customers (Verified)</SelectItem>
