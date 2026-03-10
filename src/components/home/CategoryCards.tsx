@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Eyeglasses, Sun, Eye } from "@phosphor-icons/react";
+import { ArrowRight, Eyeglasses, Sun, Eye, Bag } from "@phosphor-icons/react";
 import { useRef } from "react";
 import frame1 from "@/assets/frame-1.jpg";
 import frame2 from "@/assets/frame-2.jpg";
@@ -12,7 +12,7 @@ const categories = [
     path: "/eyewear?category=eyeglasses",
     image: frame1,
     icon: Eyeglasses,
-    count: "500+ Frames",
+    count: "2,800+ Frames",
   },
   {
     name: "Sunglasses",
@@ -20,15 +20,15 @@ const categories = [
     path: "/eyewear?category=sunglasses",
     image: frame2,
     icon: Sun,
-    count: "300+ Styles",
+    count: "80+ Styles",
   },
   {
-    name: "Eye Exams",
-    description: "Comprehensive vision care",
-    path: "/booking",
+    name: "Accessories & More",
+    description: "Lenses, contacts, solutions & care",
+    path: "/eyewear?category=accessories",
     image: heroEyeCare,
-    icon: Eye,
-    count: "Free Service",
+    icon: Bag,
+    count: "400+ Items",
   },
 ];
 
