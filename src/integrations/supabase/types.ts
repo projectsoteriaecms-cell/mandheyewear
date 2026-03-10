@@ -1608,6 +1608,7 @@ export type Database = {
         | "customer"
         | "branch_staff"
         | "branch_manager"
+        | "admin"
         | "super_admin"
       appointment_status:
         | "scheduled"
@@ -1806,6 +1807,7 @@ export const Constants = {
         "customer",
         "branch_staff",
         "branch_manager",
+        "admin",
         "super_admin",
       ],
       appointment_status: [
