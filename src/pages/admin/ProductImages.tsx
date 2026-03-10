@@ -63,6 +63,25 @@ const ProductImages = () => {
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
+  // Compute per-category missing image counts
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    products.forEach((p) => {
+      if (!p.image_url) {
+        const type = p.item_type || "other";
+        counts[type] = (counts[type] || 0) + 1;
+      }
+    });
+    return Object.entries(counts)
+      .map(([type, missing]) => ({
+        type,
+        label: ITEM_TYPE_LABELS[type] || type,
+        missing,
+        shots: type === "frames" ? 6 : 1,
+      }))
+      .sort((a, b) => b.missing - a.missing);
+  }, [products]);
+
   // Filter and search products
   const filteredProducts = useMemo(() => {
     let result = products;
