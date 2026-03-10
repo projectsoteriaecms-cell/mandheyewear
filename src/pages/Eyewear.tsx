@@ -214,20 +214,34 @@ const Eyewear = () => {
             )}
           </div>
 
-          {/* Active Price Tier Filter Badge */}
-          {priceTierFilter && (
-            <div className="flex items-center justify-center gap-2 mb-6">
+          {/* Active Filter Badges */}
+          {(priceTierFilter || categoryFilter) && (
+            <div className="flex items-center justify-center gap-2 mb-6 flex-wrap">
               <span className="text-sm text-muted-foreground">Filtering by:</span>
-              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
-                {PRICE_TIER_LABELS[priceTierFilter]} Frames
-                <button
-                  onClick={clearPriceTierFilter}
-                  className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
-                  aria-label="Clear price tier filter"
-                >
-                  <X weight="bold" className="h-3 w-3" />
-                </button>
-              </Badge>
+              {categoryFilter && (
+                <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 capitalize">
+                  {categoryFilter}
+                  <button
+                    onClick={clearCategoryFilter}
+                    className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
+                    aria-label="Clear category filter"
+                  >
+                    <X weight="bold" className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {priceTierFilter && (
+                <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                  {PRICE_TIER_LABELS[priceTierFilter]} Frames
+                  <button
+                    onClick={clearPriceTierFilter}
+                    className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
+                    aria-label="Clear price tier filter"
+                  >
+                    <X weight="bold" className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
             </div>
           )}
 
