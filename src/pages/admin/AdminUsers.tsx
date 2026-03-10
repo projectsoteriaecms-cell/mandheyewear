@@ -212,7 +212,7 @@ const AdminUsers = () => {
   });
 
   return (
-    <RoleGuard allowedRoles={["super_admin", "branch_manager"]}>
+    <RoleGuard allowedRoles={["super_admin", "admin", "branch_manager"]}>
       <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
