@@ -1,8 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserRole } from "@/hooks/useUserRole";
-import { canPurchase } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { useMetaPixel } from "@/hooks/useMetaPixel";
 import type { Tables } from "@/integrations/supabase/types";
@@ -13,14 +11,9 @@ export type CartItem = Tables<"cart_items"> & {
 
 export const useCart = () => {
   const { user } = useAuth();
-  const { data: role } = useUserRole();
   const { toast } = useToast();
   const { trackAddToCart } = useMetaPixel();
   const queryClient = useQueryClient();
-
-  // Check if user can add to cart (must be verified customer or above)
-  const userCanPurchase = canPurchase(role ?? null);
-
   const cartQuery = useQuery({
     queryKey: ["cart", user?.id],
     queryFn: async () => {
@@ -49,12 +42,7 @@ export const useCart = () => {
       productId: string;
       quantity?: number;
     }) => {
-      if (!user) throw new Error("Must be logged in to add to cart");
-      
-      // Check if user is verified
-      if (!userCanPurchase) {
-        throw new Error("Your account must be verified to add items to cart. Please wait for verification.");
-      }
+      if (!user) throw new Error("Please log in to add items to your cart");
 
       // Check if item already exists in cart
       const { data: existing } = await supabase
@@ -219,7 +207,7 @@ export const useCart = () => {
     cartCount,
     cartTotal,
     isLoading: cartQuery.isLoading,
-    canAddToCart: userCanPurchase,
+    canAddToCart: !!user,
     addToCart,
     updateQuantity,
     removeFromCart,

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
-import { ShoppingBag, Minus, Plus, Camera, Loader2, Heart } from "lucide-react";
+import { ShoppingBag, Minus, Plus, Camera, Loader2, Heart, LogIn } from "lucide-react";
 import type { Product } from "@/hooks/useProducts";
 
 interface AddToCartSectionProps {
@@ -18,7 +18,7 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
 
   const handleAddToCart = () => {
     if (!isAuthenticated) {
-      navigate("/login");
+      navigate("/login", { state: { from: window.location.pathname } });
       return;
     }
     addToCart.mutate({ productId: product.id, quantity });
@@ -71,6 +71,11 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               Adding...
+            </>
+          ) : !isAuthenticated ? (
+            <>
+              <LogIn className="mr-2 h-5 w-5" />
+              Sign In to Add to Cart
             </>
           ) : (
             <>
