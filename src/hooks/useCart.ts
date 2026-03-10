@@ -42,12 +42,7 @@ export const useCart = () => {
       productId: string;
       quantity?: number;
     }) => {
-      if (!user) throw new Error("Must be logged in to add to cart");
-      
-      // Check if user is verified
-      if (!userCanPurchase) {
-        throw new Error("Your account must be verified to add items to cart. Please wait for verification.");
-      }
+      if (!user) throw new Error("Please log in to add items to your cart");
 
       // Check if item already exists in cart
       const { data: existing } = await supabase
