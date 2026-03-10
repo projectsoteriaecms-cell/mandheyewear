@@ -176,6 +176,12 @@ If you cannot confidently determine a value, use null. Parse dimensions from nam
         const extracted = JSON.parse(toolCall.function.arguments);
         const enrichedProducts = extracted.products || [];
 
+        console.log(`Batch ${batchIdx + 1}: AI returned ${enrichedProducts.length} products`);
+        if (enrichedProducts.length > 0) {
+          console.log(`Sample AI result:`, JSON.stringify(enrichedProducts[0]));
+          console.log(`Sample batch product ID:`, batch[0].id);
+        }
+
         if (dryRun) {
           totalEnriched += enrichedProducts.length;
           console.log(`[DRY RUN] Batch ${batchIdx + 1}: Would enrich ${enrichedProducts.length} products`);
@@ -186,7 +192,10 @@ If you cannot confidently determine a value, use null. Parse dimensions from nam
         for (const ep of enrichedProducts) {
           const updates: Record<string, string | null> = {};
           const original = batch.find((p) => p.id === ep.id);
-          if (!original) continue;
+          if (!original) {
+            console.log(`No match for AI product ID: ${ep.id}`);
+            continue;
+          }
 
           // Only set NULL fields — use "Other" fallback for style to prevent re-processing
           if (!original.brand && ep.brand) updates.brand = ep.brand;
