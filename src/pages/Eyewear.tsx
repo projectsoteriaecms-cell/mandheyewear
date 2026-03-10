@@ -102,6 +102,13 @@ const Eyewear = () => {
   const { data: products, isLoading, error } = useProducts();
   const { data: categoryCounts = {} } = useProductCategoryCounts();
 
+  const {
+    topPicks,
+    hasPreferences,
+    hasMeasurements,
+    getProductScore,
+  } = usePersonalizedProducts();
+
   const filteredProducts = useMemo(() => {
     if (!products) return [];
     return products
