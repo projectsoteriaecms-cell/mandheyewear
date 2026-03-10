@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { AdminLayout, RoleGuard } from "@/shared/components/admin";
 import { useZohoSync } from "@/hooks/admin/useZohoSync";
 import { useIsAdmin } from "@/hooks/useUserRole";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -48,6 +50,7 @@ import {
   SquaresFour,
   ArrowsClockwise,
   CloudArrowDown,
+  Sparkle,
 } from "@phosphor-icons/react";
 import { useAdminProducts } from "@/modules/products";
 import { CreateProductDialog } from "@/components/admin/products/CreateProductDialog";
@@ -92,6 +95,37 @@ const Products = () => {
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [quickUploadProduct, setQuickUploadProduct] = useState<Product | null>(null);
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [enrichProgress, setEnrichProgress] = useState<{ enriched: number; remaining: number } | null>(null);
+
+  const handleEnrichProducts = useCallback(async () => {
+    setIsEnriching(true);
+    setEnrichProgress(null);
+    let totalEnriched = 0;
+    let totalFailed = 0;
+    try {
+      let done = false;
+      while (!done) {
+        const { data, error } = await supabase.functions.invoke("enrich-products", {
+          body: { maxProducts: 100 },
+        });
+        if (error) throw new Error(error.message);
+        if (data?.error) throw new Error(data.error);
+        totalEnriched += data.enriched || 0;
+        totalFailed += data.failed || 0;
+        setEnrichProgress({ enriched: totalEnriched, remaining: data.remaining || 0 });
+        done = data.done;
+        if (!done) await new Promise((r) => setTimeout(r, 500));
+      }
+      toast.success(`Enrichment complete: ${totalEnriched} products updated${totalFailed > 0 ? `, ${totalFailed} failed` : ""}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast.error(`Enrichment failed: ${msg}`);
+    } finally {
+      setIsEnriching(false);
+      setEnrichProgress(null);
+    }
+  }, []);
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -135,6 +169,24 @@ const Products = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            {isAdmin && (
+              <Button
+                variant="outline"
+                onClick={handleEnrichProducts}
+                disabled={isEnriching}
+              >
+                {isEnriching ? (
+                  <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" weight="bold" />
+                ) : (
+                  <Sparkle className="mr-2 h-4 w-4" weight="light" />
+                )}
+                {isEnriching
+                  ? enrichProgress
+                    ? `Enriching… ${enrichProgress.enriched} done, ${enrichProgress.remaining} left`
+                    : "Starting…"
+                  : "Enrich Metadata"}
+              </Button>
+            )}
             {isAdmin && (
               <Button
                 variant="outline"

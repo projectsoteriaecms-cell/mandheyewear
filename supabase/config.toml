@@ -19,3 +19,5 @@ project_id = "ispizamxlrukxmysgyjv"
     verify_jwt = false
   [functions.zoho-webhook]
     verify_jwt = false
+  [functions.enrich-products]
+    verify_jwt = false
