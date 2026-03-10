@@ -11,14 +11,9 @@ export type CartItem = Tables<"cart_items"> & {
 
 export const useCart = () => {
   const { user } = useAuth();
-  const { data: role } = useUserRole();
   const { toast } = useToast();
   const { trackAddToCart } = useMetaPixel();
   const queryClient = useQueryClient();
-
-  // Check if user can add to cart (must be verified customer or above)
-  const userCanPurchase = canPurchase(role ?? null);
-
   const cartQuery = useQuery({
     queryKey: ["cart", user?.id],
     queryFn: async () => {
