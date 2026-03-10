@@ -1,55 +1,75 @@
 
 
-# Google AI Studio — What You Need for Your Features
+# Add "Admin" Role Between Branch Manager and Super Admin
 
-## Key Insight: There Is No "Yearly Subscription"
+## Problem
+You want a new role level called `admin` that sits between `branch_manager` and `super_admin`. This role can generate product images, sync Zoho products, and manage most admin features — but branch managers should NOT have access to Zoho sync or image generation.
 
-Google AI Studio / Gemini API does **not** offer annual subscriptions. It works on a **pay-as-you-go** (usage-based) model with tiered rate limits. You simply enable billing on a Google Cloud project and pay only for what you use.
+## Current Role Hierarchy
+`user (0) < customer (1) < branch_staff (2) < branch_manager (3) < super_admin (4)`
 
-## What Your Features Require
+## New Role Hierarchy
+`user (0) < customer (1) < branch_staff (2) < branch_manager (3) < admin (4) < super_admin (5)`
 
-| Feature | Model Used | Capability Needed |
-|---|---|---|
-| **Photo Try-On** (product image generation + VTO overlay) | `gemini-2.5-flash-image` | Image generation (output) |
-| **Live/Web AR Try-On** | Snap Camera Kit (already integrated) | No Gemini API needed |
-| **Face Measurement & PD** | `gemini-2.5-flash` (vision) | Image understanding (input) |
-| **Personalization scoring** | Client-side logic | No API needed |
+## Changes Required
 
-The **Live AR Try-On** already uses Snap Camera Kit — it does not use Gemini at all. Face measurement and PD use Gemini's **vision/understanding** capabilities (analyzing an image), which are available even on the free tier. The bottleneck is **image generation** (Photo Try-On and product gallery), which requires the **Paid Tier**.
+### 1. Database Migration — Add `admin` to `app_role` enum
+```sql
+ALTER TYPE public.app_role ADD VALUE 'admin' BEFORE 'super_admin';
+```
 
-## How to Set It Up
+### 2. Database Migration — Update RLS Policies
+Update the following tables' RLS policies to include `admin` where `super_admin` is currently used:
 
-### Step 1: Enable Billing (Paid Tier — "Tier 1")
-1. Go to [Google AI Studio](https://aistudio.google.com)
-2. Click your profile → **Billing** → **Enable billing**
-3. Link or create a Google Cloud billing account (add a credit card)
-4. This automatically upgrades you to **Tier 1**
+- **products** — "Super admins can manage products" → include `admin`
+- **zoho_sync_log** — "Only super_admin can insert sync logs" → include `admin`
+- **categories** — "Super admins can manage categories" → include `admin`
+- **branches** — keep super_admin only
+- **user_roles** — "Super admins can manage all roles" → include `admin` (with restriction: admins can only assign roles up to branch_manager)
+- **user_invitations** — INSERT/UPDATE/DELETE → include `admin`
 
-### Step 2: Estimated Costs
+### 3. Frontend — Permissions (`src/shared/lib/permissions.ts`)
+- Add `admin` to the role hierarchy at level 4, bump `super_admin` to 5
+- Update `canManageUsers` to include `admin`
+- Add new permission: `canSyncZoho` — requires `admin` or `super_admin`
+- Add new permission: `canGenerateImages` — requires `admin` or `super_admin`
+- Update `getInvitableRoles` for `admin` (can invite up to `branch_manager`)
+- Update `canChangeUserRole` for `admin`
 
-| Usage | Cost per image | Monthly estimate |
-|---|---|---|
-| Product gallery generation (6 shots × N products) | ~$0.07/image | One-time batch — e.g. 200 products × 6 = 1,200 images ≈ **$84** |
-| Photo try-on per customer | ~$0.07/image | 500 customers/month ≈ **$35** |
-| Face analysis (vision, not generation) | ~$0.001/call | Negligible |
+### 4. Frontend — User Role Hooks (`src/shared/hooks/useUserRole.ts`)
+- Add `useIsAdmin` hook (admin or super_admin)
+- Update `useIsManager` to include `admin`
 
-**Rough total: $50–150/month** depending on volume, with no commitment or subscription.
+### 5. Frontend — Products Page (`src/pages/admin/Products.tsx`)
+- Replace `useIsSuperAdmin` with `useIsAdmin` for Zoho Sync and Link to Zoho buttons
 
-### Tier Rate Limits
+### 6. Frontend — Product Images Page (`src/pages/admin/ProductImages.tsx`)
+- Gate the "Generate Images" button behind `useIsAdmin` (not just manager)
 
-| Tier | How to reach it | RPM | RPD |
-|---|---|---|---|
-| Free | Default | 15 | 1,000 (but 0 for image gen) |
-| Tier 1 | Enable billing | 500 | 10,000 |
-| Tier 2 | ~$250 spend history | 2,000 | Unlimited |
+### 7. Frontend — Nav Config (`src/shared/components/admin/sidebar/nav-config.ts`)
+- Add `requiresAdmin?: boolean` to NavItem interface
+- Mark Zoho-related items if needed
+- Update `filterNavItems` to handle admin-level items
 
-Tier 1 is sufficient for your use case. You auto-graduate to Tier 2 after ~$250 cumulative spend.
+### 8. Frontend — RoleGuard & Route Guards (`src/routes/admin.routes.tsx`)
+- Add `admin` to `allowedRoles` arrays where appropriate
 
-## Recommendation
+### 9. Frontend — Role Labels & Display
+- Update `getRoleLabel` to include `admin: "Admin"`
+- Update any role selection dropdowns (InviteUserDialog, user management) to show Admin option
 
-**Enable billing on your existing Google Cloud project** (the one linked to your current Gemini API key). There is no annual plan to buy — just pay-as-you-go. Once billing is active, the 429 errors on image generation will stop immediately, and the direct Gemini API path will work without falling back to Lovable AI credits.
+### 10. Frontend — AdminSidebar
+- Update sidebar to recognize `admin` role for filtering nav items
 
-## No Code Changes Needed
-
-This is purely an account configuration step on Google's side. The edge function already has the correct model (`gemini-2.5-flash-image`) and fallback logic in place.
+## Files Modified
+- **Database**: 1 migration (enum + RLS policy updates)
+- **`src/shared/lib/permissions.ts`** — Add admin to hierarchy + new permission functions
+- **`src/shared/hooks/useUserRole.ts`** — Add `useIsAdmin` hook
+- **`src/hooks/useUserRole.ts`** — Re-export `useIsAdmin`
+- **`src/pages/admin/Products.tsx`** — Use `useIsAdmin` for Zoho/sync buttons
+- **`src/pages/admin/ProductImages.tsx`** — Gate Generate Images behind admin
+- **`src/shared/components/admin/sidebar/nav-config.ts`** — Handle admin role
+- **`src/routes/admin.routes.tsx`** — Add `admin` to allowedRoles
+- **`src/shared/components/admin/RoleGuard.tsx`** — No changes needed (already role-array based)
+- **`src/components/admin/users/InviteUserDialog.tsx`** — Add admin to invitable roles
 
