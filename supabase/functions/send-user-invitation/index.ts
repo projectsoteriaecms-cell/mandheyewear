@@ -2,7 +2,12 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ?? "M&H Eyewear <noreply@notify.mandheyewear.com>";
-const RESEND_TESTING_MODE_ERROR = "You can only send testing emails to your own email address";
+const RESEND_RESTRICTED_MODE_FRAGMENTS = [
+  "You can only send testing emails to your own email address",
+  "domain is not verified",
+  "verify your domain",
+  "resend.com/domains",
+];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
