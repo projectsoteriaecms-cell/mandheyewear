@@ -32,17 +32,12 @@ const highlightedLinks = [
   },
 ];
 
-// Eyewear dropdown items
-const eyewearLinks = [
+// Direct category links (Warby Parker style)
+const categoryLinks = [
   { name: "Eyeglasses", path: "/eyewear?category=eyeglasses" },
   { name: "Sunglasses", path: "/eyewear?category=sunglasses" },
-  { name: "All Eyewear", path: "/eyewear" },
-];
-
-// Regular nav links
-const navLinks = [
-  { name: "Eye Exams", path: "/booking" },
   { name: "Accessories", path: "/eyewear?category=accessories" },
+  { name: "Eye Exams", path: "/booking" },
 ];
 
 export const MainNav = () => {

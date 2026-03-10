@@ -5,7 +5,9 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/eyewear/ProductCard";
 import { ProductListCard } from "@/components/eyewear/ProductListCard";
-import { ProductFilters } from "@/components/eyewear/ProductFilters";
+import { ShopCategoryBar } from "@/components/eyewear/ShopCategoryBar";
+import { ShopSidebar } from "@/components/eyewear/ShopSidebar";
+import { MobileFilterDrawer } from "@/components/eyewear/MobileFilterDrawer";
 import { VirtualTryOnBanner } from "@/components/eyewear/VirtualTryOnBanner";
 import { useProducts } from "@/hooks/useProducts";
 import { usePersonalizedProducts } from "@/hooks/usePersonalizedProducts";
@@ -13,7 +15,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState, Pagination, ProductQuickView } from "@/components/storefront";
 import {
   Breadcrumb,
@@ -24,7 +25,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { House, Eye, SquaresFour, List, X } from "@phosphor-icons/react";
+import { House, Eye, SquaresFour, List } from "@phosphor-icons/react";
 import { Sparkles, ChevronRight } from "lucide-react";
 
 const PRODUCTS_PER_PAGE = 12;
@@ -32,31 +33,10 @@ const PRODUCTS_PER_PAGE = 12;
 type ViewMode = "grid" | "list";
 type PriceTier = "budget" | "standard" | "premium" | "luxury";
 
-// Price tier display names
-const PRICE_TIER_LABELS: Record<PriceTier, string> = {
-  budget: "Budget",
-  standard: "Standard",
-  premium: "Premium",
-  luxury: "Luxury",
-};
-
-// Item type categories for the tab bar
-const ITEM_TYPE_TABS = [
-  { value: "all", label: "All Products" },
-  { value: "frames", label: "Frames" },
-  { value: "eyeglasses", label: "Eyeglasses" },
-  { value: "sunglasses", label: "Sunglasses" },
-  { value: "lenses", label: "Lenses" },
-  { value: "contact_lenses", label: "Contact Lenses" },
-  { value: "accessories", label: "Accessories" },
-  { value: "solutions", label: "Solutions" },
-  { value: "medications", label: "Medications" },
-] as const;
-
 const Eyewear = () => {
   useSEO({
     title: "Shop Designer Eyewear – Prescription Glasses & Sunglasses | M&H",
-    description: "Browse 100+ premium frames. Prescription glasses, sunglasses, and fashion eyewear with free virtual try-on. Buy glasses online in Nigeria.",
+    description: "Browse 100+ premium frames. Prescription glasses, sunglasses, and fashion eyewear with free virtual try-on.",
   });
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -98,12 +78,10 @@ const Eyewear = () => {
     } else {
       setPriceTierFilter(null);
     }
-
     const category = searchParams.get("category");
     setCategoryFilter(category || "all");
   }, [searchParams]);
 
-  // Clear price tier filter
   const clearPriceTierFilter = () => {
     setPriceTierFilter(null);
     searchParams.delete("filter");
@@ -111,7 +89,6 @@ const Eyewear = () => {
     setCurrentPage(1);
   };
 
-  // Handle category tab change
   const handleCategoryChange = (value: string) => {
     if (value === "all") {
       searchParams.delete("category");
@@ -122,26 +99,22 @@ const Eyewear = () => {
     setCurrentPage(1);
   };
 
-  // Fetch all active products (no image filter — show everything)
   const { data: products, isLoading, error } = useProducts();
 
-  // Get personalized products
   const {
-    scoredProducts,
     topPicks,
     hasPreferences,
     hasMeasurements,
     getProductScore,
   } = usePersonalizedProducts();
 
-  // Compute counts per category for badge display
+  // Category counts
   const categoryCounts = useMemo(() => {
     if (!products) return {};
     const counts: Record<string, number> = { all: products.length };
     for (const p of products) {
       const type = p.item_type || "other";
       counts[type] = (counts[type] || 0) + 1;
-      // Also count eyeglasses/sunglasses as virtual categories
       if (type === "frames") {
         if (p.is_prescription_compatible !== false) {
           counts["eyeglasses"] = (counts["eyeglasses"] || 0) + 1;
@@ -155,20 +128,10 @@ const Eyewear = () => {
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
-
     return products
-      .filter((p) => {
-        if (genderFilter === "all") return true;
-        return p.gender === genderFilter || p.gender === "unisex";
-      })
-      .filter((p) => {
-        if (styleFilter === "all") return true;
-        return p.style === styleFilter;
-      })
-      .filter((p) => {
-        if (!priceTierFilter) return true;
-        return p.price_tier === priceTierFilter;
-      })
+      .filter((p) => genderFilter === "all" || p.gender === genderFilter || p.gender === "unisex")
+      .filter((p) => styleFilter === "all" || p.style === styleFilter)
+      .filter((p) => !priceTierFilter || p.price_tier === priceTierFilter)
       .filter((p) => {
         if (categoryFilter === "all") return true;
         if (categoryFilter === "eyeglasses") return p.item_type === "frames" && p.is_prescription_compatible !== false;
@@ -187,14 +150,12 @@ const Eyewear = () => {
       });
   }, [products, genderFilter, styleFilter, priceSort, showPersonalized, hasPreferences, getProductScore, priceTierFilter, categoryFilter]);
 
-  // Pagination
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
     return filteredProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
   }, [filteredProducts, currentPage]);
 
-  // Reset to page 1 when filters change
   const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
     setter(value);
     setCurrentPage(1);
@@ -206,19 +167,65 @@ const Eyewear = () => {
 
   const showRecommendationsSection = isAuthenticated && hasPreferences && topPicks.length > 0;
 
-  // Visible tabs (only show tabs that have products)
-  const visibleTabs = ITEM_TYPE_TABS.filter(
-    (tab) => tab.value === "all" || (categoryCounts[tab.value] || 0) > 0
-  );
+  // Count active filters
+  const activeFilterCount = [
+    genderFilter !== "all",
+    styleFilter !== "all",
+    priceSort !== "featured",
+    !!priceTierFilter,
+  ].filter(Boolean).length;
+
+  const clearAllFilters = () => {
+    setGenderFilter("all");
+    setStyleFilter("all");
+    setPriceSort("featured");
+    setPriceTierFilter(null);
+    searchParams.delete("filter");
+    setSearchParams(searchParams);
+    setCurrentPage(1);
+  };
+
+  const filterProps = {
+    genderFilter,
+    styleFilter,
+    priceSort,
+    priceTierFilter: priceTierFilter as string | null,
+    onGenderChange: handleFilterChange(setGenderFilter),
+    onStyleChange: handleFilterChange(setStyleFilter),
+    onPriceSortChange: handleFilterChange(setPriceSort),
+    onPriceTierChange: (val: string | null) => {
+      setPriceTierFilter(val as PriceTier | null);
+      if (val) {
+        searchParams.set("filter", `price-tier-${val}`);
+      } else {
+        searchParams.delete("filter");
+      }
+      setSearchParams(searchParams);
+      setCurrentPage(1);
+    },
+    activeFilterCount,
+    onClearAll: clearAllFilters,
+  };
+
+  // Page title based on category
+  const pageTitle = categoryFilter === "eyeglasses"
+    ? "Eyeglasses"
+    : categoryFilter === "sunglasses"
+    ? "Sunglasses"
+    : categoryFilter === "accessories"
+    ? "Accessories"
+    : categoryFilter === "all"
+    ? "M & H Collection"
+    : categoryFilter.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
-          <Breadcrumb className="mb-6">
+          <Breadcrumb className="mb-4">
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
@@ -230,77 +237,54 @@ const Eyewear = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage className="flex items-center gap-1">
-                  <Eye weight="duotone" className="h-4 w-4" />
-                  Shop
-                </BreadcrumbPage>
+                {categoryFilter !== "all" ? (
+                  <>
+                    <BreadcrumbLink asChild>
+                      <Link to="/eyewear" className="flex items-center gap-1">Shop</Link>
+                    </BreadcrumbLink>
+                  </>
+                ) : (
+                  <BreadcrumbPage className="flex items-center gap-1">
+                    <Eye weight="duotone" className="h-4 w-4" />
+                    Shop
+                  </BreadcrumbPage>
+                )}
               </BreadcrumbItem>
+              {categoryFilter !== "all" && (
+                <>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{pageTitle}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </>
+              )}
             </BreadcrumbList>
           </Breadcrumb>
 
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">
-              M & H Collection
+          <div className="text-center mb-2">
+            <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-3">
+              {pageTitle}
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Designer frames, lenses, accessories & more
             </p>
           </div>
+        </div>
 
-          {/* Category Tab Bar */}
-          <div className="mb-6 -mx-4 px-4 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
-            <div className="flex gap-2 min-w-max pb-2">
-              {visibleTabs.map((tab) => {
-                const isActive = categoryFilter === tab.value;
-                const count = categoryCounts[tab.value] || 0;
-                return (
-                  <button
-                    key={tab.value}
-                    onClick={() => handleCategoryChange(tab.value)}
-                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border-2 ${
-                      isActive
-                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                        : "bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    }`}
-                  >
-                    {tab.label}
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                      isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
-                    }`}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+        {/* Category Bar — full-width visual strip */}
+        <div className="border-b border-border">
+          <div className="max-w-7xl mx-auto">
+            <ShopCategoryBar
+              activeCategory={categoryFilter}
+              onCategoryChange={handleCategoryChange}
+              categoryCounts={categoryCounts}
+            />
           </div>
+        </div>
 
-          {/* Product count */}
-          {filteredProducts.length > 0 && (
-            <p className="text-sm text-muted-foreground mb-4">
-              Showing {paginatedProducts.length} of {filteredProducts.length} products
-            </p>
-          )}
-
-          {/* Active Filter Badges */}
-          {priceTierFilter && (
-            <div className="flex items-center gap-2 mb-6 flex-wrap">
-              <span className="text-sm text-muted-foreground">Filtering by:</span>
-              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
-                {PRICE_TIER_LABELS[priceTierFilter]} Frames
-                <button
-                  onClick={clearPriceTierFilter}
-                  className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
-                  aria-label="Clear price tier filter"
-                >
-                  <X weight="bold" className="h-3 w-3" />
-                </button>
-              </Badge>
-            </div>
-          )}
-
-          {/* Personalization CTA for non-personalized users */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+          {/* Personalization CTA */}
           {isAuthenticated && !hasPreferences && (
             <Card className="mb-8 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
               <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -325,7 +309,7 @@ const Eyewear = () => {
             </Card>
           )}
 
-          {/* Recommended For You Section */}
+          {/* Recommended For You */}
           {showRecommendationsSection && (
             <div
               ref={recommendationsRef}
@@ -345,10 +329,7 @@ const Eyewear = () => {
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {topPicks.slice(0, 4).map((product) => (
-                  <div
-                    key={product.id}
-                    onDoubleClick={() => handleQuickView(product.id)}
-                  >
+                  <div key={product.id} onDoubleClick={() => handleQuickView(product.id)}>
                     <ProductCard
                       product={product}
                       matchScore={product.matchScore}
@@ -361,127 +342,124 @@ const Eyewear = () => {
             </div>
           )}
 
-          {/* All Products Section */}
-          {showRecommendationsSection && (
-            <div className="flex items-center gap-2 mb-6">
-              <h2 className="text-2xl font-display font-bold">All Frames</h2>
+          {/* Two-column layout: Sidebar + Products */}
+          <div className="flex gap-8">
+            {/* Desktop Sidebar */}
+            <div className="hidden lg:block w-56 flex-shrink-0">
+              <div className="sticky top-28">
+                <ShopSidebar {...filterProps} />
+              </div>
             </div>
-          )}
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <ProductFilters
-              genderFilter={genderFilter}
-              styleFilter={styleFilter}
-              priceSort={priceSort}
-              onGenderChange={handleFilterChange(setGenderFilter)}
-              onStyleChange={handleFilterChange(setStyleFilter)}
-              onPriceSortChange={handleFilterChange(setPriceSort)}
-            />
-            
-            {/* View Mode Toggle */}
-            <ToggleGroup 
-              type="single" 
-              value={viewMode} 
-              onValueChange={(value) => value && setViewMode(value as ViewMode)}
-              className="border rounded-lg p-1"
-            >
-              <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3">
-                <SquaresFour className="h-4 w-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="list" aria-label="List view" className="px-3">
-                <List className="h-4 w-4" />
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
+            {/* Main Content */}
+            <div className="flex-1 min-w-0">
+              {/* Toolbar */}
+              <div className="flex items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  {/* Mobile filter trigger */}
+                  <MobileFilterDrawer {...filterProps} />
 
-          {/* Products Grid */}
-          {isLoading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="space-y-4">
-                  <Skeleton className="h-64 w-full rounded-lg" />
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-5 w-32" />
-                  <Skeleton className="h-6 w-24" />
+                  <p className="text-sm text-muted-foreground">
+                    {filteredProducts.length} products
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : error ? (
-            <EmptyState
-              type="products"
-              title="Failed to load products"
-              description="We couldn't load the collection. Please try again later."
-              actionLabel="Refresh Page"
-              onAction={() => window.location.reload()}
-            />
-          ) : filteredProducts.length === 0 ? (
-            <EmptyState
-              type="search"
-              title="No products match your filters"
-              description="Try adjusting your selection or clear filters to see all products."
-              actionLabel="Clear All Filters"
-              onAction={() => {
-                setGenderFilter("all");
-                setStyleFilter("all");
-                setPriceSort("featured");
-                handleCategoryChange("all");
-              }}
-            />
-          ) : (
-            <>
-              {viewMode === "grid" ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {paginatedProducts.map((product) => {
-                    const scored = getProductScore(product.id);
-                    return (
-                      <div
-                        key={product.id}
-                        onDoubleClick={() => handleQuickView(product.id)}
-                      >
-                        <ProductCard
-                          product={product}
-                          matchScore={hasPreferences ? scored?.matchScore : undefined}
-                          matchReasons={scored?.matchReasons}
-                          fitIndicator={hasMeasurements ? scored?.fitIndicator : undefined}
-                        />
-                      </div>
-                    );
-                  })}
+
+                <ToggleGroup
+                  type="single"
+                  value={viewMode}
+                  onValueChange={(value) => value && setViewMode(value as ViewMode)}
+                  className="border rounded-lg p-0.5"
+                >
+                  <ToggleGroupItem value="grid" aria-label="Grid view" className="px-2.5 h-8">
+                    <SquaresFour className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="list" aria-label="List view" className="px-2.5 h-8">
+                    <List className="h-4 w-4" />
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+
+              {/* Products */}
+              {isLoading ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <div key={i} className="space-y-4">
+                      <Skeleton className="h-64 w-full rounded-lg" />
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-5 w-32" />
+                      <Skeleton className="h-6 w-24" />
+                    </div>
+                  ))}
                 </div>
+              ) : error ? (
+                <EmptyState
+                  type="products"
+                  title="Failed to load products"
+                  description="We couldn't load the collection. Please try again later."
+                  actionLabel="Refresh Page"
+                  onAction={() => window.location.reload()}
+                />
+              ) : filteredProducts.length === 0 ? (
+                <EmptyState
+                  type="search"
+                  title="No products match your filters"
+                  description="Try adjusting your selection or clear filters to see all products."
+                  actionLabel="Clear All Filters"
+                  onAction={() => {
+                    clearAllFilters();
+                    handleCategoryChange("all");
+                  }}
+                />
               ) : (
-                <div className="flex flex-col gap-4">
-                  {paginatedProducts.map((product) => {
-                    const scored = getProductScore(product.id);
-                    return (
-                      <div
-                        key={product.id}
-                        onDoubleClick={() => handleQuickView(product.id)}
-                      >
-                        <ProductListCard
-                          product={product}
-                          matchScore={hasPreferences ? scored?.matchScore : undefined}
-                          matchReasons={scored?.matchReasons}
-                          fitIndicator={hasMeasurements ? scored?.fitIndicator : undefined}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                <>
+                  {viewMode === "grid" ? (
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {paginatedProducts.map((product) => {
+                        const scored = getProductScore(product.id);
+                        return (
+                          <div key={product.id} onDoubleClick={() => handleQuickView(product.id)}>
+                            <ProductCard
+                              product={product}
+                              matchScore={hasPreferences ? scored?.matchScore : undefined}
+                              matchReasons={scored?.matchReasons}
+                              fitIndicator={hasMeasurements ? scored?.fitIndicator : undefined}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      {paginatedProducts.map((product) => {
+                        const scored = getProductScore(product.id);
+                        return (
+                          <div key={product.id} onDoubleClick={() => handleQuickView(product.id)}>
+                            <ProductListCard
+                              product={product}
+                              matchScore={hasPreferences ? scored?.matchScore : undefined}
+                              matchReasons={scored?.matchReasons}
+                              fitIndicator={hasMeasurements ? scored?.fitIndicator : undefined}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
 
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </>
-          )}
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </>
+              )}
+            </div>
+          </div>
 
           <VirtualTryOnBanner />
         </div>
       </div>
 
-      {/* Quick View Modal */}
       <ProductQuickView
         productId={quickViewProductId}
         isOpen={!!quickViewProductId}
