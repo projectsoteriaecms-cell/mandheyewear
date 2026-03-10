@@ -72,6 +72,11 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               Adding...
             </>
+          ) : !isAuthenticated ? (
+            <>
+              <LogIn className="mr-2 h-5 w-5" />
+              Sign In to Add to Cart
+            </>
           ) : (
             <>
               <ShoppingBag className="mr-2 h-5 w-5" />
