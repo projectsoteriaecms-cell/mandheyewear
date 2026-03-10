@@ -66,9 +66,6 @@ export const MainNav = () => {
     }
   };
 
-  const isEyewearActive = location.pathname === "/eyewear" || 
-    location.search.includes("category=eyeglasses") || 
-    location.search.includes("category=sunglasses");
 
   return (
     <div className="bg-background border-b border-border">
