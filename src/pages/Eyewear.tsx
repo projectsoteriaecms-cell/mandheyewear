@@ -55,6 +55,7 @@ const Eyewear = () => {
   const [showPersonalized, setShowPersonalized] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [priceTierFilter, setPriceTierFilter] = useState<PriceTier | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   const { isAuthenticated } = useAuth();
   const recommendationsRef = useRef<HTMLDivElement>(null);
