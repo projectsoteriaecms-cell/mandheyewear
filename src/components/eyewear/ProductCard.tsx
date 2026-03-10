@@ -19,8 +19,23 @@ interface ProductCardProps {
 }
 
 
-const getCategoryLabel = (style: string | null): string => {
-  if (!style) return "Eyewear";
+const getCategoryLabel = (product: Product): string => {
+  // Show item type for non-frame products
+  if (product.item_type && product.item_type !== "frames") {
+    const typeMap: Record<string, string> = {
+      lenses: "Lenses",
+      contact_lenses: "Contact Lenses",
+      solutions: "Solutions",
+      medications: "Medications",
+      accessories: "Accessories",
+      cleanser: "Cleanser",
+      other: "Other",
+      packaging: "Packaging",
+    };
+    return typeMap[product.item_type] || product.item_type;
+  }
+  // For frames, show style
+  if (!product.style) return "Eyewear";
   const styleMap: Record<string, string> = {
     round: "Classic Round",
     rectangular: "Rectangular",
@@ -28,7 +43,7 @@ const getCategoryLabel = (style: string | null): string => {
     aviator: "Aviator",
     wayfarer: "Wayfarer",
   };
-  return styleMap[style] || style.charAt(0).toUpperCase() + style.slice(1);
+  return styleMap[product.style] || product.style.charAt(0).toUpperCase() + product.style.slice(1);
 };
 
 export const ProductCard = ({
