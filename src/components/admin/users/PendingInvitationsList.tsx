@@ -85,7 +85,7 @@ export const PendingInvitationsList = () => {
       // Resend invitation email
       const signupUrl = `${window.location.origin}/signup?email=${encodeURIComponent(invitation.email)}`;
       
-      const { error: emailError } = await supabase.functions.invoke(
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke(
         "send-user-invitation",
         {
           body: {
@@ -100,6 +100,11 @@ export const PendingInvitationsList = () => {
       if (emailError) {
         console.error("Email sending error:", emailError);
         toast.warning("Invitation extended but email could not be sent.");
+      } else if ((emailResult as { emailSent?: boolean; warning?: string } | null)?.emailSent === false) {
+        toast.warning(
+          (emailResult as { warning?: string } | null)?.warning ||
+            "Invitation extended. Email delivery is temporarily restricted.",
+        );
       }
 
       return invitation;

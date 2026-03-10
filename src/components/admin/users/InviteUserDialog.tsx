@@ -72,7 +72,7 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
       // Send invitation email
       const signupUrl = `${window.location.origin}/signup?email=${encodeURIComponent(email)}`;
       
-      const { error: emailError } = await supabase.functions.invoke(
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke(
         "send-user-invitation",
         {
           body: {
@@ -86,8 +86,12 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
 
       if (emailError) {
         console.error("Email sending error:", emailError);
-        // Don't throw - invitation was created, just email failed
         toast.warning("Invitation created but email could not be sent. User can still sign up.");
+      } else if ((emailResult as { emailSent?: boolean; warning?: string } | null)?.emailSent === false) {
+        toast.warning(
+          (emailResult as { warning?: string } | null)?.warning ||
+            "Invitation created. Email delivery is temporarily restricted.",
+        );
       }
 
       return invitation;
