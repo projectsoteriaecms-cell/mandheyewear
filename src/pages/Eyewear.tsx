@@ -40,6 +40,19 @@ const PRICE_TIER_LABELS: Record<PriceTier, string> = {
   luxury: "Luxury",
 };
 
+// Item type categories for the tab bar
+const ITEM_TYPE_TABS = [
+  { value: "all", label: "All Products" },
+  { value: "frames", label: "Frames" },
+  { value: "eyeglasses", label: "Eyeglasses" },
+  { value: "sunglasses", label: "Sunglasses" },
+  { value: "lenses", label: "Lenses" },
+  { value: "contact_lenses", label: "Contact Lenses" },
+  { value: "accessories", label: "Accessories" },
+  { value: "solutions", label: "Solutions" },
+  { value: "medications", label: "Medications" },
+] as const;
+
 const Eyewear = () => {
   useSEO({
     title: "Shop Designer Eyewear – Prescription Glasses & Sunglasses | M&H",
@@ -55,7 +68,7 @@ const Eyewear = () => {
   const [showPersonalized, setShowPersonalized] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [priceTierFilter, setPriceTierFilter] = useState<PriceTier | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const { isAuthenticated } = useAuth();
   const recommendationsRef = useRef<HTMLDivElement>(null);
@@ -87,7 +100,7 @@ const Eyewear = () => {
     }
 
     const category = searchParams.get("category");
-    setCategoryFilter(category || null);
+    setCategoryFilter(category || "all");
   }, [searchParams]);
 
   // Clear price tier filter
@@ -98,16 +111,19 @@ const Eyewear = () => {
     setCurrentPage(1);
   };
 
-  // Clear category filter
-  const clearCategoryFilter = () => {
-    setCategoryFilter(null);
-    searchParams.delete("category");
+  // Handle category tab change
+  const handleCategoryChange = (value: string) => {
+    if (value === "all") {
+      searchParams.delete("category");
+    } else {
+      searchParams.set("category", value);
+    }
     setSearchParams(searchParams);
     setCurrentPage(1);
   };
 
-  // Fetch products with real images only
-  const { data: products, isLoading, error } = useProducts(undefined, true);
+  // Fetch all active products (no image filter — show everything)
+  const { data: products, isLoading, error } = useProducts();
 
   // Get personalized products
   const {
@@ -117,6 +133,25 @@ const Eyewear = () => {
     hasMeasurements,
     getProductScore,
   } = usePersonalizedProducts();
+
+  // Compute counts per category for badge display
+  const categoryCounts = useMemo(() => {
+    if (!products) return {};
+    const counts: Record<string, number> = { all: products.length };
+    for (const p of products) {
+      const type = p.item_type || "other";
+      counts[type] = (counts[type] || 0) + 1;
+      // Also count eyeglasses/sunglasses as virtual categories
+      if (type === "frames") {
+        if (p.is_prescription_compatible !== false) {
+          counts["eyeglasses"] = (counts["eyeglasses"] || 0) + 1;
+        } else {
+          counts["sunglasses"] = (counts["sunglasses"] || 0) + 1;
+        }
+      }
+    }
+    return counts;
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
@@ -135,15 +170,14 @@ const Eyewear = () => {
         return p.price_tier === priceTierFilter;
       })
       .filter((p) => {
-        if (!categoryFilter) return true;
+        if (categoryFilter === "all") return true;
         if (categoryFilter === "eyeglasses") return p.item_type === "frames" && p.is_prescription_compatible !== false;
         if (categoryFilter === "sunglasses") return p.item_type === "frames" && p.is_prescription_compatible === false;
-        return true;
+        return p.item_type === categoryFilter;
       })
       .sort((a, b) => {
         if (priceSort === "low-high") return a.price - b.price;
         if (priceSort === "high-low") return b.price - a.price;
-        // If showing personalized, sort by match score
         if (showPersonalized && hasPreferences) {
           const scoreA = getProductScore(a.id)?.matchScore || 0;
           const scoreB = getProductScore(b.id)?.matchScore || 0;
@@ -172,6 +206,11 @@ const Eyewear = () => {
 
   const showRecommendationsSection = isAuthenticated && hasPreferences && topPicks.length > 0;
 
+  // Visible tabs (only show tabs that have products)
+  const visibleTabs = ITEM_TYPE_TABS.filter(
+    (tab) => tab.value === "all" || (categoryCounts[tab.value] || 0) > 0
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -193,55 +232,71 @@ const Eyewear = () => {
               <BreadcrumbItem>
                 <BreadcrumbPage className="flex items-center gap-1">
                   <Eye weight="duotone" className="h-4 w-4" />
-                  Eyewear
+                  Shop
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
 
           {/* Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">
-              M & H Eyewear Collection
+              M & H Collection
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Designer frames that combine style, comfort, and precision
+              Designer frames, lenses, accessories & more
             </p>
-            {filteredProducts.length > 0 && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Showing {paginatedProducts.length} of {filteredProducts.length} products
-              </p>
-            )}
           </div>
 
+          {/* Category Tab Bar */}
+          <div className="mb-6 -mx-4 px-4 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+            <div className="flex gap-2 min-w-max pb-2">
+              {visibleTabs.map((tab) => {
+                const isActive = categoryFilter === tab.value;
+                const count = categoryCounts[tab.value] || 0;
+                return (
+                  <button
+                    key={tab.value}
+                    onClick={() => handleCategoryChange(tab.value)}
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border-2 ${
+                      isActive
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                    }`}
+                  >
+                    {tab.label}
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                      isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Product count */}
+          {filteredProducts.length > 0 && (
+            <p className="text-sm text-muted-foreground mb-4">
+              Showing {paginatedProducts.length} of {filteredProducts.length} products
+            </p>
+          )}
+
           {/* Active Filter Badges */}
-          {(priceTierFilter || categoryFilter) && (
-            <div className="flex items-center justify-center gap-2 mb-6 flex-wrap">
+          {priceTierFilter && (
+            <div className="flex items-center gap-2 mb-6 flex-wrap">
               <span className="text-sm text-muted-foreground">Filtering by:</span>
-              {categoryFilter && (
-                <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 capitalize">
-                  {categoryFilter}
-                  <button
-                    onClick={clearCategoryFilter}
-                    className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
-                    aria-label="Clear category filter"
-                  >
-                    <X weight="bold" className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-              {priceTierFilter && (
-                <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
-                  {PRICE_TIER_LABELS[priceTierFilter]} Frames
-                  <button
-                    onClick={clearPriceTierFilter}
-                    className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
-                    aria-label="Clear price tier filter"
-                  >
-                    <X weight="bold" className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                {PRICE_TIER_LABELS[priceTierFilter]} Frames
+                <button
+                  onClick={clearPriceTierFilter}
+                  className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
+                  aria-label="Clear price tier filter"
+                >
+                  <X weight="bold" className="h-3 w-3" />
+                </button>
+              </Badge>
             </div>
           )}
 
@@ -355,7 +410,7 @@ const Eyewear = () => {
             <EmptyState
               type="products"
               title="Failed to load products"
-              description="We couldn't load the eyewear collection. Please try again later."
+              description="We couldn't load the collection. Please try again later."
               actionLabel="Refresh Page"
               onAction={() => window.location.reload()}
             />
@@ -369,6 +424,7 @@ const Eyewear = () => {
                 setGenderFilter("all");
                 setStyleFilter("all");
                 setPriceSort("featured");
+                handleCategoryChange("all");
               }}
             />
           ) : (
