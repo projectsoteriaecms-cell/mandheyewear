@@ -74,7 +74,7 @@ const Eyewear = () => {
     }
   }, []);
 
-  // Parse price tier from URL params
+  // Parse price tier and category from URL params
   useEffect(() => {
     const filter = searchParams.get("filter");
     if (filter?.startsWith("price-tier-")) {
@@ -85,12 +85,23 @@ const Eyewear = () => {
     } else {
       setPriceTierFilter(null);
     }
+
+    const category = searchParams.get("category");
+    setCategoryFilter(category || null);
   }, [searchParams]);
 
   // Clear price tier filter
   const clearPriceTierFilter = () => {
     setPriceTierFilter(null);
     searchParams.delete("filter");
+    setSearchParams(searchParams);
+    setCurrentPage(1);
+  };
+
+  // Clear category filter
+  const clearCategoryFilter = () => {
+    setCategoryFilter(null);
+    searchParams.delete("category");
     setSearchParams(searchParams);
     setCurrentPage(1);
   };
