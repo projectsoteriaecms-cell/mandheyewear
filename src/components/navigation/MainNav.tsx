@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { MagnifyingGlass, Heart, User, SignOut, Gear, Sparkle, Camera, CaretDown } from "@phosphor-icons/react";
+import { MagnifyingGlass, Heart, User, SignOut, Gear, Sparkle, Camera } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -32,17 +32,12 @@ const highlightedLinks = [
   },
 ];
 
-// Eyewear dropdown items
-const eyewearLinks = [
+// Direct category links (Warby Parker style)
+const categoryLinks = [
   { name: "Eyeglasses", path: "/eyewear?category=eyeglasses" },
   { name: "Sunglasses", path: "/eyewear?category=sunglasses" },
-  { name: "All Eyewear", path: "/eyewear" },
-];
-
-// Regular nav links
-const navLinks = [
-  { name: "Eye Exams", path: "/booking" },
   { name: "Accessories", path: "/eyewear?category=accessories" },
+  { name: "Eye Exams", path: "/booking" },
 ];
 
 export const MainNav = () => {
@@ -71,9 +66,6 @@ export const MainNav = () => {
     }
   };
 
-  const isEyewearActive = location.pathname === "/eyewear" || 
-    location.search.includes("category=eyeglasses") || 
-    location.search.includes("category=sunglasses");
 
   return (
     <div className="bg-background border-b border-border">
@@ -109,51 +101,27 @@ export const MainNav = () => {
               );
             })}
 
-            {/* Eyewear Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
+            {/* Category Links */}
+            {categoryLinks.map((link) => {
+              const isActive = location.pathname + location.search === link.path ||
+                (link.path.includes("?") && location.search.includes(link.path.split("?")[1]));
+              return (
+                <Link
+                  key={link.name}
+                  to={link.path}
                   className={cn(
-                    "text-sm font-medium transition-smooth relative py-2 flex items-center gap-1 outline-none",
+                    "text-sm font-medium transition-smooth relative py-2",
                     "text-foreground/70 hover:text-foreground",
-                    isEyewearActive && "text-foreground"
+                    isActive && "text-foreground"
                   )}
                 >
-                  Eyewear
-                  <CaretDown weight="bold" className="h-3 w-3" />
-                  {isEyewearActive && (
+                  {link.name}
+                  {isActive && (
                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
                   )}
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="w-44 z-50 bg-popover">
-                {eyewearLinks.map((link) => (
-                  <DropdownMenuItem key={link.name} asChild>
-                    <Link to={link.path} className="cursor-pointer">
-                      {link.name}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Regular Nav Links */}
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                className={cn(
-                  "text-sm font-medium transition-smooth relative py-2",
-                  "text-foreground/70 hover:text-foreground",
-                  location.pathname === link.path && "text-foreground"
-                )}
-              >
-                {link.name}
-                {location.pathname === link.path && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
-                )}
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Icon Actions */}
