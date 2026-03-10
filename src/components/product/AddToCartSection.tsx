@@ -18,7 +18,7 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
 
   const handleAddToCart = () => {
     if (!isAuthenticated) {
-      navigate("/login");
+      navigate("/login", { state: { from: window.location.pathname } });
       return;
     }
     addToCart.mutate({ productId: product.id, quantity });

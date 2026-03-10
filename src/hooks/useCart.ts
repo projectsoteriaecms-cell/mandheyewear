@@ -207,7 +207,7 @@ export const useCart = () => {
     cartCount,
     cartTotal,
     isLoading: cartQuery.isLoading,
-    canAddToCart: userCanPurchase,
+    canAddToCart: !!user,
     addToCart,
     updateQuantity,
     removeFromCart,
