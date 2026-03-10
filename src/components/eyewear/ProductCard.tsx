@@ -19,23 +19,8 @@ interface ProductCardProps {
 }
 
 
-const getCategoryLabel = (product: Product): string => {
-  // Show item type for non-frame products
-  if (product.item_type && product.item_type !== "frames") {
-    const typeMap: Record<string, string> = {
-      lenses: "Lenses",
-      contact_lenses: "Contact Lenses",
-      solutions: "Solutions",
-      medications: "Medications",
-      accessories: "Accessories",
-      cleanser: "Cleanser",
-      other: "Other",
-      packaging: "Packaging",
-    };
-    return typeMap[product.item_type] || product.item_type;
-  }
-  // For frames, show style
-  if (!product.style) return "Eyewear";
+const getCategoryLabel = (style: string | null): string => {
+  if (!style) return "Eyewear";
   const styleMap: Record<string, string> = {
     round: "Classic Round",
     rectangular: "Rectangular",
@@ -43,7 +28,7 @@ const getCategoryLabel = (product: Product): string => {
     aviator: "Aviator",
     wayfarer: "Wayfarer",
   };
-  return styleMap[product.style] || product.style.charAt(0).toUpperCase() + product.style.slice(1);
+  return styleMap[style] || style.charAt(0).toUpperCase() + style.slice(1);
 };
 
 export const ProductCard = ({
@@ -123,7 +108,7 @@ export const ProductCard = ({
         </div>
         <CardContent className="p-3 sm:p-4 space-y-1 sm:space-y-2">
           <p className="text-xs text-accent font-medium">
-            {getCategoryLabel(product)}
+            {getCategoryLabel(product.style)}
           </p>
           <h3 className="font-semibold text-foreground text-sm sm:text-base line-clamp-1">{product.name}</h3>
           <p className="text-base sm:text-lg font-bold text-accent">

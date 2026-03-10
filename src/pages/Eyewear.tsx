@@ -24,7 +24,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { House, Eye, SquaresFour, List, X, Eyeglasses, Sun, Drop, FirstAid, Package, Cube } from "@phosphor-icons/react";
+import { House, Eye, SquaresFour, List, X } from "@phosphor-icons/react";
 import { Sparkles, ChevronRight } from "lucide-react";
 
 const PRODUCTS_PER_PAGE = 12;
@@ -40,25 +40,10 @@ const PRICE_TIER_LABELS: Record<PriceTier, string> = {
   luxury: "Luxury",
 };
 
-// Item type category definitions
-const ITEM_TYPE_CATEGORIES = [
-  { key: "all", label: "All Products", icon: Cube },
-  { key: "eyeglasses", label: "Eyeglasses", icon: Eyeglasses },
-  { key: "sunglasses", label: "Sunglasses", icon: Sun },
-  { key: "lenses", label: "Lenses", icon: Eye },
-  { key: "contact_lenses", label: "Contact Lenses", icon: Drop },
-  { key: "accessories", label: "Accessories", icon: Package },
-  { key: "solutions", label: "Solutions & Care", icon: Drop },
-  { key: "medications", label: "Medications", icon: FirstAid },
-  { key: "other", label: "Other Items", icon: Cube },
-] as const;
-
-type CategoryKey = typeof ITEM_TYPE_CATEGORIES[number]["key"];
-
 const Eyewear = () => {
   useSEO({
-    title: "Shop Eyewear, Lenses, Contacts & Accessories | M&H",
-    description: "Browse our full catalog — prescription glasses, sunglasses, contact lenses, solutions, accessories and more. Buy online in Nigeria.",
+    title: "Shop Designer Eyewear – Prescription Glasses & Sunglasses | M&H",
+    description: "Browse 100+ premium frames. Prescription glasses, sunglasses, and fashion eyewear with free virtual try-on. Buy glasses online in Nigeria.",
   });
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -70,7 +55,7 @@ const Eyewear = () => {
   const [showPersonalized, setShowPersonalized] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [priceTierFilter, setPriceTierFilter] = useState<PriceTier | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState<CategoryKey>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   const { isAuthenticated } = useAuth();
   const recommendationsRef = useRef<HTMLDivElement>(null);
@@ -102,12 +87,7 @@ const Eyewear = () => {
     }
 
     const category = searchParams.get("category");
-    if (category) {
-      const validKeys = ITEM_TYPE_CATEGORIES.map(c => c.key);
-      setCategoryFilter(validKeys.includes(category as CategoryKey) ? category as CategoryKey : "all");
-    } else {
-      setCategoryFilter("all");
-    }
+    setCategoryFilter(category || null);
   }, [searchParams]);
 
   // Clear price tier filter
@@ -118,20 +98,16 @@ const Eyewear = () => {
     setCurrentPage(1);
   };
 
-  // Set category filter
-  const handleCategoryChange = (key: CategoryKey) => {
-    setCategoryFilter(key);
-    if (key === "all") {
-      searchParams.delete("category");
-    } else {
-      searchParams.set("category", key);
-    }
+  // Clear category filter
+  const clearCategoryFilter = () => {
+    setCategoryFilter(null);
+    searchParams.delete("category");
     setSearchParams(searchParams);
     setCurrentPage(1);
   };
 
-  // Fetch ALL products (not just ones with images)
-  const { data: products, isLoading, error } = useProducts();
+  // Fetch products with real images only
+  const { data: products, isLoading, error } = useProducts(undefined, true);
 
   // Get personalized products
   const {
@@ -141,28 +117,6 @@ const Eyewear = () => {
     hasMeasurements,
     getProductScore,
   } = usePersonalizedProducts();
-
-  // Get category counts for badges
-  const categoryCounts = useMemo(() => {
-    if (!products) return {};
-    const counts: Record<string, number> = { all: products.length };
-    products.forEach((p) => {
-      // Map to our display categories
-      if (p.item_type === "frames") {
-        if (p.is_prescription_compatible === false) {
-          counts["sunglasses"] = (counts["sunglasses"] || 0) + 1;
-        } else {
-          counts["eyeglasses"] = (counts["eyeglasses"] || 0) + 1;
-        }
-      } else if (p.item_type) {
-        // Group cleanser with solutions
-        const key = p.item_type === "cleanser" ? "solutions" : 
-                    p.item_type === "packaging" ? "other" : p.item_type;
-        counts[key] = (counts[key] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [products]);
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
@@ -181,20 +135,15 @@ const Eyewear = () => {
         return p.price_tier === priceTierFilter;
       })
       .filter((p) => {
-        if (categoryFilter === "all") return true;
+        if (!categoryFilter) return true;
         if (categoryFilter === "eyeglasses") return p.item_type === "frames" && p.is_prescription_compatible !== false;
         if (categoryFilter === "sunglasses") return p.item_type === "frames" && p.is_prescription_compatible === false;
-        if (categoryFilter === "solutions") return p.item_type === "solutions" || p.item_type === "cleanser";
-        if (categoryFilter === "other") return p.item_type === "other" || p.item_type === "packaging";
-        return p.item_type === categoryFilter;
+        return true;
       })
       .sort((a, b) => {
         if (priceSort === "low-high") return a.price - b.price;
         if (priceSort === "high-low") return b.price - a.price;
-        // Prioritize products with images, then by match score
-        const aHasImage = a.image_url ? 1 : 0;
-        const bHasImage = b.image_url ? 1 : 0;
-        if (aHasImage !== bHasImage) return bHasImage - aHasImage;
+        // If showing personalized, sort by match score
         if (showPersonalized && hasPreferences) {
           const scoreA = getProductScore(a.id)?.matchScore || 0;
           const scoreB = getProductScore(b.id)?.matchScore || 0;
@@ -223,13 +172,6 @@ const Eyewear = () => {
 
   const showRecommendationsSection = isAuthenticated && hasPreferences && topPicks.length > 0;
 
-  // Determine page title based on active category
-  const activeCategory = ITEM_TYPE_CATEGORIES.find(c => c.key === categoryFilter);
-  const pageTitle = categoryFilter === "all" ? "M & H Product Catalog" : activeCategory?.label || "Products";
-
-  // Show frame-specific filters only for frame categories
-  const showFrameFilters = categoryFilter === "all" || categoryFilter === "eyeglasses" || categoryFilter === "sunglasses";
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -251,21 +193,19 @@ const Eyewear = () => {
               <BreadcrumbItem>
                 <BreadcrumbPage className="flex items-center gap-1">
                   <Eye weight="duotone" className="h-4 w-4" />
-                  {categoryFilter === "all" ? "Shop" : activeCategory?.label}
+                  Eyewear
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
 
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">
-              {pageTitle}
+              M & H Eyewear Collection
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              {categoryFilter === "all"
-                ? "Eyewear, lenses, contacts, accessories and more"
-                : `Browse our ${activeCategory?.label?.toLowerCase()} collection`}
+              Designer frames that combine style, comfort, and precision
             </p>
             {filteredProducts.length > 0 && (
               <p className="text-sm text-muted-foreground mt-2">
@@ -274,52 +214,34 @@ const Eyewear = () => {
             )}
           </div>
 
-          {/* Category Tabs */}
-          <div className="mb-8 overflow-x-auto scrollbar-hide">
-            <div className="flex gap-2 pb-2 min-w-max justify-center flex-wrap">
-              {ITEM_TYPE_CATEGORIES.map((cat) => {
-                const Icon = cat.icon;
-                const count = categoryCounts[cat.key] || 0;
-                const isActive = categoryFilter === cat.key;
-                // Hide categories with 0 products (except "all")
-                if (cat.key !== "all" && count === 0) return null;
-                return (
-                  <button
-                    key={cat.key}
-                    onClick={() => handleCategoryChange(cat.key)}
-                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap border ${
-                      isActive
-                        ? "bg-primary text-primary-foreground border-primary shadow-md"
-                        : "bg-card text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground"
-                    }`}
-                  >
-                    <Icon weight={isActive ? "fill" : "regular"} className="h-4 w-4" />
-                    {cat.label}
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                      isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
-                    }`}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Active Filter Badges */}
-          {priceTierFilter && (
+          {(priceTierFilter || categoryFilter) && (
             <div className="flex items-center justify-center gap-2 mb-6 flex-wrap">
               <span className="text-sm text-muted-foreground">Filtering by:</span>
-              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
-                {PRICE_TIER_LABELS[priceTierFilter]} Frames
-                <button
-                  onClick={clearPriceTierFilter}
-                  className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
-                  aria-label="Clear price tier filter"
-                >
-                  <X weight="bold" className="h-3 w-3" />
-                </button>
-              </Badge>
+              {categoryFilter && (
+                <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 capitalize">
+                  {categoryFilter}
+                  <button
+                    onClick={clearCategoryFilter}
+                    className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
+                    aria-label="Clear category filter"
+                  >
+                    <X weight="bold" className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {priceTierFilter && (
+                <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                  {PRICE_TIER_LABELS[priceTierFilter]} Frames
+                  <button
+                    onClick={clearPriceTierFilter}
+                    className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
+                    aria-label="Clear price tier filter"
+                  >
+                    <X weight="bold" className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
             </div>
           )}
 
@@ -387,34 +309,19 @@ const Eyewear = () => {
           {/* All Products Section */}
           {showRecommendationsSection && (
             <div className="flex items-center gap-2 mb-6">
-              <h2 className="text-2xl font-display font-bold">All Products</h2>
+              <h2 className="text-2xl font-display font-bold">All Frames</h2>
             </div>
           )}
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            {showFrameFilters && (
-              <ProductFilters
-                genderFilter={genderFilter}
-                styleFilter={styleFilter}
-                priceSort={priceSort}
-                onGenderChange={handleFilterChange(setGenderFilter)}
-                onStyleChange={handleFilterChange(setStyleFilter)}
-                onPriceSortChange={handleFilterChange(setPriceSort)}
-              />
-            )}
-            {!showFrameFilters && (
-              <div className="flex-1">
-                <ProductFilters
-                  genderFilter="all"
-                  styleFilter="all"
-                  priceSort={priceSort}
-                  onGenderChange={() => {}}
-                  onStyleChange={() => {}}
-                  onPriceSortChange={handleFilterChange(setPriceSort)}
-                  sortOnly
-                />
-              </div>
-            )}
+            <ProductFilters
+              genderFilter={genderFilter}
+              styleFilter={styleFilter}
+              priceSort={priceSort}
+              onGenderChange={handleFilterChange(setGenderFilter)}
+              onStyleChange={handleFilterChange(setStyleFilter)}
+              onPriceSortChange={handleFilterChange(setPriceSort)}
+            />
             
             {/* View Mode Toggle */}
             <ToggleGroup 
@@ -448,7 +355,7 @@ const Eyewear = () => {
             <EmptyState
               type="products"
               title="Failed to load products"
-              description="We couldn't load the product catalog. Please try again later."
+              description="We couldn't load the eyewear collection. Please try again later."
               actionLabel="Refresh Page"
               onAction={() => window.location.reload()}
             />
@@ -462,7 +369,6 @@ const Eyewear = () => {
                 setGenderFilter("all");
                 setStyleFilter("all");
                 setPriceSort("featured");
-                handleCategoryChange("all");
               }}
             />
           ) : (

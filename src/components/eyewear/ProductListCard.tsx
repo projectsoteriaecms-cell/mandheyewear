@@ -30,21 +30,16 @@ const getPlaceholderImage = (productId: string) => {
   return placeholderImages[index];
 };
 
-const getCategoryLabel = (product: Product): string => {
-  if (product.item_type && product.item_type !== "frames") {
-    const typeMap: Record<string, string> = {
-      lenses: "Lenses", contact_lenses: "Contact Lenses", solutions: "Solutions",
-      medications: "Medications", accessories: "Accessories", cleanser: "Cleanser",
-      other: "Other", packaging: "Packaging",
-    };
-    return typeMap[product.item_type] || product.item_type;
-  }
-  if (!product.style) return "Eyewear";
+const getCategoryLabel = (style: string | null): string => {
+  if (!style) return "Eyewear";
   const styleMap: Record<string, string> = {
-    round: "Classic Round", rectangular: "Rectangular", "cat-eye": "Cat-Eye",
-    aviator: "Aviator", wayfarer: "Wayfarer",
+    round: "Classic Round",
+    rectangular: "Rectangular",
+    "cat-eye": "Cat-Eye",
+    aviator: "Aviator",
+    wayfarer: "Wayfarer",
   };
-  return styleMap[product.style] || product.style.charAt(0).toUpperCase() + product.style.slice(1);
+  return styleMap[style] || style.charAt(0).toUpperCase() + style.slice(1);
 };
 
 export const ProductListCard = ({
@@ -106,7 +101,7 @@ export const ProductListCard = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-accent font-medium">
-                  {getCategoryLabel(product)}
+                  {getCategoryLabel(product.style)}
                 </p>
                 {product.brand && (
                   <span className="text-xs text-muted-foreground">{product.brand}</span>
