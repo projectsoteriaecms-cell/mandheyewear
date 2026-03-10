@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ?? "M&H Eyewear <noreply@notify.mandheyewear.com>";
+const RESEND_TESTING_MODE_ERROR = "You can only send testing emails to your own email address";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,6 +37,10 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Missing required fields");
     }
 
+    if (!RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+
     const roleName = roleLabels[role] || role;
 
     const emailResponse = await fetch("https://api.resend.com/emails", {
@@ -44,7 +50,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Soteria Eye Clinic <onboarding@resend.dev>",
+        from: RESEND_FROM_EMAIL,
         to: [email],
         subject: `You're Invited to Join Soteria Eye Clinic`,
         html: `
@@ -108,13 +114,31 @@ const handler = async (req: Request): Promise<Response> => {
     const emailData = await emailResponse.json();
 
     if (!emailResponse.ok) {
+      const errorMessage = emailData?.message || "Failed to send email";
+
+      if (errorMessage.includes(RESEND_TESTING_MODE_ERROR)) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            emailSent: false,
+            warning:
+              "Invitation created, but email sending is restricted until your sending domain is verified and used as sender.",
+            signupUrl,
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          },
+        );
+      }
+
       console.error("Resend API error:", emailData);
-      throw new Error(emailData.message || "Failed to send email");
+      throw new Error(errorMessage);
     }
 
     console.log("Invitation email sent:", emailData);
 
-    return new Response(JSON.stringify({ success: true, data: emailData }), {
+    return new Response(JSON.stringify({ success: true, emailSent: true, data: emailData }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
@@ -131,3 +155,4 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 serve(handler);
+
