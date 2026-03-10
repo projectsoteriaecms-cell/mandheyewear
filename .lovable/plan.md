@@ -1,55 +1,55 @@
 
-# Soteria Eye Clinic — Remix & Transform Plan
 
-## Status: Ready for User Action
+## Structured Image Generation Dialog
 
-### Next Step
-1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
-2. Name the new project **"Soteria Eye Clinic"**
-3. Paste the transformation prompt (saved below) into the new project's chat
+### Problem
+The current "Generate Missing Images" button fires off generation for all 3,000+ missing products indiscriminately. The user needs to select **what category** of products to generate for, with counts shown per category.
 
-### Transformation Prompt (for the new project)
+### Solution
 
+**1. Update the `GenerateImagesDialog` component** to add a category/item-type selection step before generation starts:
+
+- Show a list of item types with their missing-image counts (e.g., "Frames — 1,842 missing", "Contact Lenses — 312 missing", etc.)
+- User selects one or more item types via checkboxes
+- Optionally set a batch limit (e.g., "Generate first 50 only")
+- Only then can they click "Start Generating"
+
+The idle state becomes a configuration form:
 ```text
-Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
-
-## 1. Branding & Colors
-- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
-- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
-- Accent color: keep the M&H gold as a secondary accent for partnership elements
-- Update CSS variables in index.css accordingly
-- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
-- Update favicon to use Soteria branding
-- Font: keep Cormorant Garamond for display but consider a more clinical feel
-
-## 2. Homepage Rewrite
-- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
-- Primary CTAs: "Book an Eye Exam" and "Our Services"
-- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
-
-## 3. Navigation Updates
-- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
-- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
-- MobileBottomNav: Home, Services, Book, Branches, Account
-
-## 4. Pages to Update
-- About: Soteria's story + M&H Eyewear as premium eyewear partner
-- Partners: HMO partners + M&H Eyewear as strategic partner
-- Services/Eye Care: Primary service page
-- Branches: Show all locations from shared database
-- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
-
-## 5. SEO & Meta
-- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
-
-## 6. Footer
-- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
-
-## 7. Do NOT Change
-- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+┌─────────────────────────────────────────┐
+│ Generate Product Images                 │
+│                                         │
+│ Select product categories:              │
+│ ☑ Frames (1,842)      → 6-shot gallery  │
+│ ☐ Contact Lenses (312) → 1 shot        │
+│ ☐ Lenses (198)          → 1 shot        │
+│ ☐ Solutions (87)        → 1 shot        │
+│ ☐ Accessories (45)      → 1 shot        │
+│ ☐ Other (29)            → 1 shot        │
+│                                         │
+│ Batch limit: [50 ▾]                     │
+│                                         │
+│ Total: 1,842 products selected          │
+│ Est. time: ~18 min                      │
+│                                         │
+│         [Cancel]  [Start Generating]    │
+└─────────────────────────────────────────┘
 ```
 
-### Already Completed in This Project (M&H Eyewear)
-- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
-- ✅ About page updated with Soteria partnership section
-- ✅ Route registered in public.routes.tsx
+**2. Update the edge function** (`supabase/functions/generate-product-image/index.ts`) to accept an `itemTypes` filter parameter and a `maxProducts` limit:
+
+- Add `itemTypes?: string[]` and `maxProducts?: number` to the request body
+- Filter the query: `.in("item_type", itemTypes)` when provided
+- Apply `.limit(maxProducts)` when provided
+- Return per-type breakdown in the response
+
+**3. Update `ProductImages.tsx`** to pass per-category missing counts to the dialog by computing them from the products array.
+
+### Technical Details
+
+- **Dialog state**: Add `selectedTypes: string[]` and `batchLimit: number` state
+- **Counts query**: Compute missing counts per item_type from the already-loaded `products` array (filter where `!p.image_url`)
+- **Edge function body**: Send `{ batchSize: 1, itemTypes: ["contact_lenses"], maxProducts: 50 }` 
+- **Remaining count**: Edge function adjusts remaining count to only count selected types
+- **Batch limit options**: 10, 25, 50, 100, All
+
