@@ -184,15 +184,24 @@ const AdminUsers = () => {
 
   // Check if current user is a manager (not super_admin)
   const isManager = currentUserRole === "branch_manager";
+  const isAdmin = currentUserRole === "admin";
   const isSuperAdmin = currentUserRole === "super_admin";
 
-  // For managers: filter to only show staff, customers, unverified users, AND themselves
+  // Filter visible users based on current user's role
   const managerVisibleUsers = isManager
     ? visibleUsers.filter((u) => 
         u.role === "branch_staff" || 
         u.role === "customer" || 
         u.role === "user" ||
-        u.user_id === currentUser?.id // Include their own profile
+        u.user_id === currentUser?.id
+      )
+    : isAdmin
+    ? visibleUsers.filter((u) => 
+        u.role === "branch_staff" || 
+        u.role === "branch_manager" || 
+        u.role === "customer" || 
+        u.role === "user" ||
+        u.user_id === currentUser?.id
       )
     : visibleUsers;
 
