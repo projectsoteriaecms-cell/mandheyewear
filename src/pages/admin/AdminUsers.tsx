@@ -206,7 +206,7 @@ const AdminUsers = () => {
     : visibleUsers;
 
   // Recalculate stats based on what the user can see
-  const visibleStaffCount = managerVisibleUsers.filter((u) => u.role === "branch_staff" || u.role === "branch_manager").length;
+  const visibleStaffCount = managerVisibleUsers.filter((u) => u.role === "branch_staff" || u.role === "branch_manager" || u.role === "admin").length;
   const visibleCustomerCount = managerVisibleUsers.filter((u) => u.role === "customer").length;
   const visibleUnverifiedCount = managerVisibleUsers.filter((u) => u.role === "user").length;
 
