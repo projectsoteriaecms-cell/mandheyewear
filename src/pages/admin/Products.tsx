@@ -50,6 +50,7 @@ import {
   SquaresFour,
   ArrowsClockwise,
   CloudArrowDown,
+  Sparkle,
 } from "@phosphor-icons/react";
 import { useAdminProducts } from "@/modules/products";
 import { CreateProductDialog } from "@/components/admin/products/CreateProductDialog";
