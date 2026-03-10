@@ -55,6 +55,7 @@ const Eyewear = () => {
   const [showPersonalized, setShowPersonalized] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [priceTierFilter, setPriceTierFilter] = useState<PriceTier | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   const { isAuthenticated } = useAuth();
   const recommendationsRef = useRef<HTMLDivElement>(null);
@@ -73,7 +74,7 @@ const Eyewear = () => {
     }
   }, []);
 
-  // Parse price tier from URL params
+  // Parse price tier and category from URL params
   useEffect(() => {
     const filter = searchParams.get("filter");
     if (filter?.startsWith("price-tier-")) {
@@ -84,12 +85,23 @@ const Eyewear = () => {
     } else {
       setPriceTierFilter(null);
     }
+
+    const category = searchParams.get("category");
+    setCategoryFilter(category || null);
   }, [searchParams]);
 
   // Clear price tier filter
   const clearPriceTierFilter = () => {
     setPriceTierFilter(null);
     searchParams.delete("filter");
+    setSearchParams(searchParams);
+    setCurrentPage(1);
+  };
+
+  // Clear category filter
+  const clearCategoryFilter = () => {
+    setCategoryFilter(null);
+    searchParams.delete("category");
     setSearchParams(searchParams);
     setCurrentPage(1);
   };
@@ -122,6 +134,12 @@ const Eyewear = () => {
         if (!priceTierFilter) return true;
         return p.price_tier === priceTierFilter;
       })
+      .filter((p) => {
+        if (!categoryFilter) return true;
+        if (categoryFilter === "eyeglasses") return p.item_type === "frames" && p.is_prescription_compatible !== false;
+        if (categoryFilter === "sunglasses") return p.item_type === "frames" && p.is_prescription_compatible === false;
+        return true;
+      })
       .sort((a, b) => {
         if (priceSort === "low-high") return a.price - b.price;
         if (priceSort === "high-low") return b.price - a.price;
@@ -133,7 +151,7 @@ const Eyewear = () => {
         }
         return 0;
       });
-  }, [products, genderFilter, styleFilter, priceSort, showPersonalized, hasPreferences, getProductScore, priceTierFilter]);
+  }, [products, genderFilter, styleFilter, priceSort, showPersonalized, hasPreferences, getProductScore, priceTierFilter, categoryFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
@@ -196,20 +214,34 @@ const Eyewear = () => {
             )}
           </div>
 
-          {/* Active Price Tier Filter Badge */}
-          {priceTierFilter && (
-            <div className="flex items-center justify-center gap-2 mb-6">
+          {/* Active Filter Badges */}
+          {(priceTierFilter || categoryFilter) && (
+            <div className="flex items-center justify-center gap-2 mb-6 flex-wrap">
               <span className="text-sm text-muted-foreground">Filtering by:</span>
-              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
-                {PRICE_TIER_LABELS[priceTierFilter]} Frames
-                <button
-                  onClick={clearPriceTierFilter}
-                  className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
-                  aria-label="Clear price tier filter"
-                >
-                  <X weight="bold" className="h-3 w-3" />
-                </button>
-              </Badge>
+              {categoryFilter && (
+                <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 capitalize">
+                  {categoryFilter}
+                  <button
+                    onClick={clearCategoryFilter}
+                    className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
+                    aria-label="Clear category filter"
+                  >
+                    <X weight="bold" className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {priceTierFilter && (
+                <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                  {PRICE_TIER_LABELS[priceTierFilter]} Frames
+                  <button
+                    onClick={clearPriceTierFilter}
+                    className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors"
+                    aria-label="Clear price tier filter"
+                  >
+                    <X weight="bold" className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
             </div>
           )}
 
