@@ -37,6 +37,7 @@ const roleLabels: Record<AppRole, string> = {
   customer: "Customer",
   branch_staff: "Branch Staff",
   branch_manager: "Branch Manager",
+  admin: "Admin",
   super_admin: "Super Admin",
 };
 

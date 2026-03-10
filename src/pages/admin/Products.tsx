@@ -135,7 +135,7 @@ const Products = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {isSuperAdmin && (
+            {isAdmin && (
               <Button
                 variant="outline"
                 onClick={pullItems}
@@ -149,7 +149,7 @@ const Products = () => {
                 {syncStatus === "syncing" ? "Syncing…" : "Zoho Sync"}
               </Button>
             )}
-            {isSuperAdmin && (
+            {isAdmin && (
               <Button variant="outline" onClick={() => setIsLinkDialogOpen(true)}>
                 <ArrowsClockwise className="mr-2 h-4 w-4" weight="light" />
                 Link to Zoho
