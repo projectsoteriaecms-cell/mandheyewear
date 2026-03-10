@@ -3,6 +3,7 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Award, Users, Sparkles, Eye, Glasses } from "lucide-react";
+import soteriaLogo from "@/assets/soteria-logo.png";
 
 const About = () => {
   useSEO({
@@ -138,6 +139,44 @@ const About = () => {
                 );
               })}
             </div>
+          </div>
+
+          {/* Partnership Section */}
+          <div className="mb-16">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-4">
+                Our Clinical Partner
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Powered by a strategic partnership with Soteria Eye Clinic
+              </p>
+            </div>
+            <Card className="overflow-hidden border border-primary/20">
+              <CardContent className="p-8 sm:p-10">
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  <div className="w-24 h-24 rounded-2xl bg-secondary flex items-center justify-center p-3 shrink-0">
+                    <img
+                      src={soteriaLogo}
+                      alt="Soteria Eye Clinic"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="text-center sm:text-left space-y-2">
+                    <h3 className="text-xl font-display font-bold text-foreground">
+                      Soteria Eye Clinic
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Our clinical operations are powered by Soteria Eye Clinic — a trusted name in comprehensive 
+                      ophthalmic and optometric care with over 15 years of experience. Together, we combine 
+                      clinical expertise with fashion-forward eyewear to deliver a seamless vision care experience.
+                    </p>
+                    <a href="/partners" className="inline-block text-primary text-sm font-medium hover:underline">
+                      View all partners →
+                    </a>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Mission Statement */}

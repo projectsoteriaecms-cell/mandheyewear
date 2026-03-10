@@ -8,6 +8,7 @@ const Booking = lazy(() => import("@/pages/Booking"));
 const Eyewear = lazy(() => import("@/pages/Eyewear"));
 const Branches = lazy(() => import("@/pages/Branches"));
 const About = lazy(() => import("@/pages/About"));
+const Partners = lazy(() => import("@/pages/Partners"));
 const Contact = lazy(() => import("@/pages/Contact"));
 const EyeCare = lazy(() => import("@/pages/EyeCare"));
 const FAQ = lazy(() => import("@/pages/FAQ"));
@@ -46,6 +47,7 @@ export const publicRoutes = [
   <Route key="/eye-care" path="/eye-care" element={withSuspense(EyeCare)} />,
   <Route key="/branches" path="/branches" element={withSuspense(Branches)} />,
   <Route key="/about" path="/about" element={withSuspense(About)} />,
+  <Route key="/partners" path="/partners" element={withSuspense(Partners)} />,
   <Route key="/contact" path="/contact" element={withSuspense(Contact)} />,
   <Route key="/faq" path="/faq" element={withSuspense(FAQ)} />,
   <Route key="/try-on" path="/try-on" element={withSuspense(TryOn)} />,
