@@ -1,25 +1,21 @@
 project_id = "ispizamxlrukxmysgyjv"
 
-[functions.analyze-face]
-verify_jwt = true
-
-[functions.virtual-try-on]
-verify_jwt = false
-
-[functions.meta-product-feed]
-verify_jwt = false
-
-[functions.sitemap]
-verify_jwt = false
-
-[functions.zoho-oauth]
-verify_jwt = false
-
-[functions.zoho-sync]
-verify_jwt = false
-
-[functions.zoho-webhook]
-verify_jwt = false
-
-[functions.generate-product-image]
-verify_jwt = false
+[functions]
+  [functions.analyze-face]
+    verify_jwt = true
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.generate-product-image]
+    verify_jwt = false
+  [functions.meta-product-feed]
+    verify_jwt = false
+  [functions.sitemap]
+    verify_jwt = false
+  [functions.virtual-try-on]
+    verify_jwt = false
+  [functions.zoho-oauth]
+    verify_jwt = false
+  [functions.zoho-sync]
+    verify_jwt = false
+  [functions.zoho-webhook]
+    verify_jwt = false
