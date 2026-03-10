@@ -172,6 +172,24 @@ const Products = () => {
             {isAdmin && (
               <Button
                 variant="outline"
+                onClick={handleEnrichProducts}
+                disabled={isEnriching}
+              >
+                {isEnriching ? (
+                  <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" weight="bold" />
+                ) : (
+                  <Sparkle className="mr-2 h-4 w-4" weight="light" />
+                )}
+                {isEnriching
+                  ? enrichProgress
+                    ? `Enriching… ${enrichProgress.enriched} done, ${enrichProgress.remaining} left`
+                    : "Starting…"
+                  : "Enrich Metadata"}
+              </Button>
+            )}
+            {isAdmin && (
+              <Button
+                variant="outline"
                 onClick={pullItems}
                 disabled={syncStatus === "syncing"}
               >
