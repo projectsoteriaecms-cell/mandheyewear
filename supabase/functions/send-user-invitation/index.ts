@@ -120,14 +120,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!emailResponse.ok) {
       const errorMessage = emailData?.message || "Failed to send email";
+      const normalizedMessage = errorMessage.toLowerCase();
 
-      if (errorMessage.includes(RESEND_TESTING_MODE_ERROR)) {
+      const isRestrictedModeError = RESEND_RESTRICTED_MODE_FRAGMENTS.some((fragment) =>
+        normalizedMessage.includes(fragment.toLowerCase()),
+      );
+
+      if (isRestrictedModeError) {
         return new Response(
           JSON.stringify({
             success: true,
             emailSent: false,
             warning:
-              "Invitation created, but email sending is restricted until your sending domain is verified and used as sender.",
+              "Invitation created, but outbound email is blocked until your sending domain is verified in Resend and used as the sender.",
             signupUrl,
           }),
           {
