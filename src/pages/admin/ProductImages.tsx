@@ -301,7 +301,7 @@ const ProductImages = () => {
         <GenerateImagesDialog
           open={generateDialogOpen}
           onOpenChange={setGenerateDialogOpen}
-          missingCount={stats.missingPrimary || 0}
+          categoryCounts={categoryCounts}
           onComplete={() => {
             queryClient.invalidateQueries({ queryKey: ["admin-products"] });
             queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
