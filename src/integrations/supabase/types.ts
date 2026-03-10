@@ -1587,6 +1587,13 @@ export type Database = {
         }
         Returns: string
       }
+      get_product_category_counts: {
+        Args: never
+        Returns: {
+          category: string
+          count: number
+        }[]
+      }
       get_product_image_stats: { Args: never; Returns: Json }
       has_role: {
         Args: {
