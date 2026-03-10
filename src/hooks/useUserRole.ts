@@ -4,6 +4,7 @@ export {
   useUserRole, 
   useIsStaff, 
   useIsManager, 
+  useIsAdmin,
   useIsSuperAdmin,
   type AppRole 
 } from "@/shared/hooks/useUserRole";

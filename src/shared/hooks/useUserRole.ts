@@ -28,7 +28,7 @@ export const useUserRole = () => {
 
 export const useIsStaff = () => {
   const { data: role, isLoading } = useUserRole();
-  const staffRoles: AppRole[] = ["branch_staff", "branch_manager", "super_admin"];
+  const staffRoles: AppRole[] = ["branch_staff", "branch_manager", "admin", "super_admin"];
   return {
     isStaff: role ? staffRoles.includes(role) : false,
     isLoading,
@@ -37,9 +37,18 @@ export const useIsStaff = () => {
 
 export const useIsManager = () => {
   const { data: role, isLoading } = useUserRole();
-  const managerRoles: AppRole[] = ["branch_manager", "super_admin"];
+  const managerRoles: AppRole[] = ["branch_manager", "admin", "super_admin"];
   return {
     isManager: role ? managerRoles.includes(role) : false,
+    isLoading,
+  };
+};
+
+export const useIsAdmin = () => {
+  const { data: role, isLoading } = useUserRole();
+  const adminRoles: AppRole[] = ["admin", "super_admin"];
+  return {
+    isAdmin: role ? adminRoles.includes(role) : false,
     isLoading,
   };
 };
