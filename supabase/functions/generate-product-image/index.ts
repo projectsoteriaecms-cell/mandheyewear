@@ -260,23 +260,34 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { batchSize = 1 } = await req.json().catch(() => ({}));
+    const { batchSize = 1, itemTypes, maxProducts } = await req.json().catch(() => ({}));
 
-    // Count remaining
-    const { count: remaining } = await supabase
+    // Build filter for item types
+    const itemTypeFilter = Array.isArray(itemTypes) && itemTypes.length > 0 ? itemTypes : null;
+
+    // Count remaining (with optional item type filter)
+    let remainingQuery = supabase
       .from("products")
       .select("id", { count: "exact", head: true })
       .eq("is_active", true)
       .or("image_url.is.null,image_url.eq.");
+    if (itemTypeFilter) remainingQuery = remainingQuery.in("item_type", itemTypeFilter);
+    const { count: remaining } = await remainingQuery;
 
-    // Get batch
-    const { data: products, error: fetchErr } = await supabase
+    // Get batch (with optional item type filter and max limit)
+    const limit = typeof maxProducts === "number" && maxProducts > 0
+      ? Math.min(maxProducts, batchSize)
+      : batchSize;
+
+    let productQuery = supabase
       .from("products")
       .select("id, name, brand, color, material, item_type, style, sku")
       .eq("is_active", true)
       .or("image_url.is.null,image_url.eq.")
       .order("item_type", { ascending: true })
-      .limit(batchSize);
+      .limit(limit);
+    if (itemTypeFilter) productQuery = productQuery.in("item_type", itemTypeFilter);
+    const { data: products, error: fetchErr } = await productQuery;
 
     if (fetchErr) {
       return json({ error: "Failed to fetch products: " + fetchErr.message }, 500);
