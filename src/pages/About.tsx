@@ -3,6 +3,7 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Award, Users, Sparkles, Eye, Glasses } from "lucide-react";
+import soteriaLogo from "@/assets/soteria-logo.png";
 
 const About = () => {
   useSEO({

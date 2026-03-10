@@ -8,6 +8,7 @@ const Booking = lazy(() => import("@/pages/Booking"));
 const Eyewear = lazy(() => import("@/pages/Eyewear"));
 const Branches = lazy(() => import("@/pages/Branches"));
 const About = lazy(() => import("@/pages/About"));
+const Partners = lazy(() => import("@/pages/Partners"));
 const Contact = lazy(() => import("@/pages/Contact"));
 const EyeCare = lazy(() => import("@/pages/EyeCare"));
 const FAQ = lazy(() => import("@/pages/FAQ"));
