@@ -106,7 +106,7 @@ export const ProductListCard = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-accent font-medium">
-                  {getCategoryLabel(product.style)}
+                  {getCategoryLabel(product)}
                 </p>
                 {product.brand && (
                   <span className="text-xs text-muted-foreground">{product.brand}</span>
