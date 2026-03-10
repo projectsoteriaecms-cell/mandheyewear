@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AdminLayout, RoleGuard } from "@/shared/components/admin";
 import { useZohoSync } from "@/hooks/admin/useZohoSync";
-import { useIsSuperAdmin } from "@/hooks/useUserRole";
+import { useIsAdmin } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
