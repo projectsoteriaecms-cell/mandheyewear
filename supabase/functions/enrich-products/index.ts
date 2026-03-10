@@ -188,9 +188,9 @@ If you cannot confidently determine a value, use null. Parse dimensions from nam
           const original = batch.find((p) => p.id === ep.id);
           if (!original) continue;
 
-          // Only set NULL fields
+          // Only set NULL fields — use "Other" fallback for style to prevent re-processing
           if (!original.brand && ep.brand) updates.brand = ep.brand;
-          if (!original.style && ep.style) updates.style = ep.style;
+          if (!original.style) updates.style = ep.style || "Other";
           if (!original.material && ep.material) updates.material = ep.material;
           if (!original.color && ep.color) updates.color = ep.color;
           if (!original.gender && ep.gender) updates.gender = ep.gender;
