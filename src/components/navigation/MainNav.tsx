@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { MagnifyingGlass, Heart, User, SignOut, Gear, Sparkle, Camera, CaretDown } from "@phosphor-icons/react";
+import { MagnifyingGlass, Heart, User, SignOut, Gear, Sparkle, Camera } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
