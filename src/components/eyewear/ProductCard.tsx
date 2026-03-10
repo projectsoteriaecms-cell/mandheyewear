@@ -123,7 +123,7 @@ export const ProductCard = ({
         </div>
         <CardContent className="p-3 sm:p-4 space-y-1 sm:space-y-2">
           <p className="text-xs text-accent font-medium">
-            {getCategoryLabel(product.style)}
+            {getCategoryLabel(product)}
           </p>
           <h3 className="font-semibold text-foreground text-sm sm:text-base line-clamp-1">{product.name}</h3>
           <p className="text-base sm:text-lg font-bold text-accent">
