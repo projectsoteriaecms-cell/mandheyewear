@@ -123,7 +123,7 @@ const Products = () => {
   };
 
   return (
-    <RoleGuard allowedRoles={["branch_manager", "super_admin"]}>
+    <RoleGuard allowedRoles={["branch_manager", "admin", "super_admin"]}>
       <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
