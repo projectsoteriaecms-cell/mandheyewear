@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Lightning, Warning, CheckCircle, XCircle, Camera } from "@phosphor-icons/react";
+import { Lightning, Warning, CheckCircle, XCircle, Camera, Pause, DownloadSimple } from "@phosphor-icons/react";
 
 interface CategoryCount {
   type: string;
@@ -37,6 +37,8 @@ interface GenerateImagesDialogProps {
 interface BatchResult {
   productId: string;
   sku: string;
+  name?: string;
+  brand?: string | null;
   success: boolean;
   error?: string;
   shots?: number;
@@ -50,19 +52,42 @@ const BATCH_LIMITS = [
   { value: "all", label: "All" },
 ];
 
+const CONSECUTIVE_FAIL_THRESHOLD = 5;
+
+function exportErrorsCSV(errors: BatchResult[]) {
+  const header = "SKU,Name,Brand,Error\n";
+  const rows = errors.map((e) => {
+    const sku = `"${(e.sku || "").replace(/"/g, '""')}"`;
+    const name = `"${(e.name || "").replace(/"/g, '""')}"`;
+    const brand = `"${(e.brand || "").replace(/"/g, '""')}"`;
+    const error = `"${(e.error || "").replace(/"/g, '""')}"`;
+    return `${sku},${name},${brand},${error}`;
+  }).join("\n");
+
+  const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `image-generation-errors-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export const GenerateImagesDialog = ({
   open,
   onOpenChange,
   categoryCounts,
   onComplete,
 }: GenerateImagesDialogProps) => {
-  const [status, setStatus] = useState<"idle" | "running" | "done" | "cancelled">("idle");
+  const [status, setStatus] = useState<"idle" | "running" | "done" | "cancelled" | "paused">("idle");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [batchLimit, setBatchLimit] = useState("50");
   const [processed, setProcessed] = useState(0);
   const [succeeded, setSucceeded] = useState(0);
   const [failed, setFailed] = useState(0);
   const [errors, setErrors] = useState<BatchResult[]>([]);
+  const [currentProduct, setCurrentProduct] = useState<{ sku: string; name: string; brand?: string | null } | null>(null);
+  const [pauseReason, setPauseReason] = useState<string | null>(null);
   const cancelRef = useRef(false);
 
   const totalSelected = useMemo(
@@ -71,6 +96,17 @@ export const GenerateImagesDialog = ({
   );
 
   const effectiveLimit = batchLimit === "all" ? totalSelected : Math.min(Number(batchLimit), totalSelected);
+
+  // Cost estimation: frames = 6 API calls, others = 1
+  const estimatedApiCalls = useMemo(() => {
+    let calls = 0;
+    categoryCounts.filter((c) => selectedTypes.includes(c.type)).forEach((c) => {
+      const count = batchLimit === "all" ? c.missing : Math.min(c.missing, Math.ceil(Number(batchLimit || 50) * (c.missing / totalSelected)));
+      calls += count * c.shots;
+    });
+    return Math.round(calls) || 0;
+  }, [categoryCounts, selectedTypes, batchLimit, totalSelected]);
+
   const estimatedMinutes = Math.ceil(
     selectedTypes.includes("frames")
       ? effectiveLimit * 0.6
@@ -91,15 +127,19 @@ export const GenerateImagesDialog = ({
     setErrors([]);
     setSelectedTypes([]);
     setBatchLimit("50");
+    setCurrentProduct(null);
+    setPauseReason(null);
     cancelRef.current = false;
   }, []);
 
   const handleStart = useCallback(async () => {
     setStatus("running");
     cancelRef.current = false;
+    setPauseReason(null);
     let totalProcessed = 0;
     let totalSucceeded = 0;
     let totalFailed = 0;
+    let consecutiveFailures = 0;
     const allErrors: BatchResult[] = [];
     const maxProducts = batchLimit === "all" ? undefined : Number(batchLimit);
 
@@ -111,11 +151,24 @@ export const GenerateImagesDialog = ({
 
         if (error) {
           console.error("Edge function error:", error);
+          consecutiveFailures++;
+          if (consecutiveFailures >= CONSECUTIVE_FAIL_THRESHOLD) {
+            setPauseReason(`Auto-paused: ${CONSECUTIVE_FAIL_THRESHOLD} consecutive failures. This may indicate a systemic issue (API rate limits, missing keys, etc.).`);
+            setStatus("paused");
+            onComplete();
+            return;
+          }
           await new Promise((r) => setTimeout(r, 3000));
           continue;
         }
 
         if (!data || data.processed === 0) break;
+
+        // Update live ticker with current product info
+        const lastResult = data.results?.[data.results.length - 1];
+        if (lastResult) {
+          setCurrentProduct({ sku: lastResult.sku, name: lastResult.name || lastResult.sku, brand: lastResult.brand });
+        }
 
         totalProcessed += data.processed;
         totalSucceeded += data.succeeded;
@@ -125,10 +178,22 @@ export const GenerateImagesDialog = ({
         setSucceeded(totalSucceeded);
         setFailed(totalFailed);
 
+        // Track consecutive failures for auto-pause
         const batchErrors = (data.results || []).filter((r: BatchResult) => !r.success);
         if (batchErrors.length > 0) {
+          consecutiveFailures += batchErrors.length;
           allErrors.push(...batchErrors);
           setErrors([...allErrors]);
+        } else {
+          consecutiveFailures = 0; // Reset on success
+        }
+
+        // Check auto-pause threshold
+        if (consecutiveFailures >= CONSECUTIVE_FAIL_THRESHOLD) {
+          setPauseReason(`Auto-paused: ${consecutiveFailures} consecutive failures detected. Check API configuration before resuming.`);
+          setStatus("paused");
+          onComplete();
+          return;
         }
 
         if (data.remaining <= 0) break;
@@ -137,11 +202,19 @@ export const GenerateImagesDialog = ({
         await new Promise((r) => setTimeout(r, 1000));
       } catch (err) {
         console.error("Batch error:", err);
+        consecutiveFailures++;
+        if (consecutiveFailures >= CONSECUTIVE_FAIL_THRESHOLD) {
+          setPauseReason(`Auto-paused: ${consecutiveFailures} consecutive errors. Please investigate before continuing.`);
+          setStatus("paused");
+          onComplete();
+          return;
+        }
         await new Promise((r) => setTimeout(r, 3000));
       }
     }
 
     setStatus(cancelRef.current ? "cancelled" : "done");
+    setCurrentProduct(null);
     onComplete();
   }, [onComplete, selectedTypes, batchLimit]);
 
@@ -170,6 +243,7 @@ export const GenerateImagesDialog = ({
             {status === "running" && "Generating images — 1 product at a time..."}
             {status === "done" && "Image generation complete!"}
             {status === "cancelled" && "Generation was cancelled. Progress is saved."}
+            {status === "paused" && "Generation paused due to consecutive failures."}
           </DialogDescription>
         </DialogHeader>
 
@@ -236,7 +310,7 @@ export const GenerateImagesDialog = ({
                       {effectiveLimit.toLocaleString()} product{effectiveLimit !== 1 ? "s" : ""} selected
                     </p>
                     <p className="text-xs opacity-80 mt-0.5">
-                      Estimated time: ~{estimatedMinutes} min. You can cancel and resume anytime.
+                      ~{estimatedApiCalls.toLocaleString()} API calls • ~{estimatedMinutes} min • Auto-pauses after {CONSECUTIVE_FAIL_THRESHOLD} consecutive failures
                     </p>
                   </div>
                 </div>
@@ -245,9 +319,32 @@ export const GenerateImagesDialog = ({
           </div>
         )}
 
-        {(status === "running" || status === "done" || status === "cancelled") && (
+        {(status === "running" || status === "done" || status === "cancelled" || status === "paused") && (
           <div className="space-y-4">
             <Progress value={progressPercent} className="h-3" />
+
+            {/* Live ticker — currently processing product */}
+            {status === "running" && currentProduct && (
+              <div className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground animate-pulse">
+                <Camera className="h-3.5 w-3.5 flex-shrink-0 text-primary" weight="fill" />
+                <span className="truncate">
+                  Processing: <span className="font-medium text-foreground">{currentProduct.sku}</span>
+                  {currentProduct.brand && <> — {currentProduct.brand}</>}
+                  {currentProduct.name !== currentProduct.sku && <> — {currentProduct.name}</>}
+                </span>
+              </div>
+            )}
+
+            {/* Auto-pause warning */}
+            {status === "paused" && pauseReason && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+                <div className="flex items-start gap-2">
+                  <Pause className="h-4 w-4 mt-0.5 flex-shrink-0" weight="fill" />
+                  <p>{pauseReason}</p>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-3 gap-3 text-center text-sm">
               <div>
                 <p className="text-muted-foreground">Processed</p>
@@ -306,8 +403,16 @@ export const GenerateImagesDialog = ({
               Stop Generation
             </Button>
           )}
-          {(status === "done" || status === "cancelled") && (
-            <Button onClick={handleClose}>Close</Button>
+          {(status === "done" || status === "cancelled" || status === "paused") && (
+            <div className="flex gap-2 w-full justify-end">
+              {errors.length > 0 && (
+                <Button variant="outline" onClick={() => exportErrorsCSV(errors)}>
+                  <DownloadSimple className="h-4 w-4 mr-1" />
+                  Export Errors ({errors.length})
+                </Button>
+              )}
+              <Button onClick={handleClose}>Close</Button>
+            </div>
           )}
         </DialogFooter>
       </DialogContent>
