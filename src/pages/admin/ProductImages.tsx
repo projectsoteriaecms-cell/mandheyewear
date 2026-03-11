@@ -296,6 +296,7 @@ const ProductImages = () => {
                 <ProductImageListView
                   products={visibleProducts}
                   onUploadClick={(id) => setSelectedProductId(id)}
+                  onRegenerateClick={handleRegenerateProduct}
                   maxImages={MAX_ADDITIONAL + 1}
                 />
               )}
