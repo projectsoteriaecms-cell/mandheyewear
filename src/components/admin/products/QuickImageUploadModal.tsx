@@ -312,6 +312,7 @@ export const QuickImageUploadModal = ({
                       isUploading={isUploading}
                       onDelete={handleDelete}
                       onSetPrimary={idx !== 0 ? handleSetPrimary : undefined}
+                      onPreview={() => setPreviewIndex(idx)}
                     />
                   ))}
                 </div>
