@@ -27,6 +27,7 @@ interface ProductImageListViewProps {
 export const ProductImageListView = ({
   products,
   onUploadClick,
+  onRegenerateClick,
   maxImages = 6,
 }: ProductImageListViewProps) => {
   return (
