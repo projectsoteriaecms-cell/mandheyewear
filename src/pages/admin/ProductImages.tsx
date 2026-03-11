@@ -88,16 +88,6 @@ const ProductImages = () => {
 
   // Filtered stats that respond to active filters
   const isFiltered = searchTerm || categoryFilter !== "all" || filter !== "all";
-  const filteredStats = useMemo(() => {
-    if (!isFiltered) return null;
-    const total = filteredProducts.length;
-    const withPrimary = filteredProducts.filter((p) => p.image_url).length;
-    const missingPrimary = total - withPrimary;
-    const complete = filteredProducts.filter(
-      (p) => p.image_url && p.additional_images && p.additional_images.length >= MAX_ADDITIONAL
-    ).length;
-    return { total, withPrimary, missingPrimary, complete };
-  }, [filteredProducts, isFiltered]);
 
   // Filter and search products
   const filteredProducts = useMemo(() => {
