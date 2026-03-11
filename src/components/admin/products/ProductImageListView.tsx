@@ -20,6 +20,7 @@ interface ProductImageListViewProps {
     color?: string | null;
   }[];
   onUploadClick: (productId: string) => void;
+  onRegenerateClick?: (productId: string) => void;
   maxImages?: number;
 }
 
