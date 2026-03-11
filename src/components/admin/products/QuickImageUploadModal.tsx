@@ -329,19 +329,24 @@ export const QuickImageUploadModal = ({
             >
               <SortableContext items={allImages} strategy={rectSortingStrategy}>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                  {allImages.map((url, idx) => (
-                    <DraggableImageItem
-                      key={url}
-                      id={url}
-                      url={url}
-                      index={idx}
-                      isPrimary={idx === 0}
-                      isUploading={isUploading}
-                      onDelete={handleDelete}
-                      onSetPrimary={idx !== 0 ? handleSetPrimary : undefined}
-                      onPreview={() => setPreviewIndex(idx)}
-                    />
-                  ))}
+                  {allImages.map((url, idx) => {
+                    const isFrame = product.item_type === "frames";
+                    return (
+                      <DraggableImageItem
+                        key={url}
+                        id={url}
+                        url={url}
+                        index={idx}
+                        isPrimary={idx === 0}
+                        isUploading={isUploading}
+                        isRegenerating={regeneratingIndex === idx}
+                        onDelete={handleDelete}
+                        onSetPrimary={idx !== 0 ? handleSetPrimary : undefined}
+                        onPreview={() => setPreviewIndex(idx)}
+                        onRegenerate={isFrame && idx < SHOT_SLUGS.length ? () => handleRegenerateShot(idx) : undefined}
+                      />
+                    );
+                  })}
                 </div>
               </SortableContext>
             </DndContext>
