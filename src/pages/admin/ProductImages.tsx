@@ -19,7 +19,8 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MagnifyingGlass, Images, CheckCircle, Warning, SquaresFour, List, Lightning, Cursor, X } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const ITEM_TYPE_LABELS: Record<string, string> = {
   frames: "Frames",
