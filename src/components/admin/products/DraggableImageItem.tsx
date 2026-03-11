@@ -25,6 +25,7 @@ export const DraggableImageItem = ({
   isUploading = false,
   onDelete,
   onSetPrimary,
+  onPreview,
 }: DraggableImageItemProps) => {
   const {
     attributes,
