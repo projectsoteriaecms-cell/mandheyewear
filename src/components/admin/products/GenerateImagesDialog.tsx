@@ -421,34 +421,26 @@ export const GenerateImagesDialog = ({
               /* Bulk category mode */
               <>
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">Select product categories:</p>
-                  <div className="space-y-1.5 rounded-lg border p-3">
-                    {categoryCounts.filter((c) => c.missing > 0).map((cat) => (
-                      <label
-                        key={cat.type}
-                        className="flex items-center justify-between cursor-pointer py-1 hover:bg-muted/50 rounded px-1 -mx-1"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            checked={selectedTypes.includes(cat.type)}
-                            onCheckedChange={() => toggleType(cat.type)}
-                          />
-                          <span className="text-sm">{cat.label}</span>
-                          <span className="text-xs text-muted-foreground">
-                            ({cat.missing.toLocaleString()})
-                          </span>
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {cat.shots === 6 ? "6-shot gallery" : "1 shot"}
-                        </span>
-                      </label>
-                    ))}
-                    {categoryCounts.filter((c) => c.missing > 0).length === 0 && (
-                      <p className="text-sm text-muted-foreground text-center py-2">
-                        All products have images!
-                      </p>
-                    )}
-                  </div>
+                  <p className="text-sm font-medium text-foreground">Product category:</p>
+                  {categoryCounts.filter((c) => c.missing > 0).length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-2">
+                      All products have images!
+                    </p>
+                  ) : (
+                    <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categoryCounts.filter((c) => c.missing > 0).map((cat) => (
+                          <SelectItem key={cat.type} value={cat.type}>
+                            {cat.label} — {cat.missing.toLocaleString()} missing · {cat.shots === 6 ? "6-shot gallery" : "1 shot"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-3">
