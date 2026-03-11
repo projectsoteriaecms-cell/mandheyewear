@@ -29,6 +29,7 @@ import { Image, CloudArrowUp, Lightning } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraggableImageItem } from "./DraggableImageItem";
+import { ImagePreviewLightbox } from "./ImagePreviewLightbox";
 import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -57,6 +58,7 @@ export const QuickImageUploadModal = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -310,6 +312,7 @@ export const QuickImageUploadModal = ({
                       isUploading={isUploading}
                       onDelete={handleDelete}
                       onSetPrimary={idx !== 0 ? handleSetPrimary : undefined}
+                      onPreview={() => setPreviewIndex(idx)}
                     />
                   ))}
                 </div>
@@ -371,6 +374,15 @@ export const QuickImageUploadModal = ({
             </div>
           )}
         </div>
+
+        {/* Image Preview Lightbox */}
+        <ImagePreviewLightbox
+          images={allImages}
+          currentIndex={previewIndex ?? 0}
+          open={previewIndex !== null}
+          onOpenChange={(open) => { if (!open) setPreviewIndex(null); }}
+          onIndexChange={setPreviewIndex}
+        />
       </DialogContent>
     </Dialog>
   );

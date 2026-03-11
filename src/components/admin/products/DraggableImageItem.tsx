@@ -14,6 +14,7 @@ interface DraggableImageItemProps {
   isUploading?: boolean;
   onDelete: (url: string) => void;
   onSetPrimary?: (url: string) => void;
+  onPreview?: (url: string) => void;
 }
 
 export const DraggableImageItem = ({
@@ -24,6 +25,7 @@ export const DraggableImageItem = ({
   isUploading = false,
   onDelete,
   onSetPrimary,
+  onPreview,
 }: DraggableImageItemProps) => {
   const {
     attributes,
@@ -49,7 +51,10 @@ export const DraggableImageItem = ({
         isPrimary && "ring-2 ring-primary"
       )}
     >
-      <div className="aspect-square">
+      <div
+        className="aspect-square cursor-pointer"
+        onClick={() => onPreview?.(url)}
+      >
         <img
           src={url}
           alt={`Product ${index + 1}`}
