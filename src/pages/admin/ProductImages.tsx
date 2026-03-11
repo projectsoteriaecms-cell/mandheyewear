@@ -44,6 +44,7 @@ const ProductImages = () => {
   const stats = useProductImageStats();
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<ImageFilter>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -72,6 +73,22 @@ const ProductImages = () => {
       .sort((a, b) => b.missing - a.missing);
   }, [products]);
 
+  // Compute unique item types with total counts for the category filter
+  const itemTypeOptions = useMemo(() => {
+    const counts: Record<string, number> = {};
+    products.forEach((p) => {
+      const type = p.item_type || "other";
+      counts[type] = (counts[type] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([type, count]) => ({
+        type,
+        label: ITEM_TYPE_LABELS[type] || type,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [products]);
+
   // Filter and search products
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -84,6 +101,10 @@ const ProductImages = () => {
           p.sku.toLowerCase().includes(term) ||
           p.brand?.toLowerCase().includes(term)
       );
+    }
+
+    if (categoryFilter !== "all") {
+      result = result.filter((p) => (p.item_type || "other") === categoryFilter);
     }
 
     switch (filter) {
@@ -111,7 +132,7 @@ const ProductImages = () => {
     });
 
     return result;
-  }, [products, searchTerm, filter]);
+  }, [products, searchTerm, filter, categoryFilter]);
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = visibleCount < filteredProducts.length;
@@ -289,6 +310,25 @@ const ProductImages = () => {
                 <SelectItem value="with_images">With Images</SelectItem>
                 <SelectItem value="missing_primary">Missing Primary</SelectItem>
                 <SelectItem value="complete">Complete (6/6)</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={categoryFilter}
+              onValueChange={(value) => {
+                setCategoryFilter(value);
+                setVisibleCount(ITEMS_PER_PAGE);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {itemTypeOptions.map((opt) => (
+                  <SelectItem key={opt.type} value={opt.type}>
+                    {opt.label} ({opt.count})
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <ToggleGroup
