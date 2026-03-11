@@ -384,7 +384,7 @@ serve(async (req) => {
       return pa - pb;
     });
 
-    const results: Array<{ productId: string; sku: string; success: boolean; error?: string; shots?: number }> = [];
+    const results: Array<{ productId: string; sku: string; name: string; brand: string | null; success: boolean; error?: string; shots?: number }> = [];
     let succeeded = 0;
     let failed = 0;
 
@@ -445,7 +445,7 @@ serve(async (req) => {
           if (updateErr) throw new Error("Product update failed: " + updateErr.message);
 
           succeeded++;
-          results.push({ productId: product.id, sku: product.sku, success: true, shots: 6 });
+          results.push({ productId: product.id, sku: product.sku, name: product.name, brand: product.brand, success: true, shots: 6 });
           console.log(`✓ Generated 6-shot gallery for ${product.sku}`);
         } else {
           // ── Single shot for non-frames ──
@@ -463,13 +463,13 @@ serve(async (req) => {
           if (updateErr) throw new Error("Product update failed: " + updateErr.message);
 
           succeeded++;
-          results.push({ productId: product.id, sku: product.sku, success: true, shots: 1 });
+          results.push({ productId: product.id, sku: product.sku, name: product.name, brand: product.brand, success: true, shots: 1 });
           console.log(`✓ Generated image for ${product.sku}`);
         }
       } catch (err) {
         failed++;
         const errMsg = err instanceof Error ? err.message : "Unknown error";
-        results.push({ productId: product.id, sku: product.sku, success: false, error: errMsg });
+        results.push({ productId: product.id, sku: product.sku, name: product.name, brand: product.brand, success: false, error: errMsg });
         console.error(`✗ Failed for ${product.sku}:`, errMsg);
       }
     }

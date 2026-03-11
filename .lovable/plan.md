@@ -1,49 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Improvements for Generate Missing Images
+## Status: Ready for User Action
 
-After reviewing the current implementation, here are the key areas that could be improved:
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-### 1. Live Progress Log (Currently Processing Product)
-Right now the running state only shows counts. Add a **live ticker** showing the current product being processed (name, SKU, brand) so the admin knows exactly what's happening and can spot issues early.
+### Transformation Prompt (for the new project)
 
-### 2. Cost/Credit Estimation
-Show an **estimated API cost** in the summary before starting. Frames use 6 API calls each, non-frames use 1. Display something like "~312 API calls" so the admin can make informed decisions about batch sizes.
+```text
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
 
-### 3. Brand-Level Filtering
-Currently filtering is only by `item_type`. Add a **secondary brand filter** so the admin can generate images for a specific brand (e.g., "Generate all missing Gucci frames first"). This is especially useful for the 1,800+ frames category.
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
 
-### 4. Priority Queue with Skip-on-Fail
-Currently if a product fails, it retries 3 times then moves on. Add a **"skip threshold"** — if X consecutive products fail (e.g., 5 in a row), auto-pause and surface a warning rather than burning through API credits on likely-systemic failures.
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
 
-### 5. Downloadable Error Report
-After completion, allow the admin to **export failed items as CSV** (SKU, name, error reason) so they can investigate and fix data issues before retrying.
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
 
-### 6. Resume Capability
-Track which products were already processed in the current session. If the admin cancels and reopens, show a **"Resume from where you left off"** option instead of restarting from scratch.
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
 
-### 7. Preview Before Commit
-For single-product regeneration, show a **preview of the generated image** before saving it to the database. This prevents bad generations from overwriting good manual uploads.
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
 
----
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
 
-### Recommended Priority (highest impact first)
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+```
 
-I'd suggest implementing **items 1, 4, and 5** first — they address the biggest pain points: visibility during long runs, preventing wasted API calls, and actionable error reporting.
-
-### Technical Changes
-
-**GenerateImagesDialog.tsx:**
-- Add `currentProduct` state to display live SKU/name during generation
-- Add consecutive failure counter + auto-pause logic
-- Add "Export Errors" button in the done/cancelled state
-- Edge function response already includes SKU — just surface it in the UI
-
-**Edge function (minor):**
-- Return the current product name/brand in the batch response so the dialog can show it
-- Add a `skipThreshold` parameter to auto-stop after N consecutive failures
-
-**ProductImages.tsx:**
-- Add brand filter dropdown alongside the item type selection in the generate dialog
-- Pass brand list to GenerateImagesDialog
-
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx
