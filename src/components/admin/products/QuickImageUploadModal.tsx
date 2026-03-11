@@ -58,6 +58,7 @@ export const QuickImageUploadModal = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
