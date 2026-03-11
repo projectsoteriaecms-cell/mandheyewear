@@ -55,10 +55,11 @@ interface BatchResult {
 }
 
 const BATCH_LIMITS = [
+  { value: "2", label: "2 products" },
+  { value: "5", label: "5 products" },
   { value: "10", label: "10 products" },
   { value: "25", label: "25 products" },
   { value: "50", label: "50 products" },
-  { value: "100", label: "100 products" },
   { value: "all", label: "All" },
 ];
 
