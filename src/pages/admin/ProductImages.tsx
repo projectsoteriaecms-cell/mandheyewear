@@ -145,6 +145,7 @@ const ProductImages = () => {
     return { total, withPrimary, missingPrimary, complete };
   }, [filteredProducts, isFiltered]);
 
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = visibleCount < filteredProducts.length;
   const selectedProduct = products.find((p) => p.id === selectedProductId);
 
