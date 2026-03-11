@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { AdminLayout } from "@/shared/components/admin/AdminLayout";
 import { RoleGuard } from "@/shared/components/admin/RoleGuard";
 import { useAdminProducts, useProductImageStats } from "@/modules/products";
