@@ -469,7 +469,7 @@ serve(async (req) => {
       } catch (err) {
         failed++;
         const errMsg = err instanceof Error ? err.message : "Unknown error";
-        results.push({ productId: product.id, sku: product.sku, success: false, error: errMsg });
+        results.push({ productId: product.id, sku: product.sku, name: product.name, brand: product.brand, success: false, error: errMsg });
         console.error(`✗ Failed for ${product.sku}:`, errMsg);
       }
     }
