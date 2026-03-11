@@ -95,6 +95,12 @@ export const ProductImageListView = ({
                   <Upload className="mr-2 h-4 w-4" weight="light" />
                   {hasNoImages ? "Add Images" : "Manage Images"}
                 </DropdownMenuItem>
+                {onRegenerateClick && (
+                  <DropdownMenuItem onClick={() => onRegenerateClick(product.id)}>
+                    <Lightning className="mr-2 h-4 w-4" weight="fill" />
+                    Regenerate with AI
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

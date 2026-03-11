@@ -227,16 +227,55 @@ export const QuickImageUploadModal = ({
     [handleFileSelect]
   );
 
+  const handleRegenerate = useCallback(async () => {
+    if (!product) return;
+    setIsRegenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-product-image", {
+        body: { productId: product.id },
+      });
+      if (error) throw error;
+      if (data?.succeeded > 0) {
+        toast.success(`Regenerated ${data.results?.[0]?.shots || 1} image(s) for ${product.sku}`);
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+      } else {
+        toast.error(data?.results?.[0]?.error || "Failed to regenerate images");
+      }
+    } catch (err) {
+      console.error("Regeneration error:", err);
+      toast.error("Failed to regenerate images");
+    } finally {
+      setIsRegenerating(false);
+    }
+  }, [product, queryClient]);
+
   if (!product) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Image className="h-5 w-5" />
-            Manage Images
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <Image className="h-5 w-5" />
+              Manage Images
+            </DialogTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRegenerate}
+              disabled={isRegenerating || isUploading}
+              className="ml-auto"
+            >
+              {isRegenerating ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : (
+                <Lightning className="h-4 w-4 mr-1" weight="fill" />
+              )}
+              {isRegenerating ? "Regenerating..." : "Regenerate with AI"}
+            </Button>
+          </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{product.name}</span>
             <Badge variant="outline">{product.sku}</Badge>
