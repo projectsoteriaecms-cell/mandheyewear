@@ -29,6 +29,7 @@ import { Image, CloudArrowUp, Lightning } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraggableImageItem } from "./DraggableImageItem";
+import { ImagePreviewLightbox } from "./ImagePreviewLightbox";
 import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
 import { supabase } from "@/integrations/supabase/client";
 
