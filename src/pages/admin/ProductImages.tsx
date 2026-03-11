@@ -312,6 +312,25 @@ const ProductImages = () => {
                 <SelectItem value="complete">Complete (6/6)</SelectItem>
               </SelectContent>
             </Select>
+            <Select
+              value={categoryFilter}
+              onValueChange={(value) => {
+                setCategoryFilter(value);
+                setVisibleCount(ITEMS_PER_PAGE);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {itemTypeOptions.map((opt) => (
+                  <SelectItem key={opt.type} value={opt.type}>
+                    {opt.label} ({opt.count})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <ToggleGroup
               type="single"
               value={viewMode}
