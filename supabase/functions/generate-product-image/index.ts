@@ -445,7 +445,7 @@ serve(async (req) => {
           if (updateErr) throw new Error("Product update failed: " + updateErr.message);
 
           succeeded++;
-          results.push({ productId: product.id, sku: product.sku, success: true, shots: 6 });
+          results.push({ productId: product.id, sku: product.sku, name: product.name, brand: product.brand, success: true, shots: 6 });
           console.log(`✓ Generated 6-shot gallery for ${product.sku}`);
         } else {
           // ── Single shot for non-frames ──
