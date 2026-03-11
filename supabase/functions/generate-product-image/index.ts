@@ -384,7 +384,7 @@ serve(async (req) => {
       return pa - pb;
     });
 
-    const results: Array<{ productId: string; sku: string; success: boolean; error?: string; shots?: number }> = [];
+    const results: Array<{ productId: string; sku: string; name: string; brand: string | null; success: boolean; error?: string; shots?: number }> = [];
     let succeeded = 0;
     let failed = 0;
 
