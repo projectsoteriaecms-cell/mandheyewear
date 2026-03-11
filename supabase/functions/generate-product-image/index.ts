@@ -463,7 +463,7 @@ serve(async (req) => {
           if (updateErr) throw new Error("Product update failed: " + updateErr.message);
 
           succeeded++;
-          results.push({ productId: product.id, sku: product.sku, success: true, shots: 1 });
+          results.push({ productId: product.id, sku: product.sku, name: product.name, brand: product.brand, success: true, shots: 1 });
           console.log(`✓ Generated image for ${product.sku}`);
         }
       } catch (err) {
