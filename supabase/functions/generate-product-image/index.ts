@@ -260,7 +260,87 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { batchSize = 1, itemTypes, maxProducts } = await req.json().catch(() => ({}));
+    const { batchSize = 1, itemTypes, maxProducts, productId } = await req.json().catch(() => ({}));
+
+    // ── Single product regeneration mode ──
+    if (productId) {
+      console.log(`🔄 Regenerating images for product: ${productId}`);
+      const { data: product, error: fetchErr } = await supabase
+        .from("products")
+        .select("id, name, brand, color, material, item_type, style, sku")
+        .eq("id", productId)
+        .single();
+
+      if (fetchErr || !product) {
+        return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
+      }
+
+      try {
+        const isFrame = product.item_type === "frames";
+
+        if (isFrame) {
+          const shots = buildFramePrompts(product);
+          const urls: string[] = [];
+          let heroUrl = "";
+
+          for (let i = 0; i < shots.length; i++) {
+            const shot = shots[i];
+            console.log(`  📸 ${product.sku} — regenerating ${shot.slug} (${i + 1}/6)`);
+
+            let imageData: { data: string; mimeType: string } | null = null;
+            let attempts = 0;
+            while (attempts < 3) {
+              try {
+                imageData = await generateImage(shot.prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
+                break;
+              } catch (err: any) {
+                attempts++;
+                if (err?.retryable && attempts < 3) {
+                  console.warn(`  ⏳ Rate limited on ${shot.slug}, waiting ${5 * attempts}s...`);
+                  await new Promise((r) => setTimeout(r, 5000 * attempts));
+                } else {
+                  throw err instanceof Error ? err : new Error(err?.message || String(err));
+                }
+              }
+            }
+            if (!imageData) throw new Error(`Failed to generate ${shot.slug} after retries`);
+
+            const url = await uploadImage(supabase, SUPABASE_URL, product.id, shot.slug, imageData);
+            if (shot.slug === "hero") { heroUrl = url; } else { urls.push(url); }
+            if (i < shots.length - 1) await new Promise((r) => setTimeout(r, 2000));
+          }
+
+          const { error: updateErr } = await supabase
+            .from("products")
+            .update({ image_url: heroUrl, additional_images: urls })
+            .eq("id", product.id);
+          if (updateErr) throw new Error("Product update failed: " + updateErr.message);
+
+          console.log(`✓ Regenerated 6-shot gallery for ${product.sku}`);
+          return json({ processed: 1, succeeded: 1, failed: 0, remaining: 0, results: [{ productId: product.id, sku: product.sku, success: true, shots: 6 }] });
+        } else {
+          const prompt = buildNonFramePrompt(product);
+          console.log(`  📸 ${product.sku} — regenerating single shot`);
+          const imageData = await generateImage(prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
+          const url = await uploadImage(supabase, SUPABASE_URL, product.id, "primary", imageData);
+
+          const { error: updateErr } = await supabase
+            .from("products")
+            .update({ image_url: url })
+            .eq("id", product.id);
+          if (updateErr) throw new Error("Product update failed: " + updateErr.message);
+
+          console.log(`✓ Regenerated image for ${product.sku}`);
+          return json({ processed: 1, succeeded: 1, failed: 0, remaining: 0, results: [{ productId: product.id, sku: product.sku, success: true, shots: 1 }] });
+        }
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Unknown error";
+        console.error(`✗ Regeneration failed for ${product.sku}:`, errMsg);
+        return json({ processed: 1, succeeded: 0, failed: 1, remaining: 0, results: [{ productId: product.id, sku: product.sku, success: false, error: errMsg }] });
+      }
+    }
+
+    // ── Batch mode (existing logic) ──
 
     // Build filter for item types
     const itemTypeFilter = Array.isArray(itemTypes) && itemTypes.length > 0 ? itemTypes : null;
