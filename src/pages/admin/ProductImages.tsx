@@ -19,7 +19,8 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MagnifyingGlass, Images, CheckCircle, Warning, SquaresFour, List, Lightning, Cursor, X } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const ITEM_TYPE_LABELS: Record<string, string> = {
   frames: "Frames",
@@ -42,6 +43,18 @@ const MAX_ADDITIONAL = 5;
 const ProductImages = () => {
   const { products, isLoading } = useAdminProducts();
   const stats = useProductImageStats();
+  
+  // Server-side category stats (accurate counts bypassing row limits)
+  const { data: serverCategoryStats } = useQuery({
+    queryKey: ["product-image-category-stats"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_product_image_category_stats");
+      if (error) throw error;
+      return (data as any[] | null) || [];
+    },
+    staleTime: 30_000,
+  });
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<ImageFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -73,8 +86,16 @@ const ProductImages = () => {
       .sort((a, b) => b.missing - a.missing);
   }, [products]);
 
-  // Compute item type counts — always show all enum values
+  // Build item type options from server-side stats (accurate) with fallback to client data
   const itemTypeOptions = useMemo(() => {
+    if (serverCategoryStats && serverCategoryStats.length > 0) {
+      return serverCategoryStats.map((stat: any) => ({
+        type: stat.item_type || "other",
+        label: ITEM_TYPE_LABELS[stat.item_type] || stat.item_type || "Other",
+        count: stat.total || 0,
+      }));
+    }
+    // Fallback: client-side counts from loaded products
     const counts: Record<string, number> = {};
     Object.keys(ITEM_TYPE_LABELS).forEach((t) => (counts[t] = 0));
     products.forEach((p) => {
@@ -84,7 +105,7 @@ const ProductImages = () => {
     return Object.entries(ITEM_TYPE_LABELS)
       .map(([type, label]) => ({ type, label, count: counts[type] || 0 }))
       .sort((a, b) => b.count - a.count);
-  }, [products]);
+  }, [serverCategoryStats, products]);
 
   // Filtered stats that respond to active filters
   const isFiltered = searchTerm || categoryFilter !== "all" || filter !== "all";
