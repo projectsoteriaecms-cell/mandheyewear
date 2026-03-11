@@ -134,7 +134,17 @@ const ProductImages = () => {
     return result;
   }, [products, searchTerm, filter, categoryFilter]);
 
-  const visibleProducts = filteredProducts.slice(0, visibleCount);
+  const filteredStats = useMemo(() => {
+    if (!isFiltered) return null;
+    const total = filteredProducts.length;
+    const withPrimary = filteredProducts.filter((p) => p.image_url).length;
+    const missingPrimary = total - withPrimary;
+    const complete = filteredProducts.filter(
+      (p) => p.image_url && p.additional_images && p.additional_images.length >= MAX_ADDITIONAL
+    ).length;
+    return { total, withPrimary, missingPrimary, complete };
+  }, [filteredProducts, isFiltered]);
+
   const hasMore = visibleCount < filteredProducts.length;
   const selectedProduct = products.find((p) => p.id === selectedProductId);
 
