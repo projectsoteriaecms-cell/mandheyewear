@@ -73,6 +73,22 @@ const ProductImages = () => {
       .sort((a, b) => b.missing - a.missing);
   }, [products]);
 
+  // Compute unique item types with total counts for the category filter
+  const itemTypeOptions = useMemo(() => {
+    const counts: Record<string, number> = {};
+    products.forEach((p) => {
+      const type = p.item_type || "other";
+      counts[type] = (counts[type] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([type, count]) => ({
+        type,
+        label: ITEM_TYPE_LABELS[type] || type,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [products]);
+
   // Filter and search products
   const filteredProducts = useMemo(() => {
     let result = products;
