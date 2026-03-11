@@ -380,6 +380,7 @@ const ProductImages = () => {
           <div className="flex items-center gap-2">
             <Badge variant="secondary">
               {filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""}
+              {categoryFilter !== "all" && ` in ${ITEM_TYPE_LABELS[categoryFilter] || categoryFilter}`}
             </Badge>
             {searchTerm && (
               <span className="text-sm text-muted-foreground">
