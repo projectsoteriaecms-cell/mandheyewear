@@ -14,6 +14,7 @@ interface DraggableImageItemProps {
   isUploading?: boolean;
   onDelete: (url: string) => void;
   onSetPrimary?: (url: string) => void;
+  onPreview?: (url: string) => void;
 }
 
 export const DraggableImageItem = ({
