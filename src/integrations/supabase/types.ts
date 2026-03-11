@@ -1594,6 +1594,7 @@ export type Database = {
           count: number
         }[]
       }
+      get_product_image_category_stats: { Args: never; Returns: Json }
       get_product_image_stats: { Args: never; Returns: Json }
       has_role: {
         Args: {

@@ -65,21 +65,32 @@ export const useAdminProducts = () => {
   const productsQuery = useQuery({
     queryKey: ["admin-products"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select(`
-          *,
-          category:categories(id, name),
-          supplier:suppliers(id, name),
-          frame_attributes(*),
-          lens_attributes(*)
-        `)
-        .order("image_url", { ascending: false, nullsFirst: false })
-        .order("updated_at", { ascending: false })
-        .range(0, 4999);
+      const BATCH_SIZE = 1000;
+      let allData: any[] = [];
+      let from = 0;
+      let hasMore = true;
 
-      if (error) throw error;
-      return data;
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("products")
+          .select(`
+            *,
+            category:categories(id, name),
+            supplier:suppliers(id, name),
+            frame_attributes(*),
+            lens_attributes(*)
+          `)
+          .order("image_url", { ascending: false, nullsFirst: false })
+          .order("updated_at", { ascending: false })
+          .range(from, from + BATCH_SIZE - 1);
+
+        if (error) throw error;
+        allData = allData.concat(data || []);
+        hasMore = (data?.length || 0) === BATCH_SIZE;
+        from += BATCH_SIZE;
+      }
+
+      return allData;
     },
   });
 
