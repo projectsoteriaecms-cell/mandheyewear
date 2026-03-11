@@ -136,6 +136,28 @@ const ProductImages = () => {
     setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
   };
 
+  const handleRegenerateProduct = useCallback(async (productId: string) => {
+    const product = products.find((p) => p.id === productId);
+    const { toast } = await import("sonner");
+    toast.info(`Regenerating images for ${product?.sku || "product"}...`);
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data, error } = await supabase.functions.invoke("generate-product-image", {
+        body: { productId },
+      });
+      if (error) throw error;
+      if (data?.succeeded > 0) {
+        toast.success(`Regenerated ${data.results?.[0]?.shots || 1} image(s)`);
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+      } else {
+        toast.error(data?.results?.[0]?.error || "Failed to regenerate");
+      }
+    } catch (err) {
+      toast.error("Failed to regenerate images");
+    }
+  }, [products, queryClient]);
+
   return (
     <RoleGuard allowedRoles={["branch_manager", "admin", "super_admin"]}>
       <AdminLayout>
