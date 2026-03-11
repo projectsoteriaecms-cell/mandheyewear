@@ -103,6 +103,10 @@ const ProductImages = () => {
       );
     }
 
+    if (categoryFilter !== "all") {
+      result = result.filter((p) => (p.item_type || "other") === categoryFilter);
+    }
+
     switch (filter) {
       case "with_images":
         result = result.filter((p) => p.image_url);
@@ -128,7 +132,7 @@ const ProductImages = () => {
     });
 
     return result;
-  }, [products, searchTerm, filter]);
+  }, [products, searchTerm, filter, categoryFilter]);
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = visibleCount < filteredProducts.length;
