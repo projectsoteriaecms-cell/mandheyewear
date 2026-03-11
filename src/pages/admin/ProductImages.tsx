@@ -73,21 +73,21 @@ const ProductImages = () => {
       .sort((a, b) => b.missing - a.missing);
   }, [products]);
 
-  // Compute unique item types with total counts for the category filter
+  // Compute item type counts — always show all enum values
   const itemTypeOptions = useMemo(() => {
     const counts: Record<string, number> = {};
+    Object.keys(ITEM_TYPE_LABELS).forEach((t) => (counts[t] = 0));
     products.forEach((p) => {
       const type = p.item_type || "other";
       counts[type] = (counts[type] || 0) + 1;
     });
-    return Object.entries(counts)
-      .map(([type, count]) => ({
-        type,
-        label: ITEM_TYPE_LABELS[type] || type,
-        count,
-      }))
+    return Object.entries(ITEM_TYPE_LABELS)
+      .map(([type, label]) => ({ type, label, count: counts[type] || 0 }))
       .sort((a, b) => b.count - a.count);
   }, [products]);
+
+  // Filtered stats that respond to active filters
+  const isFiltered = searchTerm || categoryFilter !== "all" || filter !== "all";
 
   // Filter and search products
   const filteredProducts = useMemo(() => {
@@ -133,6 +133,17 @@ const ProductImages = () => {
 
     return result;
   }, [products, searchTerm, filter, categoryFilter]);
+
+  const filteredStats = useMemo(() => {
+    if (!isFiltered) return null;
+    const total = filteredProducts.length;
+    const withPrimary = filteredProducts.filter((p) => p.image_url).length;
+    const missingPrimary = total - withPrimary;
+    const complete = filteredProducts.filter(
+      (p) => p.image_url && p.additional_images && p.additional_images.length >= MAX_ADDITIONAL
+    ).length;
+    return { total, withPrimary, missingPrimary, complete };
+  }, [filteredProducts, isFiltered]);
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = visibleCount < filteredProducts.length;
@@ -255,7 +266,7 @@ const ProductImages = () => {
                 Total Products
               </div>
               <p className="text-2xl font-bold mt-1">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.total}
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.total ?? stats.total)}
               </p>
             </div>
             <div className="bg-card rounded-lg border p-4">
@@ -264,7 +275,7 @@ const ProductImages = () => {
                 With Images
               </div>
               <p className="text-2xl font-bold mt-1 text-green-600">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.withPrimary}
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.withPrimary ?? stats.withPrimary)}
               </p>
             </div>
             <div className="bg-card rounded-lg border p-4">
@@ -273,7 +284,7 @@ const ProductImages = () => {
                 Missing Primary
               </div>
               <p className="text-2xl font-bold mt-1 text-amber-600">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.missingPrimary}
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.missingPrimary ?? stats.missingPrimary)}
               </p>
             </div>
             <div className="bg-card rounded-lg border p-4">
@@ -282,7 +293,7 @@ const ProductImages = () => {
                 Complete (6/6)
               </div>
               <p className="text-2xl font-bold mt-1 text-primary">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.complete}
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.complete ?? stats.complete)}
               </p>
             </div>
           </div>
@@ -370,6 +381,7 @@ const ProductImages = () => {
           <div className="flex items-center gap-2">
             <Badge variant="secondary">
               {filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""}
+              {categoryFilter !== "all" && ` in ${ITEM_TYPE_LABELS[categoryFilter] || categoryFilter}`}
             </Badge>
             {searchTerm && (
               <span className="text-sm text-muted-foreground">
