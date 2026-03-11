@@ -2,7 +2,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, GripVertical, Star } from "lucide-react";
+import { X, GripVertical, Star, Loader2 } from "lucide-react";
+import { Lightning } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
 
@@ -12,9 +13,11 @@ interface DraggableImageItemProps {
   index: number;
   isPrimary?: boolean;
   isUploading?: boolean;
+  isRegenerating?: boolean;
   onDelete: (url: string) => void;
   onSetPrimary?: (url: string) => void;
   onPreview?: (url: string) => void;
+  onRegenerate?: () => void;
 }
 
 export const DraggableImageItem = ({
@@ -23,9 +26,11 @@ export const DraggableImageItem = ({
   index,
   isPrimary = false,
   isUploading = false,
+  isRegenerating = false,
   onDelete,
   onSetPrimary,
   onPreview,
+  onRegenerate,
 }: DraggableImageItemProps) => {
   const {
     attributes,
@@ -61,6 +66,14 @@ export const DraggableImageItem = ({
           className="w-full h-full object-cover"
         />
       </div>
+
+      {/* Regenerating overlay */}
+      {isRegenerating && (
+        <div className="absolute inset-0 bg-background/70 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+          <Loader2 className="h-6 w-6 animate-spin text-primary mb-1" />
+          <span className="text-[10px] font-medium text-primary">Regenerating…</span>
+        </div>
+      )}
       
       {/* Drag handle */}
       <div
@@ -100,6 +113,21 @@ export const DraggableImageItem = ({
         {IMAGE_POSITION_LABELS[index] || `Image ${index + 1}`}
       </Badge>
 
+      {/* Regenerate button */}
+      {onRegenerate && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon"
+          className="absolute top-1 right-7 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={onRegenerate}
+          disabled={isUploading || isRegenerating}
+          title="Regenerate this shot with AI"
+        >
+          <Lightning className="h-3 w-3" weight="fill" />
+        </Button>
+      )}
+
       {/* Delete button */}
       <Button
         type="button"
@@ -107,7 +135,7 @@ export const DraggableImageItem = ({
         size="icon"
         className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
         onClick={() => onDelete(url)}
-        disabled={isUploading}
+        disabled={isUploading || isRegenerating}
       >
         <X className="h-3 w-3" />
       </Button>

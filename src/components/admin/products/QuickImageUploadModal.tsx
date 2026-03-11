@@ -34,6 +34,7 @@ import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
 import { supabase } from "@/integrations/supabase/client";
 
 const MAX_IMAGES = 6; // 1 primary + 5 additional
+const SHOT_SLUGS = ["hero", "front", "side", "rear", "macro", "packaging"];
 
 interface QuickImageUploadModalProps {
   product: {
@@ -42,6 +43,7 @@ interface QuickImageUploadModalProps {
     sku: string;
     image_url: string | null;
     additional_images: string[] | null;
+    item_type?: string | null;
   } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -58,6 +60,7 @@ export const QuickImageUploadModal = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
   const sensors = useSensors(
@@ -252,6 +255,30 @@ export const QuickImageUploadModal = ({
     }
   }, [product, queryClient]);
 
+  const handleRegenerateShot = useCallback(async (index: number) => {
+    if (!product || index < 0 || index >= SHOT_SLUGS.length) return;
+    const shotSlug = SHOT_SLUGS[index];
+    setRegeneratingIndex(index);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-product-image", {
+        body: { productId: product.id, shotSlug },
+      });
+      if (error) throw error;
+      if (data?.succeeded > 0) {
+        toast.success(`Regenerated "${IMAGE_POSITION_LABELS[index] || shotSlug}" for ${product.sku}`);
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+      } else {
+        toast.error(data?.results?.[0]?.error || `Failed to regenerate ${shotSlug}`);
+      }
+    } catch (err) {
+      console.error(`Shot regeneration error (${shotSlug}):`, err);
+      toast.error(`Failed to regenerate ${shotSlug}`);
+    } finally {
+      setRegeneratingIndex(null);
+    }
+  }, [product, queryClient]);
+
   if (!product) return null;
 
   return (
@@ -302,19 +329,24 @@ export const QuickImageUploadModal = ({
             >
               <SortableContext items={allImages} strategy={rectSortingStrategy}>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                  {allImages.map((url, idx) => (
-                    <DraggableImageItem
-                      key={url}
-                      id={url}
-                      url={url}
-                      index={idx}
-                      isPrimary={idx === 0}
-                      isUploading={isUploading}
-                      onDelete={handleDelete}
-                      onSetPrimary={idx !== 0 ? handleSetPrimary : undefined}
-                      onPreview={() => setPreviewIndex(idx)}
-                    />
-                  ))}
+                  {allImages.map((url, idx) => {
+                    const isFrame = product.item_type === "frames";
+                    return (
+                      <DraggableImageItem
+                        key={url}
+                        id={url}
+                        url={url}
+                        index={idx}
+                        isPrimary={idx === 0}
+                        isUploading={isUploading}
+                        isRegenerating={regeneratingIndex === idx}
+                        onDelete={handleDelete}
+                        onSetPrimary={idx !== 0 ? handleSetPrimary : undefined}
+                        onPreview={() => setPreviewIndex(idx)}
+                        onRegenerate={isFrame && idx < SHOT_SLUGS.length ? () => handleRegenerateShot(idx) : undefined}
+                      />
+                    );
+                  })}
                 </div>
               </SortableContext>
             </DndContext>

@@ -260,9 +260,85 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { batchSize = 1, itemTypes, maxProducts, productId } = await req.json().catch(() => ({}));
+    const { batchSize = 1, itemTypes, maxProducts, productId, shotSlug } = await req.json().catch(() => ({}));
 
-    // ── Single product regeneration mode ──
+    // ── Single-shot regeneration mode (regenerate one specific image) ──
+    if (productId && shotSlug) {
+      console.log(`🔄 Regenerating single shot "${shotSlug}" for product: ${productId}`);
+      const { data: product, error: fetchErr } = await supabase
+        .from("products")
+        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images")
+        .eq("id", productId)
+        .single();
+
+      if (fetchErr || !product) {
+        return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
+      }
+
+      const SHOT_SLUGS = ["hero", "front", "side", "rear", "macro", "packaging"];
+      const shotIndex = SHOT_SLUGS.indexOf(shotSlug);
+      if (shotIndex === -1) {
+        return json({ error: `Invalid shotSlug "${shotSlug}". Must be one of: ${SHOT_SLUGS.join(", ")}` }, 400);
+      }
+
+      try {
+        const shots = buildFramePrompts(product);
+        const shot = shots[shotIndex];
+        console.log(`  📸 ${product.sku} — regenerating ${shot.slug}`);
+
+        let imageData: { data: string; mimeType: string } | null = null;
+        let attempts = 0;
+        while (attempts < 3) {
+          try {
+            imageData = await generateImage(shot.prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
+            break;
+          } catch (err: any) {
+            attempts++;
+            if (err?.retryable && attempts < 3) {
+              console.warn(`  ⏳ Rate limited on ${shot.slug}, waiting ${5 * attempts}s...`);
+              await new Promise((r) => setTimeout(r, 5000 * attempts));
+            } else {
+              throw err instanceof Error ? err : new Error(err?.message || String(err));
+            }
+          }
+        }
+        if (!imageData) throw new Error(`Failed to generate ${shot.slug} after retries`);
+
+        const url = await uploadImage(supabase, SUPABASE_URL, product.id, shot.slug, imageData);
+
+        // Update the correct position
+        if (shotIndex === 0) {
+          // Hero → update image_url
+          const { error: updateErr } = await supabase
+            .from("products")
+            .update({ image_url: url })
+            .eq("id", product.id);
+          if (updateErr) throw new Error("Product update failed: " + updateErr.message);
+        } else {
+          // Additional images → update the specific index in additional_images array
+          const currentAdditional: string[] = product.additional_images || [];
+          // Ensure array is long enough
+          while (currentAdditional.length < shotIndex) {
+            currentAdditional.push("");
+          }
+          currentAdditional[shotIndex - 1] = url;
+          const { error: updateErr } = await supabase
+            .from("products")
+            .update({ additional_images: currentAdditional })
+            .eq("id", product.id);
+          if (updateErr) throw new Error("Product update failed: " + updateErr.message);
+        }
+
+        console.log(`✓ Regenerated ${shot.slug} for ${product.sku}`);
+        return json({ processed: 1, succeeded: 1, failed: 0, remaining: 0, results: [{ productId: product.id, sku: product.sku, success: true, shots: 1, shotSlug: shot.slug }] });
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Unknown error";
+        console.error(`✗ Single-shot regeneration failed for ${product.sku} (${shotSlug}):`, errMsg);
+        return json({ processed: 1, succeeded: 0, failed: 1, remaining: 0, results: [{ productId: product.id, sku: product.sku, success: false, error: errMsg, shotSlug }] });
+      }
+    }
+
+    // ── Single product full regeneration mode ──
     if (productId) {
       console.log(`🔄 Regenerating images for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase

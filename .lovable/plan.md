@@ -1,42 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Per-Shot Regeneration for Individual Frame Images
+## Status: Ready for User Action
 
-After the initial 6-shot gallery is generated, admins can now fix individual bad images without regenerating the entire set.
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-### Changes
+### Transformation Prompt (for the new project)
 
-**1. Edge function (`supabase/functions/generate-product-image/index.ts`)**
-- Accept optional `shotSlug` param alongside `productId`
-- When both are provided, generate only that one shot, upload it, and update the correct position:
-  - `hero` (index 0) → update `image_url`
-  - `front/side/rear/macro/packaging` (index 1-5) → read current `additional_images`, replace the URL at the matching index, update
-- Reuses existing `buildFramePrompts`, `generateImage`, and `uploadImage` functions
-
-**2. DraggableImageItem (`src/components/admin/products/DraggableImageItem.tsx`)**
-- Add `onRegenerate?: () => void` and `isRegenerating?: boolean` props
-- Render a Lightning icon button in the hover overlay (between set-primary and delete) that triggers regeneration
-- Show a spinner overlay on the tile when `isRegenerating` is true
-
-**3. QuickImageUploadModal (`src/components/admin/products/QuickImageUploadModal.tsx`)**
-- Add `regeneratingIndex: number | null` state
-- Map gallery index to shot slug: `["hero", "front", "side", "rear", "macro", "packaging"]`
-- Only show per-shot regenerate buttons when `product.item_type === "frames"` (non-frames have a single shot, so the existing full-regenerate button suffices)
-- Call edge function with `{ productId, shotSlug }`, update state and invalidate queries on completion
-- Pass `onRegenerate` and `isRegenerating` to each `DraggableImageItem`
-
-### Shot Slug Mapping
 ```text
-Index 0 → "hero"      → updates image_url
-Index 1 → "front"     → updates additional_images[0]
-Index 2 → "side"      → updates additional_images[1]
-Index 3 → "rear"      → updates additional_images[2]
-Index 4 → "macro"     → updates additional_images[3]
-Index 5 → "packaging" → updates additional_images[4]
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
+
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
+
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
+
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
+
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
+
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
+
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
+
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
 ```
 
-### Files Changed
-- `supabase/functions/generate-product-image/index.ts`
-- `src/components/admin/products/DraggableImageItem.tsx`
-- `src/components/admin/products/QuickImageUploadModal.tsx`
-
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx
