@@ -17,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { MagnifyingGlass, Images, CheckCircle, Warning, SquaresFour, List, Lightning } from "@phosphor-icons/react";
+import { MagnifyingGlass, Images, CheckCircle, Warning, SquaresFour, List, Lightning, Cursor, X } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -36,19 +36,6 @@ const ITEM_TYPE_LABELS: Record<string, string> = {
 type ImageFilter = "all" | "with_images" | "missing_primary" | "complete";
 type ViewMode = "grid" | "list";
 
-// Priority order for item types (frames first, then contact lenses, lenses, then others)
-const ITEM_TYPE_PRIORITY: Record<string, number> = {
-  frames: 1,
-  contact_lenses: 2,
-  lenses: 3,
-  solutions: 4,
-  medications: 5,
-  accessories: 6,
-  cleanser: 7,
-  packaging: 8,
-  other: 9,
-};
-
 const ITEMS_PER_PAGE = 24;
 const MAX_ADDITIONAL = 5;
 
@@ -61,6 +48,9 @@ const ProductImages = () => {
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [generateForSelected, setGenerateForSelected] = useState(false);
   const queryClient = useQueryClient();
 
   // Compute per-category missing image counts
@@ -86,7 +76,6 @@ const ProductImages = () => {
   const filteredProducts = useMemo(() => {
     let result = products;
 
-    // Apply search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
@@ -97,7 +86,6 @@ const ProductImages = () => {
       );
     }
 
-    // Apply image status filter
     switch (filter) {
       case "with_images":
         result = result.filter((p) => p.image_url);
@@ -115,12 +103,10 @@ const ProductImages = () => {
         break;
     }
 
-    // Sort: products with images first, then by most recently updated
     result = result.sort((a, b) => {
       const aHasImage = a.image_url ? 1 : 0;
       const bHasImage = b.image_url ? 1 : 0;
       if (aHasImage !== bHasImage) return bHasImage - aHasImage;
-      // Within same image status, sort by updated_at descending
       return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     });
 
@@ -129,8 +115,58 @@ const ProductImages = () => {
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = visibleCount < filteredProducts.length;
-
   const selectedProduct = products.find((p) => p.id === selectedProductId);
+
+  // Selection helpers
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    const visibleIds = visibleProducts.map((p) => p.id);
+    const allSelected = visibleIds.every((id) => selectedIds.has(id));
+    if (allSelected) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        visibleIds.forEach((id) => next.delete(id));
+        return next;
+      });
+    } else {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        visibleIds.forEach((id) => next.add(id));
+        return next;
+      });
+    }
+  }, [visibleProducts, selectedIds]);
+
+  const allVisibleSelected = visibleProducts.length > 0 && visibleProducts.every((p) => selectedIds.has(p.id));
+
+  const exitSelectMode = useCallback(() => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }, []);
+
+  // Selected products data for the dialog
+  const selectedProductsData = useMemo(() => {
+    if (!generateForSelected) return undefined;
+    return products
+      .filter((p) => selectedIds.has(p.id))
+      .map((p) => ({ id: p.id, name: p.name, sku: p.sku, item_type: p.item_type, brand: p.brand }));
+  }, [products, selectedIds, generateForSelected]);
+
+  // Selection summary for floating bar
+  const selectionSummary = useMemo(() => {
+    const selected = products.filter((p) => selectedIds.has(p.id));
+    const frames = selected.filter((p) => p.item_type === "frames").length;
+    const others = selected.length - frames;
+    return { total: selected.length, frames, others, shots: frames * 6 + others };
+  }, [products, selectedIds]);
 
   const handleShowMore = () => {
     setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
@@ -158,6 +194,16 @@ const ProductImages = () => {
     }
   }, [products, queryClient]);
 
+  const handleGenerateSelected = () => {
+    setGenerateForSelected(true);
+    setGenerateDialogOpen(true);
+  };
+
+  const handleGenerateBulk = () => {
+    setGenerateForSelected(false);
+    setGenerateDialogOpen(true);
+  };
+
   return (
     <RoleGuard allowedRoles={["branch_manager", "admin", "super_admin"]}>
       <AdminLayout>
@@ -170,12 +216,14 @@ const ProductImages = () => {
                 Manage product images for your catalog
               </p>
             </div>
-            {stats.missingPrimary > 0 && (
-              <Button onClick={() => setGenerateDialogOpen(true)} variant="gold">
-                <Lightning className="h-4 w-4" weight="fill" />
-                Generate Missing Images
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {stats.missingPrimary > 0 && (
+                <Button onClick={handleGenerateBulk} variant="gold">
+                  <Lightning className="h-4 w-4" weight="fill" />
+                  Generate Missing Images
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Stats Cards */}
@@ -256,6 +304,26 @@ const ProductImages = () => {
                 <List className="h-4 w-4" weight={viewMode === "list" ? "bold" : "regular"} />
               </ToggleGroupItem>
             </ToggleGroup>
+
+            {/* Select mode toggle */}
+            <Button
+              variant={selectMode ? "default" : "outline"}
+              onClick={() => selectMode ? exitSelectMode() : setSelectMode(true)}
+              size="sm"
+              className="flex-shrink-0"
+            >
+              {selectMode ? (
+                <>
+                  <X className="h-4 w-4 mr-1" />
+                  Exit Select
+                </>
+              ) : (
+                <>
+                  <Cursor className="h-4 w-4 mr-1" />
+                  Select
+                </>
+              )}
+            </Button>
           </div>
 
           {/* Results Count */}
@@ -268,9 +336,14 @@ const ProductImages = () => {
                 matching "{searchTerm}"
               </span>
             )}
+            {selectMode && selectedIds.size > 0 && (
+              <Badge variant="default">
+                {selectedIds.size} selected
+              </Badge>
+            )}
           </div>
 
-          {/* Product Grid */}
+          {/* Product Grid / List */}
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -289,6 +362,9 @@ const ProductImages = () => {
                       key={product.id}
                       product={product}
                       onClick={() => setSelectedProductId(product.id)}
+                      selectable={selectMode}
+                      selected={selectedIds.has(product.id)}
+                      onSelectionToggle={toggleSelection}
                     />
                   ))}
                 </div>
@@ -298,6 +374,11 @@ const ProductImages = () => {
                   onUploadClick={(id) => setSelectedProductId(id)}
                   onRegenerateClick={handleRegenerateProduct}
                   maxImages={MAX_ADDITIONAL + 1}
+                  selectable={selectMode}
+                  selectedIds={selectedIds}
+                  onSelectionToggle={toggleSelection}
+                  onSelectAll={toggleSelectAll}
+                  allSelected={allVisibleSelected}
                 />
               )}
 
@@ -309,6 +390,34 @@ const ProductImages = () => {
                 </div>
               )}
             </>
+          )}
+
+          {/* Floating Selection Action Bar */}
+          {selectMode && selectedIds.size > 0 && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-lg">
+              <div className="text-sm">
+                <span className="font-semibold">{selectionSummary.total}</span> selected
+                {selectionSummary.frames > 0 && (
+                  <span className="text-muted-foreground ml-1">
+                    ({selectionSummary.frames} frame{selectionSummary.frames !== 1 ? "s" : ""} × 6 shots
+                    {selectionSummary.others > 0 && ` + ${selectionSummary.others} × 1 shot`}
+                    {" = ~"}{selectionSummary.shots} calls)
+                  </span>
+                )}
+                {selectionSummary.frames === 0 && selectionSummary.others > 0 && (
+                  <span className="text-muted-foreground ml-1">
+                    (~{selectionSummary.shots} API call{selectionSummary.shots !== 1 ? "s" : ""})
+                  </span>
+                )}
+              </div>
+              <Button onClick={handleGenerateSelected} size="sm">
+                <Lightning className="h-4 w-4 mr-1" weight="fill" />
+                Generate Selected
+              </Button>
+              <Button variant="ghost" size="sm" onClick={exitSelectMode}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           )}
         </div>
 
@@ -323,11 +432,16 @@ const ProductImages = () => {
         {/* Generate Images Dialog */}
         <GenerateImagesDialog
           open={generateDialogOpen}
-          onOpenChange={setGenerateDialogOpen}
+          onOpenChange={(open) => {
+            setGenerateDialogOpen(open);
+            if (!open) setGenerateForSelected(false);
+          }}
           categoryCounts={categoryCounts}
+          selectedProducts={selectedProductsData}
           onComplete={() => {
             queryClient.invalidateQueries({ queryKey: ["admin-products"] });
             queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+            if (generateForSelected) exitSelectMode();
           }}
         />
       </AdminLayout>
