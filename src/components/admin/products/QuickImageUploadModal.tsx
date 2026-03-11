@@ -255,6 +255,30 @@ export const QuickImageUploadModal = ({
     }
   }, [product, queryClient]);
 
+  const handleRegenerateShot = useCallback(async (index: number) => {
+    if (!product || index < 0 || index >= SHOT_SLUGS.length) return;
+    const shotSlug = SHOT_SLUGS[index];
+    setRegeneratingIndex(index);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-product-image", {
+        body: { productId: product.id, shotSlug },
+      });
+      if (error) throw error;
+      if (data?.succeeded > 0) {
+        toast.success(`Regenerated "${IMAGE_POSITION_LABELS[index] || shotSlug}" for ${product.sku}`);
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+      } else {
+        toast.error(data?.results?.[0]?.error || `Failed to regenerate ${shotSlug}`);
+      }
+    } catch (err) {
+      console.error(`Shot regeneration error (${shotSlug}):`, err);
+      toast.error(`Failed to regenerate ${shotSlug}`);
+    } finally {
+      setRegeneratingIndex(null);
+    }
+  }, [product, queryClient]);
+
   if (!product) return null;
 
   return (
