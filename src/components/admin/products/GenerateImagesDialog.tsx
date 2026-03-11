@@ -167,7 +167,8 @@ export const GenerateImagesDialog = ({
     setFailed(0);
     setErrors([]);
     setSelectedTypes([]);
-    setBatchLimit("50");
+    setBatchLimit("10");
+    setSelectedCategory("all");
     setCurrentProduct(null);
     setPauseReason(null);
     cancelRef.current = false;
