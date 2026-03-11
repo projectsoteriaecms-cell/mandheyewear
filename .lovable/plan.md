@@ -1,55 +1,64 @@
 
-# Soteria Eye Clinic — Remix & Transform Plan
 
-## Status: Ready for User Action
+## Modular Per-Product Image Generation
 
-### Next Step
-1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
-2. Name the new project **"Soteria Eye Clinic"**
-3. Paste the transformation prompt (saved below) into the new project's chat
+### Concept
+Replace the bulk category-based approach with a **product-selection model**. Users pick specific products from the grid/list, then generate images for just those selections in small, efficient batches:
 
-### Transformation Prompt (for the new project)
+- **1 frame = 1 batch** (6 shots: hero + 5 gallery)
+- **6 non-frame products = 1 batch** (1 shot each)
+
+This keeps API calls small and lets the admin control exactly what gets generated.
+
+### Changes
+
+**1. ProductImages.tsx — Add multi-select mode**
+- Add `selectedIds: Set<string>` state and a "Select" toggle button in the toolbar
+- When selection mode is on, clicking a product card toggles it into the set (checkbox overlay)
+- Show a floating action bar at the bottom: "Generate Images for X selected" button
+- Pass `selectedIds` to the generate dialog instead of category counts
+
+**2. ProductImageCard.tsx — Selection overlay**
+- Accept `selectable` and `selected` props
+- When `selectable`, show a checkbox in the top-left corner; clicking toggles selection instead of opening the upload modal
+
+**3. ProductImageListView.tsx — Row selection**
+- Add checkboxes per row + "Select All" header checkbox
+- Pass selection state up via callbacks
+
+**4. GenerateImagesDialog.tsx — Rework for selected products**
+- Accept `selectedProductIds: string[]` instead of (or alongside) `categoryCounts`
+- When product IDs are provided, show a summary: "1 frame (6 shots) + 4 accessories (4 shots) = 10 API calls"
+- No category checkboxes needed — the selection was already made in the grid
+- Send product IDs to the edge function one at a time, processing sequentially
+- Keep the live ticker, auto-pause, and error export
+
+**5. Edge function — No changes needed**
+- Already supports `productId` for single-product generation
+- The dialog will loop through selected IDs, calling the edge function once per product (same as current single-regenerate flow)
+
+### UI Flow
 
 ```text
-Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
-
-## 1. Branding & Colors
-- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
-- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
-- Accent color: keep the M&H gold as a secondary accent for partnership elements
-- Update CSS variables in index.css accordingly
-- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
-- Update favicon to use Soteria branding
-- Font: keep Cormorant Garamond for display but consider a more clinical feel
-
-## 2. Homepage Rewrite
-- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
-- Primary CTAs: "Book an Eye Exam" and "Our Services"
-- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
-
-## 3. Navigation Updates
-- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
-- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
-- MobileBottomNav: Home, Services, Book, Branches, Account
-
-## 4. Pages to Update
-- About: Soteria's story + M&H Eyewear as premium eyewear partner
-- Partners: HMO partners + M&H Eyewear as strategic partner
-- Services/Eye Care: Primary service page
-- Branches: Show all locations from shared database
-- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
-
-## 5. SEO & Meta
-- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
-
-## 6. Footer
-- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
-
-## 7. Do NOT Change
-- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+┌─ Product Images Manager ────────────────────────┐
+│ [Search...] [Filter ▾] [Grid|List] [✓ Select]   │
+│                                                   │
+│  ☑ GU-001   ☑ GU-002   ☐ RB-003   ☑ SOL-041    │
+│  (frame)    (frame)    (frame)    (solution)     │
+│                                                   │
+│ ╔═══════════════════════════════════════════════╗ │
+│ ║ 3 selected · 2 frames (12 shots) +           ║ │
+│ ║ 1 solution (1 shot) = 13 API calls            ║ │
+│ ║                    [Generate Selected]         ║ │
+│ ╚═══════════════════════════════════════════════╝ │
+└───────────────────────────────────────────────────┘
 ```
 
-### Already Completed in This Project (M&H Eyewear)
-- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
-- ✅ About page updated with Soteria partnership section
-- ✅ Route registered in public.routes.tsx
+### Technical Details
+
+- **Selection state**: `useState<Set<string>>` in ProductImages.tsx, toggled via card/row clicks
+- **Batch processing**: Dialog iterates `selectedProductIds`, calling `supabase.functions.invoke("generate-product-image", { body: { productId } })` for each — reusing the existing single-product path
+- **Efficiency**: No new edge function logic needed; the modular single-product endpoint already handles frames (6-shot) and non-frames (1-shot) correctly
+- **The "Generate Missing Images" button** remains for bulk runs but the primary workflow becomes select-then-generate
+- **Select All visible**: A "Select All" checkbox selects all currently filtered/visible products (respects search + filter)
+
