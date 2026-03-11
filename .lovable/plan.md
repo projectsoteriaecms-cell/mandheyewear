@@ -1,55 +1,51 @@
 
-# Soteria Eye Clinic — Remix & Transform Plan
 
-## Status: Ready for User Action
+## Add "Regenerate" Option for Individual Products
 
-### Next Step
-1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
-2. Name the new project **"Soteria Eye Clinic"**
-3. Paste the transformation prompt (saved below) into the new project's chat
+### What Changes
 
-### Transformation Prompt (for the new project)
+**1. Edge function (`supabase/functions/generate-product-image/index.ts`)**
+- Add support for a `productId` parameter in the request body
+- When `productId` is provided, skip the "missing image" query and instead fetch that specific product directly
+- Delete existing images from storage before regenerating (upsert already handles this since we use `upsert: true`)
+- Clear existing `image_url` and `additional_images` before generating new ones
 
-```text
-Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
+**2. QuickImageUploadModal (`src/components/admin/products/QuickImageUploadModal.tsx`)**
+- Add a "Regenerate with AI" button in the modal header/actions area
+- When clicked, invoke the edge function with `{ productId: product.id }` 
+- Show a loading state while regenerating
+- On completion, invalidate queries to refresh the UI
 
-## 1. Branding & Colors
-- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
-- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
-- Accent color: keep the M&H gold as a secondary accent for partnership elements
-- Update CSS variables in index.css accordingly
-- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
-- Update favicon to use Soteria branding
-- Font: keep Cormorant Garamond for display but consider a more clinical feel
+**3. ProductImageListView (`src/components/admin/products/ProductImageListView.tsx`)**
+- Add a "Regenerate" option to the existing three-dot dropdown menu alongside "Manage Images"
 
-## 2. Homepage Rewrite
-- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
-- Primary CTAs: "Book an Eye Exam" and "Our Services"
-- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
+**4. ProductImageCard (`src/components/admin/products/ProductImageCard.tsx`)**
+- No changes needed — clicking the card opens the QuickImageUploadModal which will have the regenerate button
 
-## 3. Navigation Updates
-- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
-- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
-- MobileBottomNav: Home, Services, Book, Branches, Account
+### Technical Details
 
-## 4. Pages to Update
-- About: Soteria's story + M&H Eyewear as premium eyewear partner
-- Partners: HMO partners + M&H Eyewear as strategic partner
-- Services/Eye Care: Primary service page
-- Branches: Show all locations from shared database
-- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
+**Edge function change** — add a branch at the top of the handler:
+```typescript
+const { batchSize = 1, itemTypes, maxProducts, productId } = await req.json().catch(() => ({}));
 
-## 5. SEO & Meta
-- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
-
-## 6. Footer
-- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
-
-## 7. Do NOT Change
-- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+// Single product regeneration mode
+if (productId) {
+  const { data: product } = await supabase
+    .from("products")
+    .select("id, name, brand, color, material, item_type, style, sku")
+    .eq("id", productId)
+    .single();
+  // ... generate and return result for just this product
+}
 ```
 
-### Already Completed in This Project (M&H Eyewear)
-- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
-- ✅ About page updated with Soteria partnership section
-- ✅ Route registered in public.routes.tsx
+**QuickImageUploadModal** — add regenerate button + state:
+- `isRegenerating` state boolean
+- Button with `Lightning` icon: "Regenerate with AI"
+- Calls `supabase.functions.invoke("generate-product-image", { body: { productId: product.id } })`
+- Shows toast on success/failure
+
+**ProductImageListView** — add dropdown menu item:
+- New `onRegenerateClick` prop
+- "Regenerate with AI" menu item with `Lightning` icon
+
