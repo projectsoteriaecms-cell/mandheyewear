@@ -51,7 +51,10 @@ export const DraggableImageItem = ({
         isPrimary && "ring-2 ring-primary"
       )}
     >
-      <div className="aspect-square">
+      <div
+        className="aspect-square cursor-pointer"
+        onClick={() => onPreview?.(url)}
+      >
         <img
           src={url}
           alt={`Product ${index + 1}`}

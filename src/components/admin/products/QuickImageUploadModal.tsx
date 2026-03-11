@@ -374,6 +374,15 @@ export const QuickImageUploadModal = ({
             </div>
           )}
         </div>
+
+        {/* Image Preview Lightbox */}
+        <ImagePreviewLightbox
+          images={allImages}
+          currentIndex={previewIndex ?? 0}
+          open={previewIndex !== null}
+          onOpenChange={(open) => { if (!open) setPreviewIndex(null); }}
+          onIndexChange={setPreviewIndex}
+        />
       </DialogContent>
     </Dialog>
   );
