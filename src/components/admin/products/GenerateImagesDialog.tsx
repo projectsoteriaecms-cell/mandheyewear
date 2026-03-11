@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import {
   Select,
   SelectContent,
@@ -55,10 +55,11 @@ interface BatchResult {
 }
 
 const BATCH_LIMITS = [
+  { value: "2", label: "2 products" },
+  { value: "5", label: "5 products" },
   { value: "10", label: "10 products" },
   { value: "25", label: "25 products" },
   { value: "50", label: "50 products" },
-  { value: "100", label: "100 products" },
   { value: "all", label: "All" },
 ];
 
@@ -92,7 +93,8 @@ export const GenerateImagesDialog = ({
 }: GenerateImagesDialogProps) => {
   const [status, setStatus] = useState<"idle" | "running" | "done" | "cancelled" | "paused">("idle");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [batchLimit, setBatchLimit] = useState("50");
+  const [batchLimit, setBatchLimit] = useState("10");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [processed, setProcessed] = useState(0);
   const [succeeded, setSucceeded] = useState(0);
   const [failed, setFailed] = useState(0);
@@ -149,10 +151,13 @@ export const GenerateImagesDialog = ({
         : effectiveLimit * 0.15
   );
 
-  const toggleType = (type: string) => {
-    setSelectedTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
-    );
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    if (value === "all") {
+      setSelectedTypes(categoryCounts.filter((c) => c.missing > 0).map((c) => c.type));
+    } else {
+      setSelectedTypes([value]);
+    }
   };
 
   const reset = useCallback(() => {
@@ -162,7 +167,8 @@ export const GenerateImagesDialog = ({
     setFailed(0);
     setErrors([]);
     setSelectedTypes([]);
-    setBatchLimit("50");
+    setBatchLimit("10");
+    setSelectedCategory("all");
     setCurrentProduct(null);
     setPauseReason(null);
     cancelRef.current = false;
@@ -415,34 +421,26 @@ export const GenerateImagesDialog = ({
               /* Bulk category mode */
               <>
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">Select product categories:</p>
-                  <div className="space-y-1.5 rounded-lg border p-3">
-                    {categoryCounts.filter((c) => c.missing > 0).map((cat) => (
-                      <label
-                        key={cat.type}
-                        className="flex items-center justify-between cursor-pointer py-1 hover:bg-muted/50 rounded px-1 -mx-1"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            checked={selectedTypes.includes(cat.type)}
-                            onCheckedChange={() => toggleType(cat.type)}
-                          />
-                          <span className="text-sm">{cat.label}</span>
-                          <span className="text-xs text-muted-foreground">
-                            ({cat.missing.toLocaleString()})
-                          </span>
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {cat.shots === 6 ? "6-shot gallery" : "1 shot"}
-                        </span>
-                      </label>
-                    ))}
-                    {categoryCounts.filter((c) => c.missing > 0).length === 0 && (
-                      <p className="text-sm text-muted-foreground text-center py-2">
-                        All products have images!
-                      </p>
-                    )}
-                  </div>
+                  <p className="text-sm font-medium text-foreground">Product category:</p>
+                  {categoryCounts.filter((c) => c.missing > 0).length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-2">
+                      All products have images!
+                    </p>
+                  ) : (
+                    <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categoryCounts.filter((c) => c.missing > 0).map((cat) => (
+                          <SelectItem key={cat.type} value={cat.type}>
+                            {cat.label} — {cat.missing.toLocaleString()} missing · {cat.shots === 6 ? "6-shot gallery" : "1 shot"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-3">
