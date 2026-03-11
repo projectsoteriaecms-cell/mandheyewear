@@ -265,7 +265,7 @@ const ProductImages = () => {
                 Total Products
               </div>
               <p className="text-2xl font-bold mt-1">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.total}
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.total ?? stats.total)}
               </p>
             </div>
             <div className="bg-card rounded-lg border p-4">
@@ -274,7 +274,7 @@ const ProductImages = () => {
                 With Images
               </div>
               <p className="text-2xl font-bold mt-1 text-green-600">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.withPrimary}
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.withPrimary ?? stats.withPrimary)}
               </p>
             </div>
             <div className="bg-card rounded-lg border p-4">
@@ -283,7 +283,7 @@ const ProductImages = () => {
                 Missing Primary
               </div>
               <p className="text-2xl font-bold mt-1 text-amber-600">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.missingPrimary}
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.missingPrimary ?? stats.missingPrimary)}
               </p>
             </div>
             <div className="bg-card rounded-lg border p-4">
@@ -292,7 +292,7 @@ const ProductImages = () => {
                 Complete (6/6)
               </div>
               <p className="text-2xl font-bold mt-1 text-primary">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : stats.complete}
+                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.complete ?? stats.complete)}
               </p>
             </div>
           </div>
