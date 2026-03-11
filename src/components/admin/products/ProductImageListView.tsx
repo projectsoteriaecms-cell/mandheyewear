@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DotsThree, Upload, Image, CheckCircle } from "@phosphor-icons/react";
+import { DotsThree, Upload, Image, CheckCircle, Lightning } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 interface ProductImageListViewProps {
