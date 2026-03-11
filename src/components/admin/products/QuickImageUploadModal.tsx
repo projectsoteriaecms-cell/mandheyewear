@@ -34,6 +34,7 @@ import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
 import { supabase } from "@/integrations/supabase/client";
 
 const MAX_IMAGES = 6; // 1 primary + 5 additional
+const SHOT_SLUGS = ["hero", "front", "side", "rear", "macro", "packaging"];
 
 interface QuickImageUploadModalProps {
   product: {
@@ -42,6 +43,7 @@ interface QuickImageUploadModalProps {
     sku: string;
     image_url: string | null;
     additional_images: string[] | null;
+    item_type?: string | null;
   } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
