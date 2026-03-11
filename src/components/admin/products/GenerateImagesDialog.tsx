@@ -151,10 +151,13 @@ export const GenerateImagesDialog = ({
         : effectiveLimit * 0.15
   );
 
-  const toggleType = (type: string) => {
-    setSelectedTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
-    );
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    if (value === "all") {
+      setSelectedTypes(categoryCounts.filter((c) => c.missing > 0).map((c) => c.type));
+    } else {
+      setSelectedTypes([value]);
+    }
   };
 
   const reset = useCallback(() => {
