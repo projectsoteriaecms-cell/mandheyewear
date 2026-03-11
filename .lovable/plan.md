@@ -1,55 +1,26 @@
 
-# Soteria Eye Clinic — Remix & Transform Plan
 
-## Status: Ready for User Action
+## Fix Category Filter and Stats Coherence in Product Image Manager
 
-### Next Step
-1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
-2. Name the new project **"Soteria Eye Clinic"**
-3. Paste the transformation prompt (saved below) into the new project's chat
+### Problem
+1. The category dropdown only shows categories that have products in the database — categories with zero products are missing from the list. All 9 database enum values should always appear in the dropdown for completeness.
+2. The four stats cards (Total, With Images, Missing Primary, Complete) always show global numbers regardless of which category is selected. When filtering by category, the stats should reflect the filtered subset so the numbers "balance" and make sense together.
 
-### Transformation Prompt (for the new project)
+### Changes — `src/pages/admin/ProductImages.tsx`
 
-```text
-Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
+**1. Show all categories in the dropdown, not just ones with products**
+- Build dropdown options from a static list of all `item_type` enum values (the existing `ITEM_TYPE_LABELS` map) instead of only from products that exist
+- Still show per-category product counts next to each label, but include categories with 0 count so admins can see the full picture
 
-## 1. Branding & Colors
-- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
-- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
-- Accent color: keep the M&H gold as a secondary accent for partnership elements
-- Update CSS variables in index.css accordingly
-- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
-- Update favicon to use Soteria branding
-- Font: keep Cormorant Garamond for display but consider a more clinical feel
+**2. Make stats cards respond to filters**
+- Compute a `filteredStats` memo that recalculates total, withPrimary, missingPrimary, and complete counts from the current `filteredProducts` (after search + category + status filters are applied)
+- When no filters are active, use the existing RPC stats (accurate global numbers)
+- When any filter is active (category, search, or status), use the locally computed stats from the filtered product list
+- This ensures the four stat cards always reflect what the user is currently viewing
 
-## 2. Homepage Rewrite
-- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
-- Primary CTAs: "Book an Eye Exam" and "Our Services"
-- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
+**3. Update results badge**
+- When a category filter is active, show the category name in the results summary (e.g., "142 products in Frames")
 
-## 3. Navigation Updates
-- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
-- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
-- MobileBottomNav: Home, Services, Book, Branches, Account
+### Files Changed
+- `src/pages/admin/ProductImages.tsx` — single file update
 
-## 4. Pages to Update
-- About: Soteria's story + M&H Eyewear as premium eyewear partner
-- Partners: HMO partners + M&H Eyewear as strategic partner
-- Services/Eye Care: Primary service page
-- Branches: Show all locations from shared database
-- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
-
-## 5. SEO & Meta
-- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
-
-## 6. Footer
-- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
-
-## 7. Do NOT Change
-- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
-```
-
-### Already Completed in This Project (M&H Eyewear)
-- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
-- ✅ About page updated with Soteria partnership section
-- ✅ Route registered in public.routes.tsx
