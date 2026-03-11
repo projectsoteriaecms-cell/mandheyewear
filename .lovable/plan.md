@@ -1,55 +1,48 @@
 
-# Soteria Eye Clinic — Remix & Transform Plan
 
-## Status: Ready for User Action
+## Fix Incomplete Product Counts in Image Manager
 
-### Next Step
-1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
-2. Name the new project **"Soteria Eye Clinic"**
-3. Paste the transformation prompt (saved below) into the new project's chat
+### Root Cause
+The `useAdminProducts` hook fetches products with `.range(0, 4999)`, but Supabase PostgREST has a default `max_rows` limit of 1000. So only ~1000 of the 3,444 active products are returned. The category dropdown counts and filtered stats are computed client-side from this incomplete list, producing wrong numbers (e.g., showing ~300 frames instead of 2,967).
 
-### Transformation Prompt (for the new project)
+Additionally, the page is crashing (console errors in ProductImages component), likely from the recent edits.
 
-```text
-Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
+### Solution — Two-Part Fix
 
-## 1. Branding & Colors
-- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
-- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
-- Accent color: keep the M&H gold as a secondary accent for partnership elements
-- Update CSS variables in index.css accordingly
-- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
-- Update favicon to use Soteria branding
-- Font: keep Cormorant Garamond for display but consider a more clinical feel
+**1. Server-side category counts via new RPC function** (database migration)
 
-## 2. Homepage Rewrite
-- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
-- Primary CTAs: "Book an Eye Exam" and "Our Services"
-- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
+Create a `get_product_image_category_stats()` function that returns per-item-type counts with image stats, bypassing client-side row limits:
 
-## 3. Navigation Updates
-- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
-- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
-- MobileBottomNav: Home, Services, Book, Branches, Account
-
-## 4. Pages to Update
-- About: Soteria's story + M&H Eyewear as premium eyewear partner
-- Partners: HMO partners + M&H Eyewear as strategic partner
-- Services/Eye Care: Primary service page
-- Branches: Show all locations from shared database
-- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
-
-## 5. SEO & Meta
-- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
-
-## 6. Footer
-- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
-
-## 7. Do NOT Change
-- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+```sql
+CREATE FUNCTION get_product_image_category_stats()
+RETURNS jsonb AS $$
+  SELECT jsonb_agg(row_to_json(t))
+  FROM (
+    SELECT 
+      item_type,
+      count(*)::int AS total,
+      count(*) FILTER (WHERE image_url IS NOT NULL AND image_url <> '')::int AS with_primary,
+      count(*) FILTER (WHERE image_url IS NOT NULL AND image_url <> '' 
+        AND coalesce(array_length(additional_images,1),0) >= 5)::int AS complete
+    FROM products WHERE is_active = true
+    GROUP BY item_type ORDER BY count(*) DESC
+  ) t;
+$$
 ```
 
-### Already Completed in This Project (M&H Eyewear)
-- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
-- ✅ About page updated with Soteria partnership section
-- ✅ Route registered in public.routes.tsx
+**2. Use batch-fetching in `useAdminProducts`** (`src/modules/products/hooks/useAdminProducts.ts`)
+
+Replace the single `.range(0, 4999)` call with a `fetchAllRows`-style loop (batch size 1000) to ensure all 3,444 products are fetched — matching the pattern already used in `useProducts.ts`.
+
+**3. Update `ProductImages.tsx`** to use the new RPC for category dropdown counts
+
+- Fetch `get_product_image_category_stats` via a new query
+- Use server-side counts for the category dropdown labels (e.g., "Frames (2,967)")
+- Keep client-side `filteredStats` for when search/status filters are active (those still work on the loaded data)
+- Fix any crash from the recent edits
+
+### Files Changed
+- **Database migration** — new `get_product_image_category_stats()` RPC
+- `src/modules/products/hooks/useAdminProducts.ts` — batch-fetch all products
+- `src/pages/admin/ProductImages.tsx` — use server-side category stats for dropdown
+
