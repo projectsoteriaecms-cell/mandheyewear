@@ -73,21 +73,31 @@ const ProductImages = () => {
       .sort((a, b) => b.missing - a.missing);
   }, [products]);
 
-  // Compute unique item types with total counts for the category filter
+  // Compute item type counts — always show all enum values
   const itemTypeOptions = useMemo(() => {
     const counts: Record<string, number> = {};
+    Object.keys(ITEM_TYPE_LABELS).forEach((t) => (counts[t] = 0));
     products.forEach((p) => {
       const type = p.item_type || "other";
       counts[type] = (counts[type] || 0) + 1;
     });
-    return Object.entries(counts)
-      .map(([type, count]) => ({
-        type,
-        label: ITEM_TYPE_LABELS[type] || type,
-        count,
-      }))
+    return Object.entries(ITEM_TYPE_LABELS)
+      .map(([type, label]) => ({ type, label, count: counts[type] || 0 }))
       .sort((a, b) => b.count - a.count);
   }, [products]);
+
+  // Filtered stats that respond to active filters
+  const isFiltered = searchTerm || categoryFilter !== "all" || filter !== "all";
+  const filteredStats = useMemo(() => {
+    if (!isFiltered) return null;
+    const total = filteredProducts.length;
+    const withPrimary = filteredProducts.filter((p) => p.image_url).length;
+    const missingPrimary = total - withPrimary;
+    const complete = filteredProducts.filter(
+      (p) => p.image_url && p.additional_images && p.additional_images.length >= MAX_ADDITIONAL
+    ).length;
+    return { total, withPrimary, missingPrimary, complete };
+  }, [filteredProducts, isFiltered]);
 
   // Filter and search products
   const filteredProducts = useMemo(() => {
