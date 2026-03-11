@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,11 @@ interface ProductImageListViewProps {
   onUploadClick: (productId: string) => void;
   onRegenerateClick?: (productId: string) => void;
   maxImages?: number;
+  selectable?: boolean;
+  selectedIds?: Set<string>;
+  onSelectionToggle?: (id: string) => void;
+  onSelectAll?: () => void;
+  allSelected?: boolean;
 }
 
 export const ProductImageListView = ({
@@ -29,20 +35,53 @@ export const ProductImageListView = ({
   onUploadClick,
   onRegenerateClick,
   maxImages = 6,
+  selectable = false,
+  selectedIds = new Set(),
+  onSelectionToggle,
+  onSelectAll,
+  allSelected = false,
 }: ProductImageListViewProps) => {
   return (
     <div className="space-y-2">
+      {/* Select All header */}
+      {selectable && products.length > 0 && (
+        <div className="flex items-center gap-3 px-3 py-2 border-b">
+          <Checkbox
+            checked={allSelected}
+            onCheckedChange={() => onSelectAll?.()}
+          />
+          <span className="text-sm font-medium text-muted-foreground">
+            {allSelected ? "Deselect all" : "Select all"}
+          </span>
+        </div>
+      )}
+
       {products.map((product) => {
         const imageCount =
           (product.image_url ? 1 : 0) + (product.additional_images?.length ?? 0);
         const isComplete = imageCount >= maxImages;
         const hasNoImages = imageCount === 0;
+        const isSelected = selectedIds.has(product.id);
 
         return (
           <div
             key={product.id}
-            className="flex items-center gap-4 p-3 border rounded-lg bg-card hover:bg-accent/5 transition-colors"
+            className={cn(
+              "flex items-center gap-4 p-3 border rounded-lg bg-card hover:bg-accent/5 transition-colors",
+              selectable && isSelected && "ring-2 ring-primary border-primary"
+            )}
+            onClick={selectable ? () => onSelectionToggle?.(product.id) : undefined}
+            role={selectable ? "button" : undefined}
           >
+            {/* Checkbox */}
+            {selectable && (
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={() => onSelectionToggle?.(product.id)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+
             {/* Thumbnail */}
             <div className="relative h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
               {product.image_url ? (
@@ -83,26 +122,28 @@ export const ProductImageListView = ({
               {imageCount}/{maxImages}
             </Badge>
 
-            {/* Three-dot Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="flex-shrink-0">
-                  <DotsThree className="h-5 w-5" weight="bold" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onUploadClick(product.id)}>
-                  <Upload className="mr-2 h-4 w-4" weight="light" />
-                  {hasNoImages ? "Add Images" : "Manage Images"}
-                </DropdownMenuItem>
-                {onRegenerateClick && (
-                  <DropdownMenuItem onClick={() => onRegenerateClick(product.id)}>
-                    <Lightning className="mr-2 h-4 w-4" weight="fill" />
-                    Regenerate with AI
+            {/* Three-dot Menu — hidden in select mode */}
+            {!selectable && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="flex-shrink-0">
+                    <DotsThree className="h-5 w-5" weight="bold" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onUploadClick(product.id)}>
+                    <Upload className="mr-2 h-4 w-4" weight="light" />
+                    {hasNoImages ? "Add Images" : "Manage Images"}
                   </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {onRegenerateClick && (
+                    <DropdownMenuItem onClick={() => onRegenerateClick(product.id)}>
+                      <Lightning className="mr-2 h-4 w-4" weight="fill" />
+                      Regenerate with AI
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         );
       })}
