@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { useProduct } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { ShoppingBag, Star, ExternalLink } from "lucide-react";
 

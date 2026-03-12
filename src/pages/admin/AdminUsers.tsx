@@ -51,9 +51,9 @@ import { toast } from "sonner";
 import { InviteUserDialog } from "@/components/admin/users/InviteUserDialog";
 import { PendingInvitationsList } from "@/components/admin/users/PendingInvitationsList";
 import { BranchAssignmentDialog } from "@/components/admin/users/BranchAssignmentDialog";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useUserRole } from "@/shared/hooks/useUserRole";
 import { useAuth } from "@/shared/hooks/useAuth";
-import { getInvitableRoles, canChangeUserRole, getRoleLabel, isAtLeast } from "@/lib/permissions";
+import { getInvitableRoles, canChangeUserRole, getRoleLabel, isAtLeast } from "@/shared/lib/permissions";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];

@@ -9,9 +9,9 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { CartDrawer } from "@/components/cart/CartDrawer";
-import { useAuth } from "@/hooks/useAuth";
-import { useUserRole } from "@/hooks/useUserRole";
-import { hasAdminAccess } from "@/lib/permissions";
+import { useAuth } from "@/shared/hooks/useAuth";
+import { useUserRole } from "@/shared/hooks/useUserRole";
+import { hasAdminAccess } from "@/shared/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";

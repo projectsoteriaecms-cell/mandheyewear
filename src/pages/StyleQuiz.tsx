@@ -6,7 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useUpdateProfile } from "@/hooks/useProfile";
 import { usePersonalizedProducts } from "@/hooks/usePersonalizedProducts";

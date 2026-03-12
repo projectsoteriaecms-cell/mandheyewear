@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -24,7 +24,6 @@ export const useNotifications = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Fetch notifications
   const { data: notifications = [], isLoading, refetch } = useQuery({
     queryKey: ["notifications", user?.id],
     queryFn: async () => {
@@ -43,7 +42,6 @@ export const useNotifications = () => {
     enabled: !!user?.id,
   });
 
-  // Subscribe to real-time updates
   useEffect(() => {
     if (!user?.id) return;
 
@@ -59,14 +57,10 @@ export const useNotifications = () => {
         },
         (payload) => {
           const newNotification = payload.new as Notification;
-          
-          // Show toast for new notification
           toast({
             title: newNotification.title,
             description: newNotification.message,
           });
-
-          // Update cache
           queryClient.setQueryData<Notification[]>(
             ["notifications", user.id],
             (old = []) => [newNotification, ...old]
@@ -115,14 +109,12 @@ export const useNotifications = () => {
     };
   }, [user?.id, queryClient, toast]);
 
-  // Mark single notification as read
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: string) => {
       const { error } = await supabase
         .from("notifications")
         .update({ read: true, read_at: new Date().toISOString() })
         .eq("id", notificationId);
-
       if (error) throw error;
     },
     onSuccess: () => {
@@ -130,17 +122,14 @@ export const useNotifications = () => {
     },
   });
 
-  // Mark all notifications as read
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
       if (!user?.id) return;
-      
       const { error } = await supabase
         .from("notifications")
         .update({ read: true, read_at: new Date().toISOString() })
         .eq("user_id", user.id)
         .eq("read", false);
-
       if (error) throw error;
     },
     onSuccess: () => {
@@ -148,14 +137,12 @@ export const useNotifications = () => {
     },
   });
 
-  // Delete notification
   const deleteNotificationMutation = useMutation({
     mutationFn: async (notificationId: string) => {
       const { error } = await supabase
         .from("notifications")
         .delete()
         .eq("id", notificationId);
-
       if (error) throw error;
     },
     onSuccess: () => {
@@ -163,16 +150,13 @@ export const useNotifications = () => {
     },
   });
 
-  // Clear all notifications
   const clearAllMutation = useMutation({
     mutationFn: async () => {
       if (!user?.id) return;
-      
       const { error } = await supabase
         .from("notifications")
         .delete()
         .eq("user_id", user.id);
-
       if (error) throw error;
     },
     onSuccess: () => {

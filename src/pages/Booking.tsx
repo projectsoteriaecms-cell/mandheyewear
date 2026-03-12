@@ -27,11 +27,11 @@ import {
 } from "lucide-react";
 import { useBranches } from "@/hooks/useBranches";
 import { useCreateAppointment, type Appointment } from "@/hooks/useAppointments";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useUserRole } from "@/shared/hooks/useUserRole";
 import { useMetaPixel } from "@/hooks/useMetaPixel";
-import { canBookAppointments } from "@/lib/permissions";
+import { canBookAppointments } from "@/shared/lib/permissions";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 
