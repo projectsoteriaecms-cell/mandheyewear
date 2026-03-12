@@ -6,21 +6,13 @@ import { ProductImageCard } from "@/components/admin/products/ProductImageCard";
 import { ProductImageListView } from "@/components/admin/products/ProductImageListView";
 import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
 import { GenerateImagesDialog } from "@/components/admin/products/GenerateImagesDialog";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { MagnifyingGlass, Images, CheckCircle, Warning, SquaresFour, List, Lightning, Cursor, X } from "@phosphor-icons/react";
+import { Images, Lightning } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ImageStatsCards, ImageFilterBar, SelectionActionBar } from "./product-images";
 
 const ITEM_TYPE_LABELS: Record<string, string> = {
   frames: "Frames",
@@ -43,8 +35,8 @@ const MAX_ADDITIONAL = 5;
 const ProductImages = () => {
   const { products, isLoading } = useAdminProducts();
   const stats = useProductImageStats();
-  
-  // Server-side category stats (accurate counts bypassing row limits)
+  const queryClient = useQueryClient();
+
   const { data: serverCategoryStats } = useQuery({
     queryKey: ["product-image-category-stats"],
     queryFn: async () => {
@@ -57,7 +49,7 @@ const ProductImages = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<ImageFilter>("all");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -65,9 +57,7 @@ const ProductImages = () => {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [generateForSelected, setGenerateForSelected] = useState(false);
-  const queryClient = useQueryClient();
 
-  // Compute per-category missing image counts
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     products.forEach((p) => {
@@ -86,7 +76,6 @@ const ProductImages = () => {
       .sort((a, b) => b.missing - a.missing);
   }, [products]);
 
-  // Build item type options from server-side stats (accurate) with fallback to client data
   const itemTypeOptions = useMemo(() => {
     if (serverCategoryStats && serverCategoryStats.length > 0) {
       return serverCategoryStats.map((stat: any) => ({
@@ -95,7 +84,6 @@ const ProductImages = () => {
         count: stat.total || 0,
       }));
     }
-    // Fallback: client-side counts from loaded products
     const counts: Record<string, number> = {};
     Object.keys(ITEM_TYPE_LABELS).forEach((t) => (counts[t] = 0));
     products.forEach((p) => {
@@ -107,113 +95,67 @@ const ProductImages = () => {
       .sort((a, b) => b.count - a.count);
   }, [serverCategoryStats, products]);
 
-  // Filtered stats that respond to active filters
   const isFiltered = searchTerm || categoryFilter !== "all" || filter !== "all";
 
-  // Filter and search products
   const filteredProducts = useMemo(() => {
     let result = products;
-
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(term) ||
-          p.sku.toLowerCase().includes(term) ||
-          p.brand?.toLowerCase().includes(term)
+        (p) => p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term) || p.brand?.toLowerCase().includes(term)
       );
     }
-
     if (categoryFilter !== "all") {
       result = result.filter((p) => (p.item_type || "other") === categoryFilter);
     }
-
     switch (filter) {
-      case "with_images":
-        result = result.filter((p) => p.image_url);
-        break;
-      case "missing_primary":
-        result = result.filter((p) => !p.image_url);
-        break;
-      case "complete":
-        result = result.filter(
-          (p) =>
-            p.image_url &&
-            p.additional_images &&
-            p.additional_images.length >= MAX_ADDITIONAL
-        );
-        break;
+      case "with_images": result = result.filter((p) => p.image_url); break;
+      case "missing_primary": result = result.filter((p) => !p.image_url); break;
+      case "complete": result = result.filter((p) => p.image_url && p.additional_images && p.additional_images.length >= MAX_ADDITIONAL); break;
     }
-
-    result = result.sort((a, b) => {
-      const aHasImage = a.image_url ? 1 : 0;
-      const bHasImage = b.image_url ? 1 : 0;
-      if (aHasImage !== bHasImage) return bHasImage - aHasImage;
+    return result.sort((a, b) => {
+      const aHas = a.image_url ? 1 : 0;
+      const bHas = b.image_url ? 1 : 0;
+      if (aHas !== bHas) return bHas - aHas;
       return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     });
-
-    return result;
   }, [products, searchTerm, filter, categoryFilter]);
 
   const filteredStats = useMemo(() => {
     if (!isFiltered) return null;
     const total = filteredProducts.length;
     const withPrimary = filteredProducts.filter((p) => p.image_url).length;
-    const missingPrimary = total - withPrimary;
-    const complete = filteredProducts.filter(
-      (p) => p.image_url && p.additional_images && p.additional_images.length >= MAX_ADDITIONAL
-    ).length;
-    return { total, withPrimary, missingPrimary, complete };
+    const complete = filteredProducts.filter((p) => p.image_url && p.additional_images && p.additional_images.length >= MAX_ADDITIONAL).length;
+    return { total, withPrimary, missingPrimary: total - withPrimary, complete };
   }, [filteredProducts, isFiltered]);
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = visibleCount < filteredProducts.length;
   const selectedProduct = products.find((p) => p.id === selectedProductId);
 
-  // Selection helpers
   const toggleSelection = useCallback((id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    setSelectedIds((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     const visibleIds = visibleProducts.map((p) => p.id);
     const allSelected = visibleIds.every((id) => selectedIds.has(id));
-    if (allSelected) {
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        visibleIds.forEach((id) => next.delete(id));
-        return next;
-      });
-    } else {
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        visibleIds.forEach((id) => next.add(id));
-        return next;
-      });
-    }
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      visibleIds.forEach((id) => allSelected ? next.delete(id) : next.add(id));
+      return next;
+    });
   }, [visibleProducts, selectedIds]);
 
   const allVisibleSelected = visibleProducts.length > 0 && visibleProducts.every((p) => selectedIds.has(p.id));
 
-  const exitSelectMode = useCallback(() => {
-    setSelectMode(false);
-    setSelectedIds(new Set());
-  }, []);
+  const exitSelectMode = useCallback(() => { setSelectMode(false); setSelectedIds(new Set()); }, []);
 
-  // Selected products data for the dialog
   const selectedProductsData = useMemo(() => {
     if (!generateForSelected) return undefined;
-    return products
-      .filter((p) => selectedIds.has(p.id))
-      .map((p) => ({ id: p.id, name: p.name, sku: p.sku, item_type: p.item_type, brand: p.brand }));
+    return products.filter((p) => selectedIds.has(p.id)).map((p) => ({ id: p.id, name: p.name, sku: p.sku, item_type: p.item_type, brand: p.brand }));
   }, [products, selectedIds, generateForSelected]);
 
-  // Selection summary for floating bar
   const selectionSummary = useMemo(() => {
     const selected = products.filter((p) => selectedIds.has(p.id));
     const frames = selected.filter((p) => p.item_type === "frames").length;
@@ -221,19 +163,12 @@ const ProductImages = () => {
     return { total: selected.length, frames, others, shots: frames * 6 + others };
   }, [products, selectedIds]);
 
-  const handleShowMore = () => {
-    setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
-  };
-
   const handleRegenerateProduct = useCallback(async (productId: string) => {
     const product = products.find((p) => p.id === productId);
     const { toast } = await import("sonner");
     toast.info(`Regenerating images for ${product?.sku || "product"}...`);
     try {
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { data, error } = await supabase.functions.invoke("generate-product-image", {
-        body: { productId },
-      });
+      const { data, error } = await supabase.functions.invoke("generate-product-image", { body: { productId } });
       if (error) throw error;
       if (data?.succeeded > 0) {
         toast.success(`Regenerated ${data.results?.[0]?.shots || 1} image(s)`);
@@ -242,20 +177,8 @@ const ProductImages = () => {
       } else {
         toast.error(data?.results?.[0]?.error || "Failed to regenerate");
       }
-    } catch (err) {
-      toast.error("Failed to regenerate images");
-    }
+    } catch { toast.error("Failed to regenerate images"); }
   }, [products, queryClient]);
-
-  const handleGenerateSelected = () => {
-    setGenerateForSelected(true);
-    setGenerateDialogOpen(true);
-  };
-
-  const handleGenerateBulk = () => {
-    setGenerateForSelected(false);
-    setGenerateDialogOpen(true);
-  };
 
   return (
     <RoleGuard allowedRoles={["branch_manager", "admin", "super_admin"]}>
@@ -265,13 +188,11 @@ const ProductImages = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Product Images Manager</h1>
-              <p className="text-muted-foreground">
-                Manage product images for your catalog
-              </p>
+              <p className="text-muted-foreground">Manage product images for your catalog</p>
             </div>
             <div className="flex items-center gap-2">
               {stats.missingPrimary > 0 && (
-                <Button onClick={handleGenerateBulk} variant="gold">
+                <Button onClick={() => { setGenerateForSelected(false); setGenerateDialogOpen(true); }} variant="gold">
                   <Lightning className="h-4 w-4" weight="fill" />
                   Generate Missing Images
                 </Button>
@@ -279,124 +200,21 @@ const ProductImages = () => {
             </div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-card rounded-lg border p-4">
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <Images className="h-4 w-4" />
-                Total Products
-              </div>
-              <p className="text-2xl font-bold mt-1">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.total ?? stats.total)}
-              </p>
-            </div>
-            <div className="bg-card rounded-lg border p-4">
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                With Images
-              </div>
-              <p className="text-2xl font-bold mt-1 text-green-600">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.withPrimary ?? stats.withPrimary)}
-              </p>
-            </div>
-            <div className="bg-card rounded-lg border p-4">
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <Warning className="h-4 w-4 text-amber-500" />
-                Missing Primary
-              </div>
-              <p className="text-2xl font-bold mt-1 text-amber-600">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.missingPrimary ?? stats.missingPrimary)}
-              </p>
-            </div>
-            <div className="bg-card rounded-lg border p-4">
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                Complete (6/6)
-              </div>
-              <p className="text-2xl font-bold mt-1 text-primary">
-                {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.complete ?? stats.complete)}
-              </p>
-            </div>
-          </div>
+          <ImageStatsCards stats={stats} filteredStats={filteredStats} />
 
-          {/* Search and Filter Controls */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name, SKU, or brand..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select
-              value={filter}
-              onValueChange={(value) => setFilter(value as ImageFilter)}
-            >
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Products</SelectItem>
-                <SelectItem value="with_images">With Images</SelectItem>
-                <SelectItem value="missing_primary">Missing Primary</SelectItem>
-                <SelectItem value="complete">Complete (6/6)</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={categoryFilter}
-              onValueChange={(value) => {
-                setCategoryFilter(value);
-                setVisibleCount(ITEMS_PER_PAGE);
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {itemTypeOptions.map((opt) => (
-                  <SelectItem key={opt.type} value={opt.type}>
-                    {opt.label} ({opt.count})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <ToggleGroup
-              type="single"
-              value={viewMode}
-              onValueChange={(value) => value && setViewMode(value as ViewMode)}
-              className="flex-shrink-0"
-            >
-              <ToggleGroupItem value="grid" aria-label="Grid view">
-                <SquaresFour className="h-4 w-4" weight={viewMode === "grid" ? "fill" : "regular"} />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="list" aria-label="List view">
-                <List className="h-4 w-4" weight={viewMode === "list" ? "bold" : "regular"} />
-              </ToggleGroupItem>
-            </ToggleGroup>
-
-            {/* Select mode toggle */}
-            <Button
-              variant={selectMode ? "default" : "outline"}
-              onClick={() => selectMode ? exitSelectMode() : setSelectMode(true)}
-              size="sm"
-              className="flex-shrink-0"
-            >
-              {selectMode ? (
-                <>
-                  <X className="h-4 w-4 mr-1" />
-                  Exit Select
-                </>
-              ) : (
-                <>
-                  <Cursor className="h-4 w-4 mr-1" />
-                  Select
-                </>
-              )}
-            </Button>
-          </div>
+          <ImageFilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            filter={filter}
+            onFilterChange={setFilter}
+            categoryFilter={categoryFilter}
+            onCategoryFilterChange={(v) => { setCategoryFilter(v); setVisibleCount(ITEMS_PER_PAGE); }}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            selectMode={selectMode}
+            onToggleSelectMode={() => selectMode ? exitSelectMode() : setSelectMode(true)}
+            itemTypeOptions={itemTypeOptions}
+          />
 
           {/* Results Count */}
           <div className="flex items-center gap-2">
@@ -404,16 +222,8 @@ const ProductImages = () => {
               {filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""}
               {categoryFilter !== "all" && ` in ${ITEM_TYPE_LABELS[categoryFilter] || categoryFilter}`}
             </Badge>
-            {searchTerm && (
-              <span className="text-sm text-muted-foreground">
-                matching "{searchTerm}"
-              </span>
-            )}
-            {selectMode && selectedIds.size > 0 && (
-              <Badge variant="default">
-                {selectedIds.size} selected
-              </Badge>
-            )}
+            {searchTerm && <span className="text-sm text-muted-foreground">matching "{searchTerm}"</span>}
+            {selectMode && selectedIds.size > 0 && <Badge variant="default">{selectedIds.size} selected</Badge>}
           </div>
 
           {/* Product Grid / List */}
@@ -454,10 +264,9 @@ const ProductImages = () => {
                   allSelected={allVisibleSelected}
                 />
               )}
-
               {hasMore && (
                 <div className="flex justify-center pt-4">
-                  <Button variant="outline" onClick={handleShowMore}>
+                  <Button variant="outline" onClick={() => setVisibleCount((prev) => prev + ITEMS_PER_PAGE)}>
                     Show More ({filteredProducts.length - visibleCount} remaining)
                   </Button>
                 </div>
@@ -465,50 +274,25 @@ const ProductImages = () => {
             </>
           )}
 
-          {/* Floating Selection Action Bar */}
-          {selectMode && selectedIds.size > 0 && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-lg">
-              <div className="text-sm">
-                <span className="font-semibold">{selectionSummary.total}</span> selected
-                {selectionSummary.frames > 0 && (
-                  <span className="text-muted-foreground ml-1">
-                    ({selectionSummary.frames} frame{selectionSummary.frames !== 1 ? "s" : ""} × 6 shots
-                    {selectionSummary.others > 0 && ` + ${selectionSummary.others} × 1 shot`}
-                    {" = ~"}{selectionSummary.shots} calls)
-                  </span>
-                )}
-                {selectionSummary.frames === 0 && selectionSummary.others > 0 && (
-                  <span className="text-muted-foreground ml-1">
-                    (~{selectionSummary.shots} API call{selectionSummary.shots !== 1 ? "s" : ""})
-                  </span>
-                )}
-              </div>
-              <Button onClick={handleGenerateSelected} size="sm">
-                <Lightning className="h-4 w-4 mr-1" weight="fill" />
-                Generate Selected
-              </Button>
-              <Button variant="ghost" size="sm" onClick={exitSelectMode}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+          <SelectionActionBar
+            visible={selectMode && selectedIds.size > 0}
+            total={selectionSummary.total}
+            frames={selectionSummary.frames}
+            others={selectionSummary.others}
+            shots={selectionSummary.shots}
+            onGenerate={() => { setGenerateForSelected(true); setGenerateDialogOpen(true); }}
+            onExit={exitSelectMode}
+          />
         </div>
 
-        {/* Quick Upload Modal */}
         <QuickImageUploadModal
           product={selectedProduct ?? null}
           open={!!selectedProductId}
-          onOpenChange={(open) => {
-            if (!open) setSelectedProductId(null);
-          }}
+          onOpenChange={(open) => { if (!open) setSelectedProductId(null); }}
         />
-        {/* Generate Images Dialog */}
         <GenerateImagesDialog
           open={generateDialogOpen}
-          onOpenChange={(open) => {
-            setGenerateDialogOpen(open);
-            if (!open) setGenerateForSelected(false);
-          }}
+          onOpenChange={(open) => { setGenerateDialogOpen(open); if (!open) setGenerateForSelected(false); }}
           categoryCounts={categoryCounts}
           selectedProducts={selectedProductsData}
           onComplete={() => {
