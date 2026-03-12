@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { usePersonalizedProducts } from "@/hooks/usePersonalizedProducts";
 import { CheckCircle2, Sparkles, Glasses, Target } from "lucide-react";

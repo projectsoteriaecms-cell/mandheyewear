@@ -15,7 +15,7 @@ import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { MobileActionBar } from "@/components/mobile";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { useMetaPixel } from "@/hooks/useMetaPixel";
 import { ArrowLeft, Star, ShoppingBag, Sparkles } from "lucide-react";
 

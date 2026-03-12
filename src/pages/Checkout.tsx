@@ -16,11 +16,11 @@ import {
 } from "@/components/ui/select";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
 import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useUserRole } from "@/shared/hooks/useUserRole";
 import { useMetaPixel } from "@/hooks/useMetaPixel";
-import { canPurchase } from "@/lib/permissions";
+import { canPurchase } from "@/shared/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, Clock } from "lucide-react";

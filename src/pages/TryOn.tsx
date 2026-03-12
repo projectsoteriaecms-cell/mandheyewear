@@ -20,7 +20,7 @@ import { useVirtualTryOn, type FrameDetails, type TryOnResult as TryOnResultType
 import { useProducts, useProduct } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { useWishlist } from "@/hooks/useWishlist";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { toast } from "sonner";
 
 const TryOn = () => {
