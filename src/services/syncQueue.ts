@@ -37,7 +37,7 @@ type SyncEventCallback = (status: SyncStatus, pendingCount: number) => void;
 class SyncQueueManager {
   private isSyncing = false;
   private eventListeners: SyncEventCallback[] = [];
-  private syncTimeout: NodeJS.Timeout | null = null;
+  private syncTimeout: ReturnType<typeof setTimeout> | null = null;
 
   /**
    * Subscribe to sync events
