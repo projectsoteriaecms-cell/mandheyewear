@@ -13,6 +13,8 @@ import { useMetaPixel } from "@/hooks/useMetaPixel";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { lovable } from "@/integrations/lovable";
 import { GoogleLogo } from "@phosphor-icons/react";
+import { supabase } from "@/integrations/supabase/client";
+import type { AppRole } from "@/shared/hooks/useUserRole";
 
 const Signup = () => {
   useSEO({ title: "Create Account | M&H Eyewear", description: "Join M&H Eyewear for premium eye care and designer eyewear.", noindex: true });
