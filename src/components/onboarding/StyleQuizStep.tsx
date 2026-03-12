@@ -27,9 +27,9 @@ interface StyleQuizStepProps {
   onBack: () => void;
 }
 
-type QuizStep = "gender" | "face-shape" | "frame-shape" | "material" | "usage" | "budget";
+type QuizStep = "gender" | "frame-shape" | "budget";
 
-const QUIZ_STEPS: QuizStep[] = ["gender", "face-shape", "frame-shape", "material", "usage", "budget"];
+const QUIZ_STEPS: QuizStep[] = ["gender", "frame-shape", "budget"];
 
 export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
   const [currentQuizStep, setCurrentQuizStep] = useState<QuizStep>("gender");
