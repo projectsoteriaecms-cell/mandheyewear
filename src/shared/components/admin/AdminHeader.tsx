@@ -18,7 +18,7 @@ import { useUserRole } from "@/shared/hooks/useUserRole";
 import { Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useNotifications, type NotificationType } from "@/hooks/admin/useNotifications";
+import { useNotifications, type NotificationType } from "@/modules/notifications";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminMobileNav } from "./AdminMobileNav";

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { AdminLayout, RoleGuard } from "@/shared/components/admin";
-import { useZohoSync } from "@/hooks/admin/useZohoSync";
+import { useZohoSync } from "@/modules/integrations";
 import { useIsAdmin } from "@/shared/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";

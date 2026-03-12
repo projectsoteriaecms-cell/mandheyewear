@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useZohoSync } from "@/hooks/admin/useZohoSync";
+import { useZohoSync } from "@/modules/integrations";
 import { toast } from "sonner";
 import {
   Dialog,
