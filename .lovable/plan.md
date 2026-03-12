@@ -1,34 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Fix Resend Email Sender Domain Across Edge Functions
+## Status: Ready for User Action
 
-### Problem
-Three edge functions send emails via Resend but two use the wrong sender address (`onboarding@resend.dev` — Resend's restricted test address). This means emails to real users are blocked unless the recipient is the Resend account owner. The `send-user-invitation` function already uses the correct domain.
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-### Issues per function
+### Transformation Prompt (for the new project)
 
-| Function | Current `from` | CORS headers |
-|---|---|---|
-| `send-tryon-result` | `onboarding@resend.dev` | OK |
-| `send-appointment-confirmation` | `onboarding@resend.dev` | Missing new Supabase client headers |
-| `send-user-invitation` | `notify.mandheyewear.com` | Missing new Supabase client headers |
+```text
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
 
-### Fix
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
 
-**`send-tryon-result/index.ts`** (line 153)
-- Change `from: "Soteria Eye Clinic <onboarding@resend.dev>"` → `from: "Soteria Eye Clinic <noreply@notify.mandheyewear.com>"`
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
 
-**`send-appointment-confirmation/index.ts`** (lines 8-9, 83)
-- Update CORS `Access-Control-Allow-Headers` to include full Supabase client headers
-- Change `from: "Soteria Eye Clinic <onboarding@resend.dev>"` → `from: "Soteria Eye Clinic <noreply@notify.mandheyewear.com>"`
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
 
-**`send-user-invitation/index.ts`** (lines 7-8)
-- Update CORS `Access-Control-Allow-Headers` to include full Supabase client headers (currently missing the `x-supabase-client-*` headers)
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
 
-### Files changed
-- `supabase/functions/send-tryon-result/index.ts` — sender address fix
-- `supabase/functions/send-appointment-confirmation/index.ts` — sender address + CORS fix
-- `supabase/functions/send-user-invitation/index.ts` — CORS fix
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
 
-No database changes. No UI changes. Functions will be auto-deployed.
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
 
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+```
+
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx

@@ -5,7 +5,7 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const SERVICES: Record<string, string> = {
@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Soteria Eye Clinic <onboarding@resend.dev>",
+        from: "Soteria Eye Clinic <noreply@notify.mandheyewear.com>",
         to: [email],
         subject: `Appointment Confirmed - ${serviceName}`,
         html: `
