@@ -14,12 +14,12 @@ import {
   FrameProfileSection,
   SettingsSection,
 } from "@/components/dashboard";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAppointments } from "@/hooks/useAppointments";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useUserRole } from "@/shared/hooks/useUserRole";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
-import { hasAdminAccess, isUnverifiedUser } from "@/lib/permissions";
+import { hasAdminAccess, isUnverifiedUser } from "@/shared/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Loader2, 

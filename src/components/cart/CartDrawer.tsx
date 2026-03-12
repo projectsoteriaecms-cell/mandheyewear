@@ -8,7 +8,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { Bag, Minus, Plus, Trash, CircleNotch } from "@phosphor-icons/react";
 
 // Import placeholder images

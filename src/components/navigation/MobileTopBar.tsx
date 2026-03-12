@@ -4,9 +4,9 @@ import { List, X, Heart, Bag, Moon, Sun, MapPin, Phone, Info, Question, Sparkle,
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/hooks/useAuth";
-import { useUserRole } from "@/hooks/useUserRole";
-import { hasAdminAccess } from "@/lib/permissions";
+import { useAuth } from "@/shared/hooks/useAuth";
+import { useUserRole } from "@/shared/hooks/useUserRole";
+import { hasAdminAccess } from "@/shared/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";

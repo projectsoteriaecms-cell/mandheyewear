@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { WelcomeStep } from "./WelcomeStep";
 import { FaceScanStep } from "./FaceScanStep";
