@@ -6,13 +6,10 @@ import { useUpdateProfile } from "@/hooks/useProfile";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FaceShapeIllustration, FrameStyleIllustration } from "./illustrations";
+import { FrameStyleIllustration } from "./illustrations";
 import {
-  FACE_SHAPES,
   FRAME_SHAPES,
-  MATERIALS,
   GENDER_OPTIONS,
-  USAGE_OPTIONS,
   BUDGET_OPTIONS,
   type QuizPreferences,
 } from "./quiz-constants";
@@ -27,9 +24,9 @@ interface StyleQuizStepProps {
   onBack: () => void;
 }
 
-type QuizStep = "gender" | "face-shape" | "frame-shape" | "material" | "usage" | "budget";
+type QuizStep = "gender" | "frame-shape" | "budget";
 
-const QUIZ_STEPS: QuizStep[] = ["gender", "face-shape", "frame-shape", "material", "usage", "budget"];
+const QUIZ_STEPS: QuizStep[] = ["gender", "frame-shape", "budget"];
 
 export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
   const [currentQuizStep, setCurrentQuizStep] = useState<QuizStep>("gender");
@@ -46,11 +43,11 @@ export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
 
   const currentStepIndex = QUIZ_STEPS.indexOf(currentQuizStep);
 
-  const handleSingleSelect = (field: "faceShape" | "budget" | "gender", value: string) => {
+  const handleSingleSelect = (field: "budget" | "gender", value: string) => {
     setAnswers((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleMultiSelect = (field: "frameShape" | "material" | "usage", value: string) => {
+  const handleMultiSelect = (field: "frameShape", value: string) => {
     setAnswers((prev) => {
       const current = prev[field] || [];
       if (current.includes(value)) {
@@ -64,14 +61,8 @@ export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
     switch (currentQuizStep) {
       case "gender":
         return !!answers.gender;
-      case "face-shape":
-        return !!answers.faceShape;
       case "frame-shape":
         return (answers.frameShape?.length ?? 0) > 0;
-      case "material":
-        return (answers.material?.length ?? 0) > 0;
-      case "usage":
-        return (answers.usage?.length ?? 0) > 0;
       case "budget":
         return !!answers.budget;
       default:
@@ -89,11 +80,8 @@ export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
           userId: user.id,
           updates: {
             frame_preferences: {
-              faceShape: answers.faceShape,
               frameShape: answers.frameShape,
-              material: answers.material,
               gender: answers.gender,
-              usage: answers.usage,
               budget: answers.budget,
             },
           },
@@ -216,31 +204,6 @@ export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
           </div>
         );
 
-      case "face-shape":
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-2xl font-display font-semibold mb-2">What's your face shape?</h3>
-              <p className="text-sm text-muted-foreground">This helps us recommend flattering frames</p>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {FACE_SHAPES.map((shape, index) => {
-                const isSelected = answers.faceShape === shape.id;
-                return renderSelectionCard(
-                  shape,
-                  isSelected,
-                  () => handleSingleSelect("faceShape", shape.id),
-                  index,
-                  <FaceShapeIllustration
-                    shape={shape.id as "oval" | "round" | "square" | "heart" | "oblong"}
-                    selected={isSelected}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        );
-
       case "frame-shape":
         return (
           <div className="space-y-6">
@@ -259,46 +222,6 @@ export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
                   <FrameStyleIllustration style={shape.id} selected={isSelected} />
                 );
               })}
-            </div>
-          </div>
-        );
-
-      case "material":
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-2xl font-display font-semibold mb-2">Preferred frame material?</h3>
-              <p className="text-sm text-muted-foreground">Select all that interest you</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto">
-              {MATERIALS.map((mat, index) =>
-                renderSelectionCard(
-                  mat,
-                  answers.material?.includes(mat.id) ?? false,
-                  () => handleMultiSelect("material", mat.id),
-                  index
-                )
-              )}
-            </div>
-          </div>
-        );
-
-      case "usage":
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-2xl font-display font-semibold mb-2">How will you use your glasses?</h3>
-              <p className="text-sm text-muted-foreground">Select all that apply</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {USAGE_OPTIONS.map((use, index) =>
-                renderSelectionCard(
-                  use,
-                  answers.usage?.includes(use.id) ?? false,
-                  () => handleMultiSelect("usage", use.id),
-                  index
-                )
-              )}
             </div>
           </div>
         );

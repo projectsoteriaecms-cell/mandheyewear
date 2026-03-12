@@ -3,16 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { WelcomeStep } from "./WelcomeStep";
-import { FaceScanStep } from "./FaceScanStep";
 import { StyleQuizStep } from "./StyleQuizStep";
-import { LifestylePollStep } from "./LifestylePollStep";
 import { CompleteStep } from "./CompleteStep";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 
-export type OnboardingStep = "welcome" | "face-scan" | "style-quiz" | "lifestyle-poll" | "complete";
+export type OnboardingStep = "welcome" | "style-quiz" | "complete";
 
-const STEPS: OnboardingStep[] = ["welcome", "face-scan", "style-quiz", "lifestyle-poll", "complete"];
+const STEPS: OnboardingStep[] = ["welcome", "style-quiz", "complete"];
 
 export const OnboardingWizard = () => {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("welcome");
@@ -29,10 +27,6 @@ export const OnboardingWizard = () => {
     }
   }, [user, authLoading, navigate]);
 
-  const goToStep = (step: OnboardingStep) => {
-    setCurrentStep(step);
-  };
-
   const goNext = () => {
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < STEPS.length) {
@@ -45,10 +39,6 @@ export const OnboardingWizard = () => {
     if (prevIndex >= 0) {
       setCurrentStep(STEPS[prevIndex]);
     }
-  };
-
-  const skipToStep = (step: OnboardingStep) => {
-    setCurrentStep(step);
   };
 
   const handleComplete = () => {
@@ -76,7 +66,7 @@ export const OnboardingWizard = () => {
             <span className="text-sm text-muted-foreground">
               Step {currentStepIndex + 1} of {STEPS.length}
             </span>
-            {currentStep !== "welcome" && currentStep !== "complete" && (
+            {currentStep === "style-quiz" && (
               <button
                 onClick={handleComplete}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -95,18 +85,8 @@ export const OnboardingWizard = () => {
           {currentStep === "welcome" && (
             <WelcomeStep onNext={goNext} userName={profile?.full_name} />
           )}
-          {currentStep === "face-scan" && (
-            <FaceScanStep
-              onNext={goNext}
-              onBack={goBack}
-              onSkip={() => skipToStep("style-quiz")}
-            />
-          )}
           {currentStep === "style-quiz" && (
             <StyleQuizStep onNext={goNext} onBack={goBack} />
-          )}
-          {currentStep === "lifestyle-poll" && (
-            <LifestylePollStep onNext={goNext} onBack={goBack} />
           )}
           {currentStep === "complete" && (
             <CompleteStep onComplete={handleComplete} />
