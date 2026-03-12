@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Soteria Eye Clinic <onboarding@resend.dev>",
+        from: "Soteria Eye Clinic <noreply@notify.mandheyewear.com>",
         to: [email],
         subject: `Appointment Confirmed - ${serviceName}`,
         html: `
