@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { ShoppingBag, Minus, Plus, Camera, Loader2, Heart, LogIn } from "lucide-react";
 import type { Product } from "@/hooks/useProducts";
 
