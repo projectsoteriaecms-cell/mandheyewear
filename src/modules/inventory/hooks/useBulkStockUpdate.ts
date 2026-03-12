@@ -46,80 +46,69 @@ interface ProductMatch {
  * Parse an Excel file to extract ProductId and Qty columns
  */
 export const parseStockExcel = async (file: File): Promise<ParsedStockData> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = new ExcelJS.Workbook();
+    const fileName = file.name.toLowerCase();
+    if (fileName.endsWith(".csv")) {
+      await workbook.csv.read(new Blob([arrayBuffer]).stream() as any);
+    } else {
+      await workbook.xlsx.load(arrayBuffer);
+    }
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet || worksheet.rowCount === 0) {
+      throw new Error("No data found in file");
+    }
 
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
+    const rows: StockUpdateRow[] = [];
+    const errors: string[] = [];
+    let totalQuantity = 0;
+    let negativeCount = 0;
 
-        const rows: StockUpdateRow[] = [];
-        const errors: string[] = [];
-        let totalQuantity = 0;
-        let negativeCount = 0;
+    // Skip header row (index 1 in ExcelJS is 1-based)
+    worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+      if (rowNumber === 1) return; // skip header
 
-        // Skip header row (index 0)
-        for (let i = 1; i < jsonData.length; i++) {
-          const row = jsonData[i];
-          if (!row || row.length === 0) continue;
+      // Column 1 = ProductId, Column 4 = Item Description, Column 8 = Qty (1-based)
+      const productIdRaw = row.getCell(1).value;
+      const productName = row.getCell(4).value?.toString() || "";
+      const qtyRaw = row.getCell(8).value;
 
-          // Column 0 = ProductId, Column 3 = Item Description, Column 7 = Qty
-          const productIdRaw = row[0];
-          const productName = row[3]?.toString() || "";
-          const qtyRaw = row[7];
-
-          if (productIdRaw === undefined || productIdRaw === null || productIdRaw === "") {
-            continue; // Skip rows without ProductId
-          }
-
-          const externalId = productIdRaw.toString().trim();
-          let quantity = 0;
-          let originalQuantity = 0;
-          let wasNegative = false;
-
-          if (qtyRaw !== undefined && qtyRaw !== null && qtyRaw !== "") {
-            originalQuantity = parseFloat(qtyRaw.toString()) || 0;
-            quantity = originalQuantity;
-
-            if (quantity < 0) {
-              wasNegative = true;
-              negativeCount++;
-              quantity = 0; // Clamp negative to 0
-            }
-          }
-
-          totalQuantity += quantity;
-
-          rows.push({
-            externalId,
-            productName: productName.substring(0, 100), // Truncate for display
-            quantity,
-            originalQuantity,
-            wasNegative,
-          });
-        }
-
-        resolve({
-          rows,
-          totalQuantity,
-          negativeCount,
-          errors,
-        });
-      } catch (error) {
-        reject(new Error(`Failed to parse Excel file: ${error}`));
+      if (productIdRaw === undefined || productIdRaw === null || productIdRaw === "") {
+        return; // Skip rows without ProductId
       }
-    };
 
-    reader.onerror = () => {
-      reject(new Error("Failed to read file"));
-    };
+      const externalId = productIdRaw.toString().trim();
+      let quantity = 0;
+      let originalQuantity = 0;
+      let wasNegative = false;
 
-    reader.readAsArrayBuffer(file);
-  });
+      if (qtyRaw !== undefined && qtyRaw !== null && qtyRaw !== "") {
+        originalQuantity = parseFloat(qtyRaw.toString()) || 0;
+        quantity = originalQuantity;
+
+        if (quantity < 0) {
+          wasNegative = true;
+          negativeCount++;
+          quantity = 0; // Clamp negative to 0
+        }
+      }
+
+      totalQuantity += quantity;
+
+      rows.push({
+        externalId,
+        productName: productName.substring(0, 100),
+        quantity,
+        originalQuantity,
+        wasNegative,
+      });
+    });
+
+    return { rows, totalQuantity, negativeCount, errors };
+  } catch (error) {
+    throw new Error(`Failed to parse Excel file: ${error}`);
+  }
 };
 
 /**
