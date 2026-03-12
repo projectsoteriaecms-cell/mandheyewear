@@ -13,6 +13,8 @@ import { useMetaPixel } from "@/hooks/useMetaPixel";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { lovable } from "@/integrations/lovable";
 import { GoogleLogo } from "@phosphor-icons/react";
+import { supabase } from "@/integrations/supabase/client";
+import type { AppRole } from "@/shared/hooks/useUserRole";
 
 const Signup = () => {
   useSEO({ title: "Create Account | M&H Eyewear", description: "Join M&H Eyewear for premium eye care and designer eyewear.", noindex: true });
@@ -97,13 +99,30 @@ const Signup = () => {
     } else {
       // Track CompleteRegistration event for Meta Pixel
       trackCompleteRegistration();
-      
-      toast({
-        title: "Account Created!",
-        description: "Let's personalize your experience.",
-      });
-      // Redirect to onboarding for personalization
-      navigate("/onboarding");
+
+      // Check assigned role to determine redirect
+      const STAFF_ROLES: AppRole[] = ["branch_staff", "branch_manager", "admin", "super_admin"];
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData?.session?.user?.id;
+
+      if (userId) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (roleData?.role && STAFF_ROLES.includes(roleData.role as AppRole)) {
+          toast({ title: "Welcome!", description: "Redirecting to admin portal." });
+          navigate("/admin");
+        } else {
+          toast({ title: "Account Created!", description: "Let's personalize your experience." });
+          navigate("/onboarding");
+        }
+      } else {
+        // Email confirmation pending – show message
+        toast({ title: "Account Created!", description: "Please check your email to confirm your account." });
+      }
     }
   };
 
