@@ -1,35 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Fix High Severity Dependency Vulnerabilities
+## Status: Ready for User Action
 
-### Two Issues
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-**1. `xlsx` (SheetJS) — Prototype Pollution + ReDoS**
-The npm package is permanently stuck at 0.18.5 (maintainer stopped publishing to npm). The fix versions (0.20.2+) are only available from SheetJS's own CDN/registry. Since our usage is minimal (just `read()` and `utils.sheet_to_json()` for parsing uploaded Excel/CSV files), the cleanest fix is to replace `xlsx` with `exceljs` — an actively maintained, vulnerability-free alternative that handles the same use cases.
+### Transformation Prompt (for the new project)
 
-**2. `@snap/camera-kit` — Prototype Pollution in protobufjs**
-Already pinned to `1.13.0` in `package.json` which includes the fix. The scanner is likely flagging a stale lockfile entry. Regenerating the lockfile will resolve this.
+```text
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
 
-### Changes
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
 
-**Replace `xlsx` with `exceljs`**
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
 
-- Remove `xlsx` from `package.json`, add `exceljs` (latest, ~4.4.0)
-- Update **`src/components/admin/products/ECMSImportDialog.tsx`**: Replace `import { read, utils } from "xlsx"` with ExcelJS equivalents — use `new ExcelJS.Workbook().xlsx.load(arrayBuffer)` then iterate rows to produce the same `Record<string, any>[]` output
-- Update **`src/modules/inventory/hooks/useBulkStockUpdate.ts`**: Replace `XLSX.read()` and `XLSX.utils.sheet_to_json()` with the same ExcelJS pattern
-- Delete the `xlsx` dependency
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
 
-**Lockfile regeneration for `@snap/camera-kit`**
-- This happens automatically when `package.json` changes (xlsx removal + exceljs addition)
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
 
-### Files Changed
-- `package.json` — swap `xlsx` for `exceljs`
-- `src/components/admin/products/ECMSImportDialog.tsx` — update Excel parsing
-- `src/modules/inventory/hooks/useBulkStockUpdate.ts` — update Excel parsing
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
 
-### What Stays the Same
-- All parsing logic produces identical output (array of row objects)
-- No UI changes
-- No database changes
-- CSV template generation (`generateECMSTemplate`) doesn't use xlsx, so no change needed
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
 
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+```
+
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx

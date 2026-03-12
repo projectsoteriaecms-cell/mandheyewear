@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { read, utils } from "xlsx";
+import ExcelJS from "exceljs";
 import {
   Dialog,
   DialogContent,
@@ -76,15 +76,40 @@ export const ECMSImportDialog = ({ open, onOpenChange }: ECMSImportDialogProps) 
 
     try {
       const arrayBuffer = await uploadedFile.arrayBuffer();
-      const workbook = read(arrayBuffer, { type: "array" });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = utils.sheet_to_json<Record<string, any>>(firstSheet, { defval: "" });
-
-      if (jsonData.length === 0) {
+      const workbook = new ExcelJS.Workbook();
+      const fileName = uploadedFile.name.toLowerCase();
+      if (fileName.endsWith(".csv")) {
+        await workbook.csv.read(new Blob([arrayBuffer]).stream() as any);
+      } else {
+        await workbook.xlsx.load(arrayBuffer);
+      }
+      const worksheet = workbook.worksheets[0];
+      if (!worksheet || worksheet.rowCount === 0) {
         throw new Error("No data found in file");
       }
 
-      const extractedHeaders = Object.keys(jsonData[0]);
+      // Extract headers from first row
+      const headerRow = worksheet.getRow(1);
+      const extractedHeaders: string[] = [];
+      headerRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+        extractedHeaders[colNumber - 1] = cell.value?.toString() || `Column ${colNumber}`;
+      });
+
+      // Convert rows to array of objects (same format as xlsx utils.sheet_to_json)
+      const jsonData: Record<string, any>[] = [];
+      worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+        if (rowNumber === 1) return; // skip header
+        const rowObj: Record<string, any> = {};
+        extractedHeaders.forEach((header, idx) => {
+          const cell = row.getCell(idx + 1);
+          rowObj[header] = cell.value ?? "";
+        });
+        jsonData.push(rowObj);
+      });
+
+      if (jsonData.length === 0) {
+        throw new Error("No data rows found in file");
+      }
       const autoMappings = detectColumnMappings(extractedHeaders);
 
       setState((prev) => ({
