@@ -64,14 +64,8 @@ export const StyleQuizStep = ({ onNext, onBack }: StyleQuizStepProps) => {
     switch (currentQuizStep) {
       case "gender":
         return !!answers.gender;
-      case "face-shape":
-        return !!answers.faceShape;
       case "frame-shape":
         return (answers.frameShape?.length ?? 0) > 0;
-      case "material":
-        return (answers.material?.length ?? 0) > 0;
-      case "usage":
-        return (answers.usage?.length ?? 0) > 0;
       case "budget":
         return !!answers.budget;
       default:
