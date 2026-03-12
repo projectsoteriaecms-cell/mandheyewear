@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { toast } from "@/hooks/use-toast";
 
 export interface StockUpdateRow {
