@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSEO } from "@/hooks/useSEO";
+import { useSEO } from "@/shared/hooks/useSEO";
 import { Link, useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Download, Smartphone, Check, Share, Plus, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePWA } from "@/hooks/usePWA";
+import { usePWA } from "@/shared/hooks/usePWA";
 
 const Install = () => {
   const { isInstallable, isInstalled, promptInstall, canPrompt } = usePWA();

@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AppRoutes } from "@/routes";
 import { InstallPrompt, OfflineIndicator } from "@/components/pwa";
-import { useMetaPixelPageView } from "@/hooks/useMetaPixel";
+import { useMetaPixelPageView } from "@/shared/hooks/useMetaPixel";
 
 const queryClient = new QueryClient();
 

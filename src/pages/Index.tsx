@@ -10,7 +10,7 @@ import {
   VirtualTryOn,
   TrustBadges,
 } from "@/components/home";
-import { useSEO } from "@/hooks/useSEO";
+import { useSEO } from "@/shared/hooks/useSEO";
 import { JsonLd } from "@/components/seo";
 
 const Index = () => {
