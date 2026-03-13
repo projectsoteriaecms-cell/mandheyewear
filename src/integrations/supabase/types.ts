@@ -1555,6 +1555,38 @@ export type Database = {
         }
         Relationships: []
       }
+      zoho_warehouse_mapping: {
+        Row: {
+          branch_id: string
+          created_at: string | null
+          id: string
+          zoho_location_id: string
+          zoho_location_name: string | null
+        }
+        Insert: {
+          branch_id: string
+          created_at?: string | null
+          id?: string
+          zoho_location_id: string
+          zoho_location_name?: string | null
+        }
+        Update: {
+          branch_id?: string
+          created_at?: string | null
+          id?: string
+          zoho_location_id?: string
+          zoho_location_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zoho_warehouse_mapping_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1675,6 +1707,7 @@ export type Database = {
         | "adjustment"
         | "write_off"
         | "initial_stock"
+        | "zoho_sync"
       transfer_status: "pending" | "in_transit" | "received" | "cancelled"
     }
     CompositeTypes: {
@@ -1880,6 +1913,7 @@ export const Constants = {
         "adjustment",
         "write_off",
         "initial_stock",
+        "zoho_sync",
       ],
       transfer_status: ["pending", "in_transit", "received", "cancelled"],
     },
