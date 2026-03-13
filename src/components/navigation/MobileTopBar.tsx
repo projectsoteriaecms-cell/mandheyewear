@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { List, X, Heart, Bag, Moon, Sun, MapPin, Phone, Info, Question, Sparkle, Camera, Gear, SignOut } from "@phosphor-icons/react";
+import { List, X, Heart, Bag, Moon, Sun, Info, Sparkle, Camera, Gear, SignOut, Eyeglasses, SunDim, Watch } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
