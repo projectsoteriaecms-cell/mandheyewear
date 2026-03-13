@@ -279,6 +279,8 @@ export const FrameProfileSection = () => {
           )}
         </CardContent>
       </Card>
+
+      <FaceScanDialog open={showFaceScan} onOpenChange={setShowFaceScan} />
     </div>
   );
 };
