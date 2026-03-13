@@ -56,6 +56,8 @@ export function useZohoSync() {
         matched_existing: (meta?.matched_existing as number) ?? 0,
         new_products: (meta?.new_products as number) ?? 0,
         current_page: (meta?.current_page as number) ?? undefined,
+        stock_updated: (meta?.stock_updated as number) ?? 0,
+        stock_skipped: (meta?.stock_skipped as number) ?? 0,
       });
 
       if (data.status !== "pending") {
