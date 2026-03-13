@@ -1,55 +1,49 @@
 
-# Soteria Eye Clinic — Remix & Transform Plan
 
-## Status: Ready for User Action
+## Diagnosis: Stock Sync from Zoho Is Running But Updating Zero Items
 
-### Next Step
-1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
-2. Name the new project **"Soteria Eye Clinic"**
-3. Paste the transformation prompt (saved below) into the new project's chat
+### What I Found
 
-### Transformation Prompt (for the new project)
+I dug into your database and sync logs. Here's the situation:
 
-```text
-Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
+1. **Stock sync IS running** — the latest sync processed 10,151 Zoho items across 51 pages. But it updated **zero** stock levels. Every sync shows `stock_updated: 0`.
 
-## 1. Branding & Colors
-- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
-- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
-- Accent color: keep the M&H gold as a secondary accent for partnership elements
-- Update CSS variables in index.css accordingly
-- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
-- Update favicon to use Soteria branding
-- Font: keep Cormorant Garamond for display but consider a more clinical feel
+2. **The inventory table has 1,250 rows** — all from the old ECMS import, all with `quantity_on_hand = 0`. These are the "1,000 low stock" and "1,000 out of stock" numbers you're seeing. They're not placeholders — they're real rows with zero stock.
 
-## 2. Homepage Rewrite
-- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
-- Primary CTAs: "Book an Eye Exam" and "Our Services"
-- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
+3. **10,150 Zoho-linked products have NO inventory rows at all** — so they don't even show up in stock counts.
 
-## 3. Navigation Updates
-- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
-- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
-- MobileBottomNav: Home, Services, Book, Branches, Account
+4. **Your warehouse mapping table is completely empty** — no Zoho locations are mapped to local branches, and no `__default__` fallback is configured.
 
-## 4. Pages to Update
-- About: Soteria's story + M&H Eyewear as premium eyewear partner
-- Partners: HMO partners + M&H Eyewear as strategic partner
-- Services/Eye Care: Primary service page
-- Branches: Show all locations from shared database
-- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
+### Root Cause
 
-## 5. SEO & Meta
-- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
+The stock sync logic works like this:
+- For each Zoho item, it checks if the API returns per-warehouse stock (`item.warehouses` array)
+- If warehouses exist, it looks up the mapping table to find which local branch each warehouse belongs to → **table is empty, so all are skipped**
+- If no warehouses, it uses `item.stock_on_hand` and assigns it to a default branch → the code falls back to your head office branch, but if Zoho returns `stock_on_hand = 0` (common if items aren't inventory-tracked in Zoho Books, or if the API needs additional parameters), nothing gets created
 
-## 6. Footer
-- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
+### Fix Plan
 
-## 7. Do NOT Change
-- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
-```
+**Step 1: Add diagnostic logging to the edge function**
+- Log what Zoho actually returns for `stock_on_hand` and `warehouses` on a sample of items, so we can confirm exactly what data the API provides
 
-### Already Completed in This Project (M&H Eyewear)
-- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
-- ✅ About page updated with Soteria partnership section
-- ✅ Route registered in public.routes.tsx
+**Step 2: Create a `__default__` warehouse mapping**
+- Insert a row mapping `__default__` → Warri Head Office branch, guaranteeing the fallback path works
+
+**Step 3: Fix the stock sync to handle zero-stock items too**
+- Currently items with `stock_on_hand = 0` are silently skipped (line 193). Change logic to also create/update inventory rows when stock is 0 — because zero IS valid stock data from Zoho. The current code only creates inventory when `stockOnHand > 0`, which means the 10K Zoho products never get inventory rows at all.
+
+**Step 4: Clean up the 1,250 orphaned ECMS inventory rows**
+- These ECMS products (no `zoho_item_id`) are inflating the "low stock" / "out of stock" counts. For any ECMS product that now has a Zoho-linked equivalent (matched by name), the old zero-stock row is misleading.
+
+### Technical Changes
+
+**`supabase/functions/zoho-sync/index.ts`**:
+- Add `console.log` for first 3 items showing `stock_on_hand`, `warehouses` presence, and `item_type`
+- In `syncStockForItems`, remove the `if (stockOnHand > 0)` gate — allow zero-stock upserts so all Zoho products get proper inventory rows
+- For the warehouse path, still skip unmapped warehouses but log the count
+
+**Database insert** (via insert tool):
+- Insert `__default__` warehouse mapping → Warri Head Office (`d902e977-981b-42bf-8b42-55a765e046ed`)
+
+This should make the next "Sync from Zoho" actually populate real stock levels for all 10K+ Zoho products.
+
