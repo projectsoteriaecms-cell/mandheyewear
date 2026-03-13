@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
-import { useProduct } from "@/hooks/useProducts";
-import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useProduct } from "@/modules/products/hooks/useProducts";
+import { useCart } from "@/modules/orders/hooks/useCart";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { ShoppingBag, Star, ExternalLink } from "lucide-react";
 

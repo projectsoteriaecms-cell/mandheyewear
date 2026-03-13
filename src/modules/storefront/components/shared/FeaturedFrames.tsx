@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFeaturedProducts } from "@/hooks/useProducts";
+import { useFeaturedProducts } from "@/modules/products/hooks/useProducts";
 import { ArrowRight, Heart, Eye } from "@phosphor-icons/react";
 
 // Placeholder images for products without images

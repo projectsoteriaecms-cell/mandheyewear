@@ -1,6 +1,6 @@
 import { useProfile } from "./useProfile";
-import { useUserRole } from "@/shared/hooks/useUserRole";
-import type { AppRole } from "@/shared/hooks/useUserRole";
+import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+import type { AppRole } from "@/modules/auth/hooks/useUserRole";
 
 const isEmpty = (val: unknown): boolean => {
   if (val == null) return true;

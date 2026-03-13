@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { offlineStorage, OperationType } from "@/services/offlineStorage";
 import { syncQueue, SyncStatus } from "@/services/syncQueue";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useToast } from "@/shared/hooks/use-toast";
 
 interface UseOfflineSyncReturn {
