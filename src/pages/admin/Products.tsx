@@ -31,7 +31,7 @@ type ViewMode = "grid" | "list";
 const Products = () => {
   const { products, isLoading, deleteProduct } = useAdminProducts();
   const { isAdmin } = useIsAdmin();
-  const { status: syncStatus, pullItems } = useZohoSync();
+  const { status: syncStatus, pullItems, syncStock } = useZohoSync();
   const { isEnriching, enrichProgress, handleEnrichProducts } = useEnrichProducts();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,8 +84,10 @@ const Products = () => {
             isEnriching={isEnriching}
             enrichProgress={enrichProgress}
             syncStatus={syncStatus}
+            stockSyncStatus={syncStatus}
             onEnrichProducts={handleEnrichProducts}
             onPullItems={pullItems}
+            onSyncStock={syncStock}
             onOpenLinkDialog={() => setIsLinkDialogOpen(true)}
             onOpenBulkImageUpload={() => setIsBulkImageUploadOpen(true)}
             onOpenBulkUpload={() => setIsBulkUploadOpen(true)}

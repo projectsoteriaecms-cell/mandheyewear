@@ -1,35 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Sync Stock Without Warehouse Mapping
+## Status: Ready for User Action
 
-### Problem Analysis
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-After investigating:
-- **10,149 products** were synced successfully from Zoho, but **0 stock records** exist — the stock sync code was deployed *after* your last sync ran.
-- "Fetch Zoho Warehouses" returned nothing because Zoho Books' `/settings/warehouses` endpoint isn't available on your plan, and the list `/items` response doesn't include per-warehouse breakdown.
-- The fallback path (use total `stock_on_hand` → assign to head office) should work but hasn't been triggered yet.
+### Transformation Prompt (for the new project)
 
-### Plan
+```text
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
 
-**1. Add a "Sync Stock Only" action to the edge function**
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
 
-A new `action: "sync_stock"` that re-fetches all Zoho items page-by-page but *only* updates inventory (skips product upsert). This avoids re-running the full product sync just to get stock levels. It uses `stock_on_hand` from each item and assigns it to a configurable default branch (stored in Settings or falling back to head office).
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
 
-**2. Add a default branch selector to WarehouseMappingCard**
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
 
-Since per-warehouse mapping isn't available, replace the warehouse discovery flow with a simpler "Default Stock Branch" dropdown. The admin selects which branch receives Zoho stock totals. This is stored in a new `zoho_warehouse_mapping` row with a sentinel `zoho_location_id = '__default__'`.
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
 
-**3. Add "Sync Stock" button to admin Products page**
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
 
-A separate button next to "Sync from Zoho" that triggers the stock-only sync. Shows progress and results (X products updated with stock levels).
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
 
-**4. Ensure `pull_items` also syncs stock on future runs**
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+```
 
-The existing `pull_items` action already has stock sync code — it just needs a re-run. No code change needed here, but we'll verify the `stock_on_hand` field is being read correctly from the Zoho response.
-
-### Files to modify
-- **`supabase/functions/zoho-sync/index.ts`** — add `sync_stock` action, update fallback logic to check for `__default__` mapping
-- **`src/components/admin/settings/WarehouseMappingCard.tsx`** — replace warehouse discovery UI with a "Default Stock Branch" selector
-- **`src/modules/integrations/hooks/useZohoSync.ts`** — add `syncStock()` function
-- **`src/pages/admin/Products.tsx`** or toolbar — add "Sync Stock" button
-
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx

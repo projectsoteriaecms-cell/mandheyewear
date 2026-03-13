@@ -14,8 +14,10 @@ interface ProductsToolbarProps {
   isEnriching: boolean;
   enrichProgress: { enriched: number; remaining: number } | null;
   syncStatus: string;
+  stockSyncStatus?: string;
   onEnrichProducts: () => void;
   onPullItems: () => void;
+  onSyncStock?: () => void;
   onOpenLinkDialog: () => void;
   onOpenBulkImageUpload: () => void;
   onOpenBulkUpload: () => void;
@@ -28,8 +30,10 @@ export const ProductsToolbar = ({
   isEnriching,
   enrichProgress,
   syncStatus,
+  stockSyncStatus,
   onEnrichProducts,
   onPullItems,
+  onSyncStock,
   onOpenLinkDialog,
   onOpenBulkImageUpload,
   onOpenBulkUpload,
@@ -65,6 +69,16 @@ export const ProductsToolbar = ({
               <CloudArrowDown className="mr-2 h-4 w-4" weight="light" />
             )}
             {syncStatus === "syncing" ? "Syncing…" : "Zoho Sync"}
+          </Button>
+        )}
+        {isAdmin && onSyncStock && (
+          <Button variant="outline" onClick={onSyncStock} disabled={stockSyncStatus === "syncing"}>
+            {stockSyncStatus === "syncing" ? (
+              <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" weight="bold" />
+            ) : (
+              <CloudArrowDown className="mr-2 h-4 w-4" weight="light" />
+            )}
+            {stockSyncStatus === "syncing" ? "Syncing Stock…" : "Sync Stock"}
           </Button>
         )}
         {isAdmin && (

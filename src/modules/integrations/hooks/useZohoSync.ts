@@ -139,11 +139,55 @@ export function useZohoSync() {
     return data;
   }, []);
 
+  const syncStock = useCallback(async () => {
+    setStatus("syncing");
+    setResult(null);
+    toast.info("Stock sync started — pulling inventory levels from Zoho Books...");
+
+    try {
+      const { data, error } = await supabase.functions.invoke("zoho-sync", {
+        body: { action: "sync_stock" },
+      });
+
+      if (error) throw error;
+
+      if (data?.sync_id) {
+        if (data.has_more) {
+          setResult({
+            records_processed: data.page_1_processed,
+            stock_updated: data.page_1_stock_updated ?? 0,
+            stock_skipped: data.page_1_stock_skipped ?? 0,
+            current_page: 1,
+          });
+          pollSyncLog(data.sync_id);
+        } else {
+          setStatus("success");
+          setResult({
+            records_processed: data.page_1_processed,
+            stock_updated: data.page_1_stock_updated ?? 0,
+            stock_skipped: data.page_1_stock_skipped ?? 0,
+          });
+          invalidateProductQueries();
+          queryClient.invalidateQueries({ queryKey: ["inventory"] });
+          const stockUp = data.page_1_stock_updated ?? 0;
+          toast.success(`Stock sync complete: ${stockUp} inventory levels updated`);
+        }
+      } else {
+        throw new Error(data?.error || "Sync returned no sync_id");
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setStatus("error");
+      setResult({ error: message });
+      toast.error(`Stock sync failed: ${message}`);
+    }
+  }, [pollSyncLog, invalidateProductQueries, queryClient]);
+
   const reset = useCallback(() => {
     stopPolling();
     setStatus("idle");
     setResult(null);
   }, [stopPolling]);
 
-  return { status, result, pullItems, linkProduct, reset };
+  return { status, result, pullItems, syncStock, linkProduct, reset };
 }

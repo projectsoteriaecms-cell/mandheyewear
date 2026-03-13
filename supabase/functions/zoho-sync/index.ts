@@ -84,6 +84,15 @@ async function loadWarehouseMappings(
 async function getDefaultBranch(
   supabase: ReturnType<typeof createClient>,
 ): Promise<string | null> {
+  // First check for __default__ mapping
+  const { data: defaultMapping } = await supabase
+    .from("zoho_warehouse_mapping")
+    .select("branch_id")
+    .eq("zoho_location_id", "__default__")
+    .maybeSingle();
+  if (defaultMapping?.branch_id) return defaultMapping.branch_id;
+
+  // Fall back to head office
   const { data } = await supabase
     .from("branches")
     .select("id")
@@ -499,6 +508,74 @@ serve(async (req) => {
     }
   }
 
+  // ── Sync stock continuation (self-invoked) ──
+  if (action === "sync_stock_continue") {
+    const {
+      page, sync_id, access_token,
+      total_stock_updated = 0, total_stock_skipped = 0, total_processed = 0,
+    } = body;
+
+    const warehouseMappings = await loadWarehouseMappings(supabase);
+    const defaultBranchId = warehouseMappings.get("__default__") || await getDefaultBranch(supabase);
+
+    const { data: syncLogData } = await supabase
+      .from("zoho_sync_log")
+      .select("performed_by")
+      .eq("id", sync_id)
+      .maybeSingle();
+    const performedBy = syncLogData?.performed_by || "00000000-0000-0000-0000-000000000000";
+
+    try {
+      const { items, hasMore } = await fetchZohoItems(access_token, orgId, page);
+      const stockResult = await syncStockForItems(supabase, items, warehouseMappings, defaultBranchId, performedBy);
+
+      const totals = {
+        processed: total_processed + items.length,
+        failed: 0,
+        matched: 0,
+        newProducts: 0,
+        stockUpdated: total_stock_updated + stockResult.stockUpdated,
+        stockSkipped: total_stock_skipped + stockResult.stockSkipped,
+      };
+
+      if (hasMore) {
+        await updateSyncProgress(supabase, sync_id, totals, page, false);
+        // Chain next page for stock sync
+        const sUrl = Deno.env.get("SUPABASE_URL")!;
+        const sKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        fetch(`${sUrl}/functions/v1/zoho-sync`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${sKey}` },
+          body: JSON.stringify({
+            action: "sync_stock_continue",
+            page: page + 1,
+            sync_id,
+            access_token,
+            total_stock_updated: totals.stockUpdated,
+            total_stock_skipped: totals.stockSkipped,
+            total_processed: totals.processed,
+          }),
+        }).catch((err) => console.error("Stock sync chain failed:", err));
+      } else {
+        await updateSyncProgress(supabase, sync_id, totals, page, true);
+      }
+
+      return new Response(JSON.stringify({ success: true, page }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      console.error(`Stock sync page ${page} error:`, message);
+      const totals = { processed: total_processed, failed: 0, matched: 0, newProducts: 0, stockUpdated: total_stock_updated, stockSkipped: total_stock_skipped };
+      await updateSyncProgress(supabase, sync_id, totals, page, true);
+      await supabase.from("zoho_sync_log").update({ status: "error", error_details: { message, page } }).eq("id", sync_id);
+      return new Response(JSON.stringify({ error: message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  }
+
   // ── Initial call (client-facing, requires auth) ──
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
@@ -533,6 +610,86 @@ serve(async (req) => {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+  }
+
+  // ── Sync stock only ──
+  if (action === "sync_stock") {
+    const { data: syncLog } = await supabase
+      .from("zoho_sync_log")
+      .insert({ sync_type: "sync_stock", direction: "inbound", status: "pending", performed_by: userId })
+      .select()
+      .single();
+
+    const syncId = syncLog?.id;
+    if (!syncId) {
+      return new Response(JSON.stringify({ error: "Failed to create sync log" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    try {
+      const accessToken = await getAccessToken();
+      const warehouseMappings = await loadWarehouseMappings(supabase);
+      const defaultBranchId = warehouseMappings.get("__default__") || await getDefaultBranch(supabase);
+
+      const { items, hasMore } = await fetchZohoItems(accessToken, orgId, 1);
+      const stockResult = await syncStockForItems(supabase, items, warehouseMappings, defaultBranchId, userId);
+
+      const totals = {
+        processed: items.length,
+        failed: 0,
+        matched: 0,
+        newProducts: 0,
+        stockUpdated: stockResult.stockUpdated,
+        stockSkipped: stockResult.stockSkipped,
+      };
+
+      if (hasMore) {
+        await updateSyncProgress(supabase, syncId, totals, 1, false);
+        // Chain next page
+        const sKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        fetch(`${supabaseUrl}/functions/v1/zoho-sync`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${sKey}` },
+          body: JSON.stringify({
+            action: "sync_stock_continue",
+            page: 2,
+            sync_id: syncId,
+            access_token: accessToken,
+            total_stock_updated: totals.stockUpdated,
+            total_stock_skipped: totals.stockSkipped,
+            total_processed: totals.processed,
+          }),
+        }).catch((err) => console.error("Stock sync chain failed:", err));
+      } else {
+        await updateSyncProgress(supabase, syncId, totals, 1, true);
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          action,
+          sync_id: syncId,
+          page_1_stock_updated: stockResult.stockUpdated,
+          page_1_stock_skipped: stockResult.stockSkipped,
+          page_1_processed: items.length,
+          has_more: hasMore,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      console.error("Stock sync error:", message);
+      await supabase
+        .from("zoho_sync_log")
+        .update({ status: "error", error_details: { message }, completed_at: new Date().toISOString() })
+        .eq("id", syncId);
+      return new Response(JSON.stringify({ error: message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
   }
 
   // ── List warehouses: fetch from Zoho Books settings ──
