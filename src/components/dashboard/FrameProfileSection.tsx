@@ -186,11 +186,9 @@ export const FrameProfileSection = () => {
               )}
               
               <div className="pt-4 border-t">
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/onboarding">
-                    <Scan className="h-4 w-4 mr-2" />
-                    Rescan Face
-                  </Link>
+                <Button variant="outline" size="sm" onClick={() => setShowFaceScan(true)}>
+                  <Scan className="h-4 w-4 mr-2" />
+                  Rescan Face
                 </Button>
               </div>
             </div>
