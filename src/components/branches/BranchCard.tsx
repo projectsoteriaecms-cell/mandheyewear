@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin, Phone, Mail, Clock, Navigation as NavIcon } from "lucide-react";
-import type { Branch } from "@/hooks/useBranches";
+import type { Branch } from "@/modules/branches/types";
 
 interface BranchCardProps {
   branch: Branch;

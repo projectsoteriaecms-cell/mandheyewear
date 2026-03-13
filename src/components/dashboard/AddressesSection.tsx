@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useToast } from "@/shared/hooks/use-toast";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, MapPin, Pencil, Trash2, Star, Loader2 } from "lucide-react";
@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { EmptyState } from "@/components/storefront";
+import { EmptyState } from "@/modules/storefront/components/shared";
 
 interface Address {
   id: string;

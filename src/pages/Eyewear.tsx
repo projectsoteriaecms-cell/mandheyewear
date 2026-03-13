@@ -1,17 +1,17 @@
 import { useState, useMemo, useEffect } from "react";
-import { useSEO } from "@/hooks/useSEO";
+import { useSEO } from "@/shared/hooks/useSEO";
 import { Link, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { ProductCard } from "@/components/eyewear/ProductCard";
-import { ProductListCard } from "@/components/eyewear/ProductListCard";
-import { ShopCategoryBar } from "@/components/eyewear/ShopCategoryBar";
-import { ShopSidebar } from "@/components/eyewear/ShopSidebar";
-import { MobileFilterDrawer } from "@/components/eyewear/MobileFilterDrawer";
-import { VirtualTryOnBanner } from "@/components/eyewear/VirtualTryOnBanner";
-import { useProducts, useProductCategoryCounts } from "@/hooks/useProducts";
+import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
+import { ProductListCard } from "@/modules/storefront/components/eyewear/ProductListCard";
+import { ShopCategoryBar } from "@/modules/storefront/components/eyewear/ShopCategoryBar";
+import { ShopSidebar } from "@/modules/storefront/components/eyewear/ShopSidebar";
+import { MobileFilterDrawer } from "@/modules/storefront/components/eyewear/MobileFilterDrawer";
+import { VirtualTryOnBanner } from "@/modules/storefront/components/eyewear/VirtualTryOnBanner";
+import { useProducts, useProductCategoryCounts } from "@/modules/products/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState, Pagination, ProductQuickView } from "@/components/storefront";
+import { EmptyState, Pagination, ProductQuickView } from "@/modules/storefront/components/shared";
 import {
   Breadcrumb,
   BreadcrumbItem,

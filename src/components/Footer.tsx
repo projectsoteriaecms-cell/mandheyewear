@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FacebookLogo, InstagramLogo, XLogo, Lock, Envelope, PaperPlaneTilt } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/shared/hooks/use-toast";
 import mhLogo from "@/assets/mh-logo.png";
 import mhLogoGold from "@/assets/mh-logo-gold.png";
 

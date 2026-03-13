@@ -21,8 +21,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmailCaptureModal } from "./EmailCaptureModal";
-import { useVTOEmailCapture } from "@/hooks/useVTOEmailCapture";
-import type { TryOnResult as TryOnResultType } from "@/hooks/useVirtualTryOn";
+import { useVTOEmailCapture } from "@/modules/personalization/hooks/useVTOEmailCapture";
+import type { TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
 
 interface TryOnResultProps {
   result: TryOnResultType | null;

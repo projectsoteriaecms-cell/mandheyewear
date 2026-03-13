@@ -1,102 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Phase 6: Cleanup Re-export Shims and Update All Imports
+## Status: Ready for User Action
 
-### Summary
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-Remove ~80 re-export shim files created during Phases 1-4 by updating all consumer files to import directly from canonical module paths. This eliminates the indirection layer and completes the structured monolith transition.
+### Transformation Prompt (for the new project)
 
-### Scope
+```text
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
 
-**Three categories of shims to remove:**
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
 
-1. **`src/hooks/` shims** (27 files) — redirect to `@/modules/*/hooks/` or `@/shared/hooks/`
-2. **`src/components/admin/` shims** (~35 files) — redirect to `@/modules/*/components/`
-3. **`src/components/eyewear/`, `src/components/home/`, `src/components/storefront/` shims** (~19 files) — redirect to `@/modules/storefront/components/`
-4. **`src/shared/components/admin/` shims** (~13 files) — redirect to `@/shared/layouts/admin/`
-5. **`src/shared/hooks/useAuth.ts` and `useUserRole.ts` shims** (2 files) — redirect to `@/modules/auth/hooks/`
-6. **`src/pages/Login.tsx` and `Signup.tsx` shims** (2 files) — redirect to `@/modules/auth/pages/`
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
 
-### Consumer files to update (~70 files)
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
 
-**Group A: `@/hooks/*` → `@/modules/*/hooks/*` or `@/shared/hooks/*`** (69 consumer files)
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
 
-| Old import | New import | Consumers |
-|---|---|---|
-| `@/hooks/use-toast` | `@/shared/hooks/use-toast` | 22 files |
-| `@/hooks/useProducts` | `@/modules/products/hooks/useProducts` | 13 files |
-| `@/hooks/useCart` | `@/modules/orders/hooks/useCart` | 6 files |
-| `@/hooks/useMetaPixel` | `@/shared/hooks/useMetaPixel` | 5 files |
-| `@/hooks/useProfile` | `@/modules/personalization/hooks/useProfile` | 8 files |
-| `@/hooks/useVirtualTryOn` | `@/modules/personalization/hooks/useVirtualTryOn` | 6 files |
-| `@/hooks/useAppointments` | `@/modules/appointments/hooks/useAppointments` | 3 files |
-| `@/hooks/useWishlist` | `@/modules/orders/hooks/useWishlist` | 3 files |
-| `@/hooks/useBranches` | `@/modules/branches/hooks/useBranches` | 3 files |
-| `@/hooks/useOnboardingStatus` | `@/modules/personalization/hooks/useOnboardingStatus` | 2 files |
-| `@/hooks/usePersonalizedProducts` | `@/modules/personalization/hooks/usePersonalizedProducts` | 2 files |
-| `@/hooks/useFaceMeasurement` | `@/modules/personalization/hooks/useFaceMeasurement` | 1 file |
-| `@/hooks/useStylePolls` | `@/modules/personalization/hooks/useStylePolls` | 1 file |
-| `@/hooks/useVTOEmailCapture` | `@/modules/personalization/hooks/useVTOEmailCapture` | 1 file |
-| `@/hooks/useTryOnTour` | `@/modules/personalization/hooks/useTryOnTour` | 1 file |
-| `@/hooks/useCameraKit` | `@/shared/hooks/useCameraKit` | 2 files |
-| `@/hooks/usePWA` | `@/shared/hooks/usePWA` | 2 files |
-| `@/hooks/useSEO` | `@/shared/hooks/useSEO` | 5 files |
-| `@/hooks/use-mobile` | `@/shared/hooks/use-mobile` | 1 file |
-| `@/hooks/useOfflineSync` | `@/shared/hooks/useOfflineSync` | 1 file |
-| `@/hooks/usePullToRefresh` | `@/shared/hooks/usePullToRefresh` | 1 file |
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
 
-**Group B: `@/components/admin/*` → `@/modules/*/components/*`** (12 page files)
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
 
-| Page file | Imports to update |
-|---|---|
-| `pages/admin/Products.tsx` | 9 component imports → `@/modules/products/components` |
-| `pages/admin/ProductImages.tsx` | 4 component imports → `@/modules/products/components` |
-| `pages/admin/Categories.tsx` | 3 component imports → `@/modules/categories/components` |
-| `pages/admin/Services.tsx` | 2 component imports → `@/modules/services/components` |
-| `pages/admin/AdminUsers.tsx` | 2 component imports → `@/modules/users/components` |
-| `pages/admin/Dashboard.tsx` | 1 import → `@/modules/branches/components` |
-| `pages/admin/Inventory.tsx` | 1 import → `@/modules/inventory/components` |
-| `pages/admin/StockAdjustments.tsx` | 1 import → `@/modules/inventory/components` |
-| `pages/admin/StockTransfers.tsx` | 1 import → `@/modules/inventory/components` |
-| `pages/admin/PurchaseOrders.tsx` | 1 import → `@/modules/inventory/components` |
-| `pages/admin/Settings.tsx` | 1 import → `@/modules/integrations/components` |
-| `pages/admin/products/ProductsTable.tsx` | 1 import → `@/modules/products/components` |
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+```
 
-**Group C: `@/components/eyewear/*` → `@/modules/storefront/components/eyewear/*`** (2 files)
-
-- `pages/Eyewear.tsx` (6 imports)
-- `pages/ProductDetail.tsx` (1 import)
-
-**Group D: `@/shared/components/admin` → `@/shared/layouts/admin` or `@/modules/auth`** (17 page files)
-
-| Old import | New import | Consumers |
-|---|---|---|
-| `@/shared/components/admin` (AdminLayout, RoleGuard) | `@/shared/layouts/admin` + `@/modules/auth/components` | All 17 admin pages |
-| `@/shared/components/admin/dashboard/*` | `@/shared/layouts/admin/dashboard/*` | Dashboard, Inventory |
-| `@/shared/hooks/useAuth` | `@/modules/auth/hooks/useAuth` | 41 files |
-| `@/shared/hooks/useUserRole` | `@/modules/auth/hooks/useUserRole` | 21 files |
-
-**Group E: Page shims** (2 files)
-- `pages/Login.tsx` and `pages/Signup.tsx` — these are used by the router, so they stay as shims (router expects default exports from `pages/`)
-
-### Files to delete after updates (~78)
-
-- All 27 files in `src/hooks/` (the entire directory)
-- ~19 shim files in `src/components/eyewear/`, `src/components/home/`, `src/components/storefront/`
-- ~35 shim files in `src/components/admin/` (all subdirectories)
-- ~13 shim files in `src/shared/components/admin/` (layout shims)
-- 2 shim files in `src/shared/hooks/` (useAuth, useUserRole)
-
-**Note:** `src/pages/Login.tsx` and `src/pages/Signup.tsx` remain as shims since the router imports from `@/pages/`.
-
-### Execution order
-
-1. Update all ~70 consumer files to use canonical import paths
-2. Update barrel exports (`src/shared/hooks/index.ts`, `src/shared/components/admin/index.ts`, `src/shared/index.ts`) to point to canonical sources
-3. Delete shim files and empty directories
-4. Verify `src/components/ui/use-toast.ts` and `src/components/ui/toaster.tsx` (these import from `@/hooks/use-toast` and need updating too)
-
-### No database or logic changes
-
-Purely import path updates and file deletions.
-
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx

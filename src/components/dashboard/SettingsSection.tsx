@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/shared/hooks/useAuth";
-import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
+import { useToast } from "@/shared/hooks/use-toast";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useProfile, useUpdateProfile } from "@/modules/personalization/hooks/useProfile";
 import { Loader2, Save, Key, Monitor, Moon, Sun } from "lucide-react";
 
 export const SettingsSection = () => {

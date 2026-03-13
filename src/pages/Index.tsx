@@ -1,7 +1,7 @@
 import { Sparkle } from "@phosphor-icons/react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { FeaturedFrames } from "@/components/storefront";
+import { FeaturedFrames } from "@/modules/storefront/components/shared";
 import {
   HeroSection,
   CategoryCards,
@@ -9,8 +9,8 @@ import {
   QuizPromo,
   VirtualTryOn,
   TrustBadges,
-} from "@/components/home";
-import { useSEO } from "@/hooks/useSEO";
+} from "@/modules/storefront/components/home";
+import { useSEO } from "@/shared/hooks/useSEO";
 import { JsonLd } from "@/components/seo";
 
 const Index = () => {

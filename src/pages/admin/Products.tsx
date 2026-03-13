@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { AdminLayout, RoleGuard } from "@/shared/components/admin";
+import { AdminLayout } from "@/shared/layouts/admin";
+import { RoleGuard } from "@/modules/auth/components/RoleGuard";
 import { useZohoSync } from "@/modules/integrations";
-import { useIsAdmin } from "@/shared/hooks/useUserRole";
+import { useIsAdmin } from "@/modules/auth/hooks/useUserRole";
 import { useAdminProducts } from "@/modules/products";
-import { CreateProductDialog } from "@/components/admin/products/CreateProductDialog";
-import { BulkUploadDialog } from "@/components/admin/products/BulkUploadDialog";
-import { EditProductDialog } from "@/components/admin/products/EditProductDialog";
-import { BulkImageUploadDialog } from "@/components/admin/products/BulkImageUploadDialog";
-import { ECMSImportDialog } from "@/components/admin/products/ECMSImportDialog";
-import { ImportHistoryPanel } from "@/components/admin/products/ImportHistoryPanel";
-import { ZohoSyncHistoryPanel } from "@/components/admin/products/ZohoSyncHistoryPanel";
-import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
-import { LinkToZohoDialog } from "@/components/admin/products/LinkToZohoDialog";
+import { CreateProductDialog } from "@/modules/products/components/CreateProductDialog";
+import { BulkUploadDialog } from "@/modules/products/components/BulkUploadDialog";
+import { EditProductDialog } from "@/modules/products/components/EditProductDialog";
+import { BulkImageUploadDialog } from "@/modules/products/components/BulkImageUploadDialog";
+import { ECMSImportDialog } from "@/modules/products/components/ECMSImportDialog";
+import { ImportHistoryPanel } from "@/modules/products/components/ImportHistoryPanel";
+import { ZohoSyncHistoryPanel } from "@/modules/products/components/ZohoSyncHistoryPanel";
+import { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
+import { LinkToZohoDialog } from "@/modules/products/components/LinkToZohoDialog";
 import {
   AlertDialog,
   AlertDialogAction,

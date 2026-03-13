@@ -1,5 +1,5 @@
 import { Separator } from "@/components/ui/separator";
-import type { CartItem } from "@/hooks/useCart";
+import type { CartItem } from "@/modules/orders/hooks/useCart";
 
 // Import placeholder images
 import frame1 from "@/assets/frame-1.jpg";

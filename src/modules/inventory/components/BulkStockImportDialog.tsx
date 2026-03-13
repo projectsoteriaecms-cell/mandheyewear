@@ -33,8 +33,8 @@ import {
   ParsedStockData,
   StockUpdateResult,
 } from "@/modules/inventory/hooks/useBulkStockUpdate";
-import { useAuth } from "@/shared/hooks/useAuth";
-import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { toast } from "@/shared/hooks/use-toast";
 
 interface BulkStockImportDialogProps {
   open: boolean;

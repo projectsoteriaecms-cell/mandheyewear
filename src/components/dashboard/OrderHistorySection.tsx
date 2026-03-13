@@ -3,8 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOrders } from "@/hooks/useOrders";
-import { EmptyState } from "@/components/storefront";
+import { useOrders } from "@/modules/orders/hooks/useOrders";
+import { EmptyState } from "@/modules/storefront/components/shared";
 import { Package, ShoppingBag, Truck, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 

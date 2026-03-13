@@ -1,11 +1,11 @@
 import { useState, useMemo, useCallback } from "react";
-import { AdminLayout } from "@/shared/components/admin/AdminLayout";
-import { RoleGuard } from "@/shared/components/admin/RoleGuard";
+import { AdminLayout } from "@/shared/layouts/admin";
+import { RoleGuard } from "@/modules/auth/components/RoleGuard";
 import { useAdminProducts, useProductImageStats } from "@/modules/products";
-import { ProductImageCard } from "@/components/admin/products/ProductImageCard";
-import { ProductImageListView } from "@/components/admin/products/ProductImageListView";
-import { QuickImageUploadModal } from "@/components/admin/products/QuickImageUploadModal";
-import { GenerateImagesDialog } from "@/components/admin/products/GenerateImagesDialog";
+import { ProductImageCard } from "@/modules/products/components/ProductImageCard";
+import { ProductImageListView } from "@/modules/products/components/ProductImageListView";
+import { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
+import { GenerateImagesDialog } from "@/modules/products/components/GenerateImagesDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Images, Lightning } from "@phosphor-icons/react";

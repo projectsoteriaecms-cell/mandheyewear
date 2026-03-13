@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/shared/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useProfile } from "@/modules/personalization/hooks/useProfile";
 import { WelcomeStep } from "./WelcomeStep";
 import { StyleQuizStep } from "./StyleQuizStep";
 import { CompleteStep } from "./CompleteStep";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/shared/hooks/use-toast";
 
 export type OnboardingStep = "welcome" | "style-quiz" | "complete";
 

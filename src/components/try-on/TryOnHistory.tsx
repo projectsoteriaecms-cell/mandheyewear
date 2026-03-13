@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { X, Trash2, Clock } from "lucide-react";
-import type { TryOnResult } from "@/hooks/useVirtualTryOn";
+import type { TryOnResult } from "@/modules/personalization/hooks/useVirtualTryOn";
 
 interface TryOnHistoryProps {
   history: TryOnResult[];

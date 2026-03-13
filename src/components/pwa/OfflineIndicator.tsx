@@ -1,5 +1,5 @@
 import { WifiOff } from "lucide-react";
-import { usePWA } from "@/hooks/usePWA";
+import { usePWA } from "@/shared/hooks/usePWA";
 import { cn } from "@/lib/utils";
 
 interface OfflineIndicatorProps {

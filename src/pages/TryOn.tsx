@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useSEO } from "@/hooks/useSEO";
+import { useSEO } from "@/shared/hooks/useSEO";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -16,11 +16,11 @@ import {
   TryOnTour,
   type TryOnMode 
 } from "@/components/try-on";
-import { useVirtualTryOn, type FrameDetails, type TryOnResult as TryOnResultType } from "@/hooks/useVirtualTryOn";
-import { useProducts, useProduct } from "@/hooks/useProducts";
-import { useCart } from "@/hooks/useCart";
-import { useWishlist } from "@/hooks/useWishlist";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useVirtualTryOn, type FrameDetails, type TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
+import { useProducts, useProduct } from "@/modules/products/hooks/useProducts";
+import { useCart } from "@/modules/orders/hooks/useCart";
+import { useWishlist } from "@/modules/orders/hooks/useWishlist";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { toast } from "sonner";
 
 const TryOn = () => {

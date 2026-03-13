@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, ShoppingCart } from "lucide-react";
-import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useCart } from "@/modules/orders/hooks/useCart";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
-import type { Product } from "@/hooks/useProducts";
+import type { Product } from "@/modules/products/hooks/useProducts";
 
 interface ProductCardProps {
   product: Product;

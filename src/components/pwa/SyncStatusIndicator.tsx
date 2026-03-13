@@ -4,7 +4,7 @@
  */
 
 import { Cloud, CloudOff, RefreshCw, AlertCircle, Check } from "lucide-react";
-import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { useOfflineSync } from "@/shared/hooks/useOfflineSync";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {

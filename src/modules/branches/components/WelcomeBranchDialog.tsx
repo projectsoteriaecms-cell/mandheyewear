@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useBranchAssignments } from "@/modules/branches";
-import { useUserRole } from "@/shared/hooks/useUserRole";
+import { useUserRole } from "@/modules/auth/hooks/useUserRole";
 import { isAtLeast } from "@/shared/lib/permissions";
 import {
   Dialog,

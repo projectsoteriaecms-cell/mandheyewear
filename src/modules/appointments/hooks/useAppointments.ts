@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useToast } from "@/shared/hooks/use-toast";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 

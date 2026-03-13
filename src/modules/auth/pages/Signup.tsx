@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSEO } from "@/hooks/useSEO";
+import { useSEO } from "@/shared/hooks/useSEO";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "../hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { useMetaPixel } from "@/hooks/useMetaPixel";
+import { useToast } from "@/shared/hooks/use-toast";
+import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { lovable } from "@/integrations/lovable";
 import { GoogleLogo } from "@phosphor-icons/react";

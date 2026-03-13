@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Product } from "@/hooks/useProducts";
-import type { FrameDetails } from "@/hooks/useVirtualTryOn";
+import type { Product } from "@/modules/products/hooks/useProducts";
+import type { FrameDetails } from "@/modules/personalization/hooks/useVirtualTryOn";
 
 interface FramePickerProps {
   products: Product[];

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Download, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePWA } from "@/hooks/usePWA";
+import { usePWA } from "@/shared/hooks/usePWA";
 import { cn } from "@/lib/utils";
 
 interface InstallPromptProps {

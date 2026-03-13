@@ -1,10 +1,10 @@
-import { AdminLayout } from "@/shared/components/admin";
+import { AdminLayout } from "@/shared/layouts/admin";
 import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple, FileText, Image } from "@phosphor-icons/react";
 import { useInventoryStats, useLowStockAlerts } from "@/modules/inventory";
 import { usePurchaseOrders, useStockTransfers } from "@/modules/inventory";
 import { useProductImageStats } from "@/modules/products";
 import { useBranchAssignments } from "@/modules/branches";
-import { useUserRole } from "@/shared/hooks/useUserRole";
+import { useUserRole } from "@/modules/auth/hooks/useUserRole";
 import { isAtLeast } from "@/shared/lib/permissions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,8 @@ import {
   PendingTransfersCard,
   LowStockAlertsCard,
   QuickActionsCard,
-} from "@/shared/components/admin/dashboard";
-import { WelcomeBranchDialog } from "@/components/admin/onboarding/WelcomeBranchDialog";
+} from "@/shared/layouts/admin/dashboard";
+import { WelcomeBranchDialog } from "@/modules/branches/components/WelcomeBranchDialog";
 import { Link } from "react-router-dom";
 
 const NoBranchAssignmentCard = () => (

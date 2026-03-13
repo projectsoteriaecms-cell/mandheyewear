@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { toast } from "sonner";
 import type { TryOnResult } from "./useVirtualTryOn";

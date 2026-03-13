@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useFaceMeasurement, FaceDimensions } from "@/hooks/useFaceMeasurement";
+import { useFaceMeasurement, FaceDimensions } from "@/modules/personalization/hooks/useFaceMeasurement";
 import {
   Camera,
   Upload,

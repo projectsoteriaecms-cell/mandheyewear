@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useWishlist } from "@/hooks/useWishlist";
-import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/modules/orders/hooks/useWishlist";
+import { useCart } from "@/modules/orders/hooks/useCart";
 import { Heart, ShoppingBag, Trash2, Loader2 } from "lucide-react";
 
 // Import placeholder images

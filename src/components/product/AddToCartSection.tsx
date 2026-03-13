@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useCart } from "@/modules/orders/hooks/useCart";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { ShoppingBag, Minus, Plus, Camera, Loader2, Heart, LogIn } from "lucide-react";
-import type { Product } from "@/hooks/useProducts";
+import type { Product } from "@/modules/products/hooks/useProducts";
 
 interface AddToCartSectionProps {
   product: Product;

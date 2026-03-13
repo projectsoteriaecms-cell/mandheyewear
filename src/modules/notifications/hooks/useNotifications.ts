@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/shared/hooks/use-toast";
 
 export type NotificationType = 'info' | 'warning' | 'error' | 'success' | 'low_stock' | 'new_order' | 'transfer_request' | 'appointment';
 

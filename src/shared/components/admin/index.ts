@@ -1,12 +1,12 @@
-// Admin component exports
-export { AdminLayout } from "./AdminLayout";
-export { AdminSidebar } from "./AdminSidebar";
-export { AdminHeader } from "./AdminHeader";
-export { AdminMobileNav } from "./AdminMobileNav";
-export { RoleGuard } from "./RoleGuard";
+// Admin component exports - canonical sources
+export { AdminLayout } from "@/shared/layouts/admin/AdminLayout";
+export { AdminSidebar } from "@/shared/layouts/admin/AdminSidebar";
+export { AdminHeader } from "@/shared/layouts/admin/AdminHeader";
+export { AdminMobileNav } from "@/shared/layouts/admin/AdminMobileNav";
+export { RoleGuard } from "@/modules/auth/components/RoleGuard";
 
 // Dashboard components
-export * from "./dashboard";
+export * from "@/shared/layouts/admin/dashboard";
 
 // Sidebar components
-export * from "./sidebar";
+export * from "@/shared/layouts/admin/sidebar";
