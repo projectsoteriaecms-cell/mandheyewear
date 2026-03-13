@@ -9,31 +9,18 @@ import { useOfflineSync } from "./useOfflineSync";
 import { OperationType } from "@/services/offlineStorage";
 
 interface UseOfflineMutationOptions<TData, TVariables> {
-  // The operation type for the sync queue
   operationType: OperationType;
-
-  // Transform variables into payload for the queue
   getPayload: (variables: TVariables) => Record<string, unknown>;
-
-  // The actual mutation function (called when online)
   mutationFn: (variables: TVariables) => Promise<TData>;
-
-  // Query keys to invalidate on success
   queryKeysToInvalidate?: string[][];
-
-  // Optimistic update function
   optimisticUpdate?: (
     variables: TVariables,
     queryClient: ReturnType<typeof useQueryClient>
   ) => void;
-
-  // Rollback function if offline queue fails
   rollbackUpdate?: (
     variables: TVariables,
     queryClient: ReturnType<typeof useQueryClient>
   ) => void;
-
-  // Callbacks
   onSuccess?: (data: TData, variables: TVariables) => void;
   onError?: (error: Error, variables: TVariables) => void;
   onOfflineQueued?: (variables: TVariables) => void;
@@ -65,24 +52,20 @@ export function useOfflineMutation<TData = unknown, TVariables = unknown>(
 
   const mutate = useCallback(
     async (variables: TVariables) => {
-      // Apply optimistic update immediately
       if (optimisticUpdate) {
         optimisticUpdate(variables, queryClient);
       }
 
       if (isOnline) {
-        // Online: Execute mutation directly
         try {
           const result = await mutationFn(variables);
 
-          // Invalidate queries
           for (const keys of queryKeysToInvalidate) {
             queryClient.invalidateQueries({ queryKey: keys });
           }
 
           onSuccess?.(result, variables);
         } catch (error) {
-          // Rollback optimistic update on error
           if (rollbackUpdate) {
             rollbackUpdate(variables, queryClient);
           }
@@ -90,7 +73,6 @@ export function useOfflineMutation<TData = unknown, TVariables = unknown>(
           onError?.(error as Error, variables);
         }
       } else {
-        // Offline: Queue the operation
         const payload = getPayload(variables);
         const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -99,7 +81,6 @@ export function useOfflineMutation<TData = unknown, TVariables = unknown>(
         if (queued) {
           onOfflineQueued?.(variables);
         } else {
-          // Failed to queue, rollback
           if (rollbackUpdate) {
             rollbackUpdate(variables, queryClient);
           }

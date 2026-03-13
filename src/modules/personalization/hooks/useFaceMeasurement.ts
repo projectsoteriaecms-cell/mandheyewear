@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/shared/hooks/useAuth";
 import { useToast } from "@/shared/hooks/use-toast";
@@ -10,98 +10,126 @@ export interface FaceDimensions {
   templeWidthMm: number;
   faceShape: string;
   confidenceScore: number;
+  scanDate: string;
+}
+
+export interface FaceAnalysisResult {
+  success: boolean;
+  dimensions?: FaceDimensions;
+  error?: string;
 }
 
 export const useFaceMeasurement = () => {
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [result, setResult] = useState<FaceAnalysisResult | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [dimensions, setDimensions] = useState<FaceDimensions | null>(null);
 
-  const analyzeFace = useCallback(async (imageBase64: string): Promise<FaceDimensions | null> => {
+  const analyzeImage = async (imageBase64: string): Promise<FaceAnalysisResult> => {
     if (!user) {
-      toast({
-        title: "Not logged in",
-        description: "Please log in to use face analysis.",
-        variant: "destructive",
-      });
-      return null;
+      return { success: false, error: "User not authenticated" };
     }
 
     setIsAnalyzing(true);
+    setResult(null);
 
     try {
       const { data, error } = await supabase.functions.invoke("analyze-face", {
         body: { image: imageBase64 },
       });
 
-      if (error) throw error;
-
-      if (!data.success) {
-        throw new Error(data.error || "Face analysis failed");
+      if (error) {
+        console.error("Edge function invocation error:", error);
+        throw new Error("Face analysis service is temporarily unavailable. Please try again.");
       }
 
-      const faceDimensions: FaceDimensions = {
-        faceWidthMm: data.faceWidthMm,
-        pupillaryDistanceMm: data.pupillaryDistanceMm,
-        bridgeWidthMm: data.bridgeWidthMm,
-        templeWidthMm: data.templeWidthMm,
-        faceShape: data.faceShape,
-        confidenceScore: data.confidenceScore,
+      if (!data || !data.success) {
+        throw new Error(data?.error || "Face analysis failed. Please try with a clearer, front-facing photo.");
+      }
+
+      const dimensions: FaceDimensions = {
+        faceWidthMm: data.dimensions.faceWidthMm,
+        pupillaryDistanceMm: data.dimensions.pupillaryDistanceMm,
+        bridgeWidthMm: data.dimensions.bridgeWidthMm,
+        templeWidthMm: data.dimensions.templeWidthMm,
+        faceShape: data.dimensions.faceShape,
+        confidenceScore: data.dimensions.confidenceScore,
+        scanDate: new Date().toISOString(),
       };
 
-      // Save to user_measurements table
-      await supabase.from("user_measurements").insert({
+      const { error: insertError } = await supabase.from("user_measurements").insert({
         user_id: user.id,
-        measurement_type: "ai_face_scan",
-        face_width_mm: faceDimensions.faceWidthMm,
-        pupillary_distance_mm: faceDimensions.pupillaryDistanceMm,
-        bridge_width_mm: faceDimensions.bridgeWidthMm,
-        temple_width_mm: faceDimensions.templeWidthMm,
-        face_shape: faceDimensions.faceShape,
-        confidence_score: faceDimensions.confidenceScore,
-        image_url: null,
-        raw_analysis: data,
+        measurement_type: "face_scan",
+        face_width_mm: dimensions.faceWidthMm,
+        pupillary_distance_mm: dimensions.pupillaryDistanceMm,
+        bridge_width_mm: dimensions.bridgeWidthMm,
+        temple_width_mm: dimensions.templeWidthMm,
+        face_shape: dimensions.faceShape,
+        confidence_score: dimensions.confidenceScore,
+        raw_analysis: data.rawAnalysis || null,
       });
 
-      // Update profile with face dimensions
-      await supabase
+      if (insertError) {
+        console.error("Failed to save measurement:", insertError);
+      }
+
+      const { error: updateError } = await supabase
         .from("profiles")
         .update({
           face_dimensions: {
-            faceWidthMm: faceDimensions.faceWidthMm,
-            pupillaryDistanceMm: faceDimensions.pupillaryDistanceMm,
-            bridgeWidthMm: faceDimensions.bridgeWidthMm,
-            templeWidthMm: faceDimensions.templeWidthMm,
-            faceShape: faceDimensions.faceShape,
+            faceWidthMm: dimensions.faceWidthMm,
+            pupillaryDistanceMm: dimensions.pupillaryDistanceMm,
+            bridgeWidthMm: dimensions.bridgeWidthMm,
+            templeWidthMm: dimensions.templeWidthMm,
+            faceShape: dimensions.faceShape,
+            confidenceScore: dimensions.confidenceScore,
+            scanDate: dimensions.scanDate,
           },
         })
         .eq("user_id", user.id);
 
-      setDimensions(faceDimensions);
+      if (updateError) {
+        console.error("Failed to update profile:", updateError);
+      }
 
-      toast({
-        title: "Face Analysis Complete",
-        description: `Detected ${faceDimensions.faceShape} face shape with ${Math.round(faceDimensions.confidenceScore * 100)}% confidence.`,
-      });
-
-      return faceDimensions;
-    } catch (err) {
-      console.error("Face analysis error:", err);
+      const analysisResult = { success: true, dimensions };
+      setResult(analysisResult);
+      return analysisResult;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       toast({
         title: "Analysis Failed",
-        description: err instanceof Error ? err.message : "Could not analyze face. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
-      return null;
+      const analysisResult = { success: false, error: errorMessage };
+      setResult(analysisResult);
+      return analysisResult;
     } finally {
       setIsAnalyzing(false);
     }
-  }, [user, toast]);
+  };
+
+  const captureFromVideo = async (videoElement: HTMLVideoElement): Promise<string> => {
+    const canvas = document.createElement("canvas");
+    canvas.width = videoElement.videoWidth;
+    canvas.height = videoElement.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Could not get canvas context");
+    ctx.drawImage(videoElement, 0, 0);
+    return canvas.toDataURL("image/jpeg", 0.8);
+  };
+
+  const reset = () => {
+    setResult(null);
+    setIsAnalyzing(false);
+  };
 
   return {
-    analyzeFace,
+    analyzeImage,
+    captureFromVideo,
     isAnalyzing,
-    dimensions,
+    result,
+    reset,
   };
 };
