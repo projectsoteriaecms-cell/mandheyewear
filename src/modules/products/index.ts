@@ -49,3 +49,27 @@ export {
   transformRowToProduct,
   generateECMSTemplate,
 } from "./lib";
+
+// Components
+export {
+  BulkImageUploadDialog,
+  BulkUploadDialog,
+  CreateProductDialog,
+  DraggableImageItem,
+  ECMSImportDialog,
+  EditProductDialog,
+  FrameAttributesForm,
+  GenerateImagesDialog,
+  ImagePreviewLightbox,
+  ImportHistoryPanel,
+  LensAttributesForm,
+  LinkToZohoDialog,
+  ProductImageCard,
+  ProductImageListView,
+  ProductImageUpload,
+  IMAGE_POSITION_LABELS,
+  ProductListView,
+  QuickImageUploadModal,
+  ZohoSyncHistoryPanel,
+} from "./components";
+export type { ImagePosition } from "./components";

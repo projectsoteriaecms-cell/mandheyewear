@@ -10,3 +10,9 @@ export type {
   ServiceUpdate,
   ServiceWithBookings,
 } from "./types";
+
+// Components
+export {
+  CreateServiceDialog,
+  EditServiceDialog,
+} from "./components";
