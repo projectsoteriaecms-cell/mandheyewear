@@ -29,6 +29,8 @@ interface FaceDimensions {
 export const FrameProfileSection = () => {
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile(user?.id);
+  const [showFaceScan, setShowFaceScan] = useState(false);
+  const { data: profile, isLoading } = useProfile(user?.id);
   
   const preferences = profile?.frame_preferences as FramePreferences | null;
   const faceDimensions = profile?.face_dimensions as FaceDimensions | null;
