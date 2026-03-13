@@ -14,7 +14,7 @@ import {
   Shield,
   Palette,
 } from "@phosphor-icons/react";
-import { WarehouseMappingCard } from "@/modules/integrations/components/WarehouseMappingCard";
+import { WarehouseMappingCard } from "@/modules/integrations";
 
 const Settings = () => {
   return (
