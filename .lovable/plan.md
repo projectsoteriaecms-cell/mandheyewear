@@ -1,55 +1,111 @@
 
-# Soteria Eye Clinic — Remix & Transform Plan
 
-## Status: Ready for User Action
+## Platform Refactoring Plan — Structured Monolith Architecture
 
-### Next Step
-1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
-2. Name the new project **"Soteria Eye Clinic"**
-3. Paste the transformation prompt (saved below) into the new project's chat
+### Current State Assessment
 
-### Transformation Prompt (for the new project)
+The codebase has grown organically with code split across multiple overlapping locations:
 
 ```text
-Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
-
-## 1. Branding & Colors
-- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
-- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
-- Accent color: keep the M&H gold as a secondary accent for partnership elements
-- Update CSS variables in index.css accordingly
-- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
-- Update favicon to use Soteria branding
-- Font: keep Cormorant Garamond for display but consider a more clinical feel
-
-## 2. Homepage Rewrite
-- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
-- Primary CTAs: "Book an Eye Exam" and "Our Services"
-- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
-
-## 3. Navigation Updates
-- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
-- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
-- MobileBottomNav: Home, Services, Book, Branches, Account
-
-## 4. Pages to Update
-- About: Soteria's story + M&H Eyewear as premium eyewear partner
-- Partners: HMO partners + M&H Eyewear as strategic partner
-- Services/Eye Care: Primary service page
-- Branches: Show all locations from shared database
-- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
-
-## 5. SEO & Meta
-- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
-
-## 6. Footer
-- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
-
-## 7. Do NOT Change
-- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+src/
+├── components/        ← UI components (admin, storefront, etc.)
+├── hooks/             ← 27 loose hooks (mixed concerns: cart, PWA, SEO, etc.)
+├── modules/           ← Partially migrated domain modules (9 modules)
+├── pages/             ← Page components (some bloated, e.g. Dashboard 364 lines)
+├── shared/            ← Auth, roles, types, admin layout
+├── services/          ← Offline sync (2 files)
+├── lib/               ← Utilities (3 files)
+├── config/            ← Snap lens config (1 file)
+├── types/             ← Type declarations (3 files)
+├── integrations/      ← Supabase client + types
+└── routes/            ← Route definitions
 ```
 
-### Already Completed in This Project (M&H Eyewear)
-- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
-- ✅ About page updated with Soteria partnership section
-- ✅ Route registered in public.routes.tsx
+**Key problems:**
+1. **Scattered hooks** — 27 hooks in `src/hooks/` not organized by domain; some duplicated in `src/modules/`
+2. **Components outside modules** — `src/components/admin/*` should live alongside their module
+3. **Inconsistent imports** — 77 files import from `@/hooks/`, mixing with `@/shared/hooks` and `@/modules/`
+4. **No clear layering** — services, lib, config scattered at root level
+5. **Large page files** — Dashboard.tsx (364 lines), Checkout.tsx likely similar
+
+### Target Architecture
+
+Reorganize into a clean **feature-based monolith** with clear layers:
+
+```text
+src/
+├── app/                    ← App shell (App.tsx, main.tsx, routes)
+├── modules/                ← Feature modules (each self-contained)
+│   ├── auth/               ← useAuth, Login, Signup, RoleGuard
+│   ├── inventory/          ← hooks, components, pages, types
+│   ├── products/           ← hooks, components, pages, types
+│   ├── orders/             ← hooks, components (cart, checkout, tracking)
+│   ├── appointments/       ← hooks, components, pages
+│   ├── branches/           ← hooks, components, pages
+│   ├── categories/         ← hooks, types
+│   ├── suppliers/          ← hooks, types
+│   ├── services/           ← hooks, components, pages
+│   ├── users/              ← hooks, components, pages
+│   ├── integrations/       ← Zoho sync hooks
+│   ├── notifications/      ← hooks
+│   ├── storefront/         ← Home, Eyewear, ProductDetail pages
+│   ├── personalization/    ← onboarding, style quiz, face scan, VTO
+│   └── dashboard/          ← Customer dashboard page + sections
+├── shared/                 ← Cross-cutting concerns
+│   ├── components/         ← ui/, Navigation, Footer, AdminLayout
+│   ├── hooks/              ← use-mobile, use-toast, useSEO, usePWA
+│   ├── lib/                ← utils, permissions
+│   ├── types/              ← database types
+│   └── services/           ← offline sync
+├── integrations/           ← Supabase client (auto-generated)
+└── assets/                 ← Images, logos
+```
+
+### Phased Implementation (6 phases, each self-contained)
+
+**Phase 1: Consolidate hooks into modules** (highest impact, lowest risk)
+- Move `useCart`, `useWishlist`, `useOrders` → `modules/orders/hooks/`
+- Move `useAppointments` → `modules/appointments/hooks/`
+- Move `useProducts`, `usePersonalizedProducts` → `modules/products/hooks/`
+- Move `useBranches` (from `src/hooks/`) → delete (already in `modules/branches/`)
+- Move `useProfile`, `useOnboardingStatus`, `useFaceMeasurement`, `useVirtualTryOn`, `useVTOEmailCapture`, `useTryOnTour`, `useStylePolls` → `modules/personalization/hooks/`
+- Move `useMetaPixel`, `useSEO`, `usePerformance`, `useResourceHints` → `shared/hooks/`
+- Move `usePWA`, `usePullToRefresh`, `useSwipeGesture`, `useScrollReveal`, `useCameraKit` → `shared/hooks/`
+- Move `useOfflineMutation`, `useOfflineSync` → `shared/services/`
+- Update all 77+ importing files to use new canonical paths
+
+**Phase 2: Consolidate admin components into modules**
+- Move `components/admin/inventory/` → `modules/inventory/components/`
+- Move `components/admin/products/` → `modules/products/components/`
+- Move `components/admin/categories/` → `modules/categories/components/`
+- Move `components/admin/services/` → `modules/services/components/`
+- Move `components/admin/users/` → `modules/users/components/`
+- Move `components/admin/transfers/` → `modules/inventory/components/`
+- Move `components/admin/purchase-orders/` → `modules/inventory/components/`
+- Move `components/admin/adjustments/` → `modules/inventory/components/`
+- Move `components/admin/settings/` → `modules/integrations/components/`
+- Move `components/admin/onboarding/` → `modules/branches/components/`
+
+**Phase 3: Consolidate storefront components**
+- Create `modules/storefront/` with `components/` and `pages/`
+- Move `components/home/`, `components/eyewear/`, `components/storefront/`, `components/product/` → `modules/storefront/components/`
+- Move pages: Index, Eyewear, ProductDetail, About, Contact, FAQ, Partners, etc. → `modules/storefront/pages/`
+
+**Phase 4: Create auth module and move admin layout**
+- Create `modules/auth/` — move `useAuth`, `useUserRole`, Login, Signup pages, RoleGuard
+- Move `shared/components/admin/` (AdminLayout, AdminSidebar, AdminHeader) → `shared/layouts/admin/`
+
+**Phase 5: Decompose large page components**
+- Break `Dashboard.tsx` (364 lines) into focused sub-components with a custom `useDashboard` hook
+- Review and decompose any other pages exceeding ~200 lines (Checkout, Eyewear, etc.)
+
+**Phase 6: Clean up barrel exports and verify**
+- Update all barrel `index.ts` files per module
+- Remove empty/orphaned files
+- Verify all imports resolve correctly
+- Run build to confirm zero errors
+
+### Implementation approach
+
+Each phase will be done as a separate message to keep changes reviewable. Phase 1 (hooks consolidation) delivers the most structural improvement and should be done first. All phases are purely file moves and import updates — no logic changes, no database changes.
+
