@@ -1,39 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Enhance Stock Overview with Zoho Sync and Stats Dashboard
+## Status: Ready for User Action
 
-### What we have now
-The Stock Overview page (`/admin/inventory`) has:
-- Branch filter, search, low stock toggle
-- Import Stock / Export CSV buttons
-- Inventory table with SKU, product, branch, quantities, status, bin location
-- No summary stats cards
-- No Zoho stock sync trigger — that button only exists on the Products page
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-### What to build
+### Transformation Prompt (for the new project)
 
-**1. Add inventory stats cards at the top**
+```text
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
 
-Add a row of summary cards above the filters showing:
-- Total Stock Units (sum of all `quantity_on_hand`)
-- Low Stock Items (count where qty <= threshold)
-- Out of Stock (count where qty = 0)
-- Active Products / Active Suppliers
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
 
-Use the existing `useInventoryStats` hook which already computes all of these.
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
 
-**2. Add "Sync Stock from Zoho" button to the header toolbar**
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
 
-Import `useZohoSync` and add a "Sync Stock" button next to Import Stock / Export CSV. This triggers `syncStock()` which calls the `sync_stock` action on the zoho-sync edge function. Show a spinner while syncing. After sync completes, inventory queries auto-invalidate so the table refreshes.
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
 
-**3. Show last sync timestamp**
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
 
-Query the latest `zoho_sync_log` entry with `sync_type = 'stock'` to display "Last synced: X minutes ago" near the header.
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
 
-### Files to modify
-- **`src/pages/admin/Inventory.tsx`** — Add stats cards row, Zoho sync button, last sync info
-- **`src/modules/inventory/hooks/useInventoryOverview.ts`** — No changes needed (stats hook exists)
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+```
 
-### No database or edge function changes needed
-All backend logic is already implemented. This is purely a UI enhancement to surface the existing sync capability on the Stock Overview page.
-
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx
