@@ -71,6 +71,15 @@ export const ProductsToolbar = ({
             {syncStatus === "syncing" ? "Syncing…" : "Zoho Sync"}
           </Button>
         )}
+        {isAdmin && onSyncStock && (
+          <Button variant="outline" onClick={onSyncStock} disabled={stockSyncStatus === "syncing"}>
+            {stockSyncStatus === "syncing" ? (
+              <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" weight="bold" />
+            ) : (
+              <CloudArrowDown className="mr-2 h-4 w-4" weight="light" />
+            )}
+            {stockSyncStatus === "syncing" ? "Syncing Stock…" : "Sync Stock"}
+          </Button>
         {isAdmin && (
           <Button variant="outline" onClick={onOpenLinkDialog}>
             <ArrowsClockwise className="mr-2 h-4 w-4" weight="light" />

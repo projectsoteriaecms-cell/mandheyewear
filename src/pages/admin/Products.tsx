@@ -31,7 +31,8 @@ type ViewMode = "grid" | "list";
 const Products = () => {
   const { products, isLoading, deleteProduct } = useAdminProducts();
   const { isAdmin } = useIsAdmin();
-  const { status: syncStatus, pullItems } = useZohoSync();
+  const { status: syncStatus, pullItems, syncStock } = useZohoSync();
+  const { status: stockSyncStatus, syncStock: syncStockOnly } = useZohoSync();
   const { isEnriching, enrichProgress, handleEnrichProducts } = useEnrichProducts();
 
   const [searchQuery, setSearchQuery] = useState("");
