@@ -192,7 +192,7 @@ export const MobileTopBar = () => {
 
         {/* Logo - Centered */}
         <Link to="/" className="absolute left-1/2 -translate-x-1/2">
-          <img src={isDark ? mhLogoGold : mhLogo} alt="M&H Eyewear" className="h-9 w-auto" />
+          <img src={isDark ? mhLogoGold : mhLogo} alt="M&H Eyewear" className="h-11 w-auto" />
         </Link>
 
         {/* Right Actions */}
