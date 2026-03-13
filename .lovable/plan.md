@@ -1,55 +1,22 @@
 
-# Soteria Eye Clinic — Remix & Transform Plan
 
-## Status: Ready for User Action
+## Fix Face Measurement: Update Model and CORS Headers
 
-### Next Step
-1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
-2. Name the new project **"Soteria Eye Clinic"**
-3. Paste the transformation prompt (saved below) into the new project's chat
+### Problem
+The `analyze-face` edge function is already using the Lovable AI gateway (not direct Gemini), but it's using `google/gemini-2.5-flash` which may be failing on image analysis. Two fixes needed:
 
-### Transformation Prompt (for the new project)
+1. **Switch model** to `google/gemini-2.5-pro` — the top-tier vision model, best for image+text analysis (the current `gemini-2.5-flash` may struggle with image analysis accuracy). We keep the Lovable AI gateway as-is since it's already the correct approach.
+2. **Fix CORS headers** — missing the newer Supabase client headers, same pattern fixed in the other functions.
 
-```text
-Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
+### Changes
 
-## 1. Branding & Colors
-- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
-- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
-- Accent color: keep the M&H gold as a secondary accent for partnership elements
-- Update CSS variables in index.css accordingly
-- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
-- Update favicon to use Soteria branding
-- Font: keep Cormorant Garamond for display but consider a more clinical feel
+**`supabase/functions/analyze-face/index.ts`**
+- Line 6: Update `Access-Control-Allow-Headers` to include full Supabase client headers
+- Line 56: Change model from `google/gemini-2.5-flash` to `google/gemini-2.5-pro` for stronger vision capabilities
+- This is already going through Lovable AI gateway, so no architectural change needed
 
-## 2. Homepage Rewrite
-- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
-- Primary CTAs: "Book an Eye Exam" and "Our Services"
-- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
+### Files Changed
+- `supabase/functions/analyze-face/index.ts` — model upgrade + CORS fix
 
-## 3. Navigation Updates
-- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
-- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
-- MobileBottomNav: Home, Services, Book, Branches, Account
+No database changes. Auto-deployed.
 
-## 4. Pages to Update
-- About: Soteria's story + M&H Eyewear as premium eyewear partner
-- Partners: HMO partners + M&H Eyewear as strategic partner
-- Services/Eye Care: Primary service page
-- Branches: Show all locations from shared database
-- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
-
-## 5. SEO & Meta
-- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
-
-## 6. Footer
-- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
-
-## 7. Do NOT Change
-- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
-```
-
-### Already Completed in This Project (M&H Eyewear)
-- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
-- ✅ About page updated with Soteria partnership section
-- ✅ Route registered in public.routes.tsx
