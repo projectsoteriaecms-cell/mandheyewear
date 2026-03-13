@@ -11,6 +11,8 @@ export interface SyncResult {
   matched_existing?: number;
   new_products?: number;
   current_page?: number;
+  stock_updated?: number;
+  stock_skipped?: number;
   error?: string;
 }
 
