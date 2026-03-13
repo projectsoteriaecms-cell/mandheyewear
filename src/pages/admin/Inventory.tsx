@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AdminLayout } from "@/shared/components/admin";
+import { AdminLayout } from "@/shared/layouts/admin";
 import { useInventoryOverview, useInventoryStats } from "@/modules/inventory";
 import { useBranches } from "@/modules/branches";
 import { useZohoSync } from "@/modules/integrations/hooks/useZohoSync";
 import { supabase } from "@/integrations/supabase/client";
-import { StatCard } from "@/shared/components/admin/dashboard/StatCard";
+import { StatCard } from "@/shared/layouts/admin/dashboard/StatCard";
 import { InventoryFilters } from "./inventory/InventoryFilters";
 import { InventoryTable } from "./inventory/InventoryTable";
 import {
