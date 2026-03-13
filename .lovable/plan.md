@@ -1,60 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Redesign Branches Page: Card Grid Layout
+## Status: Ready for User Action
 
-### What changes
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-The current Branches page uses a vertical stacked list with detailed cards (address, phone, email, hours, features, action buttons). Inspired by the reference image, we will redesign it to use a **3-column card grid** where each branch is a compact, visually appealing card with:
-
-- A dark overlay background (since we don't have store photos, we'll use a branded gradient/pattern)
-- Branch name prominently centered
-- Address below the name
-- The M&H logo/icon at the bottom
-- Hover effect to reveal action buttons (Call, Directions)
-- Head Office / Flagship badges preserved
-
-### Layout change
+### Transformation Prompt (for the new project)
 
 ```text
-Current:                          New:
-┌─────────────────────────┐      ┌──────┐ ┌──────┐ ┌──────┐
-│ Branch 1 (full-width)   │      │Card 1│ │Card 2│ │Card 3│
-├─────────────────────────┤  →   └──────┘ └──────┘ └──────┘
-│ Branch 2 (full-width)   │      ┌──────┐ ┌──────┐ ┌──────┐
-├─────────────────────────┤      │Card 4│ │Card 5│ │Card 6│
-│ Branch 3 (full-width)   │      └──────┘ └──────┘ └──────┘
-└─────────────────────────┘
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
+
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
+
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
+
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
+
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
+
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
+
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
+
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
 ```
 
-### Files to modify
-
-1. **`src/components/branches/BranchCard.tsx`** — Complete redesign:
-   - Replace the detailed horizontal card with a compact visual card
-   - Dark gradient background with subtle pattern
-   - Centered branch name (bold, white)
-   - Address text below (white/light)
-   - MapPin icon at the bottom center (primary color)
-   - Badges (Head Office, Flagship) as small overlays
-   - On hover: slight scale-up, show "View Details" or action overlay
-   - Clicking the card could link to a detail view or open a dialog with the full info (phone, email, hours, features, buttons)
-
-2. **`src/pages/Branches.tsx`** — Update the grid layout:
-   - Change from `space-y-6` (vertical stack) to `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6`
-   - Update skeleton loaders to match the new card shape (aspect-ratio cards)
-   - Keep BranchMapPlaceholder and BranchExpansionCTA below
-
-3. **New: `src/components/branches/BranchDetailDialog.tsx`** — Dialog for full branch info:
-   - Opens when a card is clicked
-   - Shows full details: address, phone, email, hours, features
-   - Action buttons: Call, Get Directions, Book Appointment / Shop Eyewear
-   - Reuses the existing detailed content from the old BranchCard
-
-### Technical details
-
-- No database changes needed
-- Branch type already has all fields (name, address, city, state, phone, email, hours, features, is_head_office, is_mh_location)
-- Uses existing Radix Dialog component for the detail view
-- Responsive: 1 column on mobile, 2 on tablet, 3 on desktop
-- Cards will use `aspect-[4/3]` for consistent proportions
-- Dark background with CSS gradient since no store images exist in the database schema
-
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx

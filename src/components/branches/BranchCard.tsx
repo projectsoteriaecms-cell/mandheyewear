@@ -1,128 +1,75 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { MapPin, Phone, Mail, Clock, Navigation as NavIcon } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { Branch } from "@/modules/branches/types";
 
 interface BranchCardProps {
   branch: Branch;
+  onClick: (branch: Branch) => void;
 }
 
-export const BranchCard = ({ branch }: BranchCardProps) => {
-  const isMH = branch.is_mh_location;
+const gradients = [
+  "from-[hsl(220,30%,15%)] via-[hsl(220,25%,22%)] to-[hsl(220,20%,12%)]",
+  "from-[hsl(200,30%,14%)] via-[hsl(200,25%,20%)] to-[hsl(200,20%,11%)]",
+  "from-[hsl(240,25%,16%)] via-[hsl(240,20%,22%)] to-[hsl(240,15%,12%)]",
+  "from-[hsl(180,20%,14%)] via-[hsl(180,18%,20%)] to-[hsl(180,15%,11%)]",
+  "from-[hsl(260,25%,16%)] via-[hsl(260,20%,22%)] to-[hsl(260,15%,13%)]",
+];
+
+export const BranchCard = ({ branch, onClick }: BranchCardProps) => {
+  const gradientIndex =
+    branch.name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) %
+    gradients.length;
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all">
-      <div className="grid md:grid-cols-3 gap-6 p-6">
-        {/* Location Info */}
-        <div className="md:col-span-2 space-y-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <h2 className="text-2xl font-display font-bold text-foreground">
-                {branch.name}
-              </h2>
-              {branch.is_head_office && (
-                <span className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded-full">
-                  Head Office
-                </span>
-              )}
-              {isMH && (
-                <span className="px-2 py-1 bg-accent text-accent-foreground text-xs rounded-full">
-                  Flagship Store
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-accent font-medium">{branch.region}</p>
-          </div>
+    <button
+      onClick={() => onClick(branch)}
+      className={`
+        relative w-full aspect-[4/3] rounded-2xl overflow-hidden
+        bg-gradient-to-br ${gradients[gradientIndex]}
+        group cursor-pointer transition-all duration-300
+        hover:scale-[1.03] hover:shadow-2xl
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+      `}
+    >
+      {/* Subtle pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.04]" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+        backgroundSize: '24px 24px',
+      }} />
 
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-foreground">{branch.address}</p>
-                <p className="text-sm text-muted-foreground">
-                  {branch.city}, {branch.state}, Nigeria
-                </p>
-              </div>
-            </div>
-
-            {branch.phone && (
-              <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-primary flex-shrink-0" />
-                <a
-                  href={`tel:${branch.phone}`}
-                  className="text-foreground hover:text-primary transition-smooth"
-                >
-                  {branch.phone}
-                </a>
-              </div>
-            )}
-
-            {branch.email && (
-              <div className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-primary flex-shrink-0" />
-                <a
-                  href={`mailto:${branch.email}`}
-                  className="text-foreground hover:text-primary transition-smooth"
-                >
-                  {branch.email}
-                </a>
-              </div>
-            )}
-
-            <div className="flex items-start gap-3">
-              <Clock className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-              <div className="text-sm">
-                <p className="text-foreground">
-                  Mon-Fri: {branch.hours_weekdays || "9:00am – 6:00pm"}
-                </p>
-                <p className="text-foreground">
-                  Saturday: {branch.hours_saturday || "9:00am – 6:00pm"}
-                </p>
-                <p className="text-foreground">
-                  Sunday: {branch.hours_sunday || "Closed"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {branch.features && branch.features.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              {branch.features.map((feature, idx) => (
-                <span
-                  key={idx}
-                  className="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full"
-                >
-                  {feature}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex flex-col gap-3">
-          <Button variant="hero" className="w-full" asChild>
-            <a href={`tel:${branch.phone}`}>
-              <Phone className="mr-2 h-4 w-4" />
-              Call {isMH ? "Store" : "Branch"}
-            </a>
-          </Button>
-          <Button variant="gold" className="w-full">
-            <NavIcon className="mr-2 h-4 w-4" />
-            Get Directions
-          </Button>
-          {!isMH && (
-            <Button variant="outline" className="w-full">
-              Book Appointment
-            </Button>
-          )}
-          {isMH && (
-            <Button variant="outline" className="w-full">
-              Shop Eyewear
-            </Button>
-          )}
-        </div>
+      {/* Badges */}
+      <div className="absolute top-4 left-4 flex gap-2 z-10">
+        {branch.is_head_office && (
+          <span className="px-2.5 py-1 bg-primary text-primary-foreground text-[10px] font-semibold uppercase tracking-wider rounded-full">
+            Head Office
+          </span>
+        )}
+        {branch.is_mh_location && (
+          <span className="px-2.5 py-1 bg-accent text-accent-foreground text-[10px] font-semibold uppercase tracking-wider rounded-full">
+            Flagship
+          </span>
+        )}
       </div>
-    </Card>
+
+      {/* Content — centered */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+        <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-2 leading-tight">
+          {branch.name}
+        </h2>
+        <p className="text-white/70 text-sm max-w-[220px] leading-relaxed">
+          {branch.address}
+        </p>
+        <p className="text-white/50 text-xs mt-1">
+          {branch.city}, {branch.state}
+        </p>
+      </div>
+
+      {/* Bottom icon */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+        <MapPin className="h-5 w-5 text-primary opacity-80 group-hover:opacity-100 transition-opacity" />
+      </div>
+
+      {/* Hover overlay */}
+      <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    </button>
   );
 };
