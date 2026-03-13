@@ -1,0 +1,116 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowsClockwise, Link as LinkIcon, Plus, ArrowsDownUp } from "@phosphor-icons/react";
+import { formatDistanceToNow } from "date-fns";
+
+export function ZohoSyncHistoryPanel() {
+  const { data: logs, isLoading } = useQuery({
+    queryKey: ["zoho-sync-logs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("zoho_sync_log")
+        .select("*")
+        .order("started_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data;
+    },
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      const hasPending = data?.some((log) => log.status === "pending");
+      return hasPending ? 5000 : false;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader><CardTitle>Zoho Sync History</CardTitle></CardHeader>
+        <CardContent><Skeleton className="h-20 w-full" /></CardContent>
+      </Card>
+    );
+  }
+
+  if (!logs || logs.length === 0) return null;
+
+  const statusBadge = (status: string, metadata: Record<string, unknown> | null) => {
+    switch (status) {
+      case "success":
+        return <Badge variant="default" className="bg-green-600">Completed</Badge>;
+      case "error":
+        return <Badge variant="destructive">Failed</Badge>;
+      case "pending": {
+        const page = (metadata as any)?.current_page;
+        return (
+          <Badge variant="secondary" className="animate-pulse">
+            Syncing{page ? ` (page ${page})` : "…"}
+          </Badge>
+        );
+      }
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ArrowsClockwise className="h-5 w-5" weight="light" />
+          Zoho Sync History
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {logs.map((log) => {
+            const meta = log.metadata as Record<string, unknown> | null;
+            const matched = (meta?.matched_existing as number) ?? 0;
+            const newProducts = (meta?.new_products as number) ?? 0;
+
+            return (
+              <div
+                key={log.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
+              >
+                <div className="flex items-center gap-3">
+                  {statusBadge(log.status, meta)}
+                  <span className="capitalize text-muted-foreground">
+                    {log.sync_type} · {log.direction}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 text-muted-foreground">
+                  {matched > 0 && (
+                    <span className="flex items-center gap-1 text-green-600">
+                      <LinkIcon className="h-3.5 w-3.5" weight="bold" />
+                      {matched} linked
+                    </span>
+                  )}
+                  {newProducts > 0 && (
+                    <span className="flex items-center gap-1 text-blue-600">
+                      <Plus className="h-3.5 w-3.5" weight="bold" />
+                      {newProducts} new
+                    </span>
+                  )}
+                  {log.records_processed != null && log.records_processed > 0 && matched === 0 && newProducts === 0 && (
+                    <span>{log.records_processed} processed</span>
+                  )}
+                  {log.records_failed != null && log.records_failed > 0 && (
+                    <span className="text-destructive">{log.records_failed} failed</span>
+                  )}
+                  <span>
+                    {log.started_at
+                      ? formatDistanceToNow(new Date(log.started_at), { addSuffix: true })
+                      : "—"}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
