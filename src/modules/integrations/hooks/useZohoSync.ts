@@ -109,10 +109,14 @@ export function useZohoSync() {
             records_failed: 0,
             matched_existing: data.page_1_matched ?? 0,
             new_products: data.page_1_new ?? 0,
+            stock_updated: data.page_1_stock_updated ?? 0,
+            stock_skipped: data.page_1_stock_skipped ?? 0,
           });
           invalidateProductQueries();
           const parts = [`${data.page_1_processed} items synced`];
           if ((data.page_1_matched ?? 0) > 0) parts.push(`${data.page_1_matched} linked to existing`);
+          const stockUp = data.page_1_stock_updated ?? 0;
+          if (stockUp > 0) parts.push(`${stockUp} stock levels updated`);
           toast.success(`Sync complete: ${parts.join(", ")}`);
         }
       } else {
