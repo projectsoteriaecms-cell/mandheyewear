@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { List, X, Heart, Bag, Moon, Sun, MapPin, Phone, Info, Question, Sparkle, Camera, Gear, SignOut } from "@phosphor-icons/react";
+import { List, X, Heart, Bag, Moon, Sun, Info, Sparkle, Camera, Gear, SignOut, Eyeglasses, SunDim, Watch } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
@@ -27,25 +27,25 @@ const menuItems = [{
   highlight: true,
   description: "See frames on your face"
 }, {
-  name: "Find a Store",
-  path: "/branches",
-  icon: MapPin,
-  description: "Visit us in person"
+  name: "Eyeglasses",
+  path: "/eyewear?category=eyeglasses",
+  icon: Eyeglasses,
+  description: "Prescription frames"
 }, {
-  name: "Contact Us",
-  path: "/contact",
-  icon: Phone,
-  description: "Get in touch"
+  name: "Sunglasses",
+  path: "/eyewear?category=sunglasses",
+  icon: SunDim,
+  description: "UV protection & style"
+}, {
+  name: "Accessories",
+  path: "/eyewear?category=accessories",
+  icon: Watch,
+  description: "Cases, cleaners & more"
 }, {
   name: "About Us",
   path: "/about",
   icon: Info,
   description: "Our story"
-}, {
-  name: "FAQ",
-  path: "/faq",
-  icon: Question,
-  description: "Common questions"
 }];
 export const MobileTopBar = () => {
   const [open, setOpen] = useState(false);
