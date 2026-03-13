@@ -1,7 +1,7 @@
 import { Heart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useWishlist } from "@/hooks/useWishlist";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useWishlist } from "@/modules/orders/hooks/useWishlist";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 

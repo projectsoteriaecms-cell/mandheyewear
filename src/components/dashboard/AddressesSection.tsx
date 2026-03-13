@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { EmptyState } from "@/components/storefront";
+import { EmptyState } from "@/modules/storefront/components/shared";
 
 interface Address {
   id: string;

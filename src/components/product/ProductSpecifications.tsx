@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Ruler, Palette, Layers, Eye } from "lucide-react";
-import type { Product } from "@/hooks/useProducts";
+import type { Product } from "@/modules/products/hooks/useProducts";
 
 interface ProductSpecificationsProps {
   product: Product;

@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
-import { useToast } from "@/hooks/use-toast";
+import { useProfile, useUpdateProfile } from "@/modules/personalization/hooks/useProfile";
+import { useToast } from "@/shared/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, User } from "lucide-react";
 

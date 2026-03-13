@@ -4,12 +4,12 @@ import { List, X, Heart, Bag, Moon, Sun, MapPin, Phone, Info, Question, Sparkle,
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/shared/hooks/useAuth";
-import { useUserRole } from "@/shared/hooks/useUserRole";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useUserRole } from "@/modules/auth/hooks/useUserRole";
 import { hasAdminAccess } from "@/shared/lib/permissions";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/shared/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/modules/orders/hooks/useCart";
 import { cn } from "@/lib/utils";
 import mhLogo from "@/assets/mh-logo.png";
 import mhLogoGold from "@/assets/mh-logo-gold.png";
