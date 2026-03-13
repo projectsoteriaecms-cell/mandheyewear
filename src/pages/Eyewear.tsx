@@ -92,6 +92,10 @@ const Eyewear = () => {
         return p.item_type === categoryFilter;
       })
       .sort((a, b) => {
+        const aHasImage = a.image_url ? 1 : 0;
+        const bHasImage = b.image_url ? 1 : 0;
+        if (aHasImage !== bHasImage) return bHasImage - aHasImage;
+
         if (priceSort === "low-high") return a.price - b.price;
         if (priceSort === "high-low") return b.price - a.price;
         return 0;
