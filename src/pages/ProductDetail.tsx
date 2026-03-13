@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { useSEO } from "@/hooks/useSEO";
+import { useSEO } from "@/shared/hooks/useSEO";
 import { JsonLd } from "@/components/seo";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -10,13 +10,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProductImageGallery } from "@/components/product/ProductImageGallery";
 import { ProductSpecifications } from "@/components/product/ProductSpecifications";
 import { AddToCartSection } from "@/components/product/AddToCartSection";
-import { ProductCard } from "@/components/eyewear/ProductCard";
+import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { MobileActionBar } from "@/components/mobile";
-import { useProduct, useProducts } from "@/hooks/useProducts";
-import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/shared/hooks/useAuth";
-import { useMetaPixel } from "@/hooks/useMetaPixel";
+import { useProduct, useProducts } from "@/modules/products/hooks/useProducts";
+import { useCart } from "@/modules/orders/hooks/useCart";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { ArrowLeft, Star, ShoppingBag, Sparkles } from "lucide-react";
 
 const ProductDetail = () => {

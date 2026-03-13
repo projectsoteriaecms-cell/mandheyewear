@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSEO } from "@/hooks/useSEO";
+import { useSEO } from "@/shared/hooks/useSEO";
 import { useNavigate, Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -25,12 +25,12 @@ import {
   LogIn,
   Clock,
 } from "lucide-react";
-import { useBranches } from "@/hooks/useBranches";
-import { useCreateAppointment, type Appointment } from "@/hooks/useAppointments";
-import { useAuth } from "@/shared/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
-import { useUserRole } from "@/shared/hooks/useUserRole";
-import { useMetaPixel } from "@/hooks/useMetaPixel";
+import { useBranches } from "@/modules/branches/hooks/useBranches";
+import { useCreateAppointment, type Appointment } from "@/modules/appointments/hooks/useAppointments";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useProfile } from "@/modules/personalization/hooks/useProfile";
+import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { canBookAppointments } from "@/shared/lib/permissions";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";

@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { BranchCard } from "@/components/branches/BranchCard";
 import { BranchMapPlaceholder } from "@/components/branches/BranchMapPlaceholder";
 import { BranchExpansionCTA } from "@/components/branches/BranchExpansionCTA";
-import { useBranches } from "@/hooks/useBranches";
+import { useBranches } from "@/modules/branches/hooks/useBranches";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Branches = () => {

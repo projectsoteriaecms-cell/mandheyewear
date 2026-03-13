@@ -14,13 +14,13 @@ import {
   FrameProfileSection,
   SettingsSection,
 } from "@/components/dashboard";
-import { useAuth } from "@/shared/hooks/useAuth";
-import { useWishlist } from "@/hooks/useWishlist";
-import { useAppointments } from "@/hooks/useAppointments";
-import { useUserRole } from "@/shared/hooks/useUserRole";
-import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useWishlist } from "@/modules/orders/hooks/useWishlist";
+import { useAppointments } from "@/modules/appointments/hooks/useAppointments";
+import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+import { useOnboardingStatus } from "@/modules/personalization/hooks/useOnboardingStatus";
 import { hasAdminAccess, isUnverifiedUser } from "@/shared/lib/permissions";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/shared/hooks/use-toast";
 import { 
   Loader2, 
   LogOut, 

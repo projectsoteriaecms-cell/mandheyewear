@@ -21,7 +21,7 @@ import {
   Check
 } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/shared/hooks/use-toast";
 
 const OrderConfirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();

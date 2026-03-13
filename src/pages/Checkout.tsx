@@ -15,13 +15,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
-import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/shared/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
-import { useUserRole } from "@/shared/hooks/useUserRole";
-import { useMetaPixel } from "@/hooks/useMetaPixel";
+import { useCart } from "@/modules/orders/hooks/useCart";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useProfile } from "@/modules/personalization/hooks/useProfile";
+import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { canPurchase } from "@/shared/lib/permissions";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/shared/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, Clock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

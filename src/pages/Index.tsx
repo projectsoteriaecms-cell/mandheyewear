@@ -9,7 +9,7 @@ import {
   QuizPromo,
   VirtualTryOn,
   TrustBadges,
-} from "@/components/home";
+} from "@/modules/storefront/components/home";
 import { useSEO } from "@/shared/hooks/useSEO";
 import { JsonLd } from "@/components/seo";
 

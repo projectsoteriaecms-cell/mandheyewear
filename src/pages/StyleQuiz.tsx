@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { useSEO } from "@/hooks/useSEO";
+import { useSEO } from "@/shared/hooks/useSEO";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useAuth } from "@/shared/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { useUpdateProfile } from "@/hooks/useProfile";
-import { usePersonalizedProducts } from "@/hooks/usePersonalizedProducts";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useToast } from "@/shared/hooks/use-toast";
+import { useUpdateProfile } from "@/modules/personalization/hooks/useProfile";
+import { usePersonalizedProducts } from "@/modules/personalization/hooks/usePersonalizedProducts";
 import {
   Sparkle,
   ArrowRight,
