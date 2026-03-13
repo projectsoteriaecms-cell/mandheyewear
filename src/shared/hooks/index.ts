@@ -1,5 +1,5 @@
-// Shared hook exports
-export { useAuth } from "./useAuth";
+// Shared hook exports - canonical sources
+export { useAuth } from "@/modules/auth/hooks/useAuth";
 export { 
   useUserRole, 
   useIsStaff, 
@@ -7,7 +7,7 @@ export {
   useIsSuperAdmin,
   useIsAdmin,
   type AppRole 
-} from "./useUserRole";
+} from "@/modules/auth/hooks/useUserRole";
 
 // Cross-cutting shared hooks
 export { useToast, toast } from "./use-toast";

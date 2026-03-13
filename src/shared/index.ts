@@ -1,5 +1,5 @@
 // Main shared module barrel export
-export * from "./components/admin";
+export * from "./layouts/admin";
 
 // Re-export hooks explicitly to avoid AppRole collision
 export { 
