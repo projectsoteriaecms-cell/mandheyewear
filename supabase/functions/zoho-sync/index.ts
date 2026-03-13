@@ -229,8 +229,8 @@ async function upsertInventory(
 
   const quantityBefore = existing?.quantity_on_hand ?? 0;
 
-  // Skip if no change
-  if (quantityBefore === newQuantity) return;
+  // Skip if no change AND record already exists (don't skip if we need to create)
+  if (existing && quantityBefore === newQuantity) return;
 
   if (existing) {
     await supabase
