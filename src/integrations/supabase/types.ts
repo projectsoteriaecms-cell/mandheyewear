@@ -116,6 +116,8 @@ export type Database = {
           is_active: boolean | null
           is_head_office: boolean | null
           is_mh_location: boolean | null
+          latitude: number | null
+          longitude: number | null
           name: string
           phone: string | null
           region: string
@@ -136,6 +138,8 @@ export type Database = {
           is_active?: boolean | null
           is_head_office?: boolean | null
           is_mh_location?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           name: string
           phone?: string | null
           region: string
@@ -156,6 +160,8 @@ export type Database = {
           is_active?: boolean | null
           is_head_office?: boolean | null
           is_mh_location?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           phone?: string | null
           region?: string

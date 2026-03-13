@@ -1,9 +1,11 @@
-import { MapPin } from "lucide-react";
+import { MapPin, Eye } from "lucide-react";
 import type { Branch } from "@/modules/branches/types";
 
 interface BranchCardProps {
   branch: Branch;
+  isActive?: boolean;
   onClick: (branch: Branch) => void;
+  onViewDetails: (branch: Branch) => void;
 }
 
 const gradients = [
@@ -14,7 +16,7 @@ const gradients = [
   "from-[hsl(260,25%,16%)] via-[hsl(260,20%,22%)] to-[hsl(260,15%,13%)]",
 ];
 
-export const BranchCard = ({ branch, onClick }: BranchCardProps) => {
+export const BranchCard = ({ branch, isActive, onClick, onViewDetails }: BranchCardProps) => {
   const gradientIndex =
     branch.name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) %
     gradients.length;
@@ -28,6 +30,7 @@ export const BranchCard = ({ branch, onClick }: BranchCardProps) => {
         group cursor-pointer transition-all duration-300
         hover:scale-[1.03] hover:shadow-2xl
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+        ${isActive ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02] shadow-xl" : ""}
       `}
     >
       {/* Subtle pattern overlay */}
@@ -50,6 +53,20 @@ export const BranchCard = ({ branch, onClick }: BranchCardProps) => {
         )}
       </div>
 
+      {/* View Details button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onViewDetails(branch);
+        }}
+        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/10 backdrop-blur-sm
+          opacity-0 group-hover:opacity-100 transition-opacity duration-200
+          hover:bg-white/20 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        title="View Details"
+      >
+        <Eye className="h-4 w-4 text-white" />
+      </button>
+
       {/* Content — centered */}
       <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
         <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-2 leading-tight">
@@ -65,7 +82,7 @@ export const BranchCard = ({ branch, onClick }: BranchCardProps) => {
 
       {/* Bottom icon */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-        <MapPin className="h-5 w-5 text-primary opacity-80 group-hover:opacity-100 transition-opacity" />
+        <MapPin className={`h-5 w-5 transition-opacity ${isActive ? "text-primary opacity-100" : "text-primary opacity-80 group-hover:opacity-100"}`} />
       </div>
 
       {/* Hover overlay */}

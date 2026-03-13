@@ -1,62 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Activate Interactive Map on Branches Page
+## Status: Ready for User Action
 
-### What changes
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-Replace the static `BranchMapPlaceholder` with a live Google Maps embed that:
-- Defaults to the **Head Office** location on page load
-- Updates to show the selected branch when a card is clicked (without opening the detail dialog — clicking the card highlights it and pans the map; a separate "View Details" action opens the dialog)
-- Shows a pin marker for the selected branch
+### Transformation Prompt (for the new project)
 
-### Database migration
+```text
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
 
-Add `latitude` and `longitude` columns to the `branches` table, then populate them with the known coordinates for all 5 branches:
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
 
-| Branch | Latitude | Longitude |
-|---|---|---|
-| M&H Warri (Head Office) | 5.5168 | 5.7603 |
-| M&H Effurun (Delta Mall) | 5.5631 | 5.7938 |
-| M&H Lekki Flagship (Talea Mall) | 6.4380 | 3.5315 |
-| M&H Lekki (Atlantic Centre) | 6.4350 | 3.5280 |
-| M&H Uyo (Tropicana Mall) | 5.0377 | 7.9128 |
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
 
-```sql
-ALTER TABLE public.branches
-  ADD COLUMN latitude double precision,
-  ADD COLUMN longitude double precision;
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
 
-UPDATE public.branches SET latitude = 5.5168, longitude = 5.7603 WHERE is_head_office = true;
--- (and similar UPDATEs for each branch by name)
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
+
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
+
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
+
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
 ```
 
-### Approach: Google Maps Embed (no API key needed)
-
-Use a Google Maps Embed `<iframe>` with the `place` mode, passing the branch address as a query parameter. This requires **no API key** and works out of the box. If coordinates are available, we use them for precision; otherwise fall back to address string.
-
-### Files to modify
-
-1. **`src/components/branches/BranchMapPlaceholder.tsx`** → Rename/replace with **`BranchMap.tsx`**:
-   - Accept `selectedBranch: Branch | null` and `defaultBranch: Branch | null` props
-   - Render a Google Maps Embed iframe using the branch address
-   - Smooth transition when branch changes
-   - Card styling with rounded corners matching current design
-
-2. **`src/pages/Branches.tsx`**:
-   - Add a `highlightedBranch` state (separate from `selectedBranch` for dialog)
-   - On card click: set `highlightedBranch` (updates map), on double-click or "View Details" button: open dialog
-   - Actually simpler: clicking a card updates the map AND opens the dialog. The map always shows whichever branch was last selected. Default to head office.
-   - Pass the active branch to `BranchMap`
-
-3. **`src/components/branches/BranchCard.tsx`** — Add visual "active/selected" state styling when the card matches the highlighted branch.
-
-### No API key required
-
-Google Maps Embed API with `place` mode is free and keyless via URL format:
-`https://www.google.com/maps/embed/v1/place?key=FREE&q=ADDRESS` — actually this does need a key.
-
-**Alternative**: Use an OpenStreetMap embed via `iframe` which is completely free and keyless:
-`https://www.openstreetmap.org/export/embed.html?bbox=...&layer=mapnik&marker=LAT,LNG`
-
-We will use OpenStreetMap to avoid requiring any API keys from the user.
-
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx
