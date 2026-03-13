@@ -217,11 +217,9 @@ export const FrameProfileSection = () => {
           
           {!hasMeasurements && (
             <div className="mt-6">
-              <Button variant="outline" asChild>
-                <Link to="/onboarding">
-                  <Scan className="h-4 w-4 mr-2" />
-                  Scan Your Face
-                </Link>
+              <Button variant="outline" onClick={() => setShowFaceScan(true)}>
+                <Scan className="h-4 w-4 mr-2" />
+                Scan Your Face
               </Button>
             </div>
           )}
