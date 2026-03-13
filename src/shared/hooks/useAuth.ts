@@ -51,6 +51,12 @@ export const useAuth = () => {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
+    // Always clear local state — "session_not_found" means already signed out server-side
+    if (error?.message?.toLowerCase().includes('session not found')) {
+      setSession(null);
+      setUser(null);
+      return { error: null };
+    }
     return { error };
   };
 
