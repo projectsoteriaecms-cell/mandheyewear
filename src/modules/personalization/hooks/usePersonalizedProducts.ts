@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useProfile } from "./useProfile";
 import { useProducts, Product } from "@/modules/products/hooks/useProducts";
 import type { QuizPreferences } from "@/components/onboarding/quiz-constants";
