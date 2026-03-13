@@ -112,7 +112,7 @@ export const MobileTopBar = () => {
                 <List weight="light" className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
+            <SheetContent side="left" className="w-[300px] p-0 flex flex-col" hideCloseButton>
               {/* Header */}
               <SheetHeader className="p-4 border-b border-border bg-primary">
                 <SheetTitle className="flex items-center justify-between">
