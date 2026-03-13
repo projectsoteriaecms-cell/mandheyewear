@@ -69,6 +69,8 @@ export function useZohoSync() {
           const parts = [`${data.records_processed} items synced`];
           if (matched > 0) parts.push(`${matched} linked to existing`);
           if ((data.records_failed ?? 0) > 0) parts.push(`${data.records_failed} failed`);
+          const stockUp = (meta?.stock_updated as number) ?? 0;
+          if (stockUp > 0) parts.push(`${stockUp} stock levels updated`);
           toast.success(`Sync complete: ${parts.join(", ")}`);
         } else {
           setStatus("error");
