@@ -84,8 +84,10 @@ const Products = () => {
             isEnriching={isEnriching}
             enrichProgress={enrichProgress}
             syncStatus={syncStatus}
+            stockSyncStatus={syncStatus}
             onEnrichProducts={handleEnrichProducts}
             onPullItems={pullItems}
+            onSyncStock={syncStock}
             onOpenLinkDialog={() => setIsLinkDialogOpen(true)}
             onOpenBulkImageUpload={() => setIsBulkImageUploadOpen(true)}
             onOpenBulkUpload={() => setIsBulkUploadOpen(true)}
