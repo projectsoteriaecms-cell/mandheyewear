@@ -1,41 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Face Measurement Feature — What It Is and The Plan
+## Status: Ready for User Action
 
-### What It Does
-The face measurement feature uses AI vision (via Lovable AI gateway) to analyze a user's photo and extract facial dimensions:
-- **Face width** (mm)
-- **Pupillary distance** (mm)  
-- **Bridge width** (mm)
-- **Temple width** (mm)
-- **Face shape** (oval, round, square, heart, oblong)
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-These measurements are saved to the user's profile and power **fit indicators** on product cards — showing labels like "Good fit", "Too narrow", or "Perfect match" based on how a frame's dimensions compare to the user's face.
+### Transformation Prompt (for the new project)
 
-### Current State
-- The `analyze-face` edge function and `useFaceMeasurement` hook are fully built and deployed
-- The `FaceScanStep` UI component exists with camera capture, photo upload, analysis progress, results display, and error/retry handling
-- **Problem**: It's not rendered anywhere. It was removed from onboarding (correctly — per the 3-step redesign) but never placed elsewhere
+```text
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
 
-### The Plan
-Add it to **two places**:
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
 
-**1. Dashboard → Frame Profile tab**
-- Add a "Scan Your Face" button (or "Retake" if measurements exist)
-- Opens a dialog containing the existing `FaceScanStep`
-- On success, refreshes the profile to show updated measurements
-- This is the primary, intentional entry point
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
 
-**2. Product Detail Page (future)**
-- Show a subtle prompt like "Get your fit score — scan your face" if the user has no measurements
-- Links to the same scan flow
-- This drives adoption at the moment of highest relevance (when browsing frames)
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
 
-### Files Involved
-- **Create**: `src/components/dashboard/FaceScanDialog.tsx` — dialog wrapper
-- **Modify**: `src/components/dashboard/FrameProfileSection.tsx` — add scan button
-- **Reuse as-is**: `FaceScanStep.tsx`, `useFaceMeasurement.ts`, `analyze-face` edge function
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
 
-### Why It Matters
-Without face measurements, the fit indicators on product cards can't work — every frame shows as "Unknown fit." This feature closes that gap by giving users an easy, optional way to get measured.
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
 
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
+
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+```
+
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx

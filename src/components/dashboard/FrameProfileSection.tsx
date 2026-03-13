@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/shared/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { FaceScanDialog } from "./FaceScanDialog";
 import { Sparkles, ChevronRight, CircleDashed, Scan, Ruler, Check } from "lucide-react";
 
 interface FramePreferences {
@@ -27,6 +29,7 @@ interface FaceDimensions {
 export const FrameProfileSection = () => {
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile(user?.id);
+  const [showFaceScan, setShowFaceScan] = useState(false);
   
   const preferences = profile?.frame_preferences as FramePreferences | null;
   const faceDimensions = profile?.face_dimensions as FaceDimensions | null;
@@ -182,11 +185,9 @@ export const FrameProfileSection = () => {
               )}
               
               <div className="pt-4 border-t">
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/onboarding">
-                    <Scan className="h-4 w-4 mr-2" />
-                    Rescan Face
-                  </Link>
+                <Button variant="outline" size="sm" onClick={() => setShowFaceScan(true)}>
+                  <Scan className="h-4 w-4 mr-2" />
+                  Rescan Face
                 </Button>
               </div>
             </div>
@@ -215,11 +216,9 @@ export const FrameProfileSection = () => {
           
           {!hasMeasurements && (
             <div className="mt-6">
-              <Button variant="outline" asChild>
-                <Link to="/onboarding">
-                  <Scan className="h-4 w-4 mr-2" />
-                  Scan Your Face
-                </Link>
+              <Button variant="outline" onClick={() => setShowFaceScan(true)}>
+                <Scan className="h-4 w-4 mr-2" />
+                Scan Your Face
               </Button>
             </div>
           )}
@@ -280,6 +279,8 @@ export const FrameProfileSection = () => {
           )}
         </CardContent>
       </Card>
+
+      <FaceScanDialog open={showFaceScan} onOpenChange={setShowFaceScan} />
     </div>
   );
 };
