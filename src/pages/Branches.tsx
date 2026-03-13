@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSEO } from "@/shared/hooks/useSEO";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { BranchCard } from "@/components/branches/BranchCard";
 import { BranchDetailDialog } from "@/components/branches/BranchDetailDialog";
-import { BranchMapPlaceholder } from "@/components/branches/BranchMapPlaceholder";
+import { BranchMap } from "@/components/branches/BranchMap";
 import { BranchExpansionCTA } from "@/components/branches/BranchExpansionCTA";
 import { useBranches } from "@/modules/branches/hooks/useBranches";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +19,23 @@ const Branches = () => {
 
   const { data: branches, isLoading, error } = useBranches();
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
+  const [highlightedBranch, setHighlightedBranch] = useState<Branch | null>(null);
+
+  // Default map to head office
+  const defaultBranch = useMemo(
+    () => branches?.find((b) => b.is_head_office) ?? branches?.[0] ?? null,
+    [branches]
+  );
+
+  const mapBranch = highlightedBranch ?? defaultBranch;
+
+  const handleCardClick = (branch: Branch) => {
+    setHighlightedBranch(branch);
+  };
+
+  const handleViewDetails = (branch: Branch) => {
+    setSelectedBranch(branch);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -37,7 +54,7 @@ const Branches = () => {
 
           {/* Branch Cards Grid */}
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Skeleton key={i} className="aspect-[4/3] rounded-2xl" />
               ))}
@@ -49,12 +66,14 @@ const Branches = () => {
               </p>
             </div>
           ) : branches && branches.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
               {branches.map((branch) => (
                 <BranchCard
                   key={branch.id}
                   branch={branch}
-                  onClick={setSelectedBranch}
+                  isActive={mapBranch?.id === branch.id}
+                  onClick={handleCardClick}
+                  onViewDetails={handleViewDetails}
                 />
               ))}
             </div>
@@ -66,7 +85,7 @@ const Branches = () => {
             </div>
           )}
 
-          <BranchMapPlaceholder />
+          <BranchMap branch={mapBranch} />
           <BranchExpansionCTA />
         </div>
       </div>
