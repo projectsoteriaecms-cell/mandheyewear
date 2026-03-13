@@ -84,6 +84,15 @@ async function loadWarehouseMappings(
 async function getDefaultBranch(
   supabase: ReturnType<typeof createClient>,
 ): Promise<string | null> {
+  // First check for __default__ mapping
+  const { data: defaultMapping } = await supabase
+    .from("zoho_warehouse_mapping")
+    .select("branch_id")
+    .eq("zoho_location_id", "__default__")
+    .maybeSingle();
+  if (defaultMapping?.branch_id) return defaultMapping.branch_id;
+
+  // Fall back to head office
   const { data } = await supabase
     .from("branches")
     .select("id")

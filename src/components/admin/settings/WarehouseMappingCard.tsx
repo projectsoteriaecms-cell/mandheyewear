@@ -4,18 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowsClockwise, MapPin, Warning, Check } from "@phosphor-icons/react";
+import { ArrowsClockwise, MapPin, Check, Package } from "@phosphor-icons/react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAllBranches } from "@/modules/branches/hooks/useBranches";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-interface ZohoWarehouse {
-  location_id: string;
-  location_name: string;
-  is_primary?: boolean;
-  status?: string;
-}
 
 interface WarehouseMapping {
   id: string;
@@ -25,10 +18,8 @@ interface WarehouseMapping {
 }
 
 const WarehouseMappingCard = () => {
-  const [zohoWarehouses, setZohoWarehouses] = useState<ZohoWarehouse[]>([]);
-  const [loadingWarehouses, setLoadingWarehouses] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [localMappings, setLocalMappings] = useState<Record<string, string>>({});
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const { data: branches } = useAllBranches();
   const queryClient = useQueryClient();
 
@@ -43,120 +34,116 @@ const WarehouseMappingCard = () => {
     },
   });
 
-  // Initialize local mappings from DB
+  // Initialize from existing __default__ mapping
   useEffect(() => {
     if (existingMappings) {
-      const map: Record<string, string> = {};
-      for (const m of existingMappings) {
-        map[m.zoho_location_id] = m.branch_id;
+      const defaultMapping = existingMappings.find((m) => m.zoho_location_id === "__default__");
+      if (defaultMapping) {
+        setSelectedBranchId(defaultMapping.branch_id);
       }
-      setLocalMappings(map);
     }
   }, [existingMappings]);
 
-  const fetchWarehouses = async () => {
-    setLoadingWarehouses(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("zoho-sync", {
-        body: { action: "list_warehouses" },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setZohoWarehouses(data.warehouses || []);
-      if (data.warehouses?.length === 0) {
-        toast.info("No warehouses found in Zoho Books");
-      } else {
-        toast.success(`Found ${data.warehouses.length} warehouses from Zoho`);
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to fetch warehouses";
-      toast.error(message);
-    } finally {
-      setLoadingWarehouses(false);
+  const saveDefaultBranch = async () => {
+    if (!selectedBranchId) {
+      toast.error("Please select a branch");
+      return;
     }
-  };
 
-  const handleMappingChange = (locationId: string, branchId: string) => {
-    setLocalMappings((prev) => ({ ...prev, [locationId]: branchId }));
-  };
-
-  const saveMappings = async () => {
     setSaving(true);
     try {
-      // For each Zoho warehouse with a mapping, upsert
-      for (const wh of zohoWarehouses) {
-        const branchId = localMappings[wh.location_id];
-        if (!branchId) continue;
+      const existing = existingMappings?.find((m) => m.zoho_location_id === "__default__");
+      const branchName = branches?.find((b) => b.id === selectedBranchId)?.name || "Unknown";
 
-        const existing = existingMappings?.find((m) => m.zoho_location_id === wh.location_id);
-        if (existing) {
-          await supabase
-            .from("zoho_warehouse_mapping")
-            .update({ branch_id: branchId, zoho_location_name: wh.location_name })
-            .eq("id", existing.id);
-        } else {
-          await supabase
-            .from("zoho_warehouse_mapping")
-            .insert({
-              zoho_location_id: wh.location_id,
-              zoho_location_name: wh.location_name,
-              branch_id: branchId,
-            });
-        }
+      if (existing) {
+        await supabase
+          .from("zoho_warehouse_mapping")
+          .update({ branch_id: selectedBranchId, zoho_location_name: "Default Stock Branch" })
+          .eq("id", existing.id);
+      } else {
+        await supabase
+          .from("zoho_warehouse_mapping")
+          .insert({
+            zoho_location_id: "__default__",
+            zoho_location_name: "Default Stock Branch",
+            branch_id: selectedBranchId,
+          });
       }
 
       queryClient.invalidateQueries({ queryKey: ["zoho-warehouse-mappings"] });
-      toast.success("Warehouse mappings saved");
+      toast.success(`Default stock branch set to ${branchName}`);
     } catch (err) {
-      toast.error("Failed to save mappings");
+      toast.error("Failed to save default branch");
     } finally {
       setSaving(false);
     }
   };
 
-  const unmappedCount = zohoWarehouses.filter((wh) => !localMappings[wh.location_id]).length;
-  const mappedCount = zohoWarehouses.filter((wh) => localMappings[wh.location_id]).length;
+  const currentDefault = existingMappings?.find((m) => m.zoho_location_id === "__default__");
+  const currentBranch = currentDefault ? branches?.find((b) => b.id === currentDefault.branch_id) : null;
+
+  // Other (non-default) mappings for display
+  const otherMappings = existingMappings?.filter((m) => m.zoho_location_id !== "__default__") || [];
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <MapPin weight="duotone" className="h-5 w-5" />
-          Zoho Warehouse Mapping
+          <Package weight="duotone" className="h-5 w-5" />
+          Stock Sync Configuration
         </CardTitle>
         <CardDescription>
-          Map Zoho Books warehouses to local branches for stock synchronization
+          Configure which branch receives stock levels from Zoho Books when syncing inventory
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Fetch button */}
-        <div className="flex items-center gap-3">
-          <Button onClick={fetchWarehouses} disabled={loadingWarehouses} variant="outline" size="sm">
-            <ArrowsClockwise className={`h-4 w-4 mr-2 ${loadingWarehouses ? "animate-spin" : ""}`} />
-            {zohoWarehouses.length > 0 ? "Refresh Warehouses" : "Fetch Zoho Warehouses"}
-          </Button>
-          {zohoWarehouses.length > 0 && (
-            <div className="flex gap-2">
-              <Badge variant="secondary">{mappedCount} mapped</Badge>
-              {unmappedCount > 0 && (
-                <Badge variant="destructive">{unmappedCount} unmapped</Badge>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Existing mappings when no warehouses fetched */}
-        {zohoWarehouses.length === 0 && !loadingWarehouses && (
+        {loadingMappings ? (
+          <Skeleton className="h-12 w-full" />
+        ) : (
           <>
-            {loadingMappings ? (
-              <div className="space-y-2">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
+            {/* Current status */}
+            {currentBranch && (
+              <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-900 dark:bg-green-950">
+                <Check className="h-4 w-4 text-green-600" />
+                <span className="text-sm">
+                  Stock levels sync to: <strong>{currentBranch.name}</strong>
+                </span>
               </div>
-            ) : existingMappings && existingMappings.length > 0 ? (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Current mappings:</p>
-                {existingMappings.map((m) => {
+            )}
+
+            {/* Default branch selector */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Default Stock Branch</label>
+              <p className="text-xs text-muted-foreground">
+                All Zoho Books stock quantities will be assigned to this branch during sync.
+              </p>
+              <div className="flex items-center gap-3">
+                <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
+                  <SelectTrigger className="w-[280px]">
+                    <SelectValue placeholder="Select branch..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {branches?.map((branch) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        {branch.name} {branch.is_head_office ? "(Head Office)" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={saveDefaultBranch} disabled={saving || !selectedBranchId} size="sm">
+                  {saving ? (
+                    <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" />
+                  ) : null}
+                  {saving ? "Saving..." : "Save"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Show other warehouse mappings if any */}
+            {otherMappings.length > 0 && (
+              <div className="space-y-2 pt-2">
+                <p className="text-sm text-muted-foreground">Per-warehouse mappings:</p>
+                {otherMappings.map((m) => {
                   const branch = branches?.find((b) => b.id === m.branch_id);
                   return (
                     <div key={m.id} className="flex items-center justify-between rounded-md border p-3">
@@ -169,58 +156,17 @@ const WarehouseMappingCard = () => {
                   );
                 })}
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Click "Fetch Zoho Warehouses" to discover available warehouses and map them to your branches.
-                Stock sync requires at least one mapping to work.
-              </p>
+            )}
+
+            {!currentBranch && (
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  <strong>No default branch set.</strong> Select a branch above and save to enable stock syncing.
+                  Then use the "Sync Stock" button on the Products page.
+                </p>
+              </div>
             )}
           </>
-        )}
-
-        {/* Loading state */}
-        {loadingWarehouses && (
-          <div className="space-y-2">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
-        )}
-
-        {/* Warehouse list with branch selectors */}
-        {zohoWarehouses.length > 0 && !loadingWarehouses && (
-          <div className="space-y-3">
-            {zohoWarehouses.map((wh) => (
-              <div key={wh.location_id} className="flex items-center gap-3 rounded-md border p-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{wh.location_name}</p>
-                  <p className="text-xs text-muted-foreground">ID: {wh.location_id}</p>
-                </div>
-                {!localMappings[wh.location_id] && (
-                  <Warning className="h-4 w-4 text-amber-500 shrink-0" />
-                )}
-                <Select
-                  value={localMappings[wh.location_id] || ""}
-                  onValueChange={(val) => handleMappingChange(wh.location_id, val)}
-                >
-                  <SelectTrigger className="w-[220px]">
-                    <SelectValue placeholder="Select branch..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {branches?.map((branch) => (
-                      <SelectItem key={branch.id} value={branch.id}>
-                        {branch.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
-
-            <Button onClick={saveMappings} disabled={saving || mappedCount === 0}>
-              {saving ? "Saving..." : "Save Mappings"}
-            </Button>
-          </div>
         )}
       </CardContent>
     </Card>
