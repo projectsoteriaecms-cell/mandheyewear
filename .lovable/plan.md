@@ -1,85 +1,55 @@
 
+# Soteria Eye Clinic — Remix & Transform Plan
 
-## Phase 2: Move Admin Components into Domain Modules
+## Status: Ready for User Action
 
-### Summary
+### Next Step
+1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
+2. Name the new project **"Soteria Eye Clinic"**
+3. Paste the transformation prompt (saved below) into the new project's chat
 
-Move all 30+ component files from `src/components/admin/` into their respective domain modules under `src/modules/[domain]/components/`. Leave re-export shims in the original locations for backward compatibility (same pattern as Phase 1).
+### Transformation Prompt (for the new project)
 
-### Component Mapping
+```text
+Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
 
-| Source (`src/components/admin/`) | Destination (`src/modules/`) |
-|---|---|
-| `inventory/BulkStockImportDialog.tsx` | `modules/inventory/components/` |
-| `adjustments/CreateAdjustmentDialog.tsx` | `modules/inventory/components/` |
-| `transfers/CreateStockTransferDialog.tsx` | `modules/inventory/components/` |
-| `purchase-orders/CreatePurchaseOrderDialog.tsx` | `modules/inventory/components/` |
-| `products/*.tsx` (19 files + `ecms-import/` subfolder with 7 files) | `modules/products/components/` |
-| `categories/*.tsx` (3 files) | `modules/categories/components/` |
-| `services/*.tsx` (2 files) | `modules/services/components/` |
-| `users/*.tsx` (3 files) | `modules/users/components/` |
-| `settings/WarehouseMappingCard.tsx` | `modules/integrations/components/` |
-| `onboarding/WelcomeBranchDialog.tsx` | `modules/branches/components/` |
+## 1. Branding & Colors
+- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
+- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
+- Accent color: keep the M&H gold as a secondary accent for partnership elements
+- Update CSS variables in index.css accordingly
+- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
+- Update favicon to use Soteria branding
+- Font: keep Cormorant Garamond for display but consider a more clinical feel
 
-### Files to create (~35 new component files + barrel exports)
+## 2. Homepage Rewrite
+- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
+- Primary CTAs: "Book an Eye Exam" and "Our Services"
+- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
 
-**For each domain module**, create:
-1. `components/` directory with the actual component files (copied from source)
-2. `components/index.ts` barrel export
-3. Update the module's root `index.ts` to re-export components
+## 3. Navigation Updates
+- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
+- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
+- MobileBottomNav: Home, Services, Book, Branches, Account
 
-**Inventory module** (`src/modules/inventory/components/`):
-- `BulkStockImportDialog.tsx`
-- `CreateAdjustmentDialog.tsx`
-- `CreateStockTransferDialog.tsx`
-- `CreatePurchaseOrderDialog.tsx`
-- `index.ts`
+## 4. Pages to Update
+- About: Soteria's story + M&H Eyewear as premium eyewear partner
+- Partners: HMO partners + M&H Eyewear as strategic partner
+- Services/Eye Care: Primary service page
+- Branches: Show all locations from shared database
+- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
 
-**Products module** (`src/modules/products/components/`):
-- All 19 `.tsx` files from `src/components/admin/products/`
-- `ecms-import/` subfolder (7 files)
-- `index.ts`
+## 5. SEO & Meta
+- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
 
-**Categories module** (`src/modules/categories/components/`):
-- `SortableCategoryRow.tsx`, `CreateCategoryDialog.tsx`, `EditCategoryDialog.tsx`
-- `index.ts`
+## 6. Footer
+- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
 
-**Services module** (`src/modules/services/components/`):
-- `CreateServiceDialog.tsx`, `EditServiceDialog.tsx`
-- `index.ts`
+## 7. Do NOT Change
+- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
+```
 
-**Users module** (`src/modules/users/components/`):
-- `InviteUserDialog.tsx`, `PendingInvitationsList.tsx`, `BranchAssignmentDialog.tsx`
-- `index.ts`
-
-**Integrations module** (`src/modules/integrations/components/`):
-- `WarehouseMappingCard.tsx`
-- `index.ts`
-
-**Branches module** (`src/modules/branches/components/`):
-- `WelcomeBranchDialog.tsx`
-- `index.ts`
-
-### Files to modify (re-export shims)
-
-Convert each original file in `src/components/admin/` to a re-export shim pointing to the new location. This ensures the 12 page files that import from `@/components/admin/` continue working without immediate changes:
-
-- `src/components/admin/inventory/BulkStockImportDialog.tsx` → re-export from `@/modules/inventory/components`
-- `src/components/admin/inventory/index.ts` → re-export from `@/modules/inventory/components`
-- `src/components/admin/adjustments/CreateAdjustmentDialog.tsx` → re-export
-- `src/components/admin/transfers/CreateStockTransferDialog.tsx` → re-export
-- `src/components/admin/purchase-orders/CreatePurchaseOrderDialog.tsx` → re-export
-- All 19 files in `src/components/admin/products/` → re-export
-- `src/components/admin/products/ecms-import/*.ts(x)` → re-export
-- 3 files in `categories/`, 2 in `services/`, 3 in `users/` → re-export
-- `src/components/admin/settings/WarehouseMappingCard.tsx` → re-export
-- `src/components/admin/onboarding/WelcomeBranchDialog.tsx` → re-export
-
-### Internal cross-references to handle
-
-Some product components import from siblings (e.g., `DraggableImageItem` imports from `./ProductImageUpload`, `QuickImageUploadModal` imports from `./DraggableImageItem`). These relative imports will continue to work since all files move together into the same `modules/products/components/` directory. The `ecms-import/` subfolder's relative imports to `./types` also remain intact.
-
-### No database or edge function changes needed
-
-This is purely a file reorganization with zero logic changes.
-
+### Already Completed in This Project (M&H Eyewear)
+- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
+- ✅ About page updated with Soteria partnership section
+- ✅ Route registered in public.routes.tsx

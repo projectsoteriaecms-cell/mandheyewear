@@ -11,3 +11,10 @@ export type {
   CategoryWithChildren,
   CategoryNode,
 } from "./types";
+
+// Components
+export {
+  CreateCategoryDialog,
+  EditCategoryDialog,
+  SortableCategoryRow,
+} from "./components";

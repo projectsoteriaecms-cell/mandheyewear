@@ -15,3 +15,6 @@ export type {
   BranchAssignment,
   BranchContext,
 } from "./types";
+
+// Components
+export { WelcomeBranchDialog } from "./components";
