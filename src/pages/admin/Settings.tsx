@@ -63,6 +63,9 @@ const Settings = () => {
             </CardContent>
           </Card>
 
+          {/* Zoho Warehouse Mapping */}
+          <WarehouseMappingCard />
+
           {/* Notification Settings */}
           <Card>
             <CardHeader>
