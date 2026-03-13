@@ -1,2 +1,2 @@
-// Admin inventory components barrel export
-export { BulkStockImportDialog } from "./BulkStockImportDialog";
+// Re-export shim — canonical source: @/modules/inventory/components
+export { BulkStockImportDialog } from "@/modules/inventory/components";
