@@ -116,7 +116,7 @@ export const MobileTopBar = () => {
               {/* Header */}
               <SheetHeader className="p-4 border-b border-border bg-primary">
                 <SheetTitle className="flex items-center justify-between">
-                  <img src={mhLogoGold} alt="M&H Eyewear" className="h-8 w-auto" />
+                  <img src={mhLogoGold} alt="M&H Eyewear" className="h-12 w-auto" />
                   <SheetClose asChild>
                     <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 -mr-2">
                       <X weight="light" className="h-5 w-5" />
