@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Camera, AlertCircle, RefreshCw, MonitorX } from "lucide-react";
-import { useCameraKit } from "@/hooks/useCameraKit";
+import { useCameraKit } from "@/shared/hooks/useCameraKit";
 
 interface CameraKitCanvasProps {
   onInitialized?: () => void;

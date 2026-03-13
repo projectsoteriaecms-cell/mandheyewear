@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useBranches } from "@/modules/branches";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts } from "@/modules/products/hooks/useProducts";
 import { useCreateStockTransfer } from "@/modules/inventory";
 import { Plus, Trash2, ArrowRight } from "lucide-react";
 

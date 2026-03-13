@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useStylePolls, useSubmitAllPollResponses, StylePoll } from "@/hooks/useStylePolls";
-import { useToast } from "@/hooks/use-toast";
+import { useStylePolls, useSubmitAllPollResponses, StylePoll } from "@/modules/personalization/hooks/useStylePolls";
+import { useToast } from "@/shared/hooks/use-toast";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, ArrowLeft, Check } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
-import type { TourStep as TourStepType } from "@/hooks/useTryOnTour";
+import type { TourStep as TourStepType } from "@/modules/personalization/hooks/useTryOnTour";
 
 interface TourStepProps {
   step: TourStepType;

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, Loader2, Download, X } from "lucide-react";
-import type { TryOnResult } from "@/hooks/useVirtualTryOn";
+import type { TryOnResult } from "@/modules/personalization/hooks/useVirtualTryOn";
 
 interface EmailCaptureModalProps {
   isOpen: boolean;

@@ -6,9 +6,9 @@ import { Camera, Info, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { CameraKitCanvas } from "./CameraKitCanvas";
 import { ARLensSelector } from "./ARLensSelector";
-import { useCameraKit } from "@/hooks/useCameraKit";
+import { useCameraKit } from "@/shared/hooks/useCameraKit";
 import { SNAP_CONFIG, isCameraKitConfigured } from "@/config/snap-lenses";
-import type { TryOnResult as TryOnResultType } from "@/hooks/useVirtualTryOn";
+import type { TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
 
 interface LiveARTryOnProps {
   onCapture: (result: TryOnResultType) => void;

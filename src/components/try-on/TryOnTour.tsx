@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Question } from "@phosphor-icons/react";
 import { TourStep } from "./TourStep";
-import { useTryOnTour } from "@/hooks/useTryOnTour";
+import { useTryOnTour } from "@/modules/personalization/hooks/useTryOnTour";
 import {
   Tooltip,
   TooltipContent,
