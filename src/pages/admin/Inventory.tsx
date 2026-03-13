@@ -26,7 +26,7 @@ import {
   Cube,
   XCircle,
 } from "@phosphor-icons/react";
-import { BulkStockImportDialog } from "@/components/admin/inventory";
+import { BulkStockImportDialog } from "@/modules/inventory/components";
 import { formatDistanceToNow } from "date-fns";
 
 const getStockStatus = (quantity: number, threshold: number) => {

@@ -14,7 +14,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { AdminLayout } from "@/shared/components/admin";
+import { AdminLayout } from "@/shared/layouts/admin";
 import {
   Table,
   TableBody,
@@ -33,9 +33,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useCategories, type Category } from "@/modules/categories";
-import { SortableCategoryRow } from "@/components/admin/categories/SortableCategoryRow";
-import { CreateCategoryDialog } from "@/components/admin/categories/CreateCategoryDialog";
-import { EditCategoryDialog } from "@/components/admin/categories/EditCategoryDialog";
+import { SortableCategoryRow } from "@/modules/categories/components/SortableCategoryRow";
+import { CreateCategoryDialog } from "@/modules/categories/components/CreateCategoryDialog";
+import { EditCategoryDialog } from "@/modules/categories/components/EditCategoryDialog";
 import { CircleNotch } from "@phosphor-icons/react";
 
 interface CategoryTreeNode extends Category {

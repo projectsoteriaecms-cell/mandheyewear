@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { AdminLayout } from "@/shared/components/admin";
+import { AdminLayout } from "@/shared/layouts/admin";
 import { useStockTransfers, useUpdateTransferStatus } from "@/modules/inventory";
-import { useUserRole } from "@/shared/hooks/useUserRole";
+import { useUserRole } from "@/modules/auth/hooks/useUserRole";
 import { canApproveStockTransfer, canCompleteStockTransfer } from "@/shared/lib/permissions";
 import {
   Table,
@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";
-import { CreateStockTransferDialog } from "@/components/admin/transfers/CreateStockTransferDialog";
+import { CreateStockTransferDialog } from "@/modules/inventory/components/CreateStockTransferDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type TransferStatus = Database["public"]["Enums"]["transfer_status"];

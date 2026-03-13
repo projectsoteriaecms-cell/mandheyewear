@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AdminLayout } from "@/shared/components/admin";
+import { AdminLayout } from "@/shared/layouts/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,

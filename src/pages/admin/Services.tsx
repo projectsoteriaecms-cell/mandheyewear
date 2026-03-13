@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { AdminLayout, RoleGuard } from "@/shared/components/admin";
+import { AdminLayout } from "@/shared/layouts/admin";
+import { RoleGuard } from "@/modules/auth/components/RoleGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -19,8 +20,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Plus, MagnifyingGlass, DotsThree, PencilSimple, Trash, Clock, Calendar } from "@phosphor-icons/react";
 import { useServices } from "@/modules/services";
-import { CreateServiceDialog } from "@/components/admin/services/CreateServiceDialog";
-import { EditServiceDialog } from "@/components/admin/services/EditServiceDialog";
+import { CreateServiceDialog } from "@/modules/services/components/CreateServiceDialog";
+import { EditServiceDialog } from "@/modules/services/components/EditServiceDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type Service = Database["public"]["Tables"]["services"]["Row"];
