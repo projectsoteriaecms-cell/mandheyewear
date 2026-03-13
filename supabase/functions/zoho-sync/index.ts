@@ -153,6 +153,13 @@ async function syncStockForItems(
   let stockSkipped = 0;
   const locationsDiscovered: string[] = [];
 
+  // Diagnostic: log first 3 items' stock data
+  for (let i = 0; i < Math.min(3, rawItems.length); i++) {
+    const item = rawItems[i];
+    const warehouses = item.warehouses as Array<Record<string, unknown>> | undefined;
+    console.log(`[STOCK DIAG] Item ${i}: name="${item.name}", stock_on_hand=${item.stock_on_hand}, item_type="${item.item_type}", has_warehouses=${!!(warehouses && warehouses.length > 0)}, warehouse_count=${warehouses?.length ?? 0}`);
+  }
+
   for (const item of rawItems) {
     const zohoItemId = String(item.item_id);
 
@@ -188,12 +195,13 @@ async function syncStockForItems(
         stockUpdated++;
       }
     } else {
-      // Use top-level stock_on_hand with default branch
+      // Use top-level stock_on_hand with default branch — allow zero stock to create inventory rows
       const stockOnHand = Number(item.stock_on_hand ?? 0);
-      if (stockOnHand > 0 && defaultBranchId) {
+      if (defaultBranchId) {
         await upsertInventory(supabase, productId, defaultBranchId, stockOnHand, performedBy, "Zoho total stock (no warehouse data)");
         stockUpdated++;
-      } else if (stockOnHand > 0) {
+      } else {
+        console.log(`[STOCK SKIP] No default branch configured, skipping ${item.name}`);
         stockSkipped++;
       }
     }
@@ -221,8 +229,8 @@ async function upsertInventory(
 
   const quantityBefore = existing?.quantity_on_hand ?? 0;
 
-  // Skip if no change
-  if (quantityBefore === newQuantity) return;
+  // Skip if no change AND record already exists (don't skip if we need to create)
+  if (existing && quantityBefore === newQuantity) return;
 
   if (existing) {
     await supabase
