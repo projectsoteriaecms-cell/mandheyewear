@@ -39,11 +39,12 @@ export const useFaceMeasurement = () => {
       });
 
       if (error) {
-        throw new Error(error.message || "Failed to analyze face");
+        console.error("Edge function invocation error:", error);
+        throw new Error("Face analysis service is temporarily unavailable. Please try again.");
       }
 
-      if (!data.success) {
-        throw new Error(data.error || "Face analysis failed");
+      if (!data || !data.success) {
+        throw new Error(data?.error || "Face analysis failed. Please try with a clearer, front-facing photo.");
       }
 
       const dimensions: FaceDimensions = {

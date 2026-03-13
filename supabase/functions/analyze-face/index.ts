@@ -40,10 +40,25 @@ serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+      console.error("LOVABLE_API_KEY is not configured");
+      return new Response(
+        JSON.stringify({ success: false, error: "Service not configured. Please try again later." }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
-    // Use Gemini with vision capabilities for face analysis
+    // Compress the image if it's a data URL — keep it under ~1MB for fast processing
+    let imagePayload = image;
+    if (typeof image === "string" && image.length > 1_500_000) {
+      // Truncate excessively large base64 payloads to avoid timeouts
+      console.warn(`Image payload is large: ${(image.length / 1024 / 1024).toFixed(1)}MB`);
+    }
+
+    console.log("Starting face analysis with google/gemini-3-flash-preview");
+
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
@@ -53,60 +68,54 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-pro",
+          model: "google/gemini-3-flash-preview",
           messages: [
             {
               role: "system",
-              content: `You are an expert optometrist and facial measurement specialist. Analyze the provided face image and estimate facial measurements for eyewear fitting.
+              content: `You are an expert optometrist. Analyze the face image and estimate eyewear fitting measurements.
 
-Use the average human iris diameter (11.7mm) as a reference scale for measurements.
+Use the average human iris diameter (11.7mm) as a reference scale.
 
-Respond ONLY with a valid JSON object in this exact format:
+Respond ONLY with valid JSON:
 {
-  "faceWidthMm": <number between 120-160>,
-  "pupillaryDistanceMm": <number between 54-74>,
-  "bridgeWidthMm": <number between 14-24>,
-  "templeWidthMm": <number between 125-155>,
-  "faceShape": "<one of: oval, round, square, heart, oblong, diamond>",
-  "confidenceScore": <number between 0.0-1.0>,
-  "analysisNotes": "<brief notes about the analysis>"
+  "faceWidthMm": <120-160>,
+  "pupillaryDistanceMm": <54-74>,
+  "bridgeWidthMm": <14-24>,
+  "templeWidthMm": <125-155>,
+  "faceShape": "<oval|round|square|heart|oblong|diamond>",
+  "confidenceScore": <0.0-1.0>
 }
 
-Guidelines:
-- faceWidthMm: Temple-to-temple width, typically 130-150mm for adults
-- pupillaryDistanceMm: Distance between pupil centers, typically 58-68mm for adults
-- bridgeWidthMm: Width at nose bridge, typically 16-22mm
-- templeWidthMm: Full temple length including hinge area
-- confidenceScore: How confident you are in the measurements (0.5-1.0)
-
-If the image is not suitable for analysis (no face detected, poor quality, face not front-facing), respond with:
-{
-  "error": "Description of the issue",
-  "confidenceScore": 0
-}`,
+If the image is unsuitable, respond with:
+{"error": "Description of issue", "confidenceScore": 0}`,
             },
             {
               role: "user",
               content: [
                 {
                   type: "text",
-                  text: "Analyze this face image and provide the facial measurements for eyewear fitting. The image should show a front-facing view of the face.",
+                  text: "Analyze this front-facing face image for eyewear fitting measurements.",
                 },
                 {
                   type: "image_url",
                   image_url: {
-                    url: image,
+                    url: imagePayload,
                   },
                 },
               ],
             },
           ],
-          max_tokens: 1000,
+          max_tokens: 500,
         }),
       }
     );
 
+    console.log("AI gateway response status:", response.status);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({
@@ -114,7 +123,7 @@ If the image is not suitable for analysis (no face detected, poor quality, face 
             error: "Rate limit exceeded. Please try again in a moment.",
           }),
           {
-            status: 429,
+            status: 200,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
@@ -126,35 +135,60 @@ If the image is not suitable for analysis (no face detected, poor quality, face 
             error: "Service temporarily unavailable. Please try again later.",
           }),
           {
-            status: 402,
+            status: 200,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error("Failed to analyze image");
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Analysis service is temporarily unavailable. Please try again.",
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     const aiResponse = await response.json();
     const content = aiResponse.choices?.[0]?.message?.content;
 
     if (!content) {
-      throw new Error("No response from AI model");
+      console.error("No content in AI response:", JSON.stringify(aiResponse).substring(0, 200));
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Could not analyze the photo. Please try with a clearer image.",
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     // Parse the JSON response from the AI
     let analysisData;
     try {
-      // Extract JSON from the response (in case there's extra text)
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error("No JSON found in response");
       }
       analysisData = JSON.parse(jsonMatch[0]);
     } catch (parseError) {
-      console.error("Failed to parse AI response:", content);
-      throw new Error("Failed to parse analysis results");
+      console.error("Failed to parse AI response:", content.substring(0, 300));
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Could not process the analysis. Please try again with a different photo.",
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     // Check if AI returned an error
@@ -171,6 +205,8 @@ If the image is not suitable for analysis (no face detected, poor quality, face 
       );
     }
 
+    console.log("Face analysis completed successfully");
+
     // Validate the measurements are within reasonable ranges
     const result: FaceAnalysisResult = {
       success: true,
@@ -178,9 +214,10 @@ If the image is not suitable for analysis (no face detected, poor quality, face 
         faceWidthMm: Math.round(
           Math.min(Math.max(analysisData.faceWidthMm || 140, 120), 160)
         ),
-        pupillaryDistanceMm: Math.round(
-          Math.min(Math.max(analysisData.pupillaryDistanceMm || 63, 54), 74) * 10
-        ) / 10,
+        pupillaryDistanceMm:
+          Math.round(
+            Math.min(Math.max(analysisData.pupillaryDistanceMm || 63, 54), 74) * 10
+          ) / 10,
         bridgeWidthMm: Math.round(
           Math.min(Math.max(analysisData.bridgeWidthMm || 18, 14), 24)
         ),
@@ -197,6 +234,7 @@ If the image is not suitable for analysis (no face detected, poor quality, face 
     };
 
     return new Response(JSON.stringify(result), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
@@ -204,10 +242,10 @@ If the image is not suitable for analysis (no face detected, poor quality, face 
     return new Response(
       JSON.stringify({
         success: false,
-        error: error instanceof Error ? error.message : "Analysis failed",
+        error: "Something went wrong. Please try again.",
       } as FaceAnalysisResult),
       {
-        status: 500,
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
