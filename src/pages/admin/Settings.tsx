@@ -13,7 +13,7 @@ import {
   Shield,
   Palette,
 } from "@phosphor-icons/react";
-import WarehouseMappingCard from "@/components/admin/settings/WarehouseMappingCard";
+import { WarehouseMappingCard } from "@/components/admin/settings/WarehouseMappingCard";
 
 const Settings = () => {
   return (
