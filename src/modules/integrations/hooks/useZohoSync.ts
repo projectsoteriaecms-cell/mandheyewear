@@ -11,6 +11,8 @@ export interface SyncResult {
   matched_existing?: number;
   new_products?: number;
   current_page?: number;
+  stock_updated?: number;
+  stock_skipped?: number;
   error?: string;
 }
 
@@ -54,6 +56,8 @@ export function useZohoSync() {
         matched_existing: (meta?.matched_existing as number) ?? 0,
         new_products: (meta?.new_products as number) ?? 0,
         current_page: (meta?.current_page as number) ?? undefined,
+        stock_updated: (meta?.stock_updated as number) ?? 0,
+        stock_skipped: (meta?.stock_skipped as number) ?? 0,
       });
 
       if (data.status !== "pending") {
@@ -65,6 +69,8 @@ export function useZohoSync() {
           const parts = [`${data.records_processed} items synced`];
           if (matched > 0) parts.push(`${matched} linked to existing`);
           if ((data.records_failed ?? 0) > 0) parts.push(`${data.records_failed} failed`);
+          const stockUp = (meta?.stock_updated as number) ?? 0;
+          if (stockUp > 0) parts.push(`${stockUp} stock levels updated`);
           toast.success(`Sync complete: ${parts.join(", ")}`);
         } else {
           setStatus("error");
@@ -103,10 +109,14 @@ export function useZohoSync() {
             records_failed: 0,
             matched_existing: data.page_1_matched ?? 0,
             new_products: data.page_1_new ?? 0,
+            stock_updated: data.page_1_stock_updated ?? 0,
+            stock_skipped: data.page_1_stock_skipped ?? 0,
           });
           invalidateProductQueries();
           const parts = [`${data.page_1_processed} items synced`];
           if ((data.page_1_matched ?? 0) > 0) parts.push(`${data.page_1_matched} linked to existing`);
+          const stockUp = data.page_1_stock_updated ?? 0;
+          if (stockUp > 0) parts.push(`${stockUp} stock levels updated`);
           toast.success(`Sync complete: ${parts.join(", ")}`);
         }
       } else {

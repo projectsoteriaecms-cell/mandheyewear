@@ -13,6 +13,7 @@ import {
   Shield,
   Palette,
 } from "@phosphor-icons/react";
+import WarehouseMappingCard from "@/components/admin/settings/WarehouseMappingCard";
 
 const Settings = () => {
   return (
@@ -61,6 +62,9 @@ const Settings = () => {
               <Button>Save Changes</Button>
             </CardContent>
           </Card>
+
+          {/* Zoho Warehouse Mapping */}
+          <WarehouseMappingCard />
 
           {/* Notification Settings */}
           <Card>

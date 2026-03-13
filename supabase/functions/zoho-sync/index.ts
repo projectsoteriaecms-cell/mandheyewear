@@ -52,24 +52,227 @@ function mapZohoItemToProduct(item: Record<string, unknown>) {
   };
 }
 
+// ── Stock sync types ──
+interface WarehouseMapping {
+  zoho_location_id: string;
+  branch_id: string;
+}
+
+interface StockSyncResult {
+  stockUpdated: number;
+  stockSkipped: number;
+  locationsDiscovered: string[];
+}
+
+/** Load warehouse mappings from DB */
+async function loadWarehouseMappings(
+  supabase: ReturnType<typeof createClient>,
+): Promise<Map<string, string>> {
+  const { data } = await supabase
+    .from("zoho_warehouse_mapping")
+    .select("zoho_location_id, branch_id");
+  const map = new Map<string, string>();
+  if (data) {
+    for (const row of data as WarehouseMapping[]) {
+      map.set(row.zoho_location_id, row.branch_id);
+    }
+  }
+  return map;
+}
+
+/** Get head office branch as default fallback */
+async function getDefaultBranch(
+  supabase: ReturnType<typeof createClient>,
+): Promise<string | null> {
+  const { data } = await supabase
+    .from("branches")
+    .select("id")
+    .eq("is_head_office", true)
+    .eq("is_active", true)
+    .limit(1)
+    .maybeSingle();
+  return data?.id || null;
+}
+
+/** Auto-discover Zoho locations and insert unmapped ones */
+async function discoverLocations(
+  supabase: ReturnType<typeof createClient>,
+  items: Record<string, unknown>[],
+): Promise<void> {
+  const locationSet = new Map<string, string>();
+  for (const item of items) {
+    const warehouses = item.warehouses as Array<Record<string, unknown>> | undefined;
+    if (warehouses && Array.isArray(warehouses)) {
+      for (const wh of warehouses) {
+        const locId = String(wh.warehouse_id || "");
+        const locName = String(wh.warehouse_name || "");
+        if (locId && !locationSet.has(locId)) {
+          locationSet.set(locId, locName);
+        }
+      }
+    }
+  }
+
+  if (locationSet.size === 0) return;
+
+  // Check which ones already exist
+  const { data: existing } = await supabase
+    .from("zoho_warehouse_mapping")
+    .select("zoho_location_id")
+    .in("zoho_location_id", Array.from(locationSet.keys()));
+
+  const existingIds = new Set((existing || []).map((e: { zoho_location_id: string }) => e.zoho_location_id));
+
+  // We won't auto-insert unmapped ones since they need a branch_id (NOT NULL).
+  // Instead we log them for the admin to map manually.
+  for (const [locId, locName] of locationSet) {
+    if (!existingIds.has(locId)) {
+      console.log(`Discovered unmapped Zoho location: ${locId} (${locName})`);
+    }
+  }
+}
+
+/** Sync stock levels for a batch of Zoho items */
+async function syncStockForItems(
+  supabase: ReturnType<typeof createClient>,
+  rawItems: Record<string, unknown>[],
+  warehouseMappings: Map<string, string>,
+  defaultBranchId: string | null,
+  performedBy: string,
+): Promise<StockSyncResult> {
+  let stockUpdated = 0;
+  let stockSkipped = 0;
+  const locationsDiscovered: string[] = [];
+
+  for (const item of rawItems) {
+    const zohoItemId = String(item.item_id);
+
+    // Find the local product_id for this Zoho item
+    const { data: product } = await supabase
+      .from("products")
+      .select("id")
+      .eq("zoho_item_id", zohoItemId)
+      .maybeSingle();
+
+    if (!product) continue;
+
+    const productId = product.id;
+    const warehouses = item.warehouses as Array<Record<string, unknown>> | undefined;
+
+    if (warehouses && Array.isArray(warehouses) && warehouses.length > 0) {
+      // Per-warehouse stock sync
+      for (const wh of warehouses) {
+        const locId = String(wh.warehouse_id || "");
+        const locName = String(wh.warehouse_name || "");
+        const stockOnHand = Number(wh.warehouse_stock_on_hand ?? 0);
+
+        if (!locId) continue;
+
+        const branchId = warehouseMappings.get(locId);
+        if (!branchId) {
+          locationsDiscovered.push(`${locId}:${locName}`);
+          stockSkipped++;
+          continue;
+        }
+
+        await upsertInventory(supabase, productId, branchId, stockOnHand, performedBy, `Zoho warehouse: ${locName}`);
+        stockUpdated++;
+      }
+    } else {
+      // Use top-level stock_on_hand with default branch
+      const stockOnHand = Number(item.stock_on_hand ?? 0);
+      if (stockOnHand > 0 && defaultBranchId) {
+        await upsertInventory(supabase, productId, defaultBranchId, stockOnHand, performedBy, "Zoho total stock (no warehouse data)");
+        stockUpdated++;
+      } else if (stockOnHand > 0) {
+        stockSkipped++;
+      }
+    }
+  }
+
+  return { stockUpdated, stockSkipped, locationsDiscovered };
+}
+
+/** Upsert a single inventory record and log the transaction */
+async function upsertInventory(
+  supabase: ReturnType<typeof createClient>,
+  productId: string,
+  branchId: string,
+  newQuantity: number,
+  performedBy: string,
+  notes: string,
+) {
+  // Get current inventory
+  const { data: existing } = await supabase
+    .from("inventory")
+    .select("id, quantity_on_hand")
+    .eq("product_id", productId)
+    .eq("branch_id", branchId)
+    .maybeSingle();
+
+  const quantityBefore = existing?.quantity_on_hand ?? 0;
+
+  // Skip if no change
+  if (quantityBefore === newQuantity) return;
+
+  if (existing) {
+    await supabase
+      .from("inventory")
+      .update({
+        quantity_on_hand: newQuantity,
+        last_received_date: new Date().toISOString().split("T")[0],
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", existing.id);
+  } else {
+    await supabase
+      .from("inventory")
+      .insert({
+        product_id: productId,
+        branch_id: branchId,
+        quantity_on_hand: newQuantity,
+        quantity_reserved: 0,
+        last_received_date: new Date().toISOString().split("T")[0],
+      });
+  }
+
+  // Log transaction
+  await supabase.from("inventory_transactions").insert({
+    product_id: productId,
+    branch_id: branchId,
+    transaction_type: "zoho_sync",
+    quantity_change: newQuantity - quantityBefore,
+    quantity_before: quantityBefore,
+    quantity_after: newQuantity,
+    reference_type: "zoho_sync",
+    performed_by: performedBy,
+    notes,
+  });
+}
+
 interface PageResult {
   matched: number;
   newProducts: number;
   updatedExisting: number;
   failed: number;
   hasMore: boolean;
+  stockUpdated: number;
+  stockSkipped: number;
 }
 
-/** Process one page: smart merge with name matching, then upsert new items */
+/** Process one page: smart merge with name matching, then upsert new items, then sync stock */
 async function processPage(
   supabase: ReturnType<typeof createClient>,
   accessToken: string,
   orgId: string,
   page: number,
+  warehouseMappings: Map<string, string>,
+  defaultBranchId: string | null,
+  performedBy: string,
 ): Promise<PageResult> {
   const { items, hasMore } = await fetchZohoItems(accessToken, orgId, page);
 
-  if (items.length === 0) return { matched: 0, newProducts: 0, updatedExisting: 0, failed: 0, hasMore: false };
+  if (items.length === 0) return { matched: 0, newProducts: 0, updatedExisting: 0, failed: 0, hasMore: false, stockUpdated: 0, stockSkipped: 0 };
 
   const mapped = items.map(mapZohoItemToProduct);
 
@@ -118,7 +321,6 @@ async function processPage(
         failed++;
       } else {
         matched++;
-        // Remove from lookup so we don't re-match
         ecmsLookup.delete(normalizedName);
       }
     } else {
@@ -127,7 +329,6 @@ async function processPage(
   }
 
   // Step 4: Upsert remaining items (new or already-linked Zoho products)
-  // Only update price/cost/status — never overwrite images or descriptions
   if (newItems.length > 0) {
     const { error: upsertError, data: upsertData } = await supabase
       .from("products")
@@ -138,39 +339,44 @@ async function processPage(
       console.error(`Batch upsert failed on page ${page}:`, upsertError);
       failed += newItems.length;
     } else {
-      // Count how many were updates vs inserts
-      // We can approximate: items that already had zoho_item_id are updates
       const upsertedCount = upsertData?.length || newItems.length;
-      // Check how many of these zoho_item_ids existed before
       const zohoIds = newItems.map((i) => i.zoho_item_id);
       const { count: existingCount } = await supabase
         .from("products")
         .select("id", { count: "exact", head: true })
         .in("zoho_item_id", zohoIds);
 
-      // After upsert, all exist — so existingCount = total. 
-      // We track: items that went through upsert without matching ECMS
-      updatedExisting = 0; // We can't perfectly distinguish, but the key metric is matched
+      updatedExisting = 0;
       const insertedNew = upsertedCount;
-      // For simplicity: newProducts = items that went to upsert path
+      
+      // Step 5: Sync stock for all items on this page
+      await discoverLocations(supabase, items);
+      const stockResult = await syncStockForItems(supabase, items, warehouseMappings, defaultBranchId, performedBy);
+
       return {
         matched,
         newProducts: insertedNew,
         updatedExisting,
         failed,
         hasMore,
+        stockUpdated: stockResult.stockUpdated,
+        stockSkipped: stockResult.stockSkipped,
       };
     }
   }
 
-  return { matched, newProducts: 0, updatedExisting, failed, hasMore };
+  // Sync stock even if no new product upserts happened (all were matched)
+  await discoverLocations(supabase, items);
+  const stockResult = await syncStockForItems(supabase, items, warehouseMappings, defaultBranchId, performedBy);
+
+  return { matched, newProducts: 0, updatedExisting, failed, hasMore, stockUpdated: stockResult.stockUpdated, stockSkipped: stockResult.stockSkipped };
 }
 
 /** Update sync log metadata with running totals */
 async function updateSyncProgress(
   supabase: ReturnType<typeof createClient>,
   syncId: string,
-  totals: { processed: number; failed: number; matched: number; newProducts: number },
+  totals: { processed: number; failed: number; matched: number; newProducts: number; stockUpdated: number; stockSkipped: number },
   currentPage: number,
   finalize: boolean,
 ) {
@@ -183,6 +389,8 @@ async function updateSyncProgress(
       matched_existing: totals.matched,
       new_products: totals.newProducts,
       current_page: currentPage,
+      stock_updated: totals.stockUpdated,
+      stock_skipped: totals.stockSkipped,
     },
   };
   if (finalize) {
@@ -197,7 +405,7 @@ async function chainNextPage(
   syncId: string,
   page: number,
   accessToken: string,
-  totals: { processed: number; failed: number; matched: number; newProducts: number },
+  totals: { processed: number; failed: number; matched: number; newProducts: number; stockUpdated: number; stockSkipped: number },
 ) {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -217,6 +425,8 @@ async function chainNextPage(
       total_failed: totals.failed,
       total_matched: totals.matched,
       total_new: totals.newProducts,
+      total_stock_updated: totals.stockUpdated,
+      total_stock_skipped: totals.stockSkipped,
     }),
   }).catch((err) => console.error("Chain invoke failed:", err));
 }
@@ -240,15 +450,30 @@ serve(async (req) => {
       page, sync_id, access_token,
       total_processed = 0, total_failed = 0,
       total_matched = 0, total_new = 0,
+      total_stock_updated = 0, total_stock_skipped = 0,
     } = body;
 
+    // Load warehouse mappings and default branch for stock sync
+    const warehouseMappings = await loadWarehouseMappings(supabase);
+    const defaultBranchId = await getDefaultBranch(supabase);
+
+    // Get performed_by from sync log
+    const { data: syncLogData } = await supabase
+      .from("zoho_sync_log")
+      .select("performed_by")
+      .eq("id", sync_id)
+      .maybeSingle();
+    const performedBy = syncLogData?.performed_by || "00000000-0000-0000-0000-000000000000";
+
     try {
-      const result = await processPage(supabase, access_token, orgId, page);
+      const result = await processPage(supabase, access_token, orgId, page, warehouseMappings, defaultBranchId, performedBy);
       const totals = {
         processed: total_processed + result.matched + result.newProducts,
         failed: total_failed + result.failed,
         matched: total_matched + result.matched,
         newProducts: total_new + result.newProducts,
+        stockUpdated: total_stock_updated + result.stockUpdated,
+        stockSkipped: total_stock_skipped + result.stockSkipped,
       };
 
       if (result.hasMore) {
@@ -264,7 +489,7 @@ serve(async (req) => {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       console.error(`Page ${page} error:`, message);
-      const totals = { processed: total_processed, failed: total_failed, matched: total_matched, newProducts: total_new };
+      const totals = { processed: total_processed, failed: total_failed, matched: total_matched, newProducts: total_new, stockUpdated: total_stock_updated, stockSkipped: total_stock_skipped };
       await updateSyncProgress(supabase, sync_id, totals, page, true);
       await supabase.from("zoho_sync_log").update({ error_details: { message, page } }).eq("id", sync_id);
       return new Response(JSON.stringify({ error: message }), {
@@ -310,6 +535,58 @@ serve(async (req) => {
     });
   }
 
+  // ── List warehouses: fetch from Zoho Books settings ──
+  if (action === "list_warehouses") {
+    try {
+      const accessToken = await getAccessToken();
+      const res = await fetch(
+        `${ZOHO_BOOKS_API}/settings/warehouses?organization_id=${orgId}`,
+        { headers: { Authorization: `Zoho-oauthtoken ${accessToken}` } },
+      );
+      const data = await res.json();
+
+      if (data.code !== 0) {
+        // Fallback: try to extract from items if warehouse API not available
+        const itemsRes = await fetchZohoItems(accessToken, orgId, 1);
+        const locationSet = new Map<string, string>();
+        for (const item of itemsRes.items) {
+          const warehouses = item.warehouses as Array<Record<string, unknown>> | undefined;
+          if (warehouses && Array.isArray(warehouses)) {
+            for (const wh of warehouses) {
+              const locId = String(wh.warehouse_id || "");
+              const locName = String(wh.warehouse_name || "");
+              if (locId) locationSet.set(locId, locName);
+            }
+          }
+        }
+        const locations = Array.from(locationSet.entries()).map(([id, name]) => ({
+          location_id: id,
+          location_name: name,
+        }));
+        return new Response(JSON.stringify({ success: true, warehouses: locations, source: "items" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const warehouses = (data.warehouses || []).map((wh: Record<string, unknown>) => ({
+        location_id: String(wh.warehouse_id),
+        location_name: String(wh.warehouse_name),
+        is_primary: wh.is_primary || false,
+        status: wh.status || "active",
+      }));
+
+      return new Response(JSON.stringify({ success: true, warehouses, source: "settings" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return new Response(JSON.stringify({ error: message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  }
+
   if (action === "pull_items") {
     const { data: syncLog } = await supabase
       .from("zoho_sync_log")
@@ -327,13 +604,17 @@ serve(async (req) => {
 
     try {
       const accessToken = await getAccessToken();
-      const result = await processPage(supabase, accessToken, orgId, 1);
+      const warehouseMappings = await loadWarehouseMappings(supabase);
+      const defaultBranchId = await getDefaultBranch(supabase);
+      const result = await processPage(supabase, accessToken, orgId, 1, warehouseMappings, defaultBranchId, userId);
 
       const totals = {
         processed: result.matched + result.newProducts,
         failed: result.failed,
         matched: result.matched,
         newProducts: result.newProducts,
+        stockUpdated: result.stockUpdated,
+        stockSkipped: result.stockSkipped,
       };
 
       if (result.hasMore) {
@@ -351,6 +632,8 @@ serve(async (req) => {
           page_1_processed: totals.processed,
           page_1_matched: result.matched,
           page_1_new: result.newProducts,
+          page_1_stock_updated: result.stockUpdated,
+          page_1_stock_skipped: result.stockSkipped,
           has_more: result.hasMore,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -462,7 +745,6 @@ serve(async (req) => {
       });
     }
 
-    // Get current Zoho item price
     try {
       const accessToken = await getAccessToken();
       const itemRes = await fetch(
