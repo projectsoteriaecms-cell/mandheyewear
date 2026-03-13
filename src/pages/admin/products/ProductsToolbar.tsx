@@ -14,8 +14,10 @@ interface ProductsToolbarProps {
   isEnriching: boolean;
   enrichProgress: { enriched: number; remaining: number } | null;
   syncStatus: string;
+  stockSyncStatus?: string;
   onEnrichProducts: () => void;
   onPullItems: () => void;
+  onSyncStock?: () => void;
   onOpenLinkDialog: () => void;
   onOpenBulkImageUpload: () => void;
   onOpenBulkUpload: () => void;
