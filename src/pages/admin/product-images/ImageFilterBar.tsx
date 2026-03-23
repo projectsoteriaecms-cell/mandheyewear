@@ -37,6 +37,8 @@ export const ImageFilterBar = ({
   onFilterChange,
   categoryFilter,
   onCategoryFilterChange,
+  brandTypeFilter,
+  onBrandTypeFilterChange,
   viewMode,
   onViewModeChange,
   selectMode,
