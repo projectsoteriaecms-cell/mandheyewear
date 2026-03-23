@@ -27,12 +27,15 @@ const LUXURY_BRANDS = new Set([
   "ARMANI EXCHANGE",
   "DANIEL HECHTER", "JOHN RICHMOND", "LA MARTINA", "WILLIAMS MORRIS",
   "COLUMBIA", "PIERRE CARDIN", "MIRAFLEX",
+  "JIMMY FAIRLY",
 ]);
 
 function isBrandedFrame(brand: string | null): boolean {
   if (!brand) return false;
   return LUXURY_BRANDS.has(brand.toUpperCase().trim());
 }
+
+const MIN_REFERENCE_PHOTOS = 2;
 
 // ── Prompt builders for the 6-shot gallery ──
 
@@ -80,6 +83,40 @@ function buildFramePrompts(product: any): { slug: string; prompt: string }[] {
     {
       slug: "packaging",
       prompt: `Luxurious studio shot of ${desc} eyeglasses frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather${product.color ? ` in a color complementing ${product.color}` : ""}. ${branded ? `The original ${product.brand} brand logo is still visible on the frame. The brand name "${product.brand}" is cleanly featured on the leather case, showing credibility and authenticity.` : `The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case.`} Seamless pure white studio background, soft professional commercial lighting, high resolution.`,
+    },
+  ];
+}
+
+// ── Reference-based prompts: instruct AI to re-render uploaded photo at different angles ──
+function buildReferenceFramePrompts(product: any): { slug: string; prompt: string }[] {
+  const desc = describeProduct(product);
+  const baseInstruction = `This is a reference photo of the actual "${desc}" eyeglasses frame. You MUST preserve the exact color, shape, material, proportions, and design details of this specific frame. Re-render it as a professional e-commerce product photo with:`;
+  const studioRule = "Seamless pure white studio background, soft professional commercial lighting, high resolution. No model, frame only.";
+
+  return [
+    {
+      slug: "hero",
+      prompt: `${baseInstruction} Classic three-quarter front view — the main e-commerce thumbnail. Sharp focus on the front frame and the near temple arm. ${studioRule}`,
+    },
+    {
+      slug: "front",
+      prompt: `${baseInstruction} Direct head-on front view. Perfectly symmetrical composition. Temples open, extending straight back. ${studioRule}`,
+    },
+    {
+      slug: "side",
+      prompt: `${baseInstruction} Pure 90-degree side profile view. Sharp focus along the entire length of the visible temple arm. ${studioRule}`,
+    },
+    {
+      slug: "rear",
+      prompt: `${baseInstruction} Slightly elevated rear view, looking at the back of the glasses. Show the hinges, nose pads, and inside of the temple arms. ${studioRule}`,
+    },
+    {
+      slug: "macro",
+      prompt: `${baseInstruction} Extreme close-up macro shot focusing tightly on the temple hinge area or lens corner. Use dramatic lighting to highlight texture and quality. ${studioRule}`,
+    },
+    {
+      slug: "packaging",
+      prompt: `${baseInstruction} The frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather. The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case. ${studioRule}`,
     },
   ];
 }
@@ -150,6 +187,109 @@ async function generateImageViaGemini(
   throw new Error("No image returned from Gemini API");
 }
 
+// ── Reference-based image editing via Gemini (image-to-image) ──
+async function editImageViaGemini(
+  prompt: string,
+  referenceImageUrl: string,
+  geminiApiKey: string
+): Promise<{ data: string; mimeType: string }> {
+  // Fetch the reference image and convert to base64
+  const imgResp = await fetch(referenceImageUrl);
+  if (!imgResp.ok) throw new Error(`Failed to fetch reference image: ${imgResp.status}`);
+  const imgBuffer = await imgResp.arrayBuffer();
+  const imgBytes = new Uint8Array(imgBuffer);
+  let base64 = "";
+  for (let i = 0; i < imgBytes.length; i++) {
+    base64 += String.fromCharCode(imgBytes[i]);
+  }
+  base64 = btoa(base64);
+  const contentType = imgResp.headers.get("content-type") || "image/jpeg";
+
+  const resp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiApiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: prompt },
+            { inlineData: { mimeType: contentType, data: base64 } },
+          ],
+        }],
+        generationConfig: {
+          responseModalities: ["IMAGE", "TEXT"],
+        },
+      }),
+    }
+  );
+
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => "");
+    if (resp.status === 429 || resp.status >= 500) {
+      throw { retryable: true, fallback: true, message: `Gemini API ${resp.status}: ${errText}` };
+    }
+    throw new Error(`Gemini API error ${resp.status}: ${errText}`);
+  }
+
+  const result = await resp.json();
+  const parts = result?.candidates?.[0]?.content?.parts;
+  if (!parts) throw new Error("No parts in Gemini response");
+
+  for (const part of parts) {
+    if (part.inlineData?.data && part.inlineData?.mimeType?.startsWith("image/")) {
+      return { data: part.inlineData.data, mimeType: part.inlineData.mimeType };
+    }
+  }
+  throw new Error("No image returned from Gemini edit API");
+}
+
+async function editImageViaLovable(
+  prompt: string,
+  referenceImageUrl: string,
+  lovableApiKey: string
+): Promise<{ data: string; mimeType: string }> {
+  const resp = await fetch(
+    "https://ai.gateway.lovable.dev/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${lovableApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image",
+        messages: [{
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            { type: "image_url", image_url: { url: referenceImageUrl } },
+          ],
+        }],
+        modalities: ["image", "text"],
+      }),
+    }
+  );
+
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => "");
+    if (resp.status === 429) {
+      throw { retryable: true, message: `Lovable rate limited: ${resp.status}` };
+    }
+    throw new Error(`Lovable AI gateway error ${resp.status}: ${errText}`);
+  }
+
+  const result = await resp.json();
+  const imageUrl = result?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+  if (!imageUrl || !imageUrl.startsWith("data:image/")) {
+    throw new Error("No image returned from Lovable AI gateway (edit)");
+  }
+
+  const match = imageUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+  if (!match) throw new Error("Invalid data URL format");
+  return { mimeType: match[1], data: match[2] };
+}
+
 async function generateImageViaLovable(
   prompt: string,
   lovableApiKey: string
@@ -194,7 +334,6 @@ async function generateImage(
   geminiApiKey: string | null,
   lovableApiKey: string | null
 ): Promise<{ data: string; mimeType: string }> {
-  // Try direct Gemini first
   if (geminiApiKey) {
     try {
       const result = await generateImageViaGemini(prompt, geminiApiKey);
@@ -202,19 +341,35 @@ async function generateImage(
       return result;
     } catch (err: any) {
       console.warn("  ⚠ Direct Gemini failed:", err?.message || err);
-      if (!err?.fallback && !err?.retryable) {
-        // Hard error from Gemini, still try Lovable
-      }
     }
   }
-
-  // Fallback to Lovable AI gateway
   if (lovableApiKey) {
     console.log("  → Falling back to Lovable AI gateway");
     return generateImageViaLovable(prompt, lovableApiKey);
   }
-
   throw new Error("No API keys available for image generation");
+}
+
+async function editImage(
+  prompt: string,
+  referenceImageUrl: string,
+  geminiApiKey: string | null,
+  lovableApiKey: string | null
+): Promise<{ data: string; mimeType: string }> {
+  if (geminiApiKey) {
+    try {
+      const result = await editImageViaGemini(prompt, referenceImageUrl, geminiApiKey);
+      console.log("  ✓ Edited via direct Gemini API");
+      return result;
+    } catch (err: any) {
+      console.warn("  ⚠ Direct Gemini edit failed:", err?.message || err);
+    }
+  }
+  if (lovableApiKey) {
+    console.log("  → Falling back to Lovable AI gateway (edit)");
+    return editImageViaLovable(prompt, referenceImageUrl, lovableApiKey);
+  }
+  throw new Error("No API keys available for image editing");
 }
 
 async function uploadImage(
@@ -242,6 +397,70 @@ async function uploadImage(
   return `${supabaseUrl}/storage/v1/object/public/product-images/${filePath}`;
 }
 
+// ── Helper: generate a full gallery with retry logic ──
+async function generateFullGallery(
+  product: any,
+  referenceImageUrls: string[] | null,
+  geminiApiKey: string | null,
+  lovableApiKey: string | null,
+  supabase: any,
+  supabaseUrl: string
+): Promise<{ heroUrl: string; additionalUrls: string[]; shots: number }> {
+  const isFrame = product.item_type === "frames";
+
+  if (!isFrame) {
+    // Non-frame: single shot
+    const prompt = buildNonFramePrompt(product);
+    console.log(`  📸 ${product.sku} — generating single shot`);
+    const imageData = await generateImage(prompt, geminiApiKey, lovableApiKey);
+    const url = await uploadImage(supabase, supabaseUrl, product.id, "primary", imageData);
+    return { heroUrl: url, additionalUrls: [], shots: 1 };
+  }
+
+  // Frame: 6-shot gallery
+  const useReference = referenceImageUrls && referenceImageUrls.length >= MIN_REFERENCE_PHOTOS;
+  const shots = useReference ? buildReferenceFramePrompts(product) : buildFramePrompts(product);
+  const refUrl = useReference ? referenceImageUrls![0] : null;
+
+  const urls: string[] = [];
+  let heroUrl = "";
+
+  for (let i = 0; i < shots.length; i++) {
+    const shot = shots[i];
+    console.log(`  📸 ${product.sku} — ${useReference ? "ref-editing" : "generating"} ${shot.slug} (${i + 1}/6)`);
+
+    let imageData: { data: string; mimeType: string } | null = null;
+    let attempts = 0;
+
+    while (attempts < 3) {
+      try {
+        if (useReference && refUrl) {
+          imageData = await editImage(shot.prompt, refUrl, geminiApiKey, lovableApiKey);
+        } else {
+          imageData = await generateImage(shot.prompt, geminiApiKey, lovableApiKey);
+        }
+        break;
+      } catch (err: any) {
+        attempts++;
+        if (err?.retryable && attempts < 3) {
+          console.warn(`  ⏳ Rate limited on ${shot.slug}, waiting ${5 * attempts}s...`);
+          await new Promise((r) => setTimeout(r, 5000 * attempts));
+        } else {
+          throw err instanceof Error ? err : new Error(err?.message || String(err));
+        }
+      }
+    }
+
+    if (!imageData) throw new Error(`Failed to generate ${shot.slug} after retries`);
+
+    const url = await uploadImage(supabase, supabaseUrl, product.id, shot.slug, imageData);
+    if (shot.slug === "hero") { heroUrl = url; } else { urls.push(url); }
+    if (i < shots.length - 1) await new Promise((r) => setTimeout(r, 2000));
+  }
+
+  return { heroUrl, additionalUrls: urls, shots: 6 };
+}
+
 // ── Main handler ──
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -260,9 +479,9 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { batchSize = 1, itemTypes, maxProducts, productId, shotSlug } = await req.json().catch(() => ({}));
+    const { batchSize = 1, itemTypes, maxProducts, productId, shotSlug, referenceImageUrls } = await req.json().catch(() => ({}));
 
-    // ── Single-shot regeneration mode (regenerate one specific image) ──
+    // ── Single-shot regeneration mode ──
     if (productId && shotSlug) {
       console.log(`🔄 Regenerating single shot "${shotSlug}" for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase
@@ -282,15 +501,21 @@ serve(async (req) => {
       }
 
       try {
-        const shots = buildFramePrompts(product);
+        // Determine if using reference-based editing
+        const useReference = Array.isArray(referenceImageUrls) && referenceImageUrls.length >= MIN_REFERENCE_PHOTOS;
+        const shots = useReference ? buildReferenceFramePrompts(product) : buildFramePrompts(product);
         const shot = shots[shotIndex];
-        console.log(`  📸 ${product.sku} — regenerating ${shot.slug}`);
+        console.log(`  📸 ${product.sku} — ${useReference ? "ref-editing" : "regenerating"} ${shot.slug}`);
 
         let imageData: { data: string; mimeType: string } | null = null;
         let attempts = 0;
         while (attempts < 3) {
           try {
-            imageData = await generateImage(shot.prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
+            if (useReference) {
+              imageData = await editImage(shot.prompt, referenceImageUrls![0], GEMINI_API_KEY, LOVABLE_API_KEY);
+            } else {
+              imageData = await generateImage(shot.prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
+            }
             break;
           } catch (err: any) {
             attempts++;
@@ -306,18 +531,14 @@ serve(async (req) => {
 
         const url = await uploadImage(supabase, SUPABASE_URL, product.id, shot.slug, imageData);
 
-        // Update the correct position
         if (shotIndex === 0) {
-          // Hero → update image_url
           const { error: updateErr } = await supabase
             .from("products")
             .update({ image_url: url })
             .eq("id", product.id);
           if (updateErr) throw new Error("Product update failed: " + updateErr.message);
         } else {
-          // Additional images → update the specific index in additional_images array
           const currentAdditional: string[] = product.additional_images || [];
-          // Ensure array is long enough
           while (currentAdditional.length < shotIndex) {
             currentAdditional.push("");
           }
@@ -343,7 +564,7 @@ serve(async (req) => {
       console.log(`🔄 Regenerating images for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase
         .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku")
+        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images")
         .eq("id", productId)
         .single();
 
@@ -351,64 +572,42 @@ serve(async (req) => {
         return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
       }
 
+      // PDCA gate: house brands need reference photos for frames
+      const isFrame = product.item_type === "frames";
+      const isKnown = isBrandedFrame(product.brand);
+      const refUrls = Array.isArray(referenceImageUrls) ? referenceImageUrls : null;
+      const existingImages = (product.image_url ? 1 : 0) + (product.additional_images?.length ?? 0);
+
+      if (isFrame && !isKnown && (!refUrls || refUrls.length < MIN_REFERENCE_PHOTOS) && existingImages < MIN_REFERENCE_PHOTOS) {
+        return json({
+          error: `House brand "${product.brand || 'unknown'}" requires at least ${MIN_REFERENCE_PHOTOS} reference photos uploaded before AI generation. Upload real photos first.`,
+          code: "HOUSE_BRAND_NEEDS_REFERENCES",
+          existingImages,
+          required: MIN_REFERENCE_PHOTOS,
+        }, 400);
+      }
+
+      // If house brand has existing images as references, use them
+      const effectiveRefUrls = refUrls || (!isKnown && existingImages >= MIN_REFERENCE_PHOTOS
+        ? [product.image_url, ...(product.additional_images || [])].filter(Boolean).slice(0, 2) as string[]
+        : null);
+
       try {
-        const isFrame = product.item_type === "frames";
+        const { heroUrl, additionalUrls, shots } = await generateFullGallery(
+          product, effectiveRefUrls, GEMINI_API_KEY, LOVABLE_API_KEY, supabase, SUPABASE_URL
+        );
 
-        if (isFrame) {
-          const shots = buildFramePrompts(product);
-          const urls: string[] = [];
-          let heroUrl = "";
+        const { error: updateErr } = await supabase
+          .from("products")
+          .update({
+            image_url: heroUrl,
+            additional_images: additionalUrls.length > 0 ? additionalUrls : null,
+          })
+          .eq("id", product.id);
+        if (updateErr) throw new Error("Product update failed: " + updateErr.message);
 
-          for (let i = 0; i < shots.length; i++) {
-            const shot = shots[i];
-            console.log(`  📸 ${product.sku} — regenerating ${shot.slug} (${i + 1}/6)`);
-
-            let imageData: { data: string; mimeType: string } | null = null;
-            let attempts = 0;
-            while (attempts < 3) {
-              try {
-                imageData = await generateImage(shot.prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
-                break;
-              } catch (err: any) {
-                attempts++;
-                if (err?.retryable && attempts < 3) {
-                  console.warn(`  ⏳ Rate limited on ${shot.slug}, waiting ${5 * attempts}s...`);
-                  await new Promise((r) => setTimeout(r, 5000 * attempts));
-                } else {
-                  throw err instanceof Error ? err : new Error(err?.message || String(err));
-                }
-              }
-            }
-            if (!imageData) throw new Error(`Failed to generate ${shot.slug} after retries`);
-
-            const url = await uploadImage(supabase, SUPABASE_URL, product.id, shot.slug, imageData);
-            if (shot.slug === "hero") { heroUrl = url; } else { urls.push(url); }
-            if (i < shots.length - 1) await new Promise((r) => setTimeout(r, 2000));
-          }
-
-          const { error: updateErr } = await supabase
-            .from("products")
-            .update({ image_url: heroUrl, additional_images: urls })
-            .eq("id", product.id);
-          if (updateErr) throw new Error("Product update failed: " + updateErr.message);
-
-          console.log(`✓ Regenerated 6-shot gallery for ${product.sku}`);
-          return json({ processed: 1, succeeded: 1, failed: 0, remaining: 0, results: [{ productId: product.id, sku: product.sku, success: true, shots: 6 }] });
-        } else {
-          const prompt = buildNonFramePrompt(product);
-          console.log(`  📸 ${product.sku} — regenerating single shot`);
-          const imageData = await generateImage(prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
-          const url = await uploadImage(supabase, SUPABASE_URL, product.id, "primary", imageData);
-
-          const { error: updateErr } = await supabase
-            .from("products")
-            .update({ image_url: url })
-            .eq("id", product.id);
-          if (updateErr) throw new Error("Product update failed: " + updateErr.message);
-
-          console.log(`✓ Regenerated image for ${product.sku}`);
-          return json({ processed: 1, succeeded: 1, failed: 0, remaining: 0, results: [{ productId: product.id, sku: product.sku, success: true, shots: 1 }] });
-        }
+        console.log(`✓ Generated ${shots}-shot gallery for ${product.sku}${effectiveRefUrls ? " (reference-based)" : ""}`);
+        return json({ processed: 1, succeeded: 1, failed: 0, remaining: 0, results: [{ productId: product.id, sku: product.sku, success: true, shots }] });
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : "Unknown error";
         console.error(`✗ Regeneration failed for ${product.sku}:`, errMsg);
@@ -416,12 +615,9 @@ serve(async (req) => {
       }
     }
 
-    // ── Batch mode (existing logic) ──
-
-    // Build filter for item types
+    // ── Batch mode ──
     const itemTypeFilter = Array.isArray(itemTypes) && itemTypes.length > 0 ? itemTypes : null;
 
-    // Count remaining (with optional item type filter)
     let remainingQuery = supabase
       .from("products")
       .select("id", { count: "exact", head: true })
@@ -430,14 +626,13 @@ serve(async (req) => {
     if (itemTypeFilter) remainingQuery = remainingQuery.in("item_type", itemTypeFilter);
     const { count: remaining } = await remainingQuery;
 
-    // Get batch (with optional item type filter and max limit)
     const limit = typeof maxProducts === "number" && maxProducts > 0
       ? Math.min(maxProducts, batchSize)
       : batchSize;
 
     let productQuery = supabase
       .from("products")
-      .select("id, name, brand, color, material, item_type, style, sku")
+      .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images")
       .eq("is_active", true)
       .or("image_url.is.null,image_url.eq.")
       .order("item_type", { ascending: true })
@@ -453,95 +648,56 @@ serve(async (req) => {
       return json({ processed: 0, succeeded: 0, failed: 0, remaining: 0, results: [] });
     }
 
-    // Sort by priority
     products.sort((a: any, b: any) => {
       const pa = ITEM_TYPE_PRIORITY[a.item_type || "other"] || 99;
       const pb = ITEM_TYPE_PRIORITY[b.item_type || "other"] || 99;
       return pa - pb;
     });
 
-    const results: Array<{ productId: string; sku: string; name: string; brand: string | null; success: boolean; error?: string; shots?: number }> = [];
+    const results: Array<{ productId: string; sku: string; name: string; brand: string | null; success: boolean; error?: string; shots?: number; skipped?: boolean }> = [];
     let succeeded = 0;
     let failed = 0;
+    let skipped = 0;
 
     for (const product of products) {
       try {
         const isFrame = product.item_type === "frames";
+        const isKnown = isBrandedFrame(product.brand);
+        const existingImages = (product.image_url ? 1 : 0) + (product.additional_images?.length ?? 0);
 
-        if (isFrame) {
-          // ── 6-shot gallery ──
-          const shots = buildFramePrompts(product);
-          const urls: string[] = [];
-          let heroUrl = "";
-
-          for (let i = 0; i < shots.length; i++) {
-            const shot = shots[i];
-            console.log(`  📸 ${product.sku} — generating ${shot.slug} (${i + 1}/6)`);
-
-            let imageData: { data: string; mimeType: string } | null = null;
-            let attempts = 0;
-
-            while (attempts < 3) {
-              try {
-                imageData = await generateImage(shot.prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
-                break;
-              } catch (err: any) {
-                attempts++;
-                if (err?.retryable && attempts < 3) {
-                  console.warn(`  ⏳ Rate limited on ${shot.slug}, waiting ${5 * attempts}s...`);
-                  await new Promise((r) => setTimeout(r, 5000 * attempts));
-                } else {
-                  throw err instanceof Error ? err : new Error(err?.message || String(err));
-                }
-              }
-            }
-
-            if (!imageData) throw new Error(`Failed to generate ${shot.slug} after retries`);
-
-            const url = await uploadImage(supabase, SUPABASE_URL, product.id, shot.slug, imageData);
-
-            if (shot.slug === "hero") {
-              heroUrl = url;
-            } else {
-              urls.push(url);
-            }
-
-            // 2-second delay between shots to avoid rate limits
-            if (i < shots.length - 1) {
-              await new Promise((r) => setTimeout(r, 2000));
-            }
-          }
-
-          // Update product with hero + additional images
-          const { error: updateErr } = await supabase
-            .from("products")
-            .update({ image_url: heroUrl, additional_images: urls })
-            .eq("id", product.id);
-
-          if (updateErr) throw new Error("Product update failed: " + updateErr.message);
-
-          succeeded++;
-          results.push({ productId: product.id, sku: product.sku, name: product.name, brand: product.brand, success: true, shots: 6 });
-          console.log(`✓ Generated 6-shot gallery for ${product.sku}`);
-        } else {
-          // ── Single shot for non-frames ──
-          const prompt = buildNonFramePrompt(product);
-          console.log(`  📸 ${product.sku} — generating single shot`);
-
-          const imageData = await generateImage(prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
-          const url = await uploadImage(supabase, SUPABASE_URL, product.id, "primary", imageData);
-
-          const { error: updateErr } = await supabase
-            .from("products")
-            .update({ image_url: url })
-            .eq("id", product.id);
-
-          if (updateErr) throw new Error("Product update failed: " + updateErr.message);
-
-          succeeded++;
-          results.push({ productId: product.id, sku: product.sku, name: product.name, brand: product.brand, success: true, shots: 1 });
-          console.log(`✓ Generated image for ${product.sku}`);
+        // PDCA gate for batch: skip house brand frames without enough references
+        if (isFrame && !isKnown && existingImages < MIN_REFERENCE_PHOTOS) {
+          skipped++;
+          results.push({
+            productId: product.id, sku: product.sku, name: product.name, brand: product.brand,
+            success: false, skipped: true,
+            error: `House brand needs ${MIN_REFERENCE_PHOTOS} reference photos (has ${existingImages})`,
+          });
+          console.log(`  ⏭ Skipped ${product.sku} — house brand needs reference photos`);
+          continue;
         }
+
+        // Use existing images as references for house brands
+        const effectiveRefUrls = !isKnown && existingImages >= MIN_REFERENCE_PHOTOS
+          ? [product.image_url, ...(product.additional_images || [])].filter(Boolean).slice(0, 2) as string[]
+          : null;
+
+        const { heroUrl, additionalUrls, shots } = await generateFullGallery(
+          product, effectiveRefUrls, GEMINI_API_KEY, LOVABLE_API_KEY, supabase, SUPABASE_URL
+        );
+
+        const { error: updateErr } = await supabase
+          .from("products")
+          .update({
+            image_url: heroUrl,
+            additional_images: additionalUrls.length > 0 ? additionalUrls : null,
+          })
+          .eq("id", product.id);
+        if (updateErr) throw new Error("Product update failed: " + updateErr.message);
+
+        succeeded++;
+        results.push({ productId: product.id, sku: product.sku, name: product.name, brand: product.brand, success: true, shots });
+        console.log(`✓ Generated ${shots}-shot gallery for ${product.sku}`);
       } catch (err) {
         failed++;
         const errMsg = err instanceof Error ? err.message : "Unknown error";
@@ -554,6 +710,7 @@ serve(async (req) => {
       processed: products.length,
       succeeded,
       failed,
+      skipped,
       remaining: Math.max(0, (remaining || 0) - succeeded),
       results,
     });
