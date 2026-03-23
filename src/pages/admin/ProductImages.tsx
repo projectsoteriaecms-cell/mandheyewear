@@ -97,7 +97,7 @@ const ProductImages = () => {
       .sort((a, b) => b.count - a.count);
   }, [serverCategoryStats, products]);
 
-  const isFiltered = searchTerm || categoryFilter !== "all" || filter !== "all";
+  const isFiltered = searchTerm || categoryFilter !== "all" || filter !== "all" || brandTypeFilter !== "all";
 
   const filteredProducts = useMemo(() => {
     let result = products;
