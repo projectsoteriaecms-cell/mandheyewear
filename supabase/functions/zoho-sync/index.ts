@@ -933,40 +933,6 @@ serve(async (req) => {
     }
   }
 
-  // ── Debug stock: fetch a few items from Zoho and return raw stock data ──
-  if (action === "debug_stock") {
-    try {
-      const accessToken = await getAccessToken();
-      const res = await fetch(
-        `${ZOHO_BOOKS_API}/items?organization_id=${orgId}&page=1&per_page=5`,
-        { headers: { Authorization: `Zoho-oauthtoken ${accessToken}` } },
-      );
-      const data = await res.json();
-      const sample = (data.items || []).slice(0, 5).map((item: Record<string, unknown>) => ({
-        name: item.name,
-        item_id: item.item_id,
-        sku: item.sku,
-        stock_on_hand: item.stock_on_hand,
-        available_stock: item.available_stock,
-        actual_available_stock: item.actual_available_stock,
-        item_type: item.item_type,
-        is_combo_product: item.is_combo_product,
-        warehouses: item.warehouses,
-        has_warehouses: !!(item.warehouses && (item.warehouses as unknown[]).length > 0),
-      }));
-      return new Response(JSON.stringify({ success: true, sample_items: sample, page_context: data.page_context }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      return new Response(JSON.stringify({ error: message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-  }
-
-  // ── Manual link: link an ECMS product to a Zoho item ──
   if (action === "link_product") {
     const { product_id, zoho_item_id: linkZohoId } = body;
     if (!product_id || !linkZohoId) {
