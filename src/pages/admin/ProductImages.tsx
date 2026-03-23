@@ -110,6 +110,13 @@ const ProductImages = () => {
     if (categoryFilter !== "all") {
       result = result.filter((p) => (p.item_type || "other") === categoryFilter);
     }
+    if (brandTypeFilter === "known") {
+      result = result.filter((p) => isKnownBrand(p.brand));
+    } else if (brandTypeFilter === "house") {
+      result = result.filter((p) => p.brand && !isKnownBrand(p.brand));
+    } else if (brandTypeFilter === "no_brand") {
+      result = result.filter((p) => !p.brand);
+    }
     switch (filter) {
       case "with_images": result = result.filter((p) => p.image_url); break;
       case "missing_primary": result = result.filter((p) => !p.image_url); break;
