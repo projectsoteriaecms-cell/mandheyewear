@@ -1,7 +1,7 @@
 /**
  * Shared brand classification for PDCA image quality gate.
- * Known/luxury brands can use text-to-image AI generation.
- * House brands (M&H, etc.) require reference photos first.
+ * Known brands can use text-to-image AI generation (with at least 1 reference).
+ * House brands (M&H, etc.) require at least 2 reference photos first.
  */
 
 export const LUXURY_BRANDS = new Set([
@@ -29,6 +29,9 @@ export function isKnownBrand(brand: string | null | undefined): boolean {
 /** Minimum reference photos required for house brand AI generation */
 export const MIN_REFERENCE_PHOTOS = 2;
 
+/** Minimum reference photos required for known brand AI generation */
+export const MIN_REFERENCE_PHOTOS_KNOWN = 1;
+
 /** Returns true if the product is a house brand (M&H, unknown, or no brand) */
 export function isHouseBrand(brand: string | null | undefined): boolean {
   if (!brand) return true;
@@ -39,10 +42,10 @@ export function isHouseBrand(brand: string | null | undefined): boolean {
 
 export type ImageReadinessStatus =
   | "complete"           // Full gallery exists
-  | "ready_ai"           // Known brand, can generate from text
+  | "ready_ai"           // Has enough references, can generate
   | "ready_ai_ref"       // House brand with 2+ references
-  | "needs_photos_0"     // House brand, 0 references
-  | "needs_photos_1";    // House brand, 1 reference
+  | "needs_photos_0"     // No references uploaded yet
+  | "needs_photos_1";    // Needs more reference(s)
 
 export function getImageReadiness(
   brand: string | null | undefined,
@@ -53,9 +56,15 @@ export function getImageReadiness(
 
   if (totalImages >= 6) return "complete";
 
-  if (isKnownBrand(brand)) return "ready_ai";
+  const isKnown = isKnownBrand(brand);
 
-  // House brand
+  if (isKnown) {
+    // Known brands need at least 1 reference
+    if (totalImages >= MIN_REFERENCE_PHOTOS_KNOWN) return "ready_ai";
+    return "needs_photos_0";
+  }
+
+  // House brand needs at least 2 references
   if (totalImages >= MIN_REFERENCE_PHOTOS) return "ready_ai_ref";
   if (totalImages === 1) return "needs_photos_1";
   return "needs_photos_0";
@@ -65,7 +74,7 @@ export const READINESS_LABELS: Record<ImageReadinessStatus, string> = {
   complete: "Complete",
   ready_ai: "Ready for AI",
   ready_ai_ref: "Ready for AI (ref)",
-  needs_photos_0: "Needs Photos (0/2)",
+  needs_photos_0: "Needs Reference",
   needs_photos_1: "Needs Photos (1/2)",
 };
 

@@ -37,6 +37,7 @@ function isBrandedFrame(brand: string | null): boolean {
 }
 
 const MIN_REFERENCE_PHOTOS = 2;
+const MIN_REFERENCE_PHOTOS_KNOWN = 1;
 
 // ── Prompt builders for the 6-shot gallery ──
 
@@ -57,75 +58,39 @@ function describeProduct(p: any): string {
   return parts.join(" ");
 }
 
-function buildFramePrompts(product: any): { slug: string; prompt: string }[] {
+function buildFramePrompts(product: any, hasReference: boolean): { slug: string; prompt: string }[] {
   const desc = describeProduct(product);
   const branded = isBrandedFrame(product.brand);
+  const studioRule = "Seamless pure white studio background, soft professional commercial lighting, high resolution e-commerce product photography. No model, frame only.";
+
+  if (hasReference) {
+    const baseInstruction = `This is a reference photo of the actual "${desc}" eyeglasses frame. You MUST preserve the exact color, shape, material, proportions, and design details of this specific frame. Re-render it as a professional e-commerce product photo with:`;
+    const brandDetail = branded
+      ? `Maintain any original ${product.brand} logos, engravings, or serial numbers visible on the frame.`
+      : "";
+
+    return [
+      { slug: "hero", prompt: `${baseInstruction} Classic three-quarter front view — the main e-commerce thumbnail. Sharp focus on the front frame and the near temple arm. ${brandDetail} ${studioRule}` },
+      { slug: "front", prompt: `${baseInstruction} Direct head-on front view. Perfectly symmetrical composition. Temples open, extending straight back. ${brandDetail} ${studioRule}` },
+      { slug: "side", prompt: `${baseInstruction} Pure 90-degree side profile view. Sharp focus along the entire length of the visible temple arm. ${brandDetail} ${studioRule}` },
+      { slug: "rear", prompt: `${baseInstruction} Slightly elevated rear view, looking at the back of the glasses. Show the hinges, nose pads, and inside of the temple arms. ${branded ? "Show inner-temple markings like model numbers. " : ""}${studioRule}` },
+      { slug: "macro", prompt: `${baseInstruction} Extreme close-up macro shot focusing tightly on the temple hinge area or lens corner${branded ? ` where the ${product.brand} logo is located` : ""}. Use dramatic lighting to highlight texture and quality. ${studioRule}` },
+      { slug: "packaging", prompt: `${baseInstruction} The frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather${product.color ? ` in a color complementing ${product.color}` : ""}. ${branded ? `The brand name "${product.brand}" is cleanly featured on the leather case.` : `The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case.`} ${studioRule}` },
+    ];
+  }
+
+  // Text-only fallback
   const brandNote = branded
     ? `The frame is authentic ${product.brand}. You MUST visibly maintain any original subtle engravings, logos, or serial numbers on the frame itself. Do not remove them.`
     : "";
 
-  const studioRule =
-    "Seamless pure white studio background, soft professional commercial lighting, high resolution e-commerce product photography. No model, frame only.";
-
   return [
-    {
-      slug: "hero",
-      prompt: `Professional product photo of ${desc} eyeglasses frame. Classic three-quarter front view — the main e-commerce thumbnail. Sharp focus on the front frame and the near temple arm. The lighting emphasizes the premium material finish. ${brandNote} ${studioRule}`,
-    },
-    {
-      slug: "front",
-      prompt: `Direct head-on front view of ${desc} eyeglasses frame. Perfectly symmetrical composition. The temples are open and extending straight back, slightly blurred by depth of field. Purpose: clearly show the shape of the lenses and the bridge fit. ${brandNote} ${studioRule}`,
-    },
-    {
-      slug: "side",
-      prompt: `Pure 90-degree side profile view of ${desc} eyeglasses frame. Sharp focus along the entire length of the visible temple arm. Purpose: show the thickness of the frame, the design of the temple arm, and the ear bend. ${brandNote} ${studioRule}`,
-    },
-    {
-      slug: "rear",
-      prompt: `Slightly elevated rear view of ${desc} eyeglasses frame, looking at the back of the glasses. Purpose: show the hinges, the nose pads, and the inside of the temple arms. ${branded ? "This angle is crucial for showing inner-temple markings like model numbers or 'Made in Italy'. Ensure those original details are visible." : ""} ${studioRule}`,
-    },
-    {
-      slug: "macro",
-      prompt: `Extreme close-up macro shot of ${desc} eyeglasses frame, focusing tightly on the temple hinge area or lens corner where the most prominent branding detail is located${branded ? ` (the ${product.brand} logo)` : ""}. Use dramatic lighting to highlight the metallic or engraved texture to prove authenticity and quality. ${studioRule}`,
-    },
-    {
-      slug: "packaging",
-      prompt: `Luxurious studio shot of ${desc} eyeglasses frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather${product.color ? ` in a color complementing ${product.color}` : ""}. ${branded ? `The original ${product.brand} brand logo is still visible on the frame. The brand name "${product.brand}" is cleanly featured on the leather case, showing credibility and authenticity.` : `The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case.`} Seamless pure white studio background, soft professional commercial lighting, high resolution.`,
-    },
-  ];
-}
-
-// ── Reference-based prompts: instruct AI to re-render uploaded photo at different angles ──
-function buildReferenceFramePrompts(product: any): { slug: string; prompt: string }[] {
-  const desc = describeProduct(product);
-  const baseInstruction = `This is a reference photo of the actual "${desc}" eyeglasses frame. You MUST preserve the exact color, shape, material, proportions, and design details of this specific frame. Re-render it as a professional e-commerce product photo with:`;
-  const studioRule = "Seamless pure white studio background, soft professional commercial lighting, high resolution. No model, frame only.";
-
-  return [
-    {
-      slug: "hero",
-      prompt: `${baseInstruction} Classic three-quarter front view — the main e-commerce thumbnail. Sharp focus on the front frame and the near temple arm. ${studioRule}`,
-    },
-    {
-      slug: "front",
-      prompt: `${baseInstruction} Direct head-on front view. Perfectly symmetrical composition. Temples open, extending straight back. ${studioRule}`,
-    },
-    {
-      slug: "side",
-      prompt: `${baseInstruction} Pure 90-degree side profile view. Sharp focus along the entire length of the visible temple arm. ${studioRule}`,
-    },
-    {
-      slug: "rear",
-      prompt: `${baseInstruction} Slightly elevated rear view, looking at the back of the glasses. Show the hinges, nose pads, and inside of the temple arms. ${studioRule}`,
-    },
-    {
-      slug: "macro",
-      prompt: `${baseInstruction} Extreme close-up macro shot focusing tightly on the temple hinge area or lens corner. Use dramatic lighting to highlight texture and quality. ${studioRule}`,
-    },
-    {
-      slug: "packaging",
-      prompt: `${baseInstruction} The frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather. The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case. ${studioRule}`,
-    },
+    { slug: "hero", prompt: `Professional product photo of ${desc} eyeglasses frame. Classic three-quarter front view — the main e-commerce thumbnail. ${brandNote} ${studioRule}` },
+    { slug: "front", prompt: `Direct head-on front view of ${desc} eyeglasses frame. Perfectly symmetrical composition. ${brandNote} ${studioRule}` },
+    { slug: "side", prompt: `Pure 90-degree side profile view of ${desc} eyeglasses frame. Sharp focus along the entire length of the visible temple arm. ${brandNote} ${studioRule}` },
+    { slug: "rear", prompt: `Slightly elevated rear view of ${desc} eyeglasses frame, looking at the back of the glasses. ${branded ? "Show inner-temple markings." : ""} ${studioRule}` },
+    { slug: "macro", prompt: `Extreme close-up macro shot of ${desc} eyeglasses frame${branded ? ` (the ${product.brand} logo)` : ""}. Use dramatic lighting to highlight texture and quality. ${studioRule}` },
+    { slug: "packaging", prompt: `Luxurious studio shot of ${desc} eyeglasses frame on a premium leather case${product.color ? ` in a color complementing ${product.color}` : ""}. ${branded ? `The brand name "${product.brand}" is on the case.` : `The brand name "M&H Opticals" is embossed on the case.`} ${studioRule}` },
   ];
 }
 
@@ -425,9 +390,9 @@ async function generateFullGallery(
     return { heroUrl: url, additionalUrls: [], shots: 1 };
   }
 
-  // Frame: 6-shot gallery — use references whenever available (even 1 image)
+  // Frame: 6-shot gallery — use references whenever available
   const useReference = referenceImageUrls && referenceImageUrls.length > 0;
-  const shots = useReference ? buildReferenceFramePrompts(product) : buildFramePrompts(product);
+  const shots = buildFramePrompts(product, !!useReference);
   const refUrl = useReference ? referenceImageUrls![0] : null;
 
   const urls: string[] = [];
@@ -518,7 +483,7 @@ serve(async (req) => {
         const effectiveRefs = explicitRefs || primaryRef;
         const useReference = effectiveRefs && effectiveRefs.length > 0;
         
-        const shots = useReference ? buildReferenceFramePrompts(product) : buildFramePrompts(product);
+        const shots = buildFramePrompts(product, !!useReference);
         const shot = shots[shotIndex];
         // Use custom prompt if provided, otherwise use auto-generated
         const finalPrompt = customPrompt || shot.prompt;
@@ -591,18 +556,21 @@ serve(async (req) => {
       const fa2 = Array.isArray(product.frame_attributes) ? product.frame_attributes[0] : product.frame_attributes;
       if (fa2) { Object.assign(product, { model_code: fa2.model_code, frame_shape: fa2.frame_shape, frame_material: fa2.frame_material }); }
 
-      // PDCA gate: house brands need reference photos for frames
+      // PDCA gate: ALL products need reference photos for frames
       const isFrame = product.item_type === "frames";
       const isKnown = isBrandedFrame(product.brand);
       const refUrls = Array.isArray(referenceImageUrls) ? referenceImageUrls : null;
       const existingImages = (product.image_url ? 1 : 0) + (product.additional_images?.length ?? 0);
+      const minRequired = isKnown ? MIN_REFERENCE_PHOTOS_KNOWN : MIN_REFERENCE_PHOTOS;
 
-      if (isFrame && !isKnown && (!refUrls || refUrls.length < MIN_REFERENCE_PHOTOS) && existingImages < MIN_REFERENCE_PHOTOS) {
+      if (isFrame && (!refUrls || refUrls.length < minRequired) && existingImages < minRequired) {
         return json({
-          error: `House brand "${product.brand || 'unknown'}" requires at least ${MIN_REFERENCE_PHOTOS} reference photos uploaded before AI generation. Upload real photos first.`,
-          code: "HOUSE_BRAND_NEEDS_REFERENCES",
+          error: isKnown
+            ? `Upload at least ${MIN_REFERENCE_PHOTOS_KNOWN} reference photo for accurate generation of ${product.brand} frames.`
+            : `House brand "${product.brand || 'unknown'}" requires at least ${MIN_REFERENCE_PHOTOS} reference photos. Upload real photos first.`,
+          code: "NEEDS_REFERENCES",
           existingImages,
-          required: MIN_REFERENCE_PHOTOS,
+          required: minRequired,
         }, 400);
       }
 
@@ -689,15 +657,16 @@ serve(async (req) => {
         const isKnown = isBrandedFrame(product.brand);
         const existingImages = (product.image_url ? 1 : 0) + (product.additional_images?.length ?? 0);
 
-        // PDCA gate for batch: skip house brand frames without enough references
-        if (isFrame && !isKnown && existingImages < MIN_REFERENCE_PHOTOS) {
+        // PDCA gate for batch: skip frames without enough references
+        const minRequired = isKnown ? MIN_REFERENCE_PHOTOS_KNOWN : MIN_REFERENCE_PHOTOS;
+        if (isFrame && existingImages < minRequired) {
           skipped++;
           results.push({
             productId: product.id, sku: product.sku, name: product.name, brand: product.brand,
             success: false, skipped: true,
-            error: `House brand needs ${MIN_REFERENCE_PHOTOS} reference photos (has ${existingImages})`,
+            error: `Needs ${minRequired} reference photo(s) (has ${existingImages})`,
           });
-          console.log(`  ⏭ Skipped ${product.sku} — house brand needs reference photos`);
+          console.log(`  ⏭ Skipped ${product.sku} — needs reference photos`);
           continue;
         }
 
