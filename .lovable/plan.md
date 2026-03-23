@@ -1,37 +1,69 @@
 
 
-## Test AI Image Generation: M&H Kids Frame 8130-C6
+## PDCA Image Quality Gate for House Brand Products
 
-### What we're doing
-Insert a test product for **M&H Kids 8130-52 15-138 C6** into the database, generate a 6-shot AI gallery, then visually verify the output matches expectations for a children's frame.
+### Problem
+The AI image generator creates frames from text descriptions alone. For well-known brands (Ray-Ban, Gucci), this works reasonably well because the AI has training data. For house brands like **M&H Kids**, the AI invents a completely wrong frame. There is no validation step to catch this.
 
-### Frame specifications
-- **Brand**: M&H Kids
-- **Model**: 8130
-- **Lens width**: 52mm
-- **Bridge size**: 15mm
-- **Temple length**: 138mm
-- **Color variant**: C6
+### Solution
+Implement a **minimum 2 reference photo requirement** for products that lack online visual data (house brands). The system will:
+- **Block** AI gallery generation until at least 2 real photos are uploaded
+- **Use those photos as reference** when generating the remaining gallery shots (image-to-image editing instead of text-to-image)
+- Show clear status indicators so admins know which products are ready for AI generation vs need manual photos first
 
-### Steps
+### How It Works
 
-**Step 1: Insert test product**
-- Insert into `products` table: SKU `TEST-MH-KIDS-8130-C6`, name `Frame : M&H Kids 8130-52 15-138 C6`, brand `M&H Kids`, item_type `frames`, brand_line `m_and_h_fashion`, price `0`, is_active `true`
-- Insert into `frame_attributes` table: lens_width `52`, bridge_size `15`, temple_length `138`, model_code `8130`, front_color `C6`
+```text
+Product without images
+        │
+        ▼
+  Is it a known luxury brand?
+   ┌─────┴──────┐
+   YES          NO (house brand)
+   │             │
+   ▼             ▼
+ AI generates   "Upload at least 2
+ from text      reference photos first"
+ (existing       │
+  flow)          ▼
+              2+ photos uploaded
+                 │
+                 ▼
+              AI generates remaining
+              gallery shots using
+              reference photos
+              (image-to-image editing)
+```
 
-**Step 2: Generate images**
-- Call `generate-product-image` edge function with the new product ID
-- This will produce the standard 6-shot luxury gallery (Hero, Front, Side, Rear, Macro, Packaging)
-- Since M&H Kids is a house brand, packaging will use M&H Opticals branding
+### Technical Changes
 
-**Step 3: Visual verification**
-- Open the product in the browser to inspect all 6 generated shots
-- Check that the frame looks appropriately sized for a children's frame given the 52-15-138 measurements
-- Verify color variant C6 interpretation and M&H branding on packaging
+**1. Edge function: `supabase/functions/generate-product-image/index.ts`**
+- Accept optional `referenceImageUrls: string[]` parameter
+- When reference images are provided, switch from text-to-image to image-to-image mode: send the reference photo with each shot prompt so the AI re-renders the real frame at different angles
+- When no references and brand is NOT in the `LUXURY_BRANDS` set, return an error: "House brand requires at least 2 reference photos"
+- Keep existing text-only flow for luxury/known brands
 
-**Step 4: Clean up**
-- After verification, deactivate the test product (`is_active = false`) so it doesn't appear on the storefront
+**2. UI: `src/modules/products/components/QuickImageUploadModal.tsx`**
+- Add a visual quality gate: if product brand is not a known luxury brand and has fewer than 2 uploaded images, show a message explaining that 2+ reference photos are needed
+- Disable the "Regenerate with AI" button until the requirement is met
+- When 2+ photos exist, change button to "Generate Gallery from References" which passes the uploaded images to the edge function
 
-### Files changed
-- No code changes — only database inserts and an edge function invocation
+**3. Bulk generation: `src/modules/products/components/GenerateImagesDialog.tsx`**
+- In bulk mode, automatically skip house brand products that don't have 2+ reference photos
+- Show a count of "skipped (needs reference photos)" alongside the existing progress stats
+
+### PDCA Status Indicators
+
+In the Product Image Manager, each product card will show one of:
+- **Ready for AI** — Known brand, can generate from text
+- **Needs Photos (0/2)** — House brand, no references uploaded yet
+- **Needs Photos (1/2)** — House brand, needs 1 more reference
+- **Ready for AI (ref)** — House brand with 2+ references, can generate from those
+- **Complete** — Full gallery already exists
+
+### Files Modified
+1. `supabase/functions/generate-product-image/index.ts` — Add reference image support and house brand gate
+2. `src/modules/products/components/QuickImageUploadModal.tsx` — Add quality gate UI and reference-based generation button
+3. `src/modules/products/components/GenerateImagesDialog.tsx` — Skip house brands without references in bulk mode
+4. `src/modules/products/components/ProductImageCard.tsx` — Add PDCA status badge
 
