@@ -218,6 +218,8 @@ const ProductImages = () => {
             onFilterChange={setFilter}
             categoryFilter={categoryFilter}
             onCategoryFilterChange={(v) => { setCategoryFilter(v); setVisibleCount(ITEMS_PER_PAGE); }}
+            brandTypeFilter={brandTypeFilter}
+            onBrandTypeFilterChange={(v) => { setBrandTypeFilter(v); setVisibleCount(ITEMS_PER_PAGE); }}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             selectMode={selectMode}
