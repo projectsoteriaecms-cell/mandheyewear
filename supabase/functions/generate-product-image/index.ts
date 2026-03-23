@@ -487,7 +487,7 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { batchSize = 1, itemTypes, maxProducts, productId, shotSlug, referenceImageUrls } = await req.json().catch(() => ({}));
+    const { batchSize = 1, itemTypes, maxProducts, productId, shotSlug, referenceImageUrls, customPrompt } = await req.json().catch(() => ({}));
 
     // ── Single-shot regeneration mode ──
     if (productId && shotSlug) {
@@ -516,16 +516,18 @@ serve(async (req) => {
         const useReference = Array.isArray(referenceImageUrls) && referenceImageUrls.length >= MIN_REFERENCE_PHOTOS;
         const shots = useReference ? buildReferenceFramePrompts(product) : buildFramePrompts(product);
         const shot = shots[shotIndex];
-        console.log(`  📸 ${product.sku} — ${useReference ? "ref-editing" : "regenerating"} ${shot.slug}`);
+        // Use custom prompt if provided, otherwise use auto-generated
+        const finalPrompt = customPrompt || shot.prompt;
+        console.log(`  📸 ${product.sku} — ${customPrompt ? "custom prompt" : useReference ? "ref-editing" : "regenerating"} ${shot.slug}`);
 
         let imageData: { data: string; mimeType: string } | null = null;
         let attempts = 0;
         while (attempts < 3) {
           try {
             if (useReference) {
-              imageData = await editImage(shot.prompt, referenceImageUrls![0], GEMINI_API_KEY, LOVABLE_API_KEY);
+              imageData = await editImage(finalPrompt, referenceImageUrls![0], GEMINI_API_KEY, LOVABLE_API_KEY);
             } else {
-              imageData = await generateImage(shot.prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
+              imageData = await generateImage(finalPrompt, GEMINI_API_KEY, LOVABLE_API_KEY);
             }
             break;
           } catch (err: any) {
