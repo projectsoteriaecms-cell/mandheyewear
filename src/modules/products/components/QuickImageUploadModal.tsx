@@ -243,24 +243,37 @@ export const QuickImageUploadModal = ({
     if (!product) return;
     setIsRegenerating(true);
     try {
+      // For house brands with existing images, pass them as references
+      const isKnown = isKnownBrand(product.brand);
+      const refUrls = !isKnown && allImages.length >= MIN_REFERENCE_PHOTOS
+        ? allImages.slice(0, MIN_REFERENCE_PHOTOS)
+        : undefined;
+
       const { data, error } = await supabase.functions.invoke("generate-product-image", {
-        body: { productId: product.id },
+        body: {
+          productId: product.id,
+          ...(refUrls ? { referenceImageUrls: refUrls } : {}),
+        },
       });
       if (error) throw error;
+      if (data?.code === "HOUSE_BRAND_NEEDS_REFERENCES") {
+        toast.error(data.error);
+        return;
+      }
       if (data?.succeeded > 0) {
-        toast.success(`Regenerated ${data.results?.[0]?.shots || 1} image(s) for ${product.sku}`);
+        toast.success(`Generated ${data.results?.[0]?.shots || 1} image(s) for ${product.sku}`);
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       } else {
-        toast.error(data?.results?.[0]?.error || "Failed to regenerate images");
+        toast.error(data?.results?.[0]?.error || "Failed to generate images");
       }
     } catch (err) {
-      console.error("Regeneration error:", err);
-      toast.error("Failed to regenerate images");
+      console.error("Generation error:", err);
+      toast.error("Failed to generate images");
     } finally {
       setIsRegenerating(false);
     }
-  }, [product, queryClient]);
+  }, [product, allImages, queryClient]);
 
   const handleRegenerateShot = useCallback(async (index: number) => {
     if (!product || index < 0 || index >= SHOT_SLUGS.length) return;
