@@ -231,8 +231,9 @@ export const QuickImageUploadModal = ({
     setRegeneratingIndex(index);
     setIsRegenerating(true);
     try {
-      const refUrls = useReferenceMode && allImages.length >= MIN_REFERENCE_PHOTOS
-        ? allImages.slice(0, MIN_REFERENCE_PHOTOS)
+      // Always pass existing images as references when available
+      const refUrls = allImages.length > 0
+        ? allImages.slice(0, Math.max(MIN_REFERENCE_PHOTOS, 1))
         : undefined;
 
       const body: Record<string, unknown> = { productId: product.id, shotSlug };
