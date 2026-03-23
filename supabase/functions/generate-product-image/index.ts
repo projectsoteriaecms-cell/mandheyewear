@@ -43,10 +43,17 @@ const MIN_REFERENCE_PHOTOS = 2;
 function describeProduct(p: any): string {
   const parts: string[] = [];
   if (p.brand) parts.push(p.brand);
-  parts.push(p.name);
+  // Prefer model_code from frame_attributes for precision
+  if (p.model_code) {
+    parts.push(`Model ${p.model_code}`);
+  } else {
+    parts.push(p.name);
+  }
   if (p.color) parts.push(`in ${p.color}`);
-  if (p.material) parts.push(`(${p.material})`);
-  if (p.style) parts.push(`${p.style} style`);
+  if (p.frame_material || p.material) parts.push(`(${p.frame_material || p.material})`);
+  if (p.frame_shape) parts.push(`${p.frame_shape} shape`);
+  else if (p.style) parts.push(`${p.style} style`);
+  if (p.gender && p.gender !== "unisex") parts.push(`for ${p.gender}`);
   return parts.join(" ");
 }
 
