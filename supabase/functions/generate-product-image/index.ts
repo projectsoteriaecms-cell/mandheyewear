@@ -512,8 +512,12 @@ serve(async (req) => {
       }
 
       try {
-        // Determine if using reference-based editing
-        const useReference = Array.isArray(referenceImageUrls) && referenceImageUrls.length >= MIN_REFERENCE_PHOTOS;
+        // Determine reference image: explicit refs > product's own primary image
+        const explicitRefs = Array.isArray(referenceImageUrls) && referenceImageUrls.length > 0 ? referenceImageUrls : null;
+        const primaryRef = product.image_url ? [product.image_url] : null;
+        const effectiveRefs = explicitRefs || primaryRef;
+        const useReference = effectiveRefs && effectiveRefs.length > 0;
+        
         const shots = useReference ? buildReferenceFramePrompts(product) : buildFramePrompts(product);
         const shot = shots[shotIndex];
         // Use custom prompt if provided, otherwise use auto-generated
@@ -524,8 +528,8 @@ serve(async (req) => {
         let attempts = 0;
         while (attempts < 3) {
           try {
-            if (useReference) {
-              imageData = await editImage(finalPrompt, referenceImageUrls![0], GEMINI_API_KEY, LOVABLE_API_KEY);
+            if (useReference && effectiveRefs) {
+              imageData = await editImage(finalPrompt, effectiveRefs[0], GEMINI_API_KEY, LOVABLE_API_KEY);
             } else {
               imageData = await generateImage(finalPrompt, GEMINI_API_KEY, LOVABLE_API_KEY);
             }
