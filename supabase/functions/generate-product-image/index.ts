@@ -494,13 +494,16 @@ serve(async (req) => {
       console.log(`🔄 Regenerating single shot "${shotSlug}" for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase
         .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images")
+        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, frame_attributes(model_code, frame_shape, frame_material, front_color)")
         .eq("id", productId)
         .single();
 
       if (fetchErr || !product) {
         return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
       }
+      // Flatten frame_attributes into product for prompt building
+      const fa = Array.isArray(product.frame_attributes) ? product.frame_attributes[0] : product.frame_attributes;
+      if (fa) { Object.assign(product, { model_code: fa.model_code, frame_shape: fa.frame_shape, frame_material: fa.frame_material }); }
 
       const SHOT_SLUGS = ["hero", "front", "side", "rear", "macro", "packaging"];
       const shotIndex = SHOT_SLUGS.indexOf(shotSlug);
