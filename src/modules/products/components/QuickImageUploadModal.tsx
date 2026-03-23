@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   isKnownBrand,
   MIN_REFERENCE_PHOTOS,
+  MIN_REFERENCE_PHOTOS_KNOWN,
 } from "@/modules/products/lib/brand-classification";
 import {
   getProductPrompts,
@@ -114,10 +115,11 @@ export const QuickImageUploadModal = ({
     : null;
 
   const isKnown = product ? isKnownBrand(product.brand) : false;
-  const isHouseBrandBlocked = product
-    ? !isKnown && totalImages < MIN_REFERENCE_PHOTOS && product.item_type === "frames"
+  const minRequired = isKnown ? MIN_REFERENCE_PHOTOS_KNOWN : MIN_REFERENCE_PHOTOS;
+  const isBlocked = product
+    ? totalImages < minRequired && product.item_type === "frames"
     : false;
-  // Use reference mode whenever we have any images (for ALL brands)
+  // Use reference mode whenever we have any images
   const useReferenceMode = totalImages > 0;
 
   const prompts: ShotPrompt[] = productForPrompt
@@ -231,9 +233,9 @@ export const QuickImageUploadModal = ({
     setRegeneratingIndex(index);
     setIsRegenerating(true);
     try {
-      // Always pass existing images as references when available
+      // Always pass existing images as references
       const refUrls = allImages.length > 0
-        ? allImages.slice(0, Math.max(MIN_REFERENCE_PHOTOS, 1))
+        ? allImages.slice(0, Math.max(minRequired, 1))
         : undefined;
 
       const body: Record<string, unknown> = { productId: product.id, shotSlug };
@@ -256,19 +258,18 @@ export const QuickImageUploadModal = ({
       setRegeneratingIndex(null);
       setIsRegenerating(false);
     }
-  }, [product, prompts, useReferenceMode, allImages, queryClient]);
+  }, [product, prompts, allImages, minRequired, queryClient]);
 
   // Generate all shots (full gallery) with optional custom prompts
   const handleGenerateAll = useCallback(async (customPrompts: Record<string, string>) => {
     if (!product) return;
     setIsRegenerating(true);
     try {
-      // Always pass existing images as references when available
+      // Always pass existing images as references
       const refUrls = allImages.length > 0
-        ? allImages.slice(0, Math.max(MIN_REFERENCE_PHOTOS, 1))
+        ? allImages.slice(0, Math.max(minRequired, 1))
         : undefined;
 
-      // Generate each shot sequentially so user can see progress
       for (let i = 0; i < SHOT_SLUGS.length; i++) {
         const shotSlug = SHOT_SLUGS[i];
         setRegeneratingIndex(i);
@@ -295,7 +296,7 @@ export const QuickImageUploadModal = ({
       setIsRegenerating(false);
       setRegeneratingIndex(null);
     }
-  }, [product, useReferenceMode, allImages, queryClient]);
+  }, [product, allImages, minRequired, queryClient]);
 
   // Open prompt editor for full gallery
   const openGalleryPromptEditor = useCallback(() => {
@@ -313,11 +314,16 @@ export const QuickImageUploadModal = ({
 
   if (!product) return null;
 
-  const aiButtonLabel = isHouseBrandBlocked
-    ? `Upload ${MIN_REFERENCE_PHOTOS - totalImages} more photo(s) first`
-    : totalImages > 0
-      ? "Generate from Reference"
-      : "Generate with AI";
+  const photosNeeded = minRequired - totalImages;
+  const aiButtonLabel = isBlocked
+    ? `Upload ${photosNeeded} more reference photo${photosNeeded > 1 ? "s" : ""} first`
+    : "Generate from Reference";
+
+  const blockMessage = isBlocked
+    ? isKnown
+      ? `Upload at least ${MIN_REFERENCE_PHOTOS_KNOWN} reference photo so the AI can accurately reproduce this frame design.`
+      : `"${product.brand || "House brand"}" is not a known international brand. Upload at least ${MIN_REFERENCE_PHOTOS} real photos so the AI can accurately reproduce this specific frame design.`
+    : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -333,7 +339,7 @@ export const QuickImageUploadModal = ({
                 variant="outline"
                 size="sm"
                 onClick={openGalleryPromptEditor}
-                disabled={isRegenerating || isUploading || isHouseBrandBlocked}
+                disabled={isRegenerating || isUploading || isBlocked}
               >
                 <PencilSimple className="h-4 w-4 mr-1" />
                 Edit Prompts
@@ -342,11 +348,11 @@ export const QuickImageUploadModal = ({
                 variant="outline"
                 size="sm"
                 onClick={() => handleGenerateAll({})}
-                disabled={isRegenerating || isUploading || isHouseBrandBlocked}
+                disabled={isRegenerating || isUploading || isBlocked}
               >
                 {isRegenerating ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                ) : isHouseBrandBlocked ? (
+                ) : isBlocked ? (
                   <Camera className="h-4 w-4 mr-1" />
                 ) : (
                   <Lightning className="h-4 w-4 mr-1" weight="fill" />
@@ -363,17 +369,13 @@ export const QuickImageUploadModal = ({
             </Badge>
           </div>
 
-          {isHouseBrandBlocked && (
+          {isBlocked && blockMessage && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 mt-2">
               <div className="flex items-start gap-2">
                 <Warning className="h-4 w-4 mt-0.5 flex-shrink-0" weight="fill" />
                 <div>
-                  <p className="font-medium">Reference photos required</p>
-                  <p className="text-xs opacity-80 mt-0.5">
-                    "{product.brand || "House brand"}" is not a known international brand.
-                    Upload at least {MIN_REFERENCE_PHOTOS} real photos so the AI can accurately
-                    reproduce this specific frame design.
-                  </p>
+                  <p className="font-medium">Reference photo{minRequired > 1 ? "s" : ""} required</p>
+                  <p className="text-xs opacity-80 mt-0.5">{blockMessage}</p>
                 </div>
               </div>
             </div>
@@ -447,41 +449,46 @@ export const QuickImageUploadModal = ({
               {isUploading ? (
                 <div className="flex flex-col items-center gap-2">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">Uploading...</span>
+                  <p className="text-sm text-muted-foreground">Uploading...</p>
                 </div>
               ) : (
                 <>
-                  <CloudArrowUp className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm font-medium">Drag & drop images here, or click to select</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    JPG, PNG, or WebP up to 7MB each. {MAX_IMAGES - totalImages} slot(s) remaining.
+                  <CloudArrowUp className="h-8 w-8 mx-auto mb-2 text-muted-foreground" weight="light" />
+                  <p className="text-sm text-muted-foreground">
+                    Drag & drop images here, or{" "}
+                    <label className="text-primary cursor-pointer hover:underline">
+                      browse
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleFileSelect(e.target.files)}
+                      />
+                    </label>
                   </p>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    multiple
-                    onChange={(e) => handleFileSelect(e.target.files)}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
+                  <p className="text-xs text-muted-foreground/60 mt-1">
+                    Max 5MB per image • {MAX_IMAGES - totalImages} slot{MAX_IMAGES - totalImages !== 1 ? "s" : ""} remaining
+                  </p>
                 </>
               )}
             </div>
           )}
-
-          {!canAddMore && (
-            <div className="text-center py-4 text-sm text-muted-foreground bg-muted/50 rounded-lg">
-              Maximum of {MAX_IMAGES} images reached. Delete an image to upload more.
-            </div>
-          )}
         </div>
 
-        <ImagePreviewLightbox
-          images={allImages}
-          currentIndex={previewIndex ?? 0}
-          open={previewIndex !== null}
-          onOpenChange={(o) => { if (!o) setPreviewIndex(null); }}
-          onIndexChange={setPreviewIndex}
-        />
+        {/* Image Preview Lightbox */}
+        {previewIndex !== null && (
+          <ImagePreviewLightbox
+            images={allImages}
+            currentIndex={previewIndex}
+            onClose={() => setPreviewIndex(null)}
+            labels={
+              product.item_type === "frames"
+                ? IMAGE_POSITION_LABELS
+                : undefined
+            }
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

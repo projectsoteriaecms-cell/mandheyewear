@@ -1,6 +1,8 @@
 /**
  * Client-side mirror of edge function prompt logic.
  * Used to preview/edit prompts before sending to generate-product-image.
+ * 
+ * Unified prompt builder: always reference-aware, context-adaptive.
  */
 
 import { isKnownBrand } from "./brand-classification";
@@ -52,15 +54,67 @@ function describeProduct(p: ProductForPrompt): string {
   return parts.join(" ");
 }
 
-export function buildFramePrompts(product: ProductForPrompt): ShotPrompt[] {
+interface PromptOptions {
+  hasReference: boolean;
+  isKnown: boolean;
+}
+
+/**
+ * Unified frame prompt builder.
+ * - When hasReference=true: instructs AI to preserve the exact frame from the reference photo
+ * - Brand-aware: known brands get logo preservation notes; house brands get M&H packaging
+ */
+export function buildFramePrompts(product: ProductForPrompt, options?: PromptOptions): ShotPrompt[] {
+  const { hasReference = false, isKnown = isKnownBrand(product.brand) } = options || {};
   const desc = describeProduct(product);
-  const branded = isKnownBrand(product.brand);
-  const brandNote = branded
+  const studioRule = "Seamless pure white studio background, soft professional commercial lighting, high resolution e-commerce product photography. No model, frame only.";
+
+  if (hasReference) {
+    // Reference-based: preserve exact frame design from the uploaded photo
+    const baseInstruction = `This is a reference photo of the actual "${desc}" eyeglasses frame. You MUST preserve the exact color, shape, material, proportions, and design details of this specific frame. Re-render it as a professional e-commerce product photo with:`;
+    
+    const brandDetail = isKnown
+      ? `Maintain any original ${product.brand} logos, engravings, or serial numbers visible on the frame.`
+      : "";
+
+    return [
+      {
+        slug: "hero",
+        label: SHOT_LABELS.hero,
+        prompt: `${baseInstruction} Classic three-quarter front view — the main e-commerce thumbnail. Sharp focus on the front frame and the near temple arm. ${brandDetail} ${studioRule}`,
+      },
+      {
+        slug: "front",
+        label: SHOT_LABELS.front,
+        prompt: `${baseInstruction} Direct head-on front view. Perfectly symmetrical composition. Temples open, extending straight back. ${brandDetail} ${studioRule}`,
+      },
+      {
+        slug: "side",
+        label: SHOT_LABELS.side,
+        prompt: `${baseInstruction} Pure 90-degree side profile view. Sharp focus along the entire length of the visible temple arm. ${brandDetail} ${studioRule}`,
+      },
+      {
+        slug: "rear",
+        label: SHOT_LABELS.rear,
+        prompt: `${baseInstruction} Slightly elevated rear view, looking at the back of the glasses. Show the hinges, nose pads, and inside of the temple arms. ${isKnown ? "Show inner-temple markings like model numbers. " : ""}${studioRule}`,
+      },
+      {
+        slug: "macro",
+        label: SHOT_LABELS.macro,
+        prompt: `${baseInstruction} Extreme close-up macro shot focusing tightly on the temple hinge area or lens corner${isKnown ? ` where the ${product.brand} logo is located` : ""}. Use dramatic lighting to highlight texture and quality. ${studioRule}`,
+      },
+      {
+        slug: "packaging",
+        label: SHOT_LABELS.packaging,
+        prompt: `${baseInstruction} The frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather${product.color ? ` in a color complementing ${product.color}` : ""}. ${isKnown ? `The brand name "${product.brand}" is cleanly featured on the leather case.` : `The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case.`} ${studioRule}`,
+      },
+    ];
+  }
+
+  // Text-only fallback (should rarely be used now that references are required)
+  const brandNote = isKnown
     ? `The frame is authentic ${product.brand}. You MUST visibly maintain any original subtle engravings, logos, or serial numbers on the frame itself. Do not remove them.`
     : "";
-
-  const studioRule =
-    "Seamless pure white studio background, soft professional commercial lighting, high resolution e-commerce product photography. No model, frame only.";
 
   return [
     {
@@ -81,33 +135,18 @@ export function buildFramePrompts(product: ProductForPrompt): ShotPrompt[] {
     {
       slug: "rear",
       label: SHOT_LABELS.rear,
-      prompt: `Slightly elevated rear view of ${desc} eyeglasses frame, looking at the back of the glasses. Purpose: show the hinges, the nose pads, and the inside of the temple arms. ${branded ? "This angle is crucial for showing inner-temple markings like model numbers or 'Made in Italy'. Ensure those original details are visible." : ""} ${studioRule}`,
+      prompt: `Slightly elevated rear view of ${desc} eyeglasses frame, looking at the back of the glasses. Purpose: show the hinges, the nose pads, and the inside of the temple arms. ${isKnown ? "This angle is crucial for showing inner-temple markings like model numbers or 'Made in Italy'. Ensure those original details are visible." : ""} ${studioRule}`,
     },
     {
       slug: "macro",
       label: SHOT_LABELS.macro,
-      prompt: `Extreme close-up macro shot of ${desc} eyeglasses frame, focusing tightly on the temple hinge area or lens corner where the most prominent branding detail is located${branded ? ` (the ${product.brand} logo)` : ""}. Use dramatic lighting to highlight the metallic or engraved texture to prove authenticity and quality. ${studioRule}`,
+      prompt: `Extreme close-up macro shot of ${desc} eyeglasses frame, focusing tightly on the temple hinge area or lens corner where the most prominent branding detail is located${isKnown ? ` (the ${product.brand} logo)` : ""}. Use dramatic lighting to highlight the metallic or engraved texture to prove authenticity and quality. ${studioRule}`,
     },
     {
       slug: "packaging",
       label: SHOT_LABELS.packaging,
-      prompt: `Luxurious studio shot of ${desc} eyeglasses frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather${product.color ? ` in a color complementing ${product.color}` : ""}. ${branded ? `The original ${product.brand} brand logo is still visible on the frame. The brand name "${product.brand}" is cleanly featured on the leather case, showing credibility and authenticity.` : `The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case.`} Seamless pure white studio background, soft professional commercial lighting, high resolution.`,
+      prompt: `Luxurious studio shot of ${desc} eyeglasses frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather${product.color ? ` in a color complementing ${product.color}` : ""}. ${isKnown ? `The original ${product.brand} brand logo is still visible on the frame. The brand name "${product.brand}" is cleanly featured on the leather case, showing credibility and authenticity.` : `The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case.`} Seamless pure white studio background, soft professional commercial lighting, high resolution.`,
     },
-  ];
-}
-
-export function buildReferenceFramePrompts(product: ProductForPrompt): ShotPrompt[] {
-  const desc = describeProduct(product);
-  const baseInstruction = `This is a reference photo of the actual "${desc}" eyeglasses frame. You MUST preserve the exact color, shape, material, proportions, and design details of this specific frame. Re-render it as a professional e-commerce product photo with:`;
-  const studioRule = "Seamless pure white studio background, soft professional commercial lighting, high resolution. No model, frame only.";
-
-  return [
-    { slug: "hero", label: SHOT_LABELS.hero, prompt: `${baseInstruction} Classic three-quarter front view — the main e-commerce thumbnail. Sharp focus on the front frame and the near temple arm. ${studioRule}` },
-    { slug: "front", label: SHOT_LABELS.front, prompt: `${baseInstruction} Direct head-on front view. Perfectly symmetrical composition. Temples open, extending straight back. ${studioRule}` },
-    { slug: "side", label: SHOT_LABELS.side, prompt: `${baseInstruction} Pure 90-degree side profile view. Sharp focus along the entire length of the visible temple arm. ${studioRule}` },
-    { slug: "rear", label: SHOT_LABELS.rear, prompt: `${baseInstruction} Slightly elevated rear view, looking at the back of the glasses. Show the hinges, nose pads, and inside of the temple arms. ${studioRule}` },
-    { slug: "macro", label: SHOT_LABELS.macro, prompt: `${baseInstruction} Extreme close-up macro shot focusing tightly on the temple hinge area or lens corner. Use dramatic lighting to highlight texture and quality. ${studioRule}` },
-    { slug: "packaging", label: SHOT_LABELS.packaging, prompt: `${baseInstruction} The frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather. The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case. ${studioRule}` },
   ];
 }
 
@@ -130,15 +169,16 @@ export function buildNonFramePrompt(product: ProductForPrompt): ShotPrompt {
   return { slug: "primary", label: "Product Photo", prompt };
 }
 
-/** Get all prompts for a product based on its type and brand */
+/** Get all prompts for a product based on its type, brand, and reference availability */
 export function getProductPrompts(
   product: ProductForPrompt,
-  referenceMode: boolean
+  hasReference: boolean
 ): ShotPrompt[] {
   if (product.item_type !== "frames") {
     return [buildNonFramePrompt(product)];
   }
-  return referenceMode
-    ? buildReferenceFramePrompts(product)
-    : buildFramePrompts(product);
+  return buildFramePrompts(product, {
+    hasReference,
+    isKnown: isKnownBrand(product.brand),
+  });
 }
