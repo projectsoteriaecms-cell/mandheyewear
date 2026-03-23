@@ -2,13 +2,19 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { Image, CheckCircle, Upload } from "@phosphor-icons/react";
+import { Image, Upload } from "@phosphor-icons/react";
+import {
+  getImageReadiness,
+  READINESS_LABELS,
+  READINESS_COLORS,
+} from "@/modules/products/lib/brand-classification";
 
 interface ProductImageCardProps {
   product: {
     id: string;
     name: string;
     sku: string;
+    brand?: string | null;
     image_url: string | null;
     additional_images: string[] | null;
   };
@@ -18,8 +24,6 @@ interface ProductImageCardProps {
   onSelectionToggle?: (id: string) => void;
 }
 
-const MAX_IMAGES = 6; // 1 primary + 5 additional
-
 export const ProductImageCard = ({
   product,
   onClick,
@@ -27,10 +31,12 @@ export const ProductImageCard = ({
   selected = false,
   onSelectionToggle,
 }: ProductImageCardProps) => {
-  const imageCount =
-    (product.image_url ? 1 : 0) + (product.additional_images?.length ?? 0);
-  const isComplete = imageCount >= MAX_IMAGES;
-  const hasNoImages = imageCount === 0;
+  const readiness = getImageReadiness(
+    product.brand,
+    product.image_url,
+    product.additional_images
+  );
+  const hasNoImages = !product.image_url && (!product.additional_images || product.additional_images.length === 0);
 
   const handleClick = () => {
     if (selectable && onSelectionToggle) {
@@ -106,18 +112,14 @@ export const ProductImageCard = ({
         <p className="text-xs text-muted-foreground truncate">{product.sku}</p>
       </div>
 
-      {/* Image Count Badge */}
+      {/* PDCA Status Badge */}
       <Badge
-        variant={isComplete ? "default" : hasNoImages ? "destructive" : "secondary"}
         className={cn(
-          "absolute top-2 right-2 text-xs",
-          isComplete && "bg-green-600 hover:bg-green-700"
+          "absolute top-2 right-2 text-xs border-0",
+          READINESS_COLORS[readiness]
         )}
       >
-        {isComplete ? (
-          <CheckCircle className="h-3 w-3 mr-1" weight="fill" />
-        ) : null}
-        {imageCount}/{MAX_IMAGES}
+        {READINESS_LABELS[readiness]}
       </Badge>
     </button>
   );

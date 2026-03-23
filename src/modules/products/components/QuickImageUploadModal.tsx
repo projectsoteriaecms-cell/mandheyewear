@@ -25,13 +25,19 @@ import { cn } from "@/lib/utils";
 import { useProductImageUpload } from "@/modules/products";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Image, CloudArrowUp, Lightning } from "@phosphor-icons/react";
+import { Image, CloudArrowUp, Lightning, Warning, Camera } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraggableImageItem } from "./DraggableImageItem";
 import { ImagePreviewLightbox } from "./ImagePreviewLightbox";
 import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  isKnownBrand,
+  MIN_REFERENCE_PHOTOS,
+  getImageReadiness,
+  READINESS_LABELS,
+} from "@/modules/products/lib/brand-classification";
 
 const MAX_IMAGES = 6; // 1 primary + 5 additional
 const SHOT_SLUGS = ["hero", "front", "side", "rear", "macro", "packaging"];
@@ -41,6 +47,7 @@ interface QuickImageUploadModalProps {
     id: string;
     name: string;
     sku: string;
+    brand?: string | null;
     image_url: string | null;
     additional_images: string[] | null;
     item_type?: string | null;
@@ -236,24 +243,37 @@ export const QuickImageUploadModal = ({
     if (!product) return;
     setIsRegenerating(true);
     try {
+      // For house brands with existing images, pass them as references
+      const isKnown = isKnownBrand(product.brand);
+      const refUrls = !isKnown && allImages.length >= MIN_REFERENCE_PHOTOS
+        ? allImages.slice(0, MIN_REFERENCE_PHOTOS)
+        : undefined;
+
       const { data, error } = await supabase.functions.invoke("generate-product-image", {
-        body: { productId: product.id },
+        body: {
+          productId: product.id,
+          ...(refUrls ? { referenceImageUrls: refUrls } : {}),
+        },
       });
       if (error) throw error;
+      if (data?.code === "HOUSE_BRAND_NEEDS_REFERENCES") {
+        toast.error(data.error);
+        return;
+      }
       if (data?.succeeded > 0) {
-        toast.success(`Regenerated ${data.results?.[0]?.shots || 1} image(s) for ${product.sku}`);
+        toast.success(`Generated ${data.results?.[0]?.shots || 1} image(s) for ${product.sku}`);
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       } else {
-        toast.error(data?.results?.[0]?.error || "Failed to regenerate images");
+        toast.error(data?.results?.[0]?.error || "Failed to generate images");
       }
     } catch (err) {
-      console.error("Regeneration error:", err);
-      toast.error("Failed to regenerate images");
+      console.error("Generation error:", err);
+      toast.error("Failed to generate images");
     } finally {
       setIsRegenerating(false);
     }
-  }, [product, queryClient]);
+  }, [product, allImages, queryClient]);
 
   const handleRegenerateShot = useCallback(async (index: number) => {
     if (!product || index < 0 || index >= SHOT_SLUGS.length) return;
@@ -281,6 +301,15 @@ export const QuickImageUploadModal = ({
 
   if (!product) return null;
 
+  const isKnown = isKnownBrand(product.brand);
+  const readiness = getImageReadiness(product.brand, product.image_url, product.additional_images);
+  const isHouseBrandBlocked = !isKnown && totalImages < MIN_REFERENCE_PHOTOS && product.item_type === "frames";
+  const aiButtonLabel = isKnown
+    ? "Regenerate with AI"
+    : totalImages >= MIN_REFERENCE_PHOTOS
+      ? "Generate Gallery from References"
+      : `Upload ${MIN_REFERENCE_PHOTOS - totalImages} more photo(s) first`;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -294,15 +323,17 @@ export const QuickImageUploadModal = ({
               variant="outline"
               size="sm"
               onClick={handleRegenerate}
-              disabled={isRegenerating || isUploading}
+              disabled={isRegenerating || isUploading || isHouseBrandBlocked}
               className="ml-auto"
             >
               {isRegenerating ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : isHouseBrandBlocked ? (
+                <Camera className="h-4 w-4 mr-1" />
               ) : (
                 <Lightning className="h-4 w-4 mr-1" weight="fill" />
               )}
-              {isRegenerating ? "Regenerating..." : "Regenerate with AI"}
+              {isRegenerating ? "Generating..." : aiButtonLabel}
             </Button>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -312,6 +343,23 @@ export const QuickImageUploadModal = ({
               {totalImages}/{MAX_IMAGES} images
             </Badge>
           </div>
+
+          {/* PDCA Quality Gate Warning */}
+          {isHouseBrandBlocked && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 mt-2">
+              <div className="flex items-start gap-2">
+                <Warning className="h-4 w-4 mt-0.5 flex-shrink-0" weight="fill" />
+                <div>
+                  <p className="font-medium">Reference photos required</p>
+                  <p className="text-xs opacity-80 mt-0.5">
+                    "{product.brand || "House brand"}" is not a known international brand.
+                    Upload at least {MIN_REFERENCE_PHOTOS} real photos so the AI can accurately
+                    reproduce this specific frame design.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </DialogHeader>
 
         <div className="space-y-4">

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useMemo } from "react";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Lightning, Warning, CheckCircle, XCircle, Camera, Pause, DownloadSimple } from "@phosphor-icons/react";
+import { Lightning, Warning, CheckCircle, XCircle, Camera, Pause, DownloadSimple, SkipForward } from "@phosphor-icons/react";
+import { isKnownBrand, MIN_REFERENCE_PHOTOS } from "@/modules/products/lib/brand-classification";
 
 interface CategoryCount {
   type: string;
@@ -98,6 +100,7 @@ export const GenerateImagesDialog = ({
   const [processed, setProcessed] = useState(0);
   const [succeeded, setSucceeded] = useState(0);
   const [failed, setFailed] = useState(0);
+  const [skippedCount, setSkippedCount] = useState(0);
   const [errors, setErrors] = useState<BatchResult[]>([]);
   const [currentProduct, setCurrentProduct] = useState<{ sku: string; name: string; brand?: string | null } | null>(null);
   const [pauseReason, setPauseReason] = useState<string | null>(null);
@@ -105,18 +108,21 @@ export const GenerateImagesDialog = ({
 
   const isSelectionMode = !!selectedProducts && selectedProducts.length > 0;
 
-  // Selection mode: compute summary
+  // Selection mode: compute summary (including house brand skip count)
   const selectionSummary = useMemo(() => {
     if (!selectedProducts) return null;
     const frames = selectedProducts.filter((p) => p.item_type === "frames");
     const nonFrames = selectedProducts.filter((p) => p.item_type !== "frames");
     const frameShots = frames.length * 6;
     const nonFrameShots = nonFrames.length * 1;
+    // Count house brand frames that will be skipped (no way to know image count here, edge function handles it)
+    const houseBrandFrames = frames.filter((p) => !isKnownBrand(p.brand)).length;
     return {
       total: selectedProducts.length,
       frames: frames.length,
       nonFrames: nonFrames.length,
       totalShots: frameShots + nonFrameShots,
+      houseBrandFrames,
     };
   }, [selectedProducts]);
 
@@ -165,6 +171,7 @@ export const GenerateImagesDialog = ({
     setProcessed(0);
     setSucceeded(0);
     setFailed(0);
+    setSkippedCount(0);
     setErrors([]);
     setSelectedTypes([]);
     setBatchLimit("10");
@@ -412,6 +419,12 @@ export const GenerateImagesDialog = ({
                           {selectionSummary.nonFrames > 0 && `${selectionSummary.nonFrames} other${selectionSummary.nonFrames !== 1 ? "s" : ""} (${selectionSummary.nonFrames} shot${selectionSummary.nonFrames !== 1 ? "s" : ""})`}
                           {" = "}~{selectionSummary.totalShots} API calls • ~{estimatedMinutes} min
                         </p>
+                        {selectionSummary.houseBrandFrames > 0 && (
+                          <p className="text-xs mt-1 flex items-center gap-1">
+                            <SkipForward className="h-3 w-3" />
+                            {selectionSummary.houseBrandFrames} house brand frame{selectionSummary.houseBrandFrames !== 1 ? "s" : ""} may be skipped if missing reference photos
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -505,7 +518,7 @@ export const GenerateImagesDialog = ({
               </div>
             )}
 
-            <div className="grid grid-cols-3 gap-3 text-center text-sm">
+            <div className={cn("grid gap-3 text-center text-sm", skippedCount > 0 ? "grid-cols-4" : "grid-cols-3")}>
               <div>
                 <p className="text-muted-foreground">Processed</p>
                 <p className="text-lg font-semibold">{processed.toLocaleString()}</p>
@@ -522,6 +535,14 @@ export const GenerateImagesDialog = ({
                 </p>
                 <p className="text-lg font-semibold text-destructive">{failed.toLocaleString()}</p>
               </div>
+              {skippedCount > 0 && (
+                <div>
+                  <p className="text-muted-foreground flex items-center justify-center gap-1">
+                    <SkipForward className="h-3 w-3" /> Skipped
+                  </p>
+                  <p className="text-lg font-semibold text-muted-foreground">{skippedCount.toLocaleString()}</p>
+                </div>
+              )}
             </div>
 
             {status === "running" && (
