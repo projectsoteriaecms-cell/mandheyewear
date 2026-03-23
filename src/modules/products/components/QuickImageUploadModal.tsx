@@ -263,8 +263,9 @@ export const QuickImageUploadModal = ({
     if (!product) return;
     setIsRegenerating(true);
     try {
-      const refUrls = useReferenceMode && allImages.length >= MIN_REFERENCE_PHOTOS
-        ? allImages.slice(0, MIN_REFERENCE_PHOTOS)
+      // Always pass existing images as references when available
+      const refUrls = allImages.length > 0
+        ? allImages.slice(0, Math.max(MIN_REFERENCE_PHOTOS, 1))
         : undefined;
 
       // Generate each shot sequentially so user can see progress
