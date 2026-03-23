@@ -138,7 +138,18 @@ const ProductImages = () => {
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = visibleCount < filteredProducts.length;
-  const selectedProduct = products.find((p) => p.id === selectedProductId);
+  const selectedProduct = useMemo(() => {
+    const p = products.find((p) => p.id === selectedProductId);
+    if (!p) return undefined;
+    const fa = Array.isArray(p.frame_attributes) ? p.frame_attributes[0] : p.frame_attributes;
+    return {
+      ...p,
+      model_code: fa?.model_code ?? p.model_code,
+      frame_shape: fa?.frame_shape ?? p.frame_shape,
+      frame_material: fa?.frame_material ?? p.frame_material,
+      front_color: fa?.front_color ?? p.front_color,
+    };
+  }, [products, selectedProductId]);
 
   const toggleSelection = useCallback((id: string) => {
     setSelectedIds((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
