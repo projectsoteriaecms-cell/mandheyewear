@@ -313,11 +313,11 @@ export const QuickImageUploadModal = ({
 
   if (!product) return null;
 
-  const aiButtonLabel = isKnown
-    ? "Generate with AI"
-    : totalImages >= MIN_REFERENCE_PHOTOS
-      ? "Generate from References"
-      : `Upload ${MIN_REFERENCE_PHOTOS - totalImages} more photo(s) first`;
+  const aiButtonLabel = isHouseBrandBlocked
+    ? `Upload ${MIN_REFERENCE_PHOTOS - totalImages} more photo(s) first`
+    : totalImages > 0
+      ? "Generate from Reference"
+      : "Generate with AI";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
