@@ -47,6 +47,7 @@ interface QuickImageUploadModalProps {
     id: string;
     name: string;
     sku: string;
+    brand?: string | null;
     image_url: string | null;
     additional_images: string[] | null;
     item_type?: string | null;
