@@ -90,6 +90,7 @@ export const useFeaturedProducts = (limit = 4) => {
         .from("products")
         .select("*")
         .eq("is_active", true)
+        .eq("brand_line", "m_and_h_fashion")
         .not("image_url", "is", null)
         .order("price", { ascending: false });
 

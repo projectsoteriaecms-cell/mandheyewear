@@ -67,6 +67,7 @@ export const QuickDiscovery = () => {
         .from("products")
         .select("id, name, brand, price, image_url")
         .eq("is_active", true)
+        .eq("brand_line", "m_and_h_fashion")
         .eq("item_type", "frames")
         .not("image_url", "is", null)
         .order("created_at", { ascending: false })
