@@ -37,6 +37,7 @@ function isBrandedFrame(brand: string | null): boolean {
 }
 
 const MIN_REFERENCE_PHOTOS = 2;
+const MIN_REFERENCE_PHOTOS_KNOWN = 1;
 
 // ── Prompt builders for the 6-shot gallery ──
 
