@@ -516,7 +516,9 @@ serve(async (req) => {
         const useReference = Array.isArray(referenceImageUrls) && referenceImageUrls.length >= MIN_REFERENCE_PHOTOS;
         const shots = useReference ? buildReferenceFramePrompts(product) : buildFramePrompts(product);
         const shot = shots[shotIndex];
-        console.log(`  📸 ${product.sku} — ${useReference ? "ref-editing" : "regenerating"} ${shot.slug}`);
+        // Use custom prompt if provided, otherwise use auto-generated
+        const finalPrompt = customPrompt || shot.prompt;
+        console.log(`  📸 ${product.sku} — ${customPrompt ? "custom prompt" : useReference ? "ref-editing" : "regenerating"} ${shot.slug}`);
 
         let imageData: { data: string; mimeType: string } | null = null;
         let attempts = 0;
