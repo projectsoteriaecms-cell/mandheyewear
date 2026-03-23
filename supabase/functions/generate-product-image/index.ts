@@ -701,10 +701,9 @@ serve(async (req) => {
           continue;
         }
 
-        // Use existing images as references for house brands
-        const effectiveRefUrls = !isKnown && existingImages >= MIN_REFERENCE_PHOTOS
-          ? [product.image_url, ...(product.additional_images || [])].filter(Boolean).slice(0, 2) as string[]
-          : null;
+        // Use existing images as references for ALL brands when available
+        const existingImageList = [product.image_url, ...(product.additional_images || [])].filter(Boolean) as string[];
+        const effectiveRefUrls = existingImageList.length > 0 ? existingImageList.slice(0, 2) : null;
 
         const { heroUrl, additionalUrls, shots } = await generateFullGallery(
           product, effectiveRefUrls, GEMINI_API_KEY, LOVABLE_API_KEY, supabase, SUPABASE_URL
