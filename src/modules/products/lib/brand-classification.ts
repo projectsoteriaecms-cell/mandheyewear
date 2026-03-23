@@ -29,6 +29,14 @@ export function isKnownBrand(brand: string | null | undefined): boolean {
 /** Minimum reference photos required for house brand AI generation */
 export const MIN_REFERENCE_PHOTOS = 2;
 
+/** Returns true if the product is a house brand (M&H, unknown, or no brand) */
+export function isHouseBrand(brand: string | null | undefined): boolean {
+  if (!brand) return true;
+  const normalized = brand.toUpperCase().trim();
+  if (normalized.includes("M&H")) return true;
+  return !LUXURY_BRANDS.has(normalized);
+}
+
 export type ImageReadinessStatus =
   | "complete"           // Full gallery exists
   | "ready_ai"           // Known brand, can generate from text

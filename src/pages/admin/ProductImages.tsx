@@ -113,9 +113,7 @@ const ProductImages = () => {
     if (brandTypeFilter === "known") {
       result = result.filter((p) => isKnownBrand(p.brand));
     } else if (brandTypeFilter === "house") {
-      result = result.filter((p) => p.brand && !isKnownBrand(p.brand));
-    } else if (brandTypeFilter === "no_brand") {
-      result = result.filter((p) => !p.brand);
+      result = result.filter((p) => isHouseBrand(p.brand));
     }
     switch (filter) {
       case "with_images": result = result.filter((p) => p.image_url); break;

@@ -94,7 +94,6 @@ export const ImageFilterBar = ({
           <SelectItem value="all">All Brands</SelectItem>
           <SelectItem value="known">Known Brands</SelectItem>
           <SelectItem value="house">House Brands</SelectItem>
-          <SelectItem value="no_brand">No Brand Set</SelectItem>
         </SelectContent>
       </Select>
       <ToggleGroup
