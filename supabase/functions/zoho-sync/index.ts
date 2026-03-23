@@ -157,7 +157,7 @@ async function syncStockForItems(
   for (let i = 0; i < Math.min(3, rawItems.length); i++) {
     const item = rawItems[i];
     const warehouses = item.warehouses as Array<Record<string, unknown>> | undefined;
-    console.log(`[STOCK DIAG] Item ${i}: name="${item.name}", stock_on_hand=${item.stock_on_hand}, item_type="${item.item_type}", has_warehouses=${!!(warehouses && warehouses.length > 0)}, warehouse_count=${warehouses?.length ?? 0}`);
+    console.log(`[STOCK DIAG] Item ${i}: name="${item.name}", stock_on_hand=${item.stock_on_hand}, available_stock=${item.available_stock}, actual_available_stock=${item.actual_available_stock}, item_type="${item.item_type}", has_warehouses=${!!(warehouses && warehouses.length > 0)}, warehouse_count=${warehouses?.length ?? 0}`);
   }
 
   for (const item of rawItems) {
@@ -180,7 +180,7 @@ async function syncStockForItems(
       for (const wh of warehouses) {
         const locId = String(wh.warehouse_id || "");
         const locName = String(wh.warehouse_name || "");
-        const stockOnHand = Number(wh.warehouse_stock_on_hand ?? 0);
+        const stockOnHand = Number(wh.warehouse_actual_available_stock ?? wh.warehouse_available_stock ?? wh.warehouse_stock_on_hand ?? 0);
 
         if (!locId) continue;
 
@@ -195,8 +195,8 @@ async function syncStockForItems(
         stockUpdated++;
       }
     } else {
-      // Use top-level stock_on_hand with default branch — allow zero stock to create inventory rows
-      const stockOnHand = Number(item.stock_on_hand ?? 0);
+      // Use actual_available_stock (preferred) or available_stock or stock_on_hand from Zoho
+      const stockOnHand = Number(item.actual_available_stock ?? item.available_stock ?? item.stock_on_hand ?? 0);
       if (defaultBranchId) {
         await upsertInventory(supabase, productId, defaultBranchId, stockOnHand, performedBy, "Zoho total stock (no warehouse data)");
         stockUpdated++;
@@ -584,6 +584,39 @@ serve(async (req) => {
     }
   }
 
+  // ── Debug stock: fetch a few items from Zoho and return raw stock data (no auth required) ──
+  if (action === "debug_stock") {
+    try {
+      const accessToken = await getAccessToken();
+      const res = await fetch(
+        `${ZOHO_BOOKS_API}/items?organization_id=${orgId}&page=1&per_page=5`,
+        { headers: { Authorization: `Zoho-oauthtoken ${accessToken}` } },
+      );
+      const data = await res.json();
+      const sample = (data.items || []).slice(0, 5).map((item: Record<string, unknown>) => ({
+        name: item.name,
+        item_id: item.item_id,
+        sku: item.sku,
+        stock_on_hand: item.stock_on_hand,
+        available_stock: item.available_stock,
+        actual_available_stock: item.actual_available_stock,
+        item_type: item.item_type,
+        is_combo_product: item.is_combo_product,
+        warehouses: item.warehouses,
+        has_warehouses: !!(item.warehouses && (item.warehouses as unknown[]).length > 0),
+      }));
+      return new Response(JSON.stringify({ success: true, sample_items: sample, page_context: data.page_context }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return new Response(JSON.stringify({ error: message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  }
+
   // ── Initial call (client-facing, requires auth) ──
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
@@ -900,7 +933,6 @@ serve(async (req) => {
     }
   }
 
-  // ── Manual link: link an ECMS product to a Zoho item ──
   if (action === "link_product") {
     const { product_id, zoho_item_id: linkZohoId } = body;
     if (!product_id || !linkZohoId) {
