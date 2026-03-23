@@ -1,55 +1,26 @@
 
-# Soteria Eye Clinic — Remix & Transform Plan
 
-## Status: Ready for User Action
+## Hide Products Without Images from E-commerce Storefront
 
-### Next Step
-1. **Remix this project**: Click project name (top-left) → Settings → "Remix this project"
-2. Name the new project **"Soteria Eye Clinic"**
-3. Paste the transformation prompt (saved below) into the new project's chat
+### Problem
+Products without images are still showing on the storefront (just sorted to the bottom). The user wants to completely remove them from the customer-facing shop until images are available.
 
-### Transformation Prompt (for the new project)
+### Solution
+Add `withImagesOnly: true` filter to all storefront product queries so only products with an `image_url` appear on the e-commerce frontend. Admin pages remain unaffected.
 
-```text
-Transform this project from M&H Eyewear into Soteria Eye Clinic — a clinical eye care brand. This project was duplicated from M&H Eyewear and shares the same Lovable Cloud backend (same database). Both sites are strategic partners. Apply ALL of the following changes:
+### Files to modify
 
-## 1. Branding & Colors
-- Replace ALL references to "M&H Eyewear" with "Soteria Eye Clinic"
-- Primary color: clinical teal/green (160 65% 35%) instead of blue (210 85% 40%)
-- Accent color: keep the M&H gold as a secondary accent for partnership elements
-- Update CSS variables in index.css accordingly
-- Use the existing `soteria-logo.png` and `soteria-logo-gold.png` from src/assets/ as the main logos (replace all mh-logo imports)
-- Update favicon to use Soteria branding
-- Font: keep Cormorant Garamond for display but consider a more clinical feel
+1. **`src/pages/Eyewear.tsx`** (line 79) — Pass `withImagesOnly` flag:
+   ```typescript
+   const { data: products, isLoading, error } = useProducts("m_and_h_fashion", true);
+   ```
 
-## 2. Homepage Rewrite
-- Hero: Focus on clinical eye care — "Your Vision, Our Mission" or similar
-- Primary CTAs: "Book an Eye Exam" and "Our Services"
-- Replace eyewear-focused sections with: Services overview, "Why Choose Soteria" trust section, Branch locations preview, Partnership mention with M&H Eyewear
+2. **`src/modules/products/hooks/useProducts.ts`** — Update `useFeaturedProducts` to also filter by `m_and_h_fashion` brand line (it already filters `image_url IS NOT NULL`).
 
-## 3. Navigation Updates
-- Main nav: Home, Services, Eye Care, Booking, Branches, About, Partners, Contact
-- Remove/deprioritize: Eyewear, Style Quiz, Virtual Try-On
-- MobileBottomNav: Home, Services, Book, Branches, Account
+3. **`src/modules/storefront/components/home/QuickDiscovery.tsx`** and **`src/modules/storefront/components/shared/FeaturedFrames.tsx`** — Verify they use filtered hooks. If they call `useProducts()` directly, pass `"m_and_h_fashion"` and `true`.
 
-## 4. Pages to Update
-- About: Soteria's story + M&H Eyewear as premium eyewear partner
-- Partners: HMO partners + M&H Eyewear as strategic partner
-- Services/Eye Care: Primary service page
-- Branches: Show all locations from shared database
-- Eyewear: Link to mheyewear.com or show catalog with Soteria branding
+This also applies the M&H-only brand filter from the previously approved plan, combining both changes.
 
-## 5. SEO & Meta
-- Update all useSEO, JsonLd, manifest.json, index.html for Soteria Eye Clinic
+### No database changes needed
+The `useProducts` hook already supports both `brandLine` and `withImagesOnly` parameters — they just aren't being passed from the storefront pages.
 
-## 6. Footer
-- Soteria branding + "Premium eyewear by our partner M&H Eyewear"
-
-## 7. Do NOT Change
-- Admin panel, Supabase integrations, auth system, cart/checkout, hooks, modules
-```
-
-### Already Completed in This Project (M&H Eyewear)
-- ✅ Partners page (`/partners`) with Soteria Eye Clinic + HMO partners
-- ✅ About page updated with Soteria partnership section
-- ✅ Route registered in public.routes.tsx
