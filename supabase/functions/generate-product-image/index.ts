@@ -487,7 +487,7 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { batchSize = 1, itemTypes, maxProducts, productId, shotSlug, referenceImageUrls } = await req.json().catch(() => ({}));
+    const { batchSize = 1, itemTypes, maxProducts, productId, shotSlug, referenceImageUrls, customPrompt } = await req.json().catch(() => ({}));
 
     // ── Single-shot regeneration mode ──
     if (productId && shotSlug) {
