@@ -28,6 +28,7 @@ const LUXURY_BRANDS = new Set([
   "DANIEL HECHTER", "JOHN RICHMOND", "LA MARTINA", "WILLIAMS MORRIS",
   "COLUMBIA", "PIERRE CARDIN", "MIRAFLEX",
   "JIMMY FAIRLY",
+  "FREIGEIST",
 ]);
 
 function isBrandedFrame(brand: string | null): boolean {
