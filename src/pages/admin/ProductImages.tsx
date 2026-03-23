@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
 import { RoleGuard } from "@/modules/auth/components/RoleGuard";
 import { useAdminProducts, useProductImageStats } from "@/modules/products";
-import { isKnownBrand } from "@/modules/products/lib/brand-classification";
+import { isKnownBrand, isHouseBrand } from "@/modules/products/lib/brand-classification";
 import { ProductImageCard } from "@/modules/products/components/ProductImageCard";
 import { ProductImageListView } from "@/modules/products/components/ProductImageListView";
 import { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
