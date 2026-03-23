@@ -425,8 +425,8 @@ async function generateFullGallery(
     return { heroUrl: url, additionalUrls: [], shots: 1 };
   }
 
-  // Frame: 6-shot gallery
-  const useReference = referenceImageUrls && referenceImageUrls.length >= MIN_REFERENCE_PHOTOS;
+  // Frame: 6-shot gallery — use references whenever available (even 1 image)
+  const useReference = referenceImageUrls && referenceImageUrls.length > 0;
   const shots = useReference ? buildReferenceFramePrompts(product) : buildFramePrompts(product);
   const refUrl = useReference ? referenceImageUrls![0] : null;
 
