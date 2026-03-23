@@ -195,8 +195,8 @@ async function syncStockForItems(
         stockUpdated++;
       }
     } else {
-      // Use top-level stock_on_hand with default branch — allow zero stock to create inventory rows
-      const stockOnHand = Number(item.stock_on_hand ?? 0);
+      // Use actual_available_stock (preferred) or available_stock or stock_on_hand from Zoho
+      const stockOnHand = Number(item.actual_available_stock ?? item.available_stock ?? item.stock_on_hand ?? 0);
       if (defaultBranchId) {
         await upsertInventory(supabase, productId, defaultBranchId, stockOnHand, performedBy, "Zoho total stock (no warehouse data)");
         stockUpdated++;
