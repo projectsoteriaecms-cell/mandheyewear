@@ -157,7 +157,7 @@ async function syncStockForItems(
   for (let i = 0; i < Math.min(3, rawItems.length); i++) {
     const item = rawItems[i];
     const warehouses = item.warehouses as Array<Record<string, unknown>> | undefined;
-    console.log(`[STOCK DIAG] Item ${i}: name="${item.name}", stock_on_hand=${item.stock_on_hand}, item_type="${item.item_type}", has_warehouses=${!!(warehouses && warehouses.length > 0)}, warehouse_count=${warehouses?.length ?? 0}`);
+    console.log(`[STOCK DIAG] Item ${i}: name="${item.name}", stock_on_hand=${item.stock_on_hand}, available_stock=${item.available_stock}, actual_available_stock=${item.actual_available_stock}, item_type="${item.item_type}", has_warehouses=${!!(warehouses && warehouses.length > 0)}, warehouse_count=${warehouses?.length ?? 0}`);
   }
 
   for (const item of rawItems) {
