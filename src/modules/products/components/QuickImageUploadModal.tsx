@@ -117,7 +117,8 @@ export const QuickImageUploadModal = ({
   const isHouseBrandBlocked = product
     ? !isKnown && totalImages < MIN_REFERENCE_PHOTOS && product.item_type === "frames"
     : false;
-  const useReferenceMode = !isKnown && totalImages >= MIN_REFERENCE_PHOTOS;
+  // Use reference mode whenever we have any images (for ALL brands)
+  const useReferenceMode = totalImages > 0;
 
   const prompts: ShotPrompt[] = productForPrompt
     ? getProductPrompts(productForPrompt, useReferenceMode)
@@ -230,8 +231,9 @@ export const QuickImageUploadModal = ({
     setRegeneratingIndex(index);
     setIsRegenerating(true);
     try {
-      const refUrls = useReferenceMode && allImages.length >= MIN_REFERENCE_PHOTOS
-        ? allImages.slice(0, MIN_REFERENCE_PHOTOS)
+      // Always pass existing images as references when available
+      const refUrls = allImages.length > 0
+        ? allImages.slice(0, Math.max(MIN_REFERENCE_PHOTOS, 1))
         : undefined;
 
       const body: Record<string, unknown> = { productId: product.id, shotSlug };
@@ -261,8 +263,9 @@ export const QuickImageUploadModal = ({
     if (!product) return;
     setIsRegenerating(true);
     try {
-      const refUrls = useReferenceMode && allImages.length >= MIN_REFERENCE_PHOTOS
-        ? allImages.slice(0, MIN_REFERENCE_PHOTOS)
+      // Always pass existing images as references when available
+      const refUrls = allImages.length > 0
+        ? allImages.slice(0, Math.max(MIN_REFERENCE_PHOTOS, 1))
         : undefined;
 
       // Generate each shot sequentially so user can see progress
@@ -310,11 +313,11 @@ export const QuickImageUploadModal = ({
 
   if (!product) return null;
 
-  const aiButtonLabel = isKnown
-    ? "Generate with AI"
-    : totalImages >= MIN_REFERENCE_PHOTOS
-      ? "Generate from References"
-      : `Upload ${MIN_REFERENCE_PHOTOS - totalImages} more photo(s) first`;
+  const aiButtonLabel = isHouseBrandBlocked
+    ? `Upload ${MIN_REFERENCE_PHOTOS - totalImages} more photo(s) first`
+    : totalImages > 0
+      ? "Generate from Reference"
+      : "Generate with AI";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

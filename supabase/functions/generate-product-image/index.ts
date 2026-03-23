@@ -425,8 +425,8 @@ async function generateFullGallery(
     return { heroUrl: url, additionalUrls: [], shots: 1 };
   }
 
-  // Frame: 6-shot gallery
-  const useReference = referenceImageUrls && referenceImageUrls.length >= MIN_REFERENCE_PHOTOS;
+  // Frame: 6-shot gallery — use references whenever available (even 1 image)
+  const useReference = referenceImageUrls && referenceImageUrls.length > 0;
   const shots = useReference ? buildReferenceFramePrompts(product) : buildFramePrompts(product);
   const refUrl = useReference ? referenceImageUrls![0] : null;
 
@@ -512,8 +512,12 @@ serve(async (req) => {
       }
 
       try {
-        // Determine if using reference-based editing
-        const useReference = Array.isArray(referenceImageUrls) && referenceImageUrls.length >= MIN_REFERENCE_PHOTOS;
+        // Determine reference image: explicit refs > product's own primary image
+        const explicitRefs = Array.isArray(referenceImageUrls) && referenceImageUrls.length > 0 ? referenceImageUrls : null;
+        const primaryRef = product.image_url ? [product.image_url] : null;
+        const effectiveRefs = explicitRefs || primaryRef;
+        const useReference = effectiveRefs && effectiveRefs.length > 0;
+        
         const shots = useReference ? buildReferenceFramePrompts(product) : buildFramePrompts(product);
         const shot = shots[shotIndex];
         // Use custom prompt if provided, otherwise use auto-generated
@@ -524,8 +528,8 @@ serve(async (req) => {
         let attempts = 0;
         while (attempts < 3) {
           try {
-            if (useReference) {
-              imageData = await editImage(finalPrompt, referenceImageUrls![0], GEMINI_API_KEY, LOVABLE_API_KEY);
+            if (useReference && effectiveRefs) {
+              imageData = await editImage(finalPrompt, effectiveRefs[0], GEMINI_API_KEY, LOVABLE_API_KEY);
             } else {
               imageData = await generateImage(finalPrompt, GEMINI_API_KEY, LOVABLE_API_KEY);
             }
@@ -602,10 +606,9 @@ serve(async (req) => {
         }, 400);
       }
 
-      // If house brand has existing images as references, use them
-      const effectiveRefUrls = refUrls || (!isKnown && existingImages >= MIN_REFERENCE_PHOTOS
-        ? [product.image_url, ...(product.additional_images || [])].filter(Boolean).slice(0, 2) as string[]
-        : null);
+      // Always use existing images as references when available (for ALL brands)
+      const existingImageList = [product.image_url, ...(product.additional_images || [])].filter(Boolean) as string[];
+      const effectiveRefUrls = refUrls || (existingImageList.length > 0 ? existingImageList.slice(0, 2) : null);
 
       try {
         const { heroUrl, additionalUrls, shots } = await generateFullGallery(
@@ -698,10 +701,9 @@ serve(async (req) => {
           continue;
         }
 
-        // Use existing images as references for house brands
-        const effectiveRefUrls = !isKnown && existingImages >= MIN_REFERENCE_PHOTOS
-          ? [product.image_url, ...(product.additional_images || [])].filter(Boolean).slice(0, 2) as string[]
-          : null;
+        // Use existing images as references for ALL brands when available
+        const existingImageList = [product.image_url, ...(product.additional_images || [])].filter(Boolean) as string[];
+        const effectiveRefUrls = existingImageList.length > 0 ? existingImageList.slice(0, 2) : null;
 
         const { heroUrl, additionalUrls, shots } = await generateFullGallery(
           product, effectiveRefUrls, GEMINI_API_KEY, LOVABLE_API_KEY, supabase, SUPABASE_URL
