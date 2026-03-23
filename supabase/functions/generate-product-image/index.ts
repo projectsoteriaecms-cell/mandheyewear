@@ -657,15 +657,16 @@ serve(async (req) => {
         const isKnown = isBrandedFrame(product.brand);
         const existingImages = (product.image_url ? 1 : 0) + (product.additional_images?.length ?? 0);
 
-        // PDCA gate for batch: skip house brand frames without enough references
-        if (isFrame && !isKnown && existingImages < MIN_REFERENCE_PHOTOS) {
+        // PDCA gate for batch: skip frames without enough references
+        const minRequired = isKnown ? MIN_REFERENCE_PHOTOS_KNOWN : MIN_REFERENCE_PHOTOS;
+        if (isFrame && existingImages < minRequired) {
           skipped++;
           results.push({
             productId: product.id, sku: product.sku, name: product.name, brand: product.brand,
             success: false, skipped: true,
-            error: `House brand needs ${MIN_REFERENCE_PHOTOS} reference photos (has ${existingImages})`,
+            error: `Needs ${minRequired} reference photo(s) (has ${existingImages})`,
           });
-          console.log(`  ⏭ Skipped ${product.sku} — house brand needs reference photos`);
+          console.log(`  ⏭ Skipped ${product.sku} — needs reference photos`);
           continue;
         }
 
