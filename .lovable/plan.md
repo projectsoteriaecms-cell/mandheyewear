@@ -1,43 +1,37 @@
 
 
-## Editable AI Prompts for Image Generation
+## Add Brand Type Filter to Product Images Manager
 
 ### Problem
-Currently the AI prompts are auto-generated and hidden from the admin. You have no way to tell the AI specifically what you want — it just does its thing based on product metadata.
+You cannot distinguish between house brand products (M&H Kids, M&H, etc.) and known/common brands (Gucci, Ray-Ban, FREIGEIST) in the Product Images page. You want to filter by brand type so you can separately manage which products to generate images for.
 
 ### Solution
-Add a **prompt editor** to the QuickImageUploadModal that lets you:
-1. See the auto-generated prompt for each shot before generating
-2. Edit the prompt text to add specific instructions (e.g., "translucent gray frame, not blue")
-3. Optionally write a completely custom prompt from scratch
-4. Regenerate individual shots with your edited prompt
+Add a **Brand Type** filter dropdown to the ImageFilterBar with options:
+- **All Brands** (default)
+- **Known Brands** — products whose brand matches the `LUXURY_BRANDS` list (can use text-to-image AI)
+- **House Brands** — everything else (M&H Kids, M&H, unbranded — requires reference photos)
+- **No Brand Set** — products with null/empty brand field
 
-### How it works
-
-When you click the regenerate button (per-shot or full gallery), instead of firing immediately, a prompt editing panel appears. You see the auto-generated prompt text in an editable textarea. You can modify it or replace it entirely, then confirm to generate.
+This reuses the existing `isKnownBrand()` function from `brand-classification.ts`.
 
 ### Technical Changes
 
-**1. Edge function: `supabase/functions/generate-product-image/index.ts`**
-- Accept optional `customPrompt: string` parameter for single-shot regeneration
-- When provided, use it instead of the auto-generated prompt
-- No changes to the generation logic itself — just which prompt string is used
+**1. `src/pages/admin/product-images/ImageFilterBar.tsx`**
+- Add a new `brandTypeFilter` prop with values `"all" | "known" | "house" | "no_brand"`
+- Render a new Select dropdown labeled "Brand Type" between the status and category filters
 
-**2. UI: `src/modules/products/components/QuickImageUploadModal.tsx`**
-- Add a "prompt editor" state: when regenerating a shot, show a dialog/panel with the auto-generated prompt pre-filled in a textarea
-- Add a "Generate" confirm button that sends the (possibly edited) prompt to the edge function via a new `customPrompt` body parameter
-- For full gallery regeneration, show a collapsible section with all 6 prompts editable before confirming
-- Add a helper function that calls the edge function's prompt builders client-side to preview prompts (duplicate the `describeProduct` + `buildFramePrompts` logic on the client, or add an endpoint that returns prompts without generating)
+**2. `src/pages/admin/ProductImages.tsx`**
+- Add `brandTypeFilter` state
+- Apply filtering logic in the `filteredProducts` memo:
+  - `"known"` — `isKnownBrand(p.brand) === true`
+  - `"house"` — `p.brand && !isKnownBrand(p.brand)`
+  - `"no_brand"` — `!p.brand`
+- Pass through to ImageFilterBar
 
-**3. New component: `src/modules/products/components/PromptEditorPanel.tsx`**
-- Textarea with the auto-generated prompt
-- Shot label (e.g., "Hero", "Front", "Side")
-- "Reset to default" button to restore auto-generated text
-- "Generate" button to confirm
+**3. `src/pages/admin/product-images/index.ts`**
+- No new exports needed; ImageFilterBar already exported
 
 ### Files Modified
-1. `supabase/functions/generate-product-image/index.ts` — Accept `customPrompt` param
-2. `src/modules/products/components/QuickImageUploadModal.tsx` — Add prompt editor flow to regenerate buttons
-3. `src/modules/products/components/PromptEditorPanel.tsx` — New component for prompt editing UI
-4. `src/modules/products/lib/prompt-builders.ts` — Client-side copy of prompt generation logic for preview
+1. `src/pages/admin/product-images/ImageFilterBar.tsx` — Add brand type dropdown
+2. `src/pages/admin/ProductImages.tsx` — Add brand type state and filtering logic
 
