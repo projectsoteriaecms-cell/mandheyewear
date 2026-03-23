@@ -51,6 +51,7 @@ const ProductImages = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<ImageFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [brandTypeFilter, setBrandTypeFilter] = useState<"all" | "known" | "house" | "no_brand">("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
