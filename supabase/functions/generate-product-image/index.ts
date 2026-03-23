@@ -606,10 +606,9 @@ serve(async (req) => {
         }, 400);
       }
 
-      // If house brand has existing images as references, use them
-      const effectiveRefUrls = refUrls || (!isKnown && existingImages >= MIN_REFERENCE_PHOTOS
-        ? [product.image_url, ...(product.additional_images || [])].filter(Boolean).slice(0, 2) as string[]
-        : null);
+      // Always use existing images as references when available (for ALL brands)
+      const existingImageList = [product.image_url, ...(product.additional_images || [])].filter(Boolean) as string[];
+      const effectiveRefUrls = refUrls || (existingImageList.length > 0 ? existingImageList.slice(0, 2) : null);
 
       try {
         const { heroUrl, additionalUrls, shots } = await generateFullGallery(
