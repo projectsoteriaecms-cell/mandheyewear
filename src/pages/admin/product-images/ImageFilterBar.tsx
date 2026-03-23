@@ -83,6 +83,20 @@ export const ImageFilterBar = ({
           ))}
         </SelectContent>
       </Select>
+      <Select
+        value={brandTypeFilter}
+        onValueChange={(value) => onBrandTypeFilterChange(value as BrandTypeFilter)}
+      >
+        <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectValue placeholder="Brand Type" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Brands</SelectItem>
+          <SelectItem value="known">Known Brands</SelectItem>
+          <SelectItem value="house">House Brands</SelectItem>
+          <SelectItem value="no_brand">No Brand Set</SelectItem>
+        </SelectContent>
+      </Select>
       <ToggleGroup
         type="single"
         value={viewMode}
