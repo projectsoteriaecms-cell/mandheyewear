@@ -25,13 +25,19 @@ import { cn } from "@/lib/utils";
 import { useProductImageUpload } from "@/modules/products";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Image, CloudArrowUp, Lightning } from "@phosphor-icons/react";
+import { Image, CloudArrowUp, Lightning, Warning, Camera } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraggableImageItem } from "./DraggableImageItem";
 import { ImagePreviewLightbox } from "./ImagePreviewLightbox";
 import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  isKnownBrand,
+  MIN_REFERENCE_PHOTOS,
+  getImageReadiness,
+  READINESS_LABELS,
+} from "@/modules/products/lib/brand-classification";
 
 const MAX_IMAGES = 6; // 1 primary + 5 additional
 const SHOT_SLUGS = ["hero", "front", "side", "rear", "macro", "packaging"];
