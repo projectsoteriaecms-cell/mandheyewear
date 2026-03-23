@@ -25,22 +25,26 @@ import { cn } from "@/lib/utils";
 import { useProductImageUpload } from "@/modules/products";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Image, CloudArrowUp, Lightning, Warning, Camera } from "@phosphor-icons/react";
+import { Image, CloudArrowUp, Lightning, Warning, Camera, PencilSimple } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraggableImageItem } from "./DraggableImageItem";
 import { ImagePreviewLightbox } from "./ImagePreviewLightbox";
 import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
+import { PromptEditorPanel } from "./PromptEditorPanel";
 import { supabase } from "@/integrations/supabase/client";
 import {
   isKnownBrand,
   MIN_REFERENCE_PHOTOS,
-  getImageReadiness,
-  READINESS_LABELS,
 } from "@/modules/products/lib/brand-classification";
+import {
+  getProductPrompts,
+  SHOT_SLUGS,
+  type ShotPrompt,
+  type ProductForPrompt,
+} from "@/modules/products/lib/prompt-builders";
 
-const MAX_IMAGES = 6; // 1 primary + 5 additional
-const SHOT_SLUGS = ["hero", "front", "side", "rear", "macro", "packaging"];
+const MAX_IMAGES = 6;
 
 interface QuickImageUploadModalProps {
   product: {
@@ -51,6 +55,13 @@ interface QuickImageUploadModalProps {
     image_url: string | null;
     additional_images: string[] | null;
     item_type?: string | null;
+    color?: string | null;
+    material?: string | null;
+    style?: string | null;
+    gender?: string | null;
+    model_code?: string | null;
+    frame_shape?: string | null;
+    frame_material?: string | null;
   } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -69,58 +80,68 @@ export const QuickImageUploadModal = ({
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+  const [showPromptEditor, setShowPromptEditor] = useState(false);
+  const [promptEditorMode, setPromptEditorMode] = useState<"single" | "gallery">("gallery");
+  const [promptEditorSingleIndex, setPromptEditorSingleIndex] = useState<number | undefined>();
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   const primaryImage = product?.image_url;
   const additionalImages = product?.additional_images ?? [];
-  
-  // Combine all images into a unified list for drag-and-drop
   const allImages = primaryImage
     ? [primaryImage, ...additionalImages]
     : additionalImages;
-    
   const totalImages = allImages.length;
   const canAddMore = totalImages < MAX_IMAGES;
+
+  // Build prompts for the prompt editor
+  const productForPrompt: ProductForPrompt | null = product
+    ? {
+        name: product.name,
+        brand: product.brand,
+        color: product.color,
+        material: product.material,
+        style: product.style,
+        gender: product.gender,
+        item_type: product.item_type,
+        model_code: product.model_code,
+        frame_shape: product.frame_shape,
+        frame_material: product.frame_material,
+      }
+    : null;
+
+  const isKnown = product ? isKnownBrand(product.brand) : false;
+  const isHouseBrandBlocked = product
+    ? !isKnown && totalImages < MIN_REFERENCE_PHOTOS && product.item_type === "frames"
+    : false;
+  const useReferenceMode = !isKnown && totalImages >= MIN_REFERENCE_PHOTOS;
+
+  const prompts: ShotPrompt[] = productForPrompt
+    ? getProductPrompts(productForPrompt, useReferenceMode)
+    : [];
 
   const handleFileSelect = useCallback(
     async (files: FileList | null) => {
       if (!files || !product) return;
-
       const validFiles: File[] = [];
       for (const file of Array.from(files)) {
         const error = validateFile(file);
-        if (error) {
-          toast.error(`${file.name}: ${error}`);
-        } else {
-          validFiles.push(file);
-        }
+        if (error) { toast.error(`${file.name}: ${error}`); } else { validFiles.push(file); }
       }
-
       if (validFiles.length === 0) return;
-
       setIsUploading(true);
       try {
         for (const file of validFiles) {
-          // If no primary image, set first as primary
           const isPrimary = !primaryImage && validFiles.indexOf(file) === 0;
           await uploadProductImage(product.id, file, isPrimary);
         }
         toast.success(`Uploaded ${validFiles.length} image(s)`);
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
-      } finally {
-        setIsUploading(false);
-      }
+      } finally { setIsUploading(false); }
     },
     [product, primaryImage, uploadProductImage, validateFile, queryClient]
   );
@@ -128,7 +149,6 @@ export const QuickImageUploadModal = ({
   const handleDelete = useCallback(
     async (imageUrl: string) => {
       if (!product) return;
-
       const isPrimary = imageUrl === primaryImage;
       setIsUploading(true);
       try {
@@ -138,9 +158,7 @@ export const QuickImageUploadModal = ({
           queryClient.invalidateQueries({ queryKey: ["admin-products"] });
           queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
         }
-      } finally {
-        setIsUploading(false);
-      }
+      } finally { setIsUploading(false); }
     },
     [product, primaryImage, deleteProductImage, queryClient]
   );
@@ -148,26 +166,16 @@ export const QuickImageUploadModal = ({
   const handleSetPrimary = useCallback(
     async (imageUrl: string) => {
       if (!product) return;
-
       setIsUploading(true);
       try {
-        // Reorder: move selected image to first position
         const currentIndex = allImages.indexOf(imageUrl);
         if (currentIndex > 0) {
           const newOrder = arrayMove(allImages, currentIndex, 0);
-          const newPrimary = newOrder[0];
-          const newAdditional = newOrder.slice(1);
-
           const { error } = await supabase
             .from("products")
-            .update({
-              image_url: newPrimary,
-              additional_images: newAdditional.length > 0 ? newAdditional : null,
-            })
+            .update({ image_url: newOrder[0], additional_images: newOrder.slice(1).length > 0 ? newOrder.slice(1) : null })
             .eq("id", product.id);
-
           if (error) throw error;
-
           toast.success("Primary image updated");
           queryClient.invalidateQueries({ queryKey: ["admin-products"] });
           queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
@@ -175,9 +183,7 @@ export const QuickImageUploadModal = ({
       } catch (error) {
         console.error("Error setting primary:", error);
         toast.error("Failed to update primary image");
-      } finally {
-        setIsUploading(false);
-      }
+      } finally { setIsUploading(false); }
     },
     [product, allImages, queryClient]
   );
@@ -185,129 +191,129 @@ export const QuickImageUploadModal = ({
   const handleDragEnd = useCallback(
     async (event: DragEndEvent) => {
       const { active, over } = event;
-
       if (!over || !product || active.id === over.id) return;
-
       const oldIndex = allImages.indexOf(active.id as string);
       const newIndex = allImages.indexOf(over.id as string);
-
       const newOrder = arrayMove(allImages, oldIndex, newIndex);
-      const newPrimary = newOrder[0];
-      const newAdditional = newOrder.slice(1);
-
       setIsUploading(true);
       try {
         const { error } = await supabase
           .from("products")
-          .update({
-            image_url: newPrimary,
-            additional_images: newAdditional.length > 0 ? newAdditional : null,
-          })
+          .update({ image_url: newOrder[0], additional_images: newOrder.slice(1).length > 0 ? newOrder.slice(1) : null })
           .eq("id", product.id);
-
         if (error) throw error;
-
         toast.success("Image order updated");
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       } catch (error) {
         console.error("Error reordering images:", error);
         toast.error("Failed to reorder images");
-      } finally {
-        setIsUploading(false);
-      }
+      } finally { setIsUploading(false); }
     },
     [product, allImages, queryClient]
   );
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
-
+  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); }, []);
+  const handleDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); }, []);
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragging(false);
-      handleFileSelect(e.dataTransfer.files);
-    },
+    (e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); handleFileSelect(e.dataTransfer.files); },
     [handleFileSelect]
   );
 
-  const handleRegenerate = useCallback(async () => {
-    if (!product) return;
+  // Generate a single shot with optional custom prompt
+  const handleGenerateSingleShot = useCallback(async (index: number, customPrompt: string) => {
+    if (!product || index < 0 || index >= SHOT_SLUGS.length) return;
+    const shotSlug = SHOT_SLUGS[index];
+    const defaultPrompt = prompts[index]?.prompt;
+    const isCustom = customPrompt !== defaultPrompt;
+
+    setRegeneratingIndex(index);
     setIsRegenerating(true);
     try {
-      // For house brands with existing images, pass them as references
-      const isKnown = isKnownBrand(product.brand);
-      const refUrls = !isKnown && allImages.length >= MIN_REFERENCE_PHOTOS
+      const refUrls = useReferenceMode && allImages.length >= MIN_REFERENCE_PHOTOS
         ? allImages.slice(0, MIN_REFERENCE_PHOTOS)
         : undefined;
 
-      const { data, error } = await supabase.functions.invoke("generate-product-image", {
-        body: {
-          productId: product.id,
-          ...(refUrls ? { referenceImageUrls: refUrls } : {}),
-        },
-      });
-      if (error) throw error;
-      if (data?.code === "HOUSE_BRAND_NEEDS_REFERENCES") {
-        toast.error(data.error);
-        return;
-      }
-      if (data?.succeeded > 0) {
-        toast.success(`Generated ${data.results?.[0]?.shots || 1} image(s) for ${product.sku}`);
-        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
-      } else {
-        toast.error(data?.results?.[0]?.error || "Failed to generate images");
-      }
-    } catch (err) {
-      console.error("Generation error:", err);
-      toast.error("Failed to generate images");
-    } finally {
-      setIsRegenerating(false);
-    }
-  }, [product, allImages, queryClient]);
+      const body: Record<string, unknown> = { productId: product.id, shotSlug };
+      if (isCustom) body.customPrompt = customPrompt;
+      if (refUrls) body.referenceImageUrls = refUrls;
 
-  const handleRegenerateShot = useCallback(async (index: number) => {
-    if (!product || index < 0 || index >= SHOT_SLUGS.length) return;
-    const shotSlug = SHOT_SLUGS[index];
-    setRegeneratingIndex(index);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-product-image", {
-        body: { productId: product.id, shotSlug },
-      });
+      const { data, error } = await supabase.functions.invoke("generate-product-image", { body });
       if (error) throw error;
       if (data?.succeeded > 0) {
-        toast.success(`Regenerated "${IMAGE_POSITION_LABELS[index] || shotSlug}" for ${product.sku}`);
+        toast.success(`Generated "${prompts[index]?.label || shotSlug}" for ${product.sku}`);
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
       } else {
-        toast.error(data?.results?.[0]?.error || `Failed to regenerate ${shotSlug}`);
+        toast.error(data?.results?.[0]?.error || `Failed to generate ${shotSlug}`);
       }
     } catch (err) {
-      console.error(`Shot regeneration error (${shotSlug}):`, err);
-      toast.error(`Failed to regenerate ${shotSlug}`);
+      console.error(`Shot generation error (${shotSlug}):`, err);
+      toast.error(`Failed to generate ${shotSlug}`);
     } finally {
       setRegeneratingIndex(null);
+      setIsRegenerating(false);
     }
-  }, [product, queryClient]);
+  }, [product, prompts, useReferenceMode, allImages, queryClient]);
+
+  // Generate all shots (full gallery) with optional custom prompts
+  const handleGenerateAll = useCallback(async (customPrompts: Record<string, string>) => {
+    if (!product) return;
+    setIsRegenerating(true);
+    try {
+      const refUrls = useReferenceMode && allImages.length >= MIN_REFERENCE_PHOTOS
+        ? allImages.slice(0, MIN_REFERENCE_PHOTOS)
+        : undefined;
+
+      // Generate each shot sequentially so user can see progress
+      for (let i = 0; i < SHOT_SLUGS.length; i++) {
+        const shotSlug = SHOT_SLUGS[i];
+        setRegeneratingIndex(i);
+
+        const body: Record<string, unknown> = { productId: product.id, shotSlug };
+        if (customPrompts[shotSlug]) body.customPrompt = customPrompts[shotSlug];
+        if (refUrls) body.referenceImageUrls = refUrls;
+
+        const { data, error } = await supabase.functions.invoke("generate-product-image", { body });
+        if (error) throw error;
+        if (data?.succeeded === 0) {
+          toast.error(`Failed on ${shotSlug}: ${data?.results?.[0]?.error || "unknown"}`);
+          break;
+        }
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      }
+
+      toast.success(`Gallery generated for ${product.sku}`);
+      queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+    } catch (err) {
+      console.error("Gallery generation error:", err);
+      toast.error("Failed to generate gallery");
+    } finally {
+      setIsRegenerating(false);
+      setRegeneratingIndex(null);
+    }
+  }, [product, useReferenceMode, allImages, queryClient]);
+
+  // Open prompt editor for full gallery
+  const openGalleryPromptEditor = useCallback(() => {
+    setPromptEditorMode("gallery");
+    setPromptEditorSingleIndex(undefined);
+    setShowPromptEditor(true);
+  }, []);
+
+  // Open prompt editor for a single shot
+  const openShotPromptEditor = useCallback((index: number) => {
+    setPromptEditorMode("single");
+    setPromptEditorSingleIndex(index);
+    setShowPromptEditor(true);
+  }, []);
 
   if (!product) return null;
 
-  const isKnown = isKnownBrand(product.brand);
-  const readiness = getImageReadiness(product.brand, product.image_url, product.additional_images);
-  const isHouseBrandBlocked = !isKnown && totalImages < MIN_REFERENCE_PHOTOS && product.item_type === "frames";
   const aiButtonLabel = isKnown
-    ? "Regenerate with AI"
+    ? "Generate with AI"
     : totalImages >= MIN_REFERENCE_PHOTOS
-      ? "Generate Gallery from References"
+      ? "Generate from References"
       : `Upload ${MIN_REFERENCE_PHOTOS - totalImages} more photo(s) first`;
 
   return (
@@ -319,22 +325,32 @@ export const QuickImageUploadModal = ({
               <Image className="h-5 w-5" />
               Manage Images
             </DialogTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRegenerate}
-              disabled={isRegenerating || isUploading || isHouseBrandBlocked}
-              className="ml-auto"
-            >
-              {isRegenerating ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-1" />
-              ) : isHouseBrandBlocked ? (
-                <Camera className="h-4 w-4 mr-1" />
-              ) : (
-                <Lightning className="h-4 w-4 mr-1" weight="fill" />
-              )}
-              {isRegenerating ? "Generating..." : aiButtonLabel}
-            </Button>
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openGalleryPromptEditor}
+                disabled={isRegenerating || isUploading || isHouseBrandBlocked}
+              >
+                <PencilSimple className="h-4 w-4 mr-1" />
+                Edit Prompts
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleGenerateAll({})}
+                disabled={isRegenerating || isUploading || isHouseBrandBlocked}
+              >
+                {isRegenerating ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                ) : isHouseBrandBlocked ? (
+                  <Camera className="h-4 w-4 mr-1" />
+                ) : (
+                  <Lightning className="h-4 w-4 mr-1" weight="fill" />
+                )}
+                {isRegenerating ? "Generating..." : aiButtonLabel}
+              </Button>
+            </div>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{product.name}</span>
@@ -344,7 +360,6 @@ export const QuickImageUploadModal = ({
             </Badge>
           </div>
 
-          {/* PDCA Quality Gate Warning */}
           {isHouseBrandBlocked && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 mt-2">
               <div className="flex items-start gap-2">
@@ -363,18 +378,26 @@ export const QuickImageUploadModal = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Instructions */}
           <p className="text-xs text-muted-foreground">
-            Drag to reorder • First image is primary
+            Drag to reorder • First image is primary • Click ✏️ on a shot to edit its prompt
           </p>
+
+          {/* Prompt Editor Panel */}
+          {showPromptEditor && prompts.length > 0 && (
+            <PromptEditorPanel
+              prompts={prompts}
+              isGenerating={isRegenerating}
+              generatingIndex={regeneratingIndex}
+              onGenerate={handleGenerateSingleShot}
+              onGenerateAll={handleGenerateAll}
+              mode={promptEditorMode}
+              singleIndex={promptEditorSingleIndex}
+            />
+          )}
 
           {/* Draggable Image Grid */}
           {allImages.length > 0 ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={allImages} strategy={rectSortingStrategy}>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                   {allImages.map((url, idx) => {
@@ -391,7 +414,7 @@ export const QuickImageUploadModal = ({
                         onDelete={handleDelete}
                         onSetPrimary={idx !== 0 ? handleSetPrimary : undefined}
                         onPreview={() => setPreviewIndex(idx)}
-                        onRegenerate={isFrame && idx < SHOT_SLUGS.length ? () => handleRegenerateShot(idx) : undefined}
+                        onRegenerate={isFrame && idx < SHOT_SLUGS.length ? () => openShotPromptEditor(idx) : undefined}
                       />
                     );
                   })}
@@ -426,15 +449,9 @@ export const QuickImageUploadModal = ({
               ) : (
                 <>
                   <CloudArrowUp className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm font-medium">
-                    Drag & drop images here, or click to select
-                  </p>
+                  <p className="text-sm font-medium">Drag & drop images here, or click to select</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    JPG, PNG, or WebP up to 7MB each. {MAX_IMAGES - totalImages} slot(s)
-                    remaining.
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Positions: {IMAGE_POSITION_LABELS.slice(allImages.length, allImages.length + 3).join(", ")}...
+                    JPG, PNG, or WebP up to 7MB each. {MAX_IMAGES - totalImages} slot(s) remaining.
                   </p>
                   <input
                     type="file"
@@ -455,12 +472,11 @@ export const QuickImageUploadModal = ({
           )}
         </div>
 
-        {/* Image Preview Lightbox */}
         <ImagePreviewLightbox
           images={allImages}
           currentIndex={previewIndex ?? 0}
           open={previewIndex !== null}
-          onOpenChange={(open) => { if (!open) setPreviewIndex(null); }}
+          onOpenChange={(o) => { if (!o) setPreviewIndex(null); }}
           onIndexChange={setPreviewIndex}
         />
       </DialogContent>
