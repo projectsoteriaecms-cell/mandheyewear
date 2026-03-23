@@ -575,13 +575,15 @@ serve(async (req) => {
       console.log(`🔄 Regenerating images for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase
         .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images")
+        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, frame_attributes(model_code, frame_shape, frame_material, front_color)")
         .eq("id", productId)
         .single();
 
       if (fetchErr || !product) {
         return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
       }
+      const fa2 = Array.isArray(product.frame_attributes) ? product.frame_attributes[0] : product.frame_attributes;
+      if (fa2) { Object.assign(product, { model_code: fa2.model_code, frame_shape: fa2.frame_shape, frame_material: fa2.frame_material }); }
 
       // PDCA gate: house brands need reference photos for frames
       const isFrame = product.item_type === "frames";
