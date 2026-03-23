@@ -517,7 +517,7 @@ export const GenerateImagesDialog = ({
               </div>
             )}
 
-            <div className="grid grid-cols-3 gap-3 text-center text-sm">
+            <div className={cn("grid gap-3 text-center text-sm", skippedCount > 0 ? "grid-cols-4" : "grid-cols-3")}>
               <div>
                 <p className="text-muted-foreground">Processed</p>
                 <p className="text-lg font-semibold">{processed.toLocaleString()}</p>
@@ -534,6 +534,14 @@ export const GenerateImagesDialog = ({
                 </p>
                 <p className="text-lg font-semibold text-destructive">{failed.toLocaleString()}</p>
               </div>
+              {skippedCount > 0 && (
+                <div>
+                  <p className="text-muted-foreground flex items-center justify-center gap-1">
+                    <SkipForward className="h-3 w-3" /> Skipped
+                  </p>
+                  <p className="text-lg font-semibold text-muted-foreground">{skippedCount.toLocaleString()}</p>
+                </div>
+              )}
             </div>
 
             {status === "running" && (
