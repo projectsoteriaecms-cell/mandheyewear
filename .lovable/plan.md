@@ -1,54 +1,37 @@
 
 
-## Inventory Dashboard Findings and Required Fixes
+## Test AI Image Generation: M&H Kids Frame 8130-C6
 
-### Current State (Post-Sync)
+### What we're doing
+Insert a test product for **M&H Kids 8130-52 15-138 C6** into the database, generate a 6-shot AI gallery, then visually verify the output matches expectations for a children's frame.
 
-| Metric | Value | Explanation |
-|---|---|---|
-| Total inventory rows | 8,600 | Created by the latest sync |
-| Total stock units | **0** | Zoho returns `stock_on_hand = 0` for all items |
-| Low stock alerts | 8,600 | All rows are at 0, which is below threshold |
-| Out of stock | 8,600 | All rows have exactly 0 |
-| M&H products | **0** | Every single product has `brand_line = 'soteria_medical'` |
+### Frame specifications
+- **Brand**: M&H Kids
+- **Model**: 8130
+- **Lens width**: 52mm
+- **Bridge size**: 15mm
+- **Temple length**: 138mm
+- **Color variant**: C6
 
-### Three Problems Identified
+### Steps
 
-**1. Zoho returns zero stock for all items**
-The sync processed 8,600 items and created inventory rows, but Zoho Books returned `stock_on_hand = 0` for every one. This is likely because:
-- Zoho Books (not Zoho Inventory) may not track physical stock by default
-- The API endpoint may need the `?warehouse_id=...` parameter to get real quantities
-- Or these items genuinely aren't stock-tracked in Zoho
+**Step 1: Insert test product**
+- Insert into `products` table: SKU `TEST-MH-KIDS-8130-C6`, name `Frame : M&H Kids 8130-52 15-138 C6`, brand `M&H Kids`, item_type `frames`, brand_line `m_and_h_fashion`, price `0`, is_active `true`
+- Insert into `frame_attributes` table: lens_width `52`, bridge_size `15`, temple_length `138`, model_code `8130`, front_color `C6`
 
-Without diagnostic logs (they appear to have rotated), we can't confirm what Zoho returned. We need to re-run the sync with more visible logging or make a direct test API call.
+**Step 2: Generate images**
+- Call `generate-product-image` edge function with the new product ID
+- This will produce the standard 6-shot luxury gallery (Hero, Front, Side, Rear, Macro, Packaging)
+- Since M&H Kids is a house brand, packaging will use M&H Opticals branding
 
-**2. ALL products are `soteria_medical` — zero `m_and_h_fashion`**
-The `brand_line` column has only one value across all 11,400 products. The earlier filter we added (`useProducts("m_and_h_fashion", true)`) means the **storefront currently shows nothing** from the database query. Products with images that appear on the shop are likely from a cached state or the ECMS imports that aren't Zoho-linked.
+**Step 3: Visual verification**
+- Open the product in the browser to inspect all 6 generated shots
+- Check that the frame looks appropriately sized for a children's frame given the 52-15-138 measurements
+- Verify color variant C6 interpretation and M&H branding on packaging
 
-We need to either:
-- Identify which products are M&H and update their `brand_line` (by name pattern, category, or Zoho group)
-- Or temporarily remove the `m_and_h_fashion` filter until the separation is properly done
+**Step 4: Clean up**
+- After verification, deactivate the test product (`is_active = false`) so it doesn't appear on the storefront
 
-**3. 1,250 ECMS products (with images) aren't in inventory**
-The products that actually have images (ECMS imports) don't have `zoho_item_id` set, so the sync skipped them. They also don't have inventory rows since we deleted the orphaned ECMS rows. These are the products customers can see, but they have no stock data.
-
-### Recommended Fix Plan
-
-**Step 1: Investigate Zoho stock data** — Make a direct API call to Zoho Books to check if `stock_on_hand` is genuinely 0 or if we need a different API parameter (e.g., composite items, or Zoho Inventory vs Books).
-
-**Step 2: Fix brand_line classification** — Update the ECMS-imported products (those with images, which are the M&H eyewear products) to `brand_line = 'm_and_h_fashion'`. These are the ones with names like "Frame : M&H...", "CHANEL...", "LA VITA...", "SUNNY CORD..." etc.
-
-**Step 3: Create inventory rows for M&H products** — Insert inventory records for the ~1,250 ECMS products at the Warri Head Office branch with a reasonable default stock level (or 0 until real counts come in).
-
-**Step 4: Re-verify dashboard counts** — After fixes, the dashboard should show meaningful numbers.
-
-### Technical Changes
-
-1. **Database update** — `UPDATE products SET brand_line = 'm_and_h_fashion' WHERE zoho_item_id IS NULL AND image_url IS NOT NULL` (the ECMS imports with images are the M&H eyewear products)
-
-2. **Database insert** — Create inventory rows for M&H products at Warri Head Office with `quantity_on_hand = 0` so they at least appear in inventory management
-
-3. **Edge function** — Add a direct Zoho API test call to check what stock data actually looks like for a known item, before adjusting the sync logic further
-
-4. **`useInventoryStats` hook** — Optionally filter dashboard stats by branch or brand_line so the admin sees M&H-relevant numbers
+### Files changed
+- No code changes — only database inserts and an edge function invocation
 
