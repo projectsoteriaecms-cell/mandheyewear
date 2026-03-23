@@ -525,9 +525,9 @@ serve(async (req) => {
         while (attempts < 3) {
           try {
             if (useReference) {
-              imageData = await editImage(shot.prompt, referenceImageUrls![0], GEMINI_API_KEY, LOVABLE_API_KEY);
+              imageData = await editImage(finalPrompt, referenceImageUrls![0], GEMINI_API_KEY, LOVABLE_API_KEY);
             } else {
-              imageData = await generateImage(shot.prompt, GEMINI_API_KEY, LOVABLE_API_KEY);
+              imageData = await generateImage(finalPrompt, GEMINI_API_KEY, LOVABLE_API_KEY);
             }
             break;
           } catch (err: any) {
