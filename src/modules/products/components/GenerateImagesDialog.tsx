@@ -418,6 +418,12 @@ export const GenerateImagesDialog = ({
                           {selectionSummary.nonFrames > 0 && `${selectionSummary.nonFrames} other${selectionSummary.nonFrames !== 1 ? "s" : ""} (${selectionSummary.nonFrames} shot${selectionSummary.nonFrames !== 1 ? "s" : ""})`}
                           {" = "}~{selectionSummary.totalShots} API calls • ~{estimatedMinutes} min
                         </p>
+                        {selectionSummary.houseBrandFrames > 0 && (
+                          <p className="text-xs mt-1 flex items-center gap-1">
+                            <SkipForward className="h-3 w-3" />
+                            {selectionSummary.houseBrandFrames} house brand frame{selectionSummary.houseBrandFrames !== 1 ? "s" : ""} may be skipped if missing reference photos
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
