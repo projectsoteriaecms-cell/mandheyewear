@@ -1,0 +1,1 @@
+UPDATE products SET image_url = 'https://ispizamxlrukxmysgyjv.supabase.co/storage/v1/object/public/product-images/la-martina-mav718/ref-col01-hero.webp' WHERE id = '3dc36276-7a78-42aa-bc57-0ef7856139f1';
