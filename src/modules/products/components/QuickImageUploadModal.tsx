@@ -301,6 +301,15 @@ export const QuickImageUploadModal = ({
 
   if (!product) return null;
 
+  const isKnown = isKnownBrand(product.brand);
+  const readiness = getImageReadiness(product.brand, product.image_url, product.additional_images);
+  const isHouseBrandBlocked = !isKnown && totalImages < MIN_REFERENCE_PHOTOS && product.item_type === "frames";
+  const aiButtonLabel = isKnown
+    ? "Regenerate with AI"
+    : totalImages >= MIN_REFERENCE_PHOTOS
+      ? "Generate Gallery from References"
+      : `Upload ${MIN_REFERENCE_PHOTOS - totalImages} more photo(s) first`;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -314,15 +323,17 @@ export const QuickImageUploadModal = ({
               variant="outline"
               size="sm"
               onClick={handleRegenerate}
-              disabled={isRegenerating || isUploading}
+              disabled={isRegenerating || isUploading || isHouseBrandBlocked}
               className="ml-auto"
             >
               {isRegenerating ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : isHouseBrandBlocked ? (
+                <Camera className="h-4 w-4 mr-1" />
               ) : (
                 <Lightning className="h-4 w-4 mr-1" weight="fill" />
               )}
-              {isRegenerating ? "Regenerating..." : "Regenerate with AI"}
+              {isRegenerating ? "Generating..." : aiButtonLabel}
             </Button>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -332,6 +343,23 @@ export const QuickImageUploadModal = ({
               {totalImages}/{MAX_IMAGES} images
             </Badge>
           </div>
+
+          {/* PDCA Quality Gate Warning */}
+          {isHouseBrandBlocked && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 mt-2">
+              <div className="flex items-start gap-2">
+                <Warning className="h-4 w-4 mt-0.5 flex-shrink-0" weight="fill" />
+                <div>
+                  <p className="font-medium">Reference photos required</p>
+                  <p className="text-xs opacity-80 mt-0.5">
+                    "{product.brand || "House brand"}" is not a known international brand.
+                    Upload at least {MIN_REFERENCE_PHOTOS} real photos so the AI can accurately
+                    reproduce this specific frame design.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </DialogHeader>
 
         <div className="space-y-4">
