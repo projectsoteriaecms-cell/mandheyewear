@@ -167,6 +167,7 @@ export const GenerateImagesDialog = ({
     setProcessed(0);
     setSucceeded(0);
     setFailed(0);
+    setSkippedCount(0);
     setErrors([]);
     setSelectedTypes([]);
     setBatchLimit("10");
