@@ -645,7 +645,7 @@ serve(async (req) => {
 
     let productQuery = supabase
       .from("products")
-      .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images")
+      .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, frame_attributes(model_code, frame_shape, frame_material, front_color)")
       .eq("is_active", true)
       .or("image_url.is.null,image_url.eq.")
       .order("item_type", { ascending: true })
