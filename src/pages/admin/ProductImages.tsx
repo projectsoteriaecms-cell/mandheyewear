@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
 import { RoleGuard } from "@/modules/auth/components/RoleGuard";
 import { useAdminProducts, useProductImageStats } from "@/modules/products";
-import { isKnownBrand } from "@/modules/products/lib/brand-classification";
+import { isKnownBrand, isHouseBrand } from "@/modules/products/lib/brand-classification";
 import { ProductImageCard } from "@/modules/products/components/ProductImageCard";
 import { ProductImageListView } from "@/modules/products/components/ProductImageListView";
 import { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
@@ -51,7 +51,7 @@ const ProductImages = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<ImageFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [brandTypeFilter, setBrandTypeFilter] = useState<"all" | "known" | "house" | "no_brand">("all");
+  const [brandTypeFilter, setBrandTypeFilter] = useState<"all" | "known" | "house">("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -113,9 +113,7 @@ const ProductImages = () => {
     if (brandTypeFilter === "known") {
       result = result.filter((p) => isKnownBrand(p.brand));
     } else if (brandTypeFilter === "house") {
-      result = result.filter((p) => p.brand && !isKnownBrand(p.brand));
-    } else if (brandTypeFilter === "no_brand") {
-      result = result.filter((p) => !p.brand);
+      result = result.filter((p) => isHouseBrand(p.brand));
     }
     switch (filter) {
       case "with_images": result = result.filter((p) => p.image_url); break;
