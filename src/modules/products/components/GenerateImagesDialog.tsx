@@ -99,6 +99,7 @@ export const GenerateImagesDialog = ({
   const [processed, setProcessed] = useState(0);
   const [succeeded, setSucceeded] = useState(0);
   const [failed, setFailed] = useState(0);
+  const [skippedCount, setSkippedCount] = useState(0);
   const [errors, setErrors] = useState<BatchResult[]>([]);
   const [currentProduct, setCurrentProduct] = useState<{ sku: string; name: string; brand?: string | null } | null>(null);
   const [pauseReason, setPauseReason] = useState<string | null>(null);
