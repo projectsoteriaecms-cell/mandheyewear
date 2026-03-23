@@ -180,7 +180,7 @@ async function syncStockForItems(
       for (const wh of warehouses) {
         const locId = String(wh.warehouse_id || "");
         const locName = String(wh.warehouse_name || "");
-        const stockOnHand = Number(wh.warehouse_stock_on_hand ?? 0);
+        const stockOnHand = Number(wh.warehouse_actual_available_stock ?? wh.warehouse_available_stock ?? wh.warehouse_stock_on_hand ?? 0);
 
         if (!locId) continue;
 
