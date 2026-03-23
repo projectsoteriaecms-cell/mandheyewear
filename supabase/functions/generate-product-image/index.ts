@@ -28,6 +28,7 @@ const LUXURY_BRANDS = new Set([
   "DANIEL HECHTER", "JOHN RICHMOND", "LA MARTINA", "WILLIAMS MORRIS",
   "COLUMBIA", "PIERRE CARDIN", "MIRAFLEX",
   "JIMMY FAIRLY",
+  "FREIGEIST",
 ]);
 
 function isBrandedFrame(brand: string | null): boolean {
@@ -42,10 +43,17 @@ const MIN_REFERENCE_PHOTOS = 2;
 function describeProduct(p: any): string {
   const parts: string[] = [];
   if (p.brand) parts.push(p.brand);
-  parts.push(p.name);
+  // Prefer model_code from frame_attributes for precision
+  if (p.model_code) {
+    parts.push(`Model ${p.model_code}`);
+  } else {
+    parts.push(p.name);
+  }
   if (p.color) parts.push(`in ${p.color}`);
-  if (p.material) parts.push(`(${p.material})`);
-  if (p.style) parts.push(`${p.style} style`);
+  if (p.frame_material || p.material) parts.push(`(${p.frame_material || p.material})`);
+  if (p.frame_shape) parts.push(`${p.frame_shape} shape`);
+  else if (p.style) parts.push(`${p.style} style`);
+  if (p.gender && p.gender !== "unisex") parts.push(`for ${p.gender}`);
   return parts.join(" ");
 }
 
@@ -486,13 +494,16 @@ serve(async (req) => {
       console.log(`🔄 Regenerating single shot "${shotSlug}" for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase
         .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images")
+        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, frame_attributes(model_code, frame_shape, frame_material, front_color)")
         .eq("id", productId)
         .single();
 
       if (fetchErr || !product) {
         return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
       }
+      // Flatten frame_attributes into product for prompt building
+      const fa = Array.isArray(product.frame_attributes) ? product.frame_attributes[0] : product.frame_attributes;
+      if (fa) { Object.assign(product, { model_code: fa.model_code, frame_shape: fa.frame_shape, frame_material: fa.frame_material }); }
 
       const SHOT_SLUGS = ["hero", "front", "side", "rear", "macro", "packaging"];
       const shotIndex = SHOT_SLUGS.indexOf(shotSlug);
@@ -564,13 +575,15 @@ serve(async (req) => {
       console.log(`🔄 Regenerating images for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase
         .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images")
+        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, frame_attributes(model_code, frame_shape, frame_material, front_color)")
         .eq("id", productId)
         .single();
 
       if (fetchErr || !product) {
         return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
       }
+      const fa2 = Array.isArray(product.frame_attributes) ? product.frame_attributes[0] : product.frame_attributes;
+      if (fa2) { Object.assign(product, { model_code: fa2.model_code, frame_shape: fa2.frame_shape, frame_material: fa2.frame_material }); }
 
       // PDCA gate: house brands need reference photos for frames
       const isFrame = product.item_type === "frames";
@@ -632,7 +645,7 @@ serve(async (req) => {
 
     let productQuery = supabase
       .from("products")
-      .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images")
+      .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, frame_attributes(model_code, frame_shape, frame_material, front_color)")
       .eq("is_active", true)
       .or("image_url.is.null,image_url.eq.")
       .order("item_type", { ascending: true })
@@ -653,6 +666,12 @@ serve(async (req) => {
       const pb = ITEM_TYPE_PRIORITY[b.item_type || "other"] || 99;
       return pa - pb;
     });
+
+    // Flatten frame_attributes for each product
+    for (const p of products) {
+      const fa = Array.isArray(p.frame_attributes) ? p.frame_attributes[0] : p.frame_attributes;
+      if (fa) { Object.assign(p, { model_code: fa.model_code, frame_shape: fa.frame_shape, frame_material: fa.frame_material }); }
+    }
 
     const results: Array<{ productId: string; sku: string; name: string; brand: string | null; success: boolean; error?: string; shots?: number; skipped?: boolean }> = [];
     let succeeded = 0;

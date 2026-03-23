@@ -18,6 +18,7 @@ export const LUXURY_BRANDS = new Set([
   "DANIEL HECHTER", "JOHN RICHMOND", "LA MARTINA", "WILLIAMS MORRIS",
   "COLUMBIA", "PIERRE CARDIN", "MIRAFLEX",
   "JIMMY FAIRLY",
+  "FREIGEIST",
 ]);
 
 export function isKnownBrand(brand: string | null | undefined): boolean {
