@@ -11,6 +11,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MagnifyingGlass, SquaresFour, List, Cursor, X } from "@phosphor-icons/react";
 
 type ImageFilter = "all" | "with_images" | "missing_primary" | "complete";
+type BrandTypeFilter = "all" | "known" | "house" | "no_brand";
 type ViewMode = "grid" | "list";
 
 interface ImageFilterBarProps {
@@ -20,6 +21,8 @@ interface ImageFilterBarProps {
   onFilterChange: (value: ImageFilter) => void;
   categoryFilter: string;
   onCategoryFilterChange: (value: string) => void;
+  brandTypeFilter: BrandTypeFilter;
+  onBrandTypeFilterChange: (value: BrandTypeFilter) => void;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   selectMode: boolean;
@@ -34,6 +37,8 @@ export const ImageFilterBar = ({
   onFilterChange,
   categoryFilter,
   onCategoryFilterChange,
+  brandTypeFilter,
+  onBrandTypeFilterChange,
   viewMode,
   onViewModeChange,
   selectMode,
@@ -76,6 +81,20 @@ export const ImageFilterBar = ({
               {opt.label} ({opt.count})
             </SelectItem>
           ))}
+        </SelectContent>
+      </Select>
+      <Select
+        value={brandTypeFilter}
+        onValueChange={(value) => onBrandTypeFilterChange(value as BrandTypeFilter)}
+      >
+        <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectValue placeholder="Brand Type" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Brands</SelectItem>
+          <SelectItem value="known">Known Brands</SelectItem>
+          <SelectItem value="house">House Brands</SelectItem>
+          <SelectItem value="no_brand">No Brand Set</SelectItem>
         </SelectContent>
       </Select>
       <ToggleGroup

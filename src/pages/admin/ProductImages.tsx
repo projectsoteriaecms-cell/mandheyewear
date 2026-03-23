@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
 import { RoleGuard } from "@/modules/auth/components/RoleGuard";
 import { useAdminProducts, useProductImageStats } from "@/modules/products";
+import { isKnownBrand } from "@/modules/products/lib/brand-classification";
 import { ProductImageCard } from "@/modules/products/components/ProductImageCard";
 import { ProductImageListView } from "@/modules/products/components/ProductImageListView";
 import { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
@@ -50,6 +51,7 @@ const ProductImages = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<ImageFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [brandTypeFilter, setBrandTypeFilter] = useState<"all" | "known" | "house" | "no_brand">("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -95,7 +97,7 @@ const ProductImages = () => {
       .sort((a, b) => b.count - a.count);
   }, [serverCategoryStats, products]);
 
-  const isFiltered = searchTerm || categoryFilter !== "all" || filter !== "all";
+  const isFiltered = searchTerm || categoryFilter !== "all" || filter !== "all" || brandTypeFilter !== "all";
 
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -108,6 +110,13 @@ const ProductImages = () => {
     if (categoryFilter !== "all") {
       result = result.filter((p) => (p.item_type || "other") === categoryFilter);
     }
+    if (brandTypeFilter === "known") {
+      result = result.filter((p) => isKnownBrand(p.brand));
+    } else if (brandTypeFilter === "house") {
+      result = result.filter((p) => p.brand && !isKnownBrand(p.brand));
+    } else if (brandTypeFilter === "no_brand") {
+      result = result.filter((p) => !p.brand);
+    }
     switch (filter) {
       case "with_images": result = result.filter((p) => p.image_url); break;
       case "missing_primary": result = result.filter((p) => !p.image_url); break;
@@ -119,7 +128,7 @@ const ProductImages = () => {
       if (aHas !== bHas) return bHas - aHas;
       return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     });
-  }, [products, searchTerm, filter, categoryFilter]);
+  }, [products, searchTerm, filter, categoryFilter, brandTypeFilter]);
 
   const filteredStats = useMemo(() => {
     if (!isFiltered) return null;
@@ -209,6 +218,8 @@ const ProductImages = () => {
             onFilterChange={setFilter}
             categoryFilter={categoryFilter}
             onCategoryFilterChange={(v) => { setCategoryFilter(v); setVisibleCount(ITEMS_PER_PAGE); }}
+            brandTypeFilter={brandTypeFilter}
+            onBrandTypeFilterChange={(v) => { setBrandTypeFilter(v); setVisibleCount(ITEMS_PER_PAGE); }}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             selectMode={selectMode}
