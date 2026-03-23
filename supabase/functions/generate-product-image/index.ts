@@ -556,18 +556,21 @@ serve(async (req) => {
       const fa2 = Array.isArray(product.frame_attributes) ? product.frame_attributes[0] : product.frame_attributes;
       if (fa2) { Object.assign(product, { model_code: fa2.model_code, frame_shape: fa2.frame_shape, frame_material: fa2.frame_material }); }
 
-      // PDCA gate: house brands need reference photos for frames
+      // PDCA gate: ALL products need reference photos for frames
       const isFrame = product.item_type === "frames";
       const isKnown = isBrandedFrame(product.brand);
       const refUrls = Array.isArray(referenceImageUrls) ? referenceImageUrls : null;
       const existingImages = (product.image_url ? 1 : 0) + (product.additional_images?.length ?? 0);
+      const minRequired = isKnown ? MIN_REFERENCE_PHOTOS_KNOWN : MIN_REFERENCE_PHOTOS;
 
-      if (isFrame && !isKnown && (!refUrls || refUrls.length < MIN_REFERENCE_PHOTOS) && existingImages < MIN_REFERENCE_PHOTOS) {
+      if (isFrame && (!refUrls || refUrls.length < minRequired) && existingImages < minRequired) {
         return json({
-          error: `House brand "${product.brand || 'unknown'}" requires at least ${MIN_REFERENCE_PHOTOS} reference photos uploaded before AI generation. Upload real photos first.`,
-          code: "HOUSE_BRAND_NEEDS_REFERENCES",
+          error: isKnown
+            ? `Upload at least ${MIN_REFERENCE_PHOTOS_KNOWN} reference photo for accurate generation of ${product.brand} frames.`
+            : `House brand "${product.brand || 'unknown'}" requires at least ${MIN_REFERENCE_PHOTOS} reference photos. Upload real photos first.`,
+          code: "NEEDS_REFERENCES",
           existingImages,
-          required: MIN_REFERENCE_PHOTOS,
+          required: minRequired,
         }, 400);
       }
 
