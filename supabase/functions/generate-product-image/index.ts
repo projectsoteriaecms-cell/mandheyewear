@@ -667,6 +667,12 @@ serve(async (req) => {
       return pa - pb;
     });
 
+    // Flatten frame_attributes for each product
+    for (const p of products) {
+      const fa = Array.isArray(p.frame_attributes) ? p.frame_attributes[0] : p.frame_attributes;
+      if (fa) { Object.assign(p, { model_code: fa.model_code, frame_shape: fa.frame_shape, frame_material: fa.frame_material }); }
+    }
+
     const results: Array<{ productId: string; sku: string; name: string; brand: string | null; success: boolean; error?: string; shots?: number; skipped?: boolean }> = [];
     let succeeded = 0;
     let failed = 0;
