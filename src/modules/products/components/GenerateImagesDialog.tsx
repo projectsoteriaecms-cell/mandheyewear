@@ -18,7 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Lightning, Warning, CheckCircle, XCircle, Camera, Pause, DownloadSimple } from "@phosphor-icons/react";
+import { Lightning, Warning, CheckCircle, XCircle, Camera, Pause, DownloadSimple, SkipForward } from "@phosphor-icons/react";
+import { isKnownBrand, MIN_REFERENCE_PHOTOS } from "@/modules/products/lib/brand-classification";
 
 interface CategoryCount {
   type: string;
