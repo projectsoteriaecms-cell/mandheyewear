@@ -11,6 +11,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MagnifyingGlass, SquaresFour, List, Cursor, X } from "@phosphor-icons/react";
 
 type ImageFilter = "all" | "with_images" | "missing_primary" | "complete";
+type BrandTypeFilter = "all" | "known" | "house" | "no_brand";
 type ViewMode = "grid" | "list";
 
 interface ImageFilterBarProps {
@@ -20,6 +21,8 @@ interface ImageFilterBarProps {
   onFilterChange: (value: ImageFilter) => void;
   categoryFilter: string;
   onCategoryFilterChange: (value: string) => void;
+  brandTypeFilter: BrandTypeFilter;
+  onBrandTypeFilterChange: (value: BrandTypeFilter) => void;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   selectMode: boolean;
