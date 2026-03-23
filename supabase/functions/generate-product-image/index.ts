@@ -58,75 +58,39 @@ function describeProduct(p: any): string {
   return parts.join(" ");
 }
 
-function buildFramePrompts(product: any): { slug: string; prompt: string }[] {
+function buildFramePrompts(product: any, hasReference: boolean): { slug: string; prompt: string }[] {
   const desc = describeProduct(product);
   const branded = isBrandedFrame(product.brand);
+  const studioRule = "Seamless pure white studio background, soft professional commercial lighting, high resolution e-commerce product photography. No model, frame only.";
+
+  if (hasReference) {
+    const baseInstruction = `This is a reference photo of the actual "${desc}" eyeglasses frame. You MUST preserve the exact color, shape, material, proportions, and design details of this specific frame. Re-render it as a professional e-commerce product photo with:`;
+    const brandDetail = branded
+      ? `Maintain any original ${product.brand} logos, engravings, or serial numbers visible on the frame.`
+      : "";
+
+    return [
+      { slug: "hero", prompt: `${baseInstruction} Classic three-quarter front view — the main e-commerce thumbnail. Sharp focus on the front frame and the near temple arm. ${brandDetail} ${studioRule}` },
+      { slug: "front", prompt: `${baseInstruction} Direct head-on front view. Perfectly symmetrical composition. Temples open, extending straight back. ${brandDetail} ${studioRule}` },
+      { slug: "side", prompt: `${baseInstruction} Pure 90-degree side profile view. Sharp focus along the entire length of the visible temple arm. ${brandDetail} ${studioRule}` },
+      { slug: "rear", prompt: `${baseInstruction} Slightly elevated rear view, looking at the back of the glasses. Show the hinges, nose pads, and inside of the temple arms. ${branded ? "Show inner-temple markings like model numbers. " : ""}${studioRule}` },
+      { slug: "macro", prompt: `${baseInstruction} Extreme close-up macro shot focusing tightly on the temple hinge area or lens corner${branded ? ` where the ${product.brand} logo is located` : ""}. Use dramatic lighting to highlight texture and quality. ${studioRule}` },
+      { slug: "packaging", prompt: `${baseInstruction} The frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather${product.color ? ` in a color complementing ${product.color}` : ""}. ${branded ? `The brand name "${product.brand}" is cleanly featured on the leather case.` : `The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case.`} ${studioRule}` },
+    ];
+  }
+
+  // Text-only fallback
   const brandNote = branded
     ? `The frame is authentic ${product.brand}. You MUST visibly maintain any original subtle engravings, logos, or serial numbers on the frame itself. Do not remove them.`
     : "";
 
-  const studioRule =
-    "Seamless pure white studio background, soft professional commercial lighting, high resolution e-commerce product photography. No model, frame only.";
-
   return [
-    {
-      slug: "hero",
-      prompt: `Professional product photo of ${desc} eyeglasses frame. Classic three-quarter front view — the main e-commerce thumbnail. Sharp focus on the front frame and the near temple arm. The lighting emphasizes the premium material finish. ${brandNote} ${studioRule}`,
-    },
-    {
-      slug: "front",
-      prompt: `Direct head-on front view of ${desc} eyeglasses frame. Perfectly symmetrical composition. The temples are open and extending straight back, slightly blurred by depth of field. Purpose: clearly show the shape of the lenses and the bridge fit. ${brandNote} ${studioRule}`,
-    },
-    {
-      slug: "side",
-      prompt: `Pure 90-degree side profile view of ${desc} eyeglasses frame. Sharp focus along the entire length of the visible temple arm. Purpose: show the thickness of the frame, the design of the temple arm, and the ear bend. ${brandNote} ${studioRule}`,
-    },
-    {
-      slug: "rear",
-      prompt: `Slightly elevated rear view of ${desc} eyeglasses frame, looking at the back of the glasses. Purpose: show the hinges, the nose pads, and the inside of the temple arms. ${branded ? "This angle is crucial for showing inner-temple markings like model numbers or 'Made in Italy'. Ensure those original details are visible." : ""} ${studioRule}`,
-    },
-    {
-      slug: "macro",
-      prompt: `Extreme close-up macro shot of ${desc} eyeglasses frame, focusing tightly on the temple hinge area or lens corner where the most prominent branding detail is located${branded ? ` (the ${product.brand} logo)` : ""}. Use dramatic lighting to highlight the metallic or engraved texture to prove authenticity and quality. ${studioRule}`,
-    },
-    {
-      slug: "packaging",
-      prompt: `Luxurious studio shot of ${desc} eyeglasses frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather${product.color ? ` in a color complementing ${product.color}` : ""}. ${branded ? `The original ${product.brand} brand logo is still visible on the frame. The brand name "${product.brand}" is cleanly featured on the leather case, showing credibility and authenticity.` : `The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case.`} Seamless pure white studio background, soft professional commercial lighting, high resolution.`,
-    },
-  ];
-}
-
-// ── Reference-based prompts: instruct AI to re-render uploaded photo at different angles ──
-function buildReferenceFramePrompts(product: any): { slug: string; prompt: string }[] {
-  const desc = describeProduct(product);
-  const baseInstruction = `This is a reference photo of the actual "${desc}" eyeglasses frame. You MUST preserve the exact color, shape, material, proportions, and design details of this specific frame. Re-render it as a professional e-commerce product photo with:`;
-  const studioRule = "Seamless pure white studio background, soft professional commercial lighting, high resolution. No model, frame only.";
-
-  return [
-    {
-      slug: "hero",
-      prompt: `${baseInstruction} Classic three-quarter front view — the main e-commerce thumbnail. Sharp focus on the front frame and the near temple arm. ${studioRule}`,
-    },
-    {
-      slug: "front",
-      prompt: `${baseInstruction} Direct head-on front view. Perfectly symmetrical composition. Temples open, extending straight back. ${studioRule}`,
-    },
-    {
-      slug: "side",
-      prompt: `${baseInstruction} Pure 90-degree side profile view. Sharp focus along the entire length of the visible temple arm. ${studioRule}`,
-    },
-    {
-      slug: "rear",
-      prompt: `${baseInstruction} Slightly elevated rear view, looking at the back of the glasses. Show the hinges, nose pads, and inside of the temple arms. ${studioRule}`,
-    },
-    {
-      slug: "macro",
-      prompt: `${baseInstruction} Extreme close-up macro shot focusing tightly on the temple hinge area or lens corner. Use dramatic lighting to highlight texture and quality. ${studioRule}`,
-    },
-    {
-      slug: "packaging",
-      prompt: `${baseInstruction} The frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather. The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case. ${studioRule}`,
-    },
+    { slug: "hero", prompt: `Professional product photo of ${desc} eyeglasses frame. Classic three-quarter front view — the main e-commerce thumbnail. ${brandNote} ${studioRule}` },
+    { slug: "front", prompt: `Direct head-on front view of ${desc} eyeglasses frame. Perfectly symmetrical composition. ${brandNote} ${studioRule}` },
+    { slug: "side", prompt: `Pure 90-degree side profile view of ${desc} eyeglasses frame. Sharp focus along the entire length of the visible temple arm. ${brandNote} ${studioRule}` },
+    { slug: "rear", prompt: `Slightly elevated rear view of ${desc} eyeglasses frame, looking at the back of the glasses. ${branded ? "Show inner-temple markings." : ""} ${studioRule}` },
+    { slug: "macro", prompt: `Extreme close-up macro shot of ${desc} eyeglasses frame${branded ? ` (the ${product.brand} logo)` : ""}. Use dramatic lighting to highlight texture and quality. ${studioRule}` },
+    { slug: "packaging", prompt: `Luxurious studio shot of ${desc} eyeglasses frame on a premium leather case${product.color ? ` in a color complementing ${product.color}` : ""}. ${branded ? `The brand name "${product.brand}" is on the case.` : `The brand name "M&H Opticals" is embossed on the case.`} ${studioRule}` },
   ];
 }
 
