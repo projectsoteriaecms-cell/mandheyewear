@@ -117,7 +117,8 @@ export const QuickImageUploadModal = ({
   const isHouseBrandBlocked = product
     ? !isKnown && totalImages < MIN_REFERENCE_PHOTOS && product.item_type === "frames"
     : false;
-  const useReferenceMode = !isKnown && totalImages >= MIN_REFERENCE_PHOTOS;
+  // Use reference mode whenever we have any images (for ALL brands)
+  const useReferenceMode = totalImages > 0;
 
   const prompts: ShotPrompt[] = productForPrompt
     ? getProductPrompts(productForPrompt, useReferenceMode)
