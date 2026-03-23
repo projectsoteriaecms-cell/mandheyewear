@@ -483,7 +483,7 @@ serve(async (req) => {
         const effectiveRefs = explicitRefs || primaryRef;
         const useReference = effectiveRefs && effectiveRefs.length > 0;
         
-        const shots = useReference ? buildReferenceFramePrompts(product) : buildFramePrompts(product);
+        const shots = buildFramePrompts(product, !!useReference);
         const shot = shots[shotIndex];
         // Use custom prompt if provided, otherwise use auto-generated
         const finalPrompt = customPrompt || shot.prompt;
