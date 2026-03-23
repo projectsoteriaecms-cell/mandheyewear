@@ -107,18 +107,21 @@ export const GenerateImagesDialog = ({
 
   const isSelectionMode = !!selectedProducts && selectedProducts.length > 0;
 
-  // Selection mode: compute summary
+  // Selection mode: compute summary (including house brand skip count)
   const selectionSummary = useMemo(() => {
     if (!selectedProducts) return null;
     const frames = selectedProducts.filter((p) => p.item_type === "frames");
     const nonFrames = selectedProducts.filter((p) => p.item_type !== "frames");
     const frameShots = frames.length * 6;
     const nonFrameShots = nonFrames.length * 1;
+    // Count house brand frames that will be skipped (no way to know image count here, edge function handles it)
+    const houseBrandFrames = frames.filter((p) => !isKnownBrand(p.brand)).length;
     return {
       total: selectedProducts.length,
       frames: frames.length,
       nonFrames: nonFrames.length,
       totalShots: frameShots + nonFrameShots,
+      houseBrandFrames,
     };
   }, [selectedProducts]);
 
