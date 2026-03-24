@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   DndContext,
   closestCenter,
@@ -21,11 +21,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useProductImageUpload } from "@/modules/products";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Image, CloudArrowUp, Lightning, Warning, Camera, PencilSimple, ArrowRight, ArrowLeft, CheckCircle, ArrowClockwise } from "@phosphor-icons/react";
+import { Image, CloudArrowUp, Lightning, Warning, Camera, PencilSimple, ArrowRight, ArrowLeft, CheckCircle, ArrowClockwise, MagnifyingGlass } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraggableImageItem } from "./DraggableImageItem";
@@ -33,6 +34,7 @@ import { ImagePreviewLightbox } from "./ImagePreviewLightbox";
 import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
 import { PromptEditorPanel } from "./PromptEditorPanel";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminProducts } from "@/modules/products/hooks/useAdminProducts";
 import {
   isKnownBrand,
   MIN_REFERENCE_PHOTOS,
