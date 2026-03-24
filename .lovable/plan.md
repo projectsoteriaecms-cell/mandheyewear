@@ -1,41 +1,74 @@
 
 
-## Fix Reference Image Flow for LA MARTINA MAV718 COL.01
+## PDCA-Guided Single Product Image Generation Workflow
 
 ### Problem
-Two issues prevent the reference-based generation from working properly in the Product Images manager:
-
-1. **Frame attributes not flattened**: The `useAdminProducts` hook returns `frame_attributes` as a nested object (e.g., `product.frame_attributes[0].model_code`), but the `QuickImageUploadModal` expects `model_code`, `frame_shape`, `frame_material` as top-level properties. This means prompts lack critical metadata like model code and frame shape.
-
-2. **Product data not mapped to modal props**: The `ProductImages.tsx` page passes the raw product to the modal without extracting frame attribute fields, so the prompt builder can't use them.
+Currently, the Product Images page allows bulk selection and generation, but lacks a focused, step-by-step workflow for generating images for a **single specific product**. The user wants to:
+1. Filter to frames, then pick **one** product by brand/SKU
+2. Upload reference image(s) first
+3. Review and fine-tune prompts per shot before generating
+4. Generate one shot at a time with review between each
 
 ### Solution
+Enhance the `QuickImageUploadModal` into a guided PDCA workflow with clear steps:
 
-**File 1: `src/pages/admin/ProductImages.tsx`**
-- When setting `selectedProduct`, flatten `frame_attributes` into top-level fields before passing to the `QuickImageUploadModal`
-- Extract `model_code`, `frame_shape`, `frame_material`, `front_color` from the nested `frame_attributes` array
+**Step 1 — PLAN**: Show product details + reference requirements. Upload reference photo(s).  
+**Step 2 — CHECK**: Auto-generated prompts displayed for each shot. Admin reviews/edits each prompt. Reference image shown alongside each prompt for comparison.  
+**Step 3 — DO**: Generate one shot at a time. After each shot generates, show the result next to the reference for comparison before proceeding to the next.  
+**Step 4 — ACT**: Review full gallery. Option to regenerate any shot with a refined prompt.
 
-**File 2: `src/modules/products/components/ProductImageCard.tsx`** (if needed)
-- Ensure the PDCA badge correctly reflects readiness for LA MARTINA (Known Brand with 1 image = "Ready for AI (ref)")
+### Technical Changes
 
-### What happens after
-You navigate to Product Images, filter by Known Brands, find "La Martina Frame MAV718 51 20 145 COL.01", click it, and the QuickImageUploadModal opens showing:
-- The uploaded reference photo visible in the image grid
-- "Generate from Reference" button enabled (since it has 1 reference, meeting the Known Brand minimum of 1)
-- Click "Generate from Reference" to create the remaining 5 gallery shots using that reference image
+**File 1: `src/modules/products/components/QuickImageUploadModal.tsx`**
+- Add a `step` state: `"upload" | "review" | "generate" | "finalize"`
+- **Upload step**: Current upload zone + reference requirement gate. "Continue to Prompts" button once references are met.
+- **Review step**: Show all 6 shot prompts expanded with the reference thumbnail visible. Each prompt is editable. "Start Generation" button proceeds to next step.
+- **Generate step**: Sequential generation with a progress indicator (1/6, 2/6...). After each shot completes, show the generated image next to the reference. Pause between shots — user clicks "Next Shot" or "Regenerate" (with prompt edit).
+- **Finalize step**: Full gallery grid. Each image can be regenerated individually. "Done" closes the modal.
+- Add a step indicator bar at the top (Plan → Check → Do → Act)
 
-### Technical Detail
-The flattening logic:
-```typescript
-const fa = Array.isArray(p.frame_attributes) ? p.frame_attributes[0] : p.frame_attributes;
-const flattened = {
-  ...p,
-  model_code: fa?.model_code,
-  frame_shape: fa?.frame_shape,
-  frame_material: fa?.frame_material,
-};
+**File 2: `src/modules/products/components/PromptEditorPanel.tsx`**
+- Add a `referenceImageUrl` prop to display the reference thumbnail next to each prompt
+- Add a `comparisonImageUrl` prop for the generate step — shows the generated result beside the reference
+- Support a "paused" mode where after generating one shot, it waits for user confirmation before proceeding
+
+**File 3: `src/pages/admin/ProductImages.tsx`**
+- No structural changes needed; the modal already receives the selected product
+
+### UX Flow
+```text
+┌─────────────────────────────────────────────┐
+│  PLAN          CHECK         DO        ACT  │
+│  [●]───────────[ ]──────────[ ]────────[ ]  │
+├─────────────────────────────────────────────┤
+│                                             │
+│  Step 1 (PLAN): Upload reference photos     │
+│  ┌──────────┐                               │
+│  │ ref.jpg  │  ← uploaded reference         │
+│  └──────────┘                               │
+│  [Continue to Prompts →]                    │
+│                                             │
+│  Step 2 (CHECK): Review/edit prompts        │
+│  Hero (3/4 View)     [Edit prompt...]       │
+│  Front View          [Edit prompt...]       │
+│  ...                                        │
+│  [Start Generation →]                       │
+│                                             │
+│  Step 3 (DO): Generate one at a time        │
+│  Generating: Hero (1/6)                     │
+│  ┌──────────┐  ┌──────────┐                 │
+│  │ Reference│  │ Generated│                 │
+│  └──────────┘  └──────────┘                 │
+│  [Next Shot] [Regenerate with edit]         │
+│                                             │
+│  Step 4 (ACT): Review full gallery          │
+│  [grid of 6 images]                         │
+│  Click any to regenerate with prompt edit   │
+│  [Done]                                     │
+└─────────────────────────────────────────────┘
 ```
 
 ### Files Modified
-1. `src/pages/admin/ProductImages.tsx` — Flatten frame_attributes when passing product to modal
+1. `src/modules/products/components/QuickImageUploadModal.tsx` — Add PDCA step flow with step indicator, sequential generation with pause-between-shots, reference comparison view
+2. `src/modules/products/components/PromptEditorPanel.tsx` — Add reference image display, comparison mode, pause-and-confirm support
 
