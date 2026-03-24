@@ -6,10 +6,10 @@ import { isKnownBrand, isHouseBrand } from "@/modules/products/lib/brand-classif
 import { ProductImageCard } from "@/modules/products/components/ProductImageCard";
 import { ProductImageListView } from "@/modules/products/components/ProductImageListView";
 import { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
-import { GenerateImagesDialog } from "@/modules/products/components/GenerateImagesDialog";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Images, Lightning } from "@phosphor-icons/react";
+import { Images } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,10 +55,8 @@ const ProductImages = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [generateForSelected, setGenerateForSelected] = useState(false);
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -169,10 +167,6 @@ const ProductImages = () => {
 
   const exitSelectMode = useCallback(() => { setSelectMode(false); setSelectedIds(new Set()); }, []);
 
-  const selectedProductsData = useMemo(() => {
-    if (!generateForSelected) return undefined;
-    return products.filter((p) => selectedIds.has(p.id)).map((p) => ({ id: p.id, name: p.name, sku: p.sku, item_type: p.item_type, brand: p.brand }));
-  }, [products, selectedIds, generateForSelected]);
 
   const selectionSummary = useMemo(() => {
     const selected = products.filter((p) => selectedIds.has(p.id));
@@ -208,14 +202,11 @@ const ProductImages = () => {
               <h1 className="text-2xl font-bold text-foreground">Product Images Manager</h1>
               <p className="text-muted-foreground">Manage product images for your catalog</p>
             </div>
-            <div className="flex items-center gap-2">
-              {stats.missingPrimary > 0 && (
-                <Button onClick={() => { setGenerateForSelected(false); setGenerateDialogOpen(true); }} variant="gold">
-                  <Lightning className="h-4 w-4" weight="fill" />
-                  Generate Missing Images
-                </Button>
-              )}
-            </div>
+            {stats.missingPrimary > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Click any product to start the guided generation workflow
+              </p>
+            )}
           </div>
 
           <ImageStatsCards stats={stats} filteredStats={filteredStats} />
@@ -300,7 +291,7 @@ const ProductImages = () => {
             frames={selectionSummary.frames}
             others={selectionSummary.others}
             shots={selectionSummary.shots}
-            onGenerate={() => { setGenerateForSelected(true); setGenerateDialogOpen(true); }}
+            onGenerate={() => {}}
             onExit={exitSelectMode}
           />
         </div>
@@ -309,17 +300,6 @@ const ProductImages = () => {
           product={selectedProduct ?? null}
           open={!!selectedProductId}
           onOpenChange={(open) => { if (!open) setSelectedProductId(null); }}
-        />
-        <GenerateImagesDialog
-          open={generateDialogOpen}
-          onOpenChange={(open) => { setGenerateDialogOpen(open); if (!open) setGenerateForSelected(false); }}
-          categoryCounts={categoryCounts}
-          selectedProducts={selectedProductsData}
-          onComplete={() => {
-            queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-            queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
-            if (generateForSelected) exitSelectMode();
-          }}
         />
       </AdminLayout>
     </RoleGuard>
