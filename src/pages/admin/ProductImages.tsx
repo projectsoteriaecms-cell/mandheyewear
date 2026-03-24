@@ -291,7 +291,7 @@ const ProductImages = () => {
             frames={selectionSummary.frames}
             others={selectionSummary.others}
             shots={selectionSummary.shots}
-            onGenerate={() => { setGenerateForSelected(true); setGenerateDialogOpen(true); }}
+            onGenerate={() => {}}
             onExit={exitSelectMode}
           />
         </div>
