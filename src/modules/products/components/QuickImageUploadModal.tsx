@@ -143,6 +143,47 @@ export const QuickImageUploadModal = ({
 
   const referenceImageUrl = primaryImage || allImages[0] || null;
 
+  // Search results for reference image lookup
+  const searchResults = useMemo(() => {
+    if (!referenceSearch || referenceSearch.length < 2) return [];
+    const q = referenceSearch.toLowerCase();
+    return allProducts
+      .filter(
+        (p) =>
+          p.id !== product?.id &&
+          p.image_url &&
+          (p.name?.toLowerCase().includes(q) ||
+            p.sku?.toLowerCase().includes(q) ||
+            p.brand?.toLowerCase().includes(q))
+      )
+      .slice(0, 5);
+  }, [referenceSearch, allProducts, product?.id]);
+
+  // Use an existing product's image as reference
+  const handleUseAsReference = useCallback(
+    async (sourceImageUrl: string) => {
+      if (!product) return;
+      setIsSettingReference(true);
+      try {
+        const { error } = await supabase
+          .from("products")
+          .update({ image_url: sourceImageUrl })
+          .eq("id", product.id);
+        if (error) throw error;
+        toast.success("Reference image set from existing product");
+        setReferenceSearch("");
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+      } catch (err) {
+        console.error("Error setting reference image:", err);
+        toast.error("Failed to set reference image");
+      } finally {
+        setIsSettingReference(false);
+      }
+    },
+    [product, queryClient]
+  );
+
   // Reset PDCA state when modal closes
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -150,6 +191,7 @@ export const QuickImageUploadModal = ({
       setGeneratedImages({});
       setCurrentShotIndex(0);
       setShotComplete(false);
+      setReferenceSearch("");
     }
     onOpenChange(newOpen);
   };
