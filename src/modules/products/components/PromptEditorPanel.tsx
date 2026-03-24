@@ -19,6 +19,7 @@ interface PromptEditorPanelProps {
   onGenerateAll: (customPrompts: Record<string, string>) => void;
   mode: "single" | "gallery";
   singleIndex?: number;
+  referenceImageUrl?: string | null;
 }
 
 export const PromptEditorPanel = ({
@@ -29,6 +30,7 @@ export const PromptEditorPanel = ({
   onGenerateAll,
   mode,
   singleIndex,
+  referenceImageUrl,
 }: PromptEditorPanelProps) => {
   const [editedPrompts, setEditedPrompts] = useState<Record<number, string>>({});
   const [expandedIndex, setExpandedIndex] = useState<number | null>(
@@ -74,22 +76,8 @@ export const PromptEditorPanel = ({
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold flex items-center gap-1.5">
           <Lightning className="h-4 w-4" weight="fill" />
-          {mode === "single" ? "Edit Prompt" : "Edit Prompts & Generate Gallery"}
+          {mode === "single" ? "Edit Prompt" : "Review & Edit Prompts"}
         </h4>
-        {mode === "gallery" && (
-          <Button
-            size="sm"
-            onClick={handleGenerateAll}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-1" />
-            ) : (
-              <Lightning className="h-4 w-4 mr-1" weight="fill" />
-            )}
-            {isGenerating ? "Generating..." : "Generate All 6 Shots"}
-          </Button>
-        )}
       </div>
 
       <div className="space-y-2">
@@ -121,6 +109,19 @@ export const PromptEditorPanel = ({
 
               <CollapsibleContent>
                 <div className="px-3 pb-3 space-y-2">
+                  {/* Reference thumbnail inline */}
+                  {referenceImageUrl && (
+                    <div className="flex items-center gap-2 py-1">
+                      <img
+                        src={referenceImageUrl}
+                        alt="Reference"
+                        className="w-10 h-10 object-cover rounded border"
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        Prompt will use this reference image
+                      </span>
+                    </div>
+                  )}
                   <Textarea
                     value={getPromptText(originalIndex)}
                     onChange={(e) => updatePrompt(originalIndex, e.target.value)}

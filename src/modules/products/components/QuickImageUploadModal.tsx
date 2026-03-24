@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { useProductImageUpload } from "@/modules/products";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Image, CloudArrowUp, Lightning, Warning, Camera, PencilSimple } from "@phosphor-icons/react";
+import { Image, CloudArrowUp, Lightning, Warning, Camera, PencilSimple, ArrowRight, ArrowLeft, CheckCircle, ArrowClockwise } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraggableImageItem } from "./DraggableImageItem";
@@ -46,6 +46,15 @@ import {
 } from "@/modules/products/lib/prompt-builders";
 
 const MAX_IMAGES = 6;
+
+type PDCAStep = "upload" | "review" | "generate" | "finalize";
+
+const STEP_CONFIG: { key: PDCAStep; label: string; shortLabel: string }[] = [
+  { key: "upload", label: "Plan — Upload Reference", shortLabel: "PLAN" },
+  { key: "review", label: "Check — Review Prompts", shortLabel: "CHECK" },
+  { key: "generate", label: "Do — Generate Shots", shortLabel: "DO" },
+  { key: "finalize", label: "Act — Review Gallery", shortLabel: "ACT" },
+];
 
 interface QuickImageUploadModalProps {
   product: {
@@ -81,9 +90,12 @@ export const QuickImageUploadModal = ({
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
-  const [showPromptEditor, setShowPromptEditor] = useState(false);
-  const [promptEditorMode, setPromptEditorMode] = useState<"single" | "gallery">("gallery");
-  const [promptEditorSingleIndex, setPromptEditorSingleIndex] = useState<number | undefined>();
+
+  // PDCA step state
+  const [step, setStep] = useState<PDCAStep>("upload");
+  const [generatedImages, setGeneratedImages] = useState<Record<number, string>>({});
+  const [currentShotIndex, setCurrentShotIndex] = useState(0);
+  const [shotComplete, setShotComplete] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -98,7 +110,6 @@ export const QuickImageUploadModal = ({
   const totalImages = allImages.length;
   const canAddMore = totalImages < MAX_IMAGES;
 
-  // Build prompts for the prompt editor
   const productForPrompt: ProductForPrompt | null = product
     ? {
         name: product.name,
@@ -119,12 +130,24 @@ export const QuickImageUploadModal = ({
   const isBlocked = product
     ? totalImages < minRequired && product.item_type === "frames"
     : false;
-  // Use reference mode whenever we have any images
   const useReferenceMode = totalImages > 0;
 
   const prompts: ShotPrompt[] = productForPrompt
     ? getProductPrompts(productForPrompt, useReferenceMode)
     : [];
+
+  const referenceImageUrl = primaryImage || allImages[0] || null;
+
+  // Reset PDCA state when modal closes
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      setStep("upload");
+      setGeneratedImages({});
+      setCurrentShotIndex(0);
+      setShotComplete(false);
+    }
+    onOpenChange(newOpen);
+  };
 
   const handleFileSelect = useCallback(
     async (files: FileList | null) => {
@@ -223,7 +246,7 @@ export const QuickImageUploadModal = ({
     [handleFileSelect]
   );
 
-  // Generate a single shot with optional custom prompt
+  // Generate a single shot — used in both review and generate steps
   const handleGenerateSingleShot = useCallback(async (index: number, customPrompt: string) => {
     if (!product || index < 0 || index >= SHOT_SLUGS.length) return;
     const shotSlug = SHOT_SLUGS[index];
@@ -233,7 +256,6 @@ export const QuickImageUploadModal = ({
     setRegeneratingIndex(index);
     setIsRegenerating(true);
     try {
-      // Always pass existing images as references
       const refUrls = allImages.length > 0
         ? allImages.slice(0, Math.max(minRequired, 1))
         : undefined;
@@ -245,9 +267,14 @@ export const QuickImageUploadModal = ({
       const { data, error } = await supabase.functions.invoke("generate-product-image", { body });
       if (error) throw error;
       if (data?.succeeded > 0) {
-        toast.success(`Generated "${prompts[index]?.label || shotSlug}" for ${product.sku}`);
+        const generatedUrl = data?.results?.[0]?.imageUrl;
+        if (generatedUrl) {
+          setGeneratedImages(prev => ({ ...prev, [index]: generatedUrl }));
+        }
+        toast.success(`Generated "${prompts[index]?.label || shotSlug}"`);
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+        setShotComplete(true);
       } else {
         toast.error(data?.results?.[0]?.error || `Failed to generate ${shotSlug}`);
       }
@@ -260,19 +287,21 @@ export const QuickImageUploadModal = ({
     }
   }, [product, prompts, allImages, minRequired, queryClient]);
 
-  // Generate all shots (full gallery) with optional custom prompts
+  // Generate all from review step
   const handleGenerateAll = useCallback(async (customPrompts: Record<string, string>) => {
     if (!product) return;
+    setStep("generate");
     setIsRegenerating(true);
     try {
-      // Always pass existing images as references
       const refUrls = allImages.length > 0
         ? allImages.slice(0, Math.max(minRequired, 1))
         : undefined;
 
       for (let i = 0; i < SHOT_SLUGS.length; i++) {
         const shotSlug = SHOT_SLUGS[i];
+        setCurrentShotIndex(i);
         setRegeneratingIndex(i);
+        setShotComplete(false);
 
         const body: Record<string, unknown> = { productId: product.id, shotSlug };
         if (customPrompts[shotSlug]) body.customPrompt = customPrompts[shotSlug];
@@ -284,195 +313,357 @@ export const QuickImageUploadModal = ({
           toast.error(`Failed on ${shotSlug}: ${data?.results?.[0]?.error || "unknown"}`);
           break;
         }
+
+        const generatedUrl = data?.results?.[0]?.imageUrl;
+        if (generatedUrl) {
+          setGeneratedImages(prev => ({ ...prev, [i]: generatedUrl }));
+        }
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+
+        // Brief pause between shots
+        if (i < SHOT_SLUGS.length - 1) {
+          setShotComplete(true);
+          await new Promise(r => setTimeout(r, 1500));
+        }
       }
 
       toast.success(`Gallery generated for ${product.sku}`);
       queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+      setStep("finalize");
     } catch (err) {
       console.error("Gallery generation error:", err);
       toast.error("Failed to generate gallery");
     } finally {
       setIsRegenerating(false);
       setRegeneratingIndex(null);
+      setShotComplete(false);
     }
   }, [product, allImages, minRequired, queryClient]);
-
-  // Open prompt editor for full gallery
-  const openGalleryPromptEditor = useCallback(() => {
-    setPromptEditorMode("gallery");
-    setPromptEditorSingleIndex(undefined);
-    setShowPromptEditor(true);
-  }, []);
-
-  // Open prompt editor for a single shot
-  const openShotPromptEditor = useCallback((index: number) => {
-    setPromptEditorMode("single");
-    setPromptEditorSingleIndex(index);
-    setShowPromptEditor(true);
-  }, []);
 
   if (!product) return null;
 
   const photosNeeded = minRequired - totalImages;
-  const aiButtonLabel = isBlocked
-    ? `Upload ${photosNeeded} more reference photo${photosNeeded > 1 ? "s" : ""} first`
-    : "Generate from Reference";
-
   const blockMessage = isBlocked
     ? isKnown
       ? `Upload at least ${MIN_REFERENCE_PHOTOS_KNOWN} reference photo so the AI can accurately reproduce this frame design.`
-      : `"${product.brand || "House brand"}" is not a known international brand. Upload at least ${MIN_REFERENCE_PHOTOS} real photos so the AI can accurately reproduce this specific frame design.`
+      : `"${product.brand || "House brand"}" requires at least ${MIN_REFERENCE_PHOTOS} real photos so the AI can accurately reproduce this specific frame design.`
     : null;
 
+  const currentStepIndex = STEP_CONFIG.findIndex(s => s.key === step);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2">
-              <Image className="h-5 w-5" />
-              Manage Images
-            </DialogTitle>
-            <div className="flex items-center gap-2 ml-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openGalleryPromptEditor}
-                disabled={isRegenerating || isUploading || isBlocked}
-              >
-                <PencilSimple className="h-4 w-4 mr-1" />
-                Edit Prompts
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleGenerateAll({})}
-                disabled={isRegenerating || isUploading || isBlocked}
-              >
-                {isRegenerating ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                ) : isBlocked ? (
-                  <Camera className="h-4 w-4 mr-1" />
-                ) : (
-                  <Lightning className="h-4 w-4 mr-1" weight="fill" />
-                )}
-                {isRegenerating ? "Generating..." : aiButtonLabel}
-              </Button>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{product.name}</span>
-            <Badge variant="outline">{product.sku}</Badge>
-            <Badge variant={totalImages >= MAX_IMAGES ? "default" : "secondary"}>
-              {totalImages}/{MAX_IMAGES} images
-            </Badge>
-          </div>
+          <DialogTitle className="flex items-center gap-2">
+            <Image className="h-5 w-5" />
+            {product.name}
+            <Badge variant="outline" className="ml-1">{product.sku}</Badge>
+          </DialogTitle>
 
-          {isBlocked && blockMessage && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 mt-2">
-              <div className="flex items-start gap-2">
-                <Warning className="h-4 w-4 mt-0.5 flex-shrink-0" weight="fill" />
-                <div>
-                  <p className="font-medium">Reference photo{minRequired > 1 ? "s" : ""} required</p>
-                  <p className="text-xs opacity-80 mt-0.5">{blockMessage}</p>
-                </div>
+          {/* PDCA Step Indicator */}
+          <div className="flex items-center gap-1 pt-2">
+            {STEP_CONFIG.map((s, idx) => (
+              <div key={s.key} className="flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    // Allow navigating back but not forward past current
+                    if (idx <= currentStepIndex) setStep(s.key);
+                  }}
+                  disabled={idx > currentStepIndex}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
+                    step === s.key
+                      ? "bg-primary text-primary-foreground"
+                      : idx < currentStepIndex
+                        ? "bg-primary/20 text-primary cursor-pointer hover:bg-primary/30"
+                        : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {idx < currentStepIndex ? (
+                    <CheckCircle className="h-3.5 w-3.5" weight="fill" />
+                  ) : (
+                    <span className="w-3.5 text-center">{idx + 1}</span>
+                  )}
+                  {s.shortLabel}
+                </button>
+                {idx < STEP_CONFIG.length - 1 && (
+                  <div className={cn(
+                    "w-4 h-px",
+                    idx < currentStepIndex ? "bg-primary" : "bg-muted-foreground/30"
+                  )} />
+                )}
               </div>
-            </div>
-          )}
+            ))}
+          </div>
         </DialogHeader>
 
         <div className="space-y-4">
-          <p className="text-xs text-muted-foreground">
-            Drag to reorder • First image is primary • Click ✏️ on a shot to edit its prompt
-          </p>
+          {/* ─── STEP 1: PLAN (Upload) ─── */}
+          {step === "upload" && (
+            <>
+              {isBlocked && blockMessage && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                  <div className="flex items-start gap-2">
+                    <Warning className="h-4 w-4 mt-0.5 flex-shrink-0" weight="fill" />
+                    <div>
+                      <p className="font-medium">Reference photo{minRequired > 1 ? "s" : ""} required</p>
+                      <p className="text-xs opacity-80 mt-0.5">{blockMessage}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-          {/* Prompt Editor Panel */}
-          {showPromptEditor && prompts.length > 0 && (
-            <PromptEditorPanel
-              prompts={prompts}
-              isGenerating={isRegenerating}
-              generatingIndex={regeneratingIndex}
-              onGenerate={handleGenerateSingleShot}
-              onGenerateAll={handleGenerateAll}
-              mode={promptEditorMode}
-              singleIndex={promptEditorSingleIndex}
-            />
+              <p className="text-xs text-muted-foreground">
+                Upload reference photo{minRequired > 1 ? "s" : ""} of this frame. The AI will use {minRequired > 1 ? "these" : "this"} to generate all gallery shots.
+                {totalImages > 0 && " Drag to reorder • First image is primary."}
+              </p>
+
+              {/* Existing images grid */}
+              {allImages.length > 0 && (
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <SortableContext items={allImages} strategy={rectSortingStrategy}>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                      {allImages.map((url, idx) => (
+                        <DraggableImageItem
+                          key={url}
+                          id={url}
+                          url={url}
+                          index={idx}
+                          isPrimary={idx === 0}
+                          isUploading={isUploading}
+                          isRegenerating={false}
+                          onDelete={handleDelete}
+                          onSetPrimary={idx !== 0 ? handleSetPrimary : undefined}
+                          onPreview={() => setPreviewIndex(idx)}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              )}
+
+              {/* Upload zone */}
+              {canAddMore && (
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={cn(
+                    "relative border-2 border-dashed rounded-lg p-8 text-center transition-colors",
+                    isDragging
+                      ? "border-primary bg-primary/5"
+                      : "border-muted-foreground/30 hover:border-primary/50"
+                  )}
+                >
+                  {isUploading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="text-sm text-muted-foreground">Uploading...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <CloudArrowUp className="h-8 w-8 mx-auto mb-2 text-muted-foreground" weight="light" />
+                      <p className="text-sm text-muted-foreground">
+                        Drag & drop images here, or{" "}
+                        <label className="text-primary cursor-pointer hover:underline">
+                          browse
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleFileSelect(e.target.files)}
+                          />
+                        </label>
+                      </p>
+                      <p className="text-xs text-muted-foreground/60 mt-1">
+                        Max 5MB per image • {MAX_IMAGES - totalImages} slot{MAX_IMAGES - totalImages !== 1 ? "s" : ""} remaining
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Continue button */}
+              <div className="flex justify-end pt-2">
+                <Button
+                  onClick={() => setStep("review")}
+                  disabled={isBlocked || totalImages === 0}
+                >
+                  Continue to Prompts
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </>
           )}
 
-          {/* Draggable Image Grid */}
-          {allImages.length > 0 ? (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={allImages} strategy={rectSortingStrategy}>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                  {allImages.map((url, idx) => {
-                    const isFrame = product.item_type === "frames";
-                    return (
-                      <DraggableImageItem
-                        key={url}
-                        id={url}
-                        url={url}
-                        index={idx}
-                        isPrimary={idx === 0}
-                        isUploading={isUploading}
-                        isRegenerating={regeneratingIndex === idx}
-                        onDelete={handleDelete}
-                        onSetPrimary={idx !== 0 ? handleSetPrimary : undefined}
-                        onPreview={() => setPreviewIndex(idx)}
-                        onRegenerate={isFrame && idx < SHOT_SLUGS.length ? () => openShotPromptEditor(idx) : undefined}
-                      />
-                    );
-                  })}
+          {/* ─── STEP 2: CHECK (Review Prompts) ─── */}
+          {step === "review" && prompts.length > 0 && (
+            <>
+              {/* Reference thumbnail */}
+              {referenceImageUrl && (
+                <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                  <img
+                    src={referenceImageUrl}
+                    alt="Reference"
+                    className="w-16 h-16 object-cover rounded-md border"
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Reference Image</p>
+                    <p className="text-xs text-muted-foreground">
+                      All shots will be generated based on this reference
+                    </p>
+                  </div>
                 </div>
-              </SortableContext>
-            </DndContext>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-              <Image className="h-10 w-10 mb-2" weight="light" />
-              <p className="text-sm">No images yet</p>
-            </div>
+              )}
+
+              <PromptEditorPanel
+                prompts={prompts}
+                isGenerating={isRegenerating}
+                generatingIndex={regeneratingIndex}
+                onGenerate={handleGenerateSingleShot}
+                onGenerateAll={handleGenerateAll}
+                mode="gallery"
+                referenceImageUrl={referenceImageUrl}
+              />
+
+              <div className="flex justify-between pt-2">
+                <Button variant="ghost" onClick={() => setStep("upload")}>
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  Back
+                </Button>
+                <Button onClick={() => handleGenerateAll({})} disabled={isRegenerating}>
+                  {isRegenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  ) : (
+                    <Lightning className="h-4 w-4 mr-1" weight="fill" />
+                  )}
+                  {isRegenerating ? "Generating..." : "Generate All 6 Shots"}
+                </Button>
+              </div>
+            </>
           )}
 
-          {/* Upload Zone */}
-          {canAddMore && (
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              className={cn(
-                "relative border-2 border-dashed rounded-lg p-8 text-center transition-colors",
-                isDragging
-                  ? "border-primary bg-primary/5"
-                  : "border-muted-foreground/30 hover:border-primary/50"
-              )}
-            >
-              {isUploading ? (
-                <div className="flex flex-col items-center gap-2">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">Uploading...</p>
+          {/* ─── STEP 3: DO (Generate) ─── */}
+          {step === "generate" && (
+            <>
+              <div className="text-center py-2">
+                <p className="text-sm font-medium">
+                  Generating shot {currentShotIndex + 1} of {SHOT_SLUGS.length}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {prompts[currentShotIndex]?.label || SHOT_SLUGS[currentShotIndex]}
+                </p>
+                <div className="w-full bg-muted rounded-full h-2 mt-3">
+                  <div
+                    className="bg-primary h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${((currentShotIndex + (shotComplete ? 1 : 0.5)) / SHOT_SLUGS.length) * 100}%` }}
+                  />
                 </div>
-              ) : (
-                <>
-                  <CloudArrowUp className="h-8 w-8 mx-auto mb-2 text-muted-foreground" weight="light" />
-                  <p className="text-sm text-muted-foreground">
-                    Drag & drop images here, or{" "}
-                    <label className="text-primary cursor-pointer hover:underline">
-                      browse
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleFileSelect(e.target.files)}
-                      />
-                    </label>
+              </div>
+
+              {/* Side-by-side comparison */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground">Reference</p>
+                  {referenceImageUrl && (
+                    <img
+                      src={referenceImageUrl}
+                      alt="Reference"
+                      className="w-full aspect-square object-cover rounded-lg border"
+                    />
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {shotComplete ? "Generated" : "Generating..."}
                   </p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">
-                    Max 5MB per image • {MAX_IMAGES - totalImages} slot{MAX_IMAGES - totalImages !== 1 ? "s" : ""} remaining
-                  </p>
-                </>
+                  {generatedImages[currentShotIndex] ? (
+                    <img
+                      src={generatedImages[currentShotIndex]}
+                      alt={`Generated ${prompts[currentShotIndex]?.label}`}
+                      className="w-full aspect-square object-cover rounded-lg border"
+                    />
+                  ) : (
+                    <div className="w-full aspect-square rounded-lg border bg-muted flex items-center justify-center">
+                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ─── STEP 4: ACT (Finalize) ─── */}
+          {step === "finalize" && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Review the generated gallery. Click any image to regenerate it with a refined prompt.
+              </p>
+
+              {/* Reference strip */}
+              {referenceImageUrl && (
+                <div className="flex items-center gap-3 p-2 border rounded-lg bg-muted/30">
+                  <img
+                    src={referenceImageUrl}
+                    alt="Reference"
+                    className="w-12 h-12 object-cover rounded border"
+                  />
+                  <p className="text-xs text-muted-foreground">Original reference</p>
+                </div>
               )}
-            </div>
+
+              {/* Gallery grid with regeneration */}
+              <div className="grid grid-cols-3 gap-3">
+                {SHOT_SLUGS.map((slug, idx) => {
+                  const imgUrl = generatedImages[idx];
+                  const label = prompts[idx]?.label || slug;
+                  return (
+                    <div key={slug} className="space-y-1">
+                      <div className="relative group">
+                        {imgUrl ? (
+                          <img
+                            src={imgUrl}
+                            alt={label}
+                            className="w-full aspect-square object-cover rounded-lg border"
+                          />
+                        ) : (
+                          <div className="w-full aspect-square rounded-lg border bg-muted flex items-center justify-center">
+                            <Image className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        <button
+                          onClick={() => {
+                            setCurrentShotIndex(idx);
+                            setShotComplete(false);
+                            setStep("generate");
+                            // Trigger regeneration
+                            handleGenerateSingleShot(idx, prompts[idx]?.prompt || "");
+                          }}
+                          disabled={isRegenerating}
+                          className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center"
+                        >
+                          <ArrowClockwise className="h-5 w-5 text-white" weight="bold" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-center text-muted-foreground truncate">{label}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex justify-between pt-2">
+                <Button variant="ghost" onClick={() => setStep("review")}>
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  Back to Prompts
+                </Button>
+                <Button onClick={() => handleOpenChange(false)}>
+                  <CheckCircle className="h-4 w-4 mr-1" weight="fill" />
+                  Done
+                </Button>
+              </div>
+            </>
           )}
         </div>
 
