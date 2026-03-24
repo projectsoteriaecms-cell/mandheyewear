@@ -55,10 +55,8 @@ const ProductImages = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [generateForSelected, setGenerateForSelected] = useState(false);
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
