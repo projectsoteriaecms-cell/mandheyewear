@@ -6,7 +6,7 @@ import { isKnownBrand, isHouseBrand } from "@/modules/products/lib/brand-classif
 import { ProductImageCard } from "@/modules/products/components/ProductImageCard";
 import { ProductImageListView } from "@/modules/products/components/ProductImageListView";
 import { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
-import { GenerateImagesDialog } from "@/modules/products/components/GenerateImagesDialog";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Images, Lightning } from "@phosphor-icons/react";
