@@ -208,14 +208,11 @@ const ProductImages = () => {
               <h1 className="text-2xl font-bold text-foreground">Product Images Manager</h1>
               <p className="text-muted-foreground">Manage product images for your catalog</p>
             </div>
-            <div className="flex items-center gap-2">
-              {stats.missingPrimary > 0 && (
-                <Button onClick={() => { setGenerateForSelected(false); setGenerateDialogOpen(true); }} variant="gold">
-                  <Lightning className="h-4 w-4" weight="fill" />
-                  Generate Missing Images
-                </Button>
-              )}
-            </div>
+            {stats.missingPrimary > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Click any product to start the guided generation workflow
+              </p>
+            )}
           </div>
 
           <ImageStatsCards stats={stats} filteredStats={filteredStats} />
