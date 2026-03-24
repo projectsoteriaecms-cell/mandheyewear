@@ -87,11 +87,14 @@ export const QuickImageUploadModal = ({
   const queryClient = useQueryClient();
   const { uploadProductImage, deleteProductImage, validateFile } =
     useProductImageUpload();
+  const { products: allProducts } = useAdminProducts();
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+  const [referenceSearch, setReferenceSearch] = useState("");
+  const [isSettingReference, setIsSettingReference] = useState(false);
 
   // PDCA step state
   const [step, setStep] = useState<PDCAStep>("upload");
