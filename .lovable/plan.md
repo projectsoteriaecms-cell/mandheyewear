@@ -1,40 +1,46 @@
 
 
-## Verification Summary: What's Working vs. What's Not
+## Add Product Search in PDCA Modal to Pull Existing Reference Images
 
-### What's Already Correctly Implemented
-All four files from the plan are correctly updated:
-- **Brand classification** with known/house brand detection and reference minimums
-- **Unified prompt builder** with context-aware reference and brand logic
-- **Edge function** with PDCA gate enforcing references for all brands
-- **QuickImageUploadModal** with the full 4-step PDCA flow (Plan → Check → Do → Act)
+### Problem
+Currently, to use a reference image in the PDCA workflow, you must manually upload it. But many products already have a primary image uploaded. You want to search by brand name, SKU, or product name (e.g., "La Martina Mav718") directly within the modal and pull that product's existing primary image as the reference — avoiding the need to download from elsewhere and re-upload.
 
-### The Problem
-There are **two separate dialogs** for image generation:
-
-1. **QuickImageUploadModal** — opened when you click a single product card. This HAS the full PDCA workflow (upload reference → review/edit prompts → generate shot-by-shot → review gallery). This is working correctly.
-
-2. **GenerateImagesDialog** — opened via the "Generate Missing Images" button at the top of the page (your screenshot). This is the OLD bulk dialog that picks a category, sets a batch limit, and fires off generation without any PDCA guidance, prompt review, or reference checking on the client side.
-
-### What Needs to Change
-
-The **GenerateImagesDialog** (bulk) should NOT be the primary generation path anymore. Since the PDCA workflow requires per-product reference uploads and prompt review, bulk blind generation contradicts the quality-first approach.
-
-**Option A — Recommended:** Remove or disable the "Generate Missing Images" bulk button entirely. The correct workflow is: filter products → click one → go through PDCA steps. This ensures every product gets proper reference photos and prompt review.
-
-**Option B — Keep bulk but gate it:** Keep the bulk dialog but only allow it to process products that already have enough reference photos (the edge function already skips those without refs). Add a warning that bulk mode skips prompt review.
+### Solution
+Add a **search bar** in the PLAN step (Step 1) of the `QuickImageUploadModal` alongside the existing drag-and-drop upload zone. The search queries the loaded products list by name, SKU, or brand. When the user finds the right product and it already has a primary image, they can click "Use as Reference" to automatically set that image as the reference for generation.
 
 ### Technical Changes
 
-**File: `src/pages/admin/ProductImages.tsx`**
-- Remove or conditionally hide the "Generate Missing Images" button at the top
-- Optionally replace it with a message: "Click any product to start the guided generation workflow"
+**File 1: `src/modules/products/components/QuickImageUploadModal.tsx`**
+- Add a search input field in the PLAN step, above or beside the upload drop zone
+- Add state: `referenceSearch` string and a filtered results list derived from the `useAdminProducts` hook data
+- Show a compact dropdown/list of matching products (thumbnail + name + SKU) when the user types
+- Each result with an existing `image_url` shows a "Use as Reference" button
+- Clicking "Use as Reference" copies that product's `image_url` to the current product as its primary image (via `supabase.from('products').update({ image_url })`) and refreshes queries
+- If the product being edited already IS the searched product, just confirm the existing image is the reference
+- Add the `useAdminProducts` hook import to access the full product list for search
 
-**File: `src/modules/products/components/GenerateImagesDialog.tsx`**
-- If keeping (Option B): Add a prominent warning that bulk mode does not allow prompt review and will skip products without sufficient references
-- If removing (Option A): No changes needed, just stop rendering it
+**File 2: `src/pages/admin/ProductImages.tsx`** (minor)
+- Pass the products list as a prop to `QuickImageUploadModal` so the modal can search without a separate query (optional optimization — can also query internally)
+
+### UX Flow
+```text
+Step 1 — PLAN
+┌──────────────────────────────────────┐
+│ Search product by name, SKU or brand │
+│ [La Martina Mav718____________]      │
+│                                      │
+│  ┌─────┐ La Martina 100K Mav718      │
+│  │ img │ SKU: LA-MARTINA-MAV718-COL01│
+│  └─────┘ [Use as Reference]          │
+│                                      │
+│ ─── OR upload new reference ───      │
+│                                      │
+│  ┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐     │
+│  │  Drag & drop images here   │     │
+│  └─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘     │
+└──────────────────────────────────────┘
+```
 
 ### Files Modified
-1. `src/pages/admin/ProductImages.tsx` — Remove/modify bulk generate button
-2. `src/modules/products/components/GenerateImagesDialog.tsx` — Add PDCA warning (if keeping)
+1. `src/modules/products/components/QuickImageUploadModal.tsx` — Add search input, product result list, and "Use as Reference" action in PLAN step
 
