@@ -307,17 +307,6 @@ const ProductImages = () => {
           open={!!selectedProductId}
           onOpenChange={(open) => { if (!open) setSelectedProductId(null); }}
         />
-        <GenerateImagesDialog
-          open={generateDialogOpen}
-          onOpenChange={(open) => { setGenerateDialogOpen(open); if (!open) setGenerateForSelected(false); }}
-          categoryCounts={categoryCounts}
-          selectedProducts={selectedProductsData}
-          onComplete={() => {
-            queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-            queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
-            if (generateForSelected) exitSelectMode();
-          }}
-        />
       </AdminLayout>
     </RoleGuard>
   );
