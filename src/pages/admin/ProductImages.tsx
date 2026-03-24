@@ -167,10 +167,6 @@ const ProductImages = () => {
 
   const exitSelectMode = useCallback(() => { setSelectMode(false); setSelectedIds(new Set()); }, []);
 
-  const selectedProductsData = useMemo(() => {
-    if (!generateForSelected) return undefined;
-    return products.filter((p) => selectedIds.has(p.id)).map((p) => ({ id: p.id, name: p.name, sku: p.sku, item_type: p.item_type, brand: p.brand }));
-  }, [products, selectedIds, generateForSelected]);
 
   const selectionSummary = useMemo(() => {
     const selected = products.filter((p) => selectedIds.has(p.id));
