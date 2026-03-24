@@ -462,9 +462,66 @@ export const QuickImageUploadModal = ({
               )}
 
               <p className="text-xs text-muted-foreground">
-                Upload reference photo{minRequired > 1 ? "s" : ""} of this frame. The AI will use {minRequired > 1 ? "these" : "this"} to generate all gallery shots.
+                Upload reference photo{minRequired > 1 ? "s" : ""} of this frame, or search for an existing product to pull its image.
                 {totalImages > 0 && " Drag to reorder • First image is primary."}
               </p>
+
+              {/* Search existing products for reference image */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by product name, SKU, or brand…"
+                    value={referenceSearch}
+                    onChange={(e) => setReferenceSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                {searchResults.length > 0 && (
+                  <div className="rounded-lg border bg-card divide-y max-h-48 overflow-y-auto">
+                    {searchResults.map((p) => (
+                      <div key={p.id} className="flex items-center gap-3 p-2.5 hover:bg-muted/50 transition-colors">
+                        {p.image_url && (
+                          <img
+                            src={p.image_url}
+                            alt={p.name}
+                            className="h-10 w-10 rounded object-cover border flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{p.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            SKU: {p.sku} {p.brand && `• ${p.brand}`}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isSettingReference}
+                          onClick={() => handleUseAsReference(p.image_url!)}
+                        >
+                          {isSettingReference ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            "Use as Reference"
+                          )}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {referenceSearch.length >= 2 && searchResults.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">
+                    No products with images found matching "{referenceSearch}"
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="h-px flex-1 bg-border" />
+                <span>or upload new reference</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
 
               {/* Existing images grid */}
               {allImages.length > 0 && (
