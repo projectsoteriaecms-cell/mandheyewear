@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   DndContext,
   closestCenter,
@@ -21,11 +21,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useProductImageUpload } from "@/modules/products";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Image, CloudArrowUp, Lightning, Warning, Camera, PencilSimple, ArrowRight, ArrowLeft, CheckCircle, ArrowClockwise } from "@phosphor-icons/react";
+import { Image, CloudArrowUp, Lightning, Warning, Camera, PencilSimple, ArrowRight, ArrowLeft, CheckCircle, ArrowClockwise, MagnifyingGlass } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraggableImageItem } from "./DraggableImageItem";
@@ -33,6 +34,7 @@ import { ImagePreviewLightbox } from "./ImagePreviewLightbox";
 import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
 import { PromptEditorPanel } from "./PromptEditorPanel";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminProducts } from "@/modules/products/hooks/useAdminProducts";
 import {
   isKnownBrand,
   MIN_REFERENCE_PHOTOS,
@@ -85,11 +87,14 @@ export const QuickImageUploadModal = ({
   const queryClient = useQueryClient();
   const { uploadProductImage, deleteProductImage, validateFile } =
     useProductImageUpload();
+  const { products: allProducts } = useAdminProducts();
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+  const [referenceSearch, setReferenceSearch] = useState("");
+  const [isSettingReference, setIsSettingReference] = useState(false);
 
   // PDCA step state
   const [step, setStep] = useState<PDCAStep>("upload");
@@ -138,6 +143,47 @@ export const QuickImageUploadModal = ({
 
   const referenceImageUrl = primaryImage || allImages[0] || null;
 
+  // Search results for reference image lookup
+  const searchResults = useMemo(() => {
+    if (!referenceSearch || referenceSearch.length < 2) return [];
+    const q = referenceSearch.toLowerCase();
+    return allProducts
+      .filter(
+        (p) =>
+          p.id !== product?.id &&
+          p.image_url &&
+          (p.name?.toLowerCase().includes(q) ||
+            p.sku?.toLowerCase().includes(q) ||
+            p.brand?.toLowerCase().includes(q))
+      )
+      .slice(0, 5);
+  }, [referenceSearch, allProducts, product?.id]);
+
+  // Use an existing product's image as reference
+  const handleUseAsReference = useCallback(
+    async (sourceImageUrl: string) => {
+      if (!product) return;
+      setIsSettingReference(true);
+      try {
+        const { error } = await supabase
+          .from("products")
+          .update({ image_url: sourceImageUrl })
+          .eq("id", product.id);
+        if (error) throw error;
+        toast.success("Reference image set from existing product");
+        setReferenceSearch("");
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+      } catch (err) {
+        console.error("Error setting reference image:", err);
+        toast.error("Failed to set reference image");
+      } finally {
+        setIsSettingReference(false);
+      }
+    },
+    [product, queryClient]
+  );
+
   // Reset PDCA state when modal closes
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -145,6 +191,7 @@ export const QuickImageUploadModal = ({
       setGeneratedImages({});
       setCurrentShotIndex(0);
       setShotComplete(false);
+      setReferenceSearch("");
     }
     onOpenChange(newOpen);
   };
@@ -415,9 +462,66 @@ export const QuickImageUploadModal = ({
               )}
 
               <p className="text-xs text-muted-foreground">
-                Upload reference photo{minRequired > 1 ? "s" : ""} of this frame. The AI will use {minRequired > 1 ? "these" : "this"} to generate all gallery shots.
+                Upload reference photo{minRequired > 1 ? "s" : ""} of this frame, or search for an existing product to pull its image.
                 {totalImages > 0 && " Drag to reorder • First image is primary."}
               </p>
+
+              {/* Search existing products for reference image */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by product name, SKU, or brand…"
+                    value={referenceSearch}
+                    onChange={(e) => setReferenceSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                {searchResults.length > 0 && (
+                  <div className="rounded-lg border bg-card divide-y max-h-48 overflow-y-auto">
+                    {searchResults.map((p) => (
+                      <div key={p.id} className="flex items-center gap-3 p-2.5 hover:bg-muted/50 transition-colors">
+                        {p.image_url && (
+                          <img
+                            src={p.image_url}
+                            alt={p.name}
+                            className="h-10 w-10 rounded object-cover border flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{p.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            SKU: {p.sku} {p.brand && `• ${p.brand}`}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isSettingReference}
+                          onClick={() => handleUseAsReference(p.image_url!)}
+                        >
+                          {isSettingReference ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            "Use as Reference"
+                          )}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {referenceSearch.length >= 2 && searchResults.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">
+                    No products with images found matching "{referenceSearch}"
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="h-px flex-1 bg-border" />
+                <span>or upload new reference</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
 
               {/* Existing images grid */}
               {allImages.length > 0 && (
