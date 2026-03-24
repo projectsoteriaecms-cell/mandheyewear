@@ -642,7 +642,7 @@ export const QuickImageUploadModal = ({
                             handleGenerateSingleShot(idx, prompts[idx]?.prompt || "");
                           }}
                           disabled={isRegenerating}
-                          className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center"
+                          className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center"
                         >
                           <ArrowClockwise className="h-5 w-5 text-white" weight="bold" />
                         </button>
