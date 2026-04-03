@@ -76,7 +76,7 @@ const Eyewear = () => {
     setCurrentPage(1);
   };
 
-  const { data: products, isLoading, error } = useProducts("m_and_h_fashion", true);
+  const { data: products, isLoading, error } = useProducts("m_and_h_fashion");
   const { data: categoryCounts = {} } = useProductCategoryCounts();
 
   const filteredProducts = useMemo(() => {
