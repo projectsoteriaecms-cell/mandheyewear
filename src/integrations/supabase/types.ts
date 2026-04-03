@@ -753,6 +753,44 @@ export type Database = {
         }
         Relationships: []
       }
+      product_requests: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          product_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          product_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          product_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           additional_images: string[] | null
@@ -1603,6 +1641,10 @@ export type Database = {
         Returns: {
           branch_id: string
         }[]
+      }
+      check_product_availability: {
+        Args: { p_product_id: string }
+        Returns: Json
       }
       create_staff_notification: {
         Args: {
