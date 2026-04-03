@@ -1,70 +1,49 @@
 
 
-## Merge ECMS Inventory into M&H Catalog + Full Storefront + Smart Stock Sourcing
+## Redesign Dashboard with M&H vs Central Inventory Breakdown
 
-### Context from Analysis
+### Current Problems
+1. **No stock data**: The ECMS report quantities were never imported into the `inventory` table. All 8,945 records show 0 stock.
+2. **Dashboard is flat**: Stats show one combined number for everything. No distinction between M&H e-commerce stock vs central Soteria stock.
+3. **No visibility into "excess" central inventory**: You can't see what's sitting in other branches available for sourcing.
 
-**Your uploaded report**: ~625 items, 299,412 total units. The frames (~280 SKUs) are the key e-commerce products. The lenses (~300 SKUs, 285K+ units) and accessories/drugs round out the full catalog.
+### Phase 1: Import ECMS Stock Quantities
 
-**Current database**: 348 M&H frames (all with images) + 11,055 Soteria products. The storefront already filters to `brand_line = 'm_and_h_fashion'` with images.
+Run a data script to parse the uploaded `InventoryReport_15.xlsx` again, this time writing the actual stock quantities into the `inventory` table for the M&H branch. Products matched by SKU/name get their `quantity_on_hand` updated.
 
-**Challenge**: Merge the report's products into the M&H catalog without duplicating the 348 frames that already have images, then expand the storefront to show lenses/accessories/contact lenses, and add stock sourcing logic.
+### Phase 2: Redesign Dashboard Stats
 
----
+Replace the current single-row stats with a **two-section layout**:
 
-### Phase 1: Merge ECMS Report into M&H Catalog (Data Task)
+**Section A — M&H E-Commerce (your storefront)**
+- M&H Stock Units (total quantity at M&H branch)
+- M&H Products (count of `m_and_h_fashion` products)
+- Low Stock (M&H items below threshold)
+- Out of Stock (M&H items at zero)
 
-**Goal**: Import frames from the report that are NOT already in M&H, and reclassify any matching Soteria products as M&H.
+**Section B — Central / Other Branches**
+- Central Stock Units (total quantity at non-M&H branches)
+- Soteria Products (count of `soteria_medical` products)
+- Available for Sourcing (items with stock at other branches but zero at M&H)
+- Total Branches
 
-**Steps**:
-1. Parse the uploaded ECMS report and extract all frame entries (~280 SKUs)
-2. Cross-reference against existing `products` table by normalized name/SKU matching
-3. For matches already tagged `m_and_h_fashion` — skip (no duplication)
-4. For matches tagged `soteria_medical` — reclassify to `m_and_h_fashion` via UPDATE
-5. For new items not in the database — INSERT as `m_and_h_fashion`
-6. Also reclassify select lenses, accessories, and contact lenses from the report as `m_and_h_fashion` so they appear on the storefront
+### Phase 3: Update `useInventoryStats` Hook
 
-**Output**: A reconciliation report showing what was merged, reclassified, and skipped.
+Rewrite the hook to query inventory joined with branches, splitting by `is_mh_location`:
+- M&H stats: filter `branches.is_mh_location = true`
+- Central stats: filter `branches.is_mh_location = false`
+- "Available for sourcing" count: products with 0 at M&H but >0 elsewhere
 
-### Phase 2: Expand Storefront to Full Catalog
+Update the `InventoryStats` type to include the new fields.
 
-**Current**: Only frames with images show on `/eyewear`. Need to add lenses, accessories, contact lenses.
+### Phase 4: Add "Central Inventory Excess" Card
 
-**Changes**:
-- **`src/modules/products/hooks/useProducts.ts`** — Remove the `item_type = 'frames'` filter; show all M&H products
-- **`src/modules/storefront/components/eyewear/ShopCategoryBar.tsx`** — Add category pills for Lenses, Accessories, Contact Lenses alongside existing Eyeglasses/Sunglasses
-- **`src/modules/storefront/components/eyewear/ProductFilters.tsx`** — Add item_type filter support
-- **`get_product_category_counts()` DB function** — Update to include lens/accessory/contact_lens counts for the category bar
-
-### Phase 3: Smart Stock Sourcing
-
-**Flow**: When a customer views/orders a product:
-1. Check M&H allocated stock (the e-commerce inventory)
-2. If out of stock, check central Soteria inventory (other branches) — show "Available via sourcing" badge
-3. If completely unavailable everywhere, show "Out of Stock" with a "Request This Item" button
-4. Request creates a purchase order draft for staff to process
-
-**Changes**:
-- **Database migration**: Add `sourcing_status` view or RPC that checks inventory across branches for a given product
-- **`src/modules/storefront/components/eyewear/ProductCard.tsx`** — Show stock status badge (In Stock / Available via Sourcing / Out of Stock)
-- **New component: `RequestItemDialog.tsx`** — Customer can request an out-of-stock item, which creates a notification for staff
-- **Database migration**: Add `product_requests` table (product_id, user_id, status, created_at) with RLS
-
-### Phase 4: Storefront UX for Stock Visibility
-
-- Products with M&H branch stock: green "In Stock" badge, normal add-to-cart
-- Products with only central/other-branch stock: amber "Available — 3-5 days" badge, add-to-cart still works but order gets flagged for sourcing
-- Products with zero stock everywhere: "Out of Stock" + "Notify Me" or "Request" button
-
----
+Add a new card below the stats grid showing a summary of stock sitting in other branches that isn't allocated to M&H. This is the "excess" that remains unless requested. Shows top items by quantity with branch location.
 
 ### Files Modified
-1. Data script (exec) — Parse ECMS report, merge/reclassify products
-2. `src/modules/products/hooks/useProducts.ts` — Remove frames-only filter
-3. `src/modules/storefront/components/eyewear/ShopCategoryBar.tsx` — Add lens/accessory categories
-4. `src/modules/storefront/components/eyewear/ProductCard.tsx` — Stock status badges
-5. `src/modules/storefront/components/eyewear/ProductFilters.tsx` — Item type filter
-6. Database migration — `product_requests` table, stock-check RPC
-7. `get_product_category_counts()` — Update for full catalog counts
-8. New component: `RequestItemDialog.tsx` — Customer item request flow
+1. Data script (exec) — Import ECMS stock quantities into `inventory` table for M&H branch
+2. `src/modules/inventory/types.ts` — Extend `InventoryStats` with M&H vs central fields
+3. `src/modules/inventory/hooks/useInventoryOverview.ts` — Split stats by M&H vs central
+4. `src/pages/admin/Dashboard.tsx` — Two-section stats layout + central excess card
+5. `src/shared/layouts/admin/dashboard/StatCard.tsx` — Minor: support section headers if needed
 
