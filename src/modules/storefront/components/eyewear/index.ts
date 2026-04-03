@@ -8,3 +8,6 @@ export { FitIndicator } from "./FitIndicator";
 export type { FitType } from "./FitIndicator";
 export { MatchBadge } from "./MatchBadge";
 export { ProductFilters } from "./ProductFilters";
+export { StockBadge } from "./StockBadge";
+export type { StockStatus } from "./StockBadge";
+export { RequestItemDialog } from "./RequestItemDialog";
