@@ -89,6 +89,7 @@ const Eyewear = () => {
         if (categoryFilter === "all") return true;
         if (categoryFilter === "eyeglasses") return p.item_type === "frames" && p.is_prescription_compatible !== false;
         if (categoryFilter === "sunglasses") return p.item_type === "frames" && p.is_prescription_compatible === false;
+        if (categoryFilter === "accessories") return ["accessories", "solutions", "cleanser", "other", "medications"].includes(p.item_type || "");
         return p.item_type === categoryFilter;
       })
       .sort((a, b) => {
