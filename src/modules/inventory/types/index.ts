@@ -41,6 +41,20 @@ export interface InventoryStats {
   outOfStockCount: number;
   productCount: number;
   supplierCount: number;
+  // M&H e-commerce breakdown
+  mh: {
+    stockUnits: number;
+    productCount: number;
+    lowStock: number;
+    outOfStock: number;
+  };
+  // Central / other branches breakdown
+  central: {
+    stockUnits: number;
+    productCount: number;
+    availableForSourcing: number;
+    branchCount: number;
+  };
 }
 
 // Stock Transfer Types
