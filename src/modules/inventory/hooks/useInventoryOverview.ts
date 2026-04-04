@@ -149,6 +149,7 @@ export const useInventoryStats = (): ReturnType<typeof useQuery<InventoryStats>>
         mh: {
           stockUnits: mhStockUnits,
           productCount: mhProductCount || 0,
+          featuredOnline: mhFeaturedCount || 0,
           lowStock: mhLowStock,
           outOfStock: mhOutOfStock,
         },
