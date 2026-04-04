@@ -45,6 +45,7 @@ export interface InventoryStats {
   mh: {
     stockUnits: number;
     productCount: number;
+    featuredOnline: number;
     lowStock: number;
     outOfStock: number;
   };
