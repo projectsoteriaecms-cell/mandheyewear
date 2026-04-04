@@ -107,11 +107,11 @@ const AdminDashboard = () => {
                   description="Total units in M&H branch"
                 />
                 <StatCard
-                  title="M&H Products"
-                  value={stats?.mh.productCount || 0}
+                  title="Featured Online"
+                  value={stats?.mh.featuredOnline || 0}
                   icon={TrendUp}
                   loading={statsLoading}
-                  description="Active M&H catalog items"
+                  description={`${stats?.mh.featuredOnline || 0} of ${stats?.mh.productCount || 0} with images`}
                 />
                 <StatCard
                   title="Low Stock"
