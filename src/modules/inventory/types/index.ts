@@ -40,11 +40,13 @@ export interface InventoryStats {
   lowStockCount: number;
   outOfStockCount: number;
   productCount: number;
+  totalProductCount: number;
   supplierCount: number;
   // M&H e-commerce breakdown
   mh: {
     stockUnits: number;
     productCount: number;
+    featuredOnline: number;
     lowStock: number;
     outOfStock: number;
   };

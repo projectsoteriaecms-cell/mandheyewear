@@ -107,11 +107,11 @@ const AdminDashboard = () => {
                   description="Total units in M&H branch"
                 />
                 <StatCard
-                  title="M&H Products"
-                  value={stats?.mh.productCount || 0}
+                  title="Featured Online"
+                  value={stats?.mh.featuredOnline || 0}
                   icon={TrendUp}
                   loading={statsLoading}
-                  description="Active M&H catalog items"
+                  description={`${stats?.mh.featuredOnline || 0} of ${stats?.mh.productCount || 0} with images`}
                 />
                 <StatCard
                   title="Low Stock"
@@ -173,13 +173,20 @@ const AdminDashboard = () => {
             </div>
 
             {/* Combined overview row */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <StatCard
                 title="Total Stock (All)"
                 value={stats?.totalItems.toLocaleString() || "0"}
                 icon={Package}
                 loading={statsLoading}
                 description="Combined across all branches"
+              />
+              <StatCard
+                title="Total Products (All)"
+                value={stats?.totalProductCount.toLocaleString() || "0"}
+                icon={Cube}
+                loading={statsLoading}
+                description="All active products in system"
               />
               <StatCard
                 title="Active Suppliers"
