@@ -92,6 +92,18 @@ export const useInventoryStats = (): ReturnType<typeof useQuery<InventoryStats>>
         .eq("is_active", true)
         .eq("brand_line", "m_and_h_fashion");
 
+      const { count: mhFeaturedCount } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true)
+        .eq("brand_line", "m_and_h_fashion")
+        .not("image_url", "is", null);
+
+      const { count: totalProductCount } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true);
+
       const { count: centralBranchCount } = await supabase
         .from("branches")
         .select("*", { count: "exact", head: true })
