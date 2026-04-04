@@ -1,5 +1,5 @@
 import { AdminLayout } from "@/shared/layouts/admin";
-import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple, FileText, Image } from "@phosphor-icons/react";
+import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple, FileText, Image, Storefront, ArrowsClockwise, Cube, MapPin } from "@phosphor-icons/react";
 import { useInventoryStats, useLowStockAlerts } from "@/modules/inventory";
 import { usePurchaseOrders, useStockTransfers } from "@/modules/inventory";
 import { useProductImageStats } from "@/modules/products";
@@ -49,6 +49,18 @@ const NoBranchAssignmentCard = () => (
   </Card>
 );
 
+const SectionHeader = ({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) => (
+  <div className="flex items-center gap-3 mb-4">
+    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+      <Icon className="h-5 w-5 text-primary" weight="duotone" />
+    </div>
+    <div>
+      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  </div>
+);
+
 const AdminDashboard = () => {
   const { data: stats, isLoading: statsLoading } = useInventoryStats();
   const { data: lowStockItems, isLoading: alertsLoading } = useLowStockAlerts();
@@ -73,50 +85,115 @@ const AdminDashboard = () => {
           </p>
         </div>
 
-        {/* Show "No Branch Assignment" for staff/managers without a branch */}
         {!isLoading && isStaffOrManager && noBranchAssigned ? (
           <div className="flex items-center justify-center py-12">
             <NoBranchAssignmentCard />
           </div>
         ) : (
           <>
-            {/* Stats Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            {/* Section A: M&H E-Commerce */}
+            <div>
+              <SectionHeader
+                icon={Storefront}
+                title="M&H E-Commerce"
+                description="Online storefront inventory for the M&H Fashion catalog"
+              />
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                  title="M&H Stock Units"
+                  value={stats?.mh.stockUnits.toLocaleString() || "0"}
+                  icon={Package}
+                  loading={statsLoading}
+                  description="Total units in M&H branch"
+                />
+                <StatCard
+                  title="M&H Products"
+                  value={stats?.mh.productCount || 0}
+                  icon={TrendUp}
+                  loading={statsLoading}
+                  description="Active M&H catalog items"
+                />
+                <StatCard
+                  title="Low Stock"
+                  value={stats?.mh.lowStock || 0}
+                  icon={Warning}
+                  loading={statsLoading}
+                  variant={stats?.mh.lowStock ? "warning" : "default"}
+                  description="M&H items below threshold"
+                />
+                <StatCard
+                  title="With Images"
+                  value={imageStats.error ? "⚠" : imageStats.isLoading ? "..." : imageStats.withPrimary.toLocaleString()}
+                  icon={Image}
+                  loading={imageStats.isLoading}
+                  variant={imageStats.error ? "warning" : "default"}
+                  description={imageStats.error ? "Failed to load stats" : `${imageStats.complete} complete (6/6)`}
+                />
+              </div>
+            </div>
+
+            {/* Section B: Central / Other Branches */}
+            <div>
+              <SectionHeader
+                icon={Buildings}
+                title="Central / Other Branches"
+                description="Soteria branch inventory — excess stock available for sourcing"
+              />
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                  title="Central Stock Units"
+                  value={stats?.central.stockUnits.toLocaleString() || "0"}
+                  icon={Cube}
+                  loading={statsLoading}
+                  description="Units across other branches"
+                />
+                <StatCard
+                  title="Central Products"
+                  value={stats?.central.productCount.toLocaleString() || "0"}
+                  icon={Package}
+                  loading={statsLoading}
+                  description="Unique products in other branches"
+                />
+                <StatCard
+                  title="Available for Sourcing"
+                  value={stats?.central.availableForSourcing || 0}
+                  icon={ArrowsClockwise}
+                  loading={statsLoading}
+                  variant={stats?.central.availableForSourcing ? "warning" : "default"}
+                  description="Out at M&H, in stock elsewhere"
+                />
+                <StatCard
+                  title="Branches"
+                  value={stats?.central.branchCount || 0}
+                  icon={MapPin}
+                  loading={statsLoading}
+                  description="Active non-M&H locations"
+                />
+              </div>
+            </div>
+
+            {/* Combined overview row */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <StatCard
-                title="Total Stock Items"
-                value={stats?.totalItems.toLocaleString() || 0}
+                title="Total Stock (All)"
+                value={stats?.totalItems.toLocaleString() || "0"}
                 icon={Package}
                 loading={statsLoading}
+                description="Combined across all branches"
               />
               <StatCard
-                title="Low Stock Alerts"
-                value={stats?.lowStockCount || 0}
-                icon={Warning}
-                loading={statsLoading}
-                variant={stats?.lowStockCount ? "warning" : "default"}
-                description="Items below threshold"
-              />
-              <StatCard
-                title="Products"
-                value={stats?.productCount || 0}
-                icon={TrendUp}
-                loading={statsLoading}
-                description="Active products"
-              />
-              <StatCard
-                title="With Images"
-                value={imageStats.error ? "⚠" : imageStats.isLoading ? "..." : imageStats.withPrimary.toLocaleString()}
-                icon={Image}
-                loading={imageStats.isLoading}
-                variant={imageStats.error ? "warning" : "default"}
-                description={imageStats.error ? "Failed to load stats" : `${imageStats.complete} complete (6/6)`}
-              />
-              <StatCard
-                title="Suppliers"
+                title="Active Suppliers"
                 value={stats?.supplierCount || 0}
                 icon={Users}
                 loading={statsLoading}
-                description="Active suppliers"
+              />
+              <StatCard
+                title="Out of Stock (M&H)"
+                value={stats?.mh.outOfStock || 0}
+                icon={Warning}
+                loading={statsLoading}
+                variant={stats?.mh.outOfStock ? "danger" : "default"}
+                description="M&H products with zero stock"
               />
             </div>
 
@@ -158,7 +235,6 @@ const AdminDashboard = () => {
         )}
       </div>
       
-      {/* Welcome Dialog for newly assigned staff */}
       <WelcomeBranchDialog />
     </AdminLayout>
   );
