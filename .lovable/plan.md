@@ -1,32 +1,50 @@
 
 
-## Add "Featured vs Total" Product Counts to Dashboard
+## Sync E-Commerce Transactions Back to Zoho + Stock Reconciliation
 
-### What You'll See
+### Current State
 
-The dashboard will clearly show three key numbers so you know exactly what needs work:
+Your Zoho integration currently works **one-way (inbound only)**:
+- Products and stock levels are pulled FROM Zoho into your platform
+- A `push_order` action already exists in the backend function to create Sales Orders in Zoho Books, but **it is never triggered** — no e-commerce orders are sent back to Zoho today
 
-- **Featured Online** (348) — M&H products with images, actually visible on the storefront
-- **M&H Catalog** (837) — Total M&H products (including those without images yet)
-- **Total Inventory** (11,493) — Everything across all branches and brand lines
+This means Zoho Books has no visibility into what's being sold on the e-commerce side, creating a gap in your accounting and stock records.
 
-The M&H E-Commerce section will replace the current "M&H Products" card with a "Featured Online" card showing 348/837 (e.g., "348 of 837 listed"), making it immediately clear how many still need images. The combined overview row will add a "Total Products (All)" card showing the full 11,493 count.
+### What We'll Build
+
+**1. Auto-push orders to Zoho after successful payment**
+When a customer completes checkout and payment is verified, automatically create a Sales Order in Zoho Books. This connects the existing `push_order` backend action to the checkout flow.
+
+**2. Stock reconciliation dashboard panel**
+A new section on the Inventory page showing:
+- Orders pushed to Zoho vs pending
+- Stock discrepancies (platform stock vs last Zoho sync)
+- Failed sync attempts that need attention
+
+**3. Manual "Push to Zoho" button for older orders**
+For any orders that were placed before this feature goes live, or that failed to sync, staff can manually push them from the Orders admin page.
 
 ### Technical Details
 
-**File: `src/modules/inventory/hooks/useInventoryOverview.ts`**
-- Add a query for M&H products with images: `SELECT count(*) FROM products WHERE brand_line = 'm_and_h_fashion' AND is_active AND image_url IS NOT NULL`
-- Add total active product count (all brand lines) to the stats return
+**File: `src/pages/Checkout.tsx`**
+After successful payment verification, call `supabase.functions.invoke("zoho-sync", { body: { action: "push_order", order_id } })` in a fire-and-forget pattern (don't block the user's success screen if it fails).
 
-**File: `src/modules/inventory/types/index.ts`**
-- Add `featuredOnline: number` to the `mh` object in `InventoryStats`
+**File: `src/pages/admin/Orders.tsx` (or order detail component)**
+Add a "Sync to Zoho" button per order. Show sync status (synced/pending/failed) based on whether a matching `zoho_sync_log` entry exists for that order.
 
-**File: `src/pages/admin/Dashboard.tsx`**
-- Replace "M&H Products" card with "Featured Online" showing `stats.mh.featuredOnline` with description like "348 of 837 with images"
-- Update "Total Stock (All)" row to also show total product count across the entire inventory
+**File: `src/pages/admin/Inventory.tsx`**
+Add a "Zoho Reconciliation" card showing:
+- Last sync timestamp
+- Orders awaiting push
+- Stock variance summary (items where local stock differs from last Zoho pull)
+
+**File: `supabase/functions/zoho-sync/index.ts`**
+Minor update: the `push_order` action currently doesn't include a `customer_id` field in the Zoho Sales Order — we should add customer info from the order's profile if available.
 
 ### Files Modified
-1. `src/modules/inventory/types/index.ts` — Add `featuredOnline` field
-2. `src/modules/inventory/hooks/useInventoryOverview.ts` — Query M&H products with images + total products
-3. `src/pages/admin/Dashboard.tsx` — Update stat cards to show featured vs total breakdown
+1. `src/pages/Checkout.tsx` — Auto-push order to Zoho after payment
+2. `src/pages/admin/Inventory.tsx` — Add reconciliation summary card
+3. `src/modules/integrations/hooks/useZohoSync.ts` — Add `pushOrder` method
+4. Order admin component — Add manual "Sync to Zoho" button + status indicator
+5. `supabase/functions/zoho-sync/index.ts` — Enhance `push_order` with customer data
 
