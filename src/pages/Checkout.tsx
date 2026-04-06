@@ -192,6 +192,11 @@ const Checkout = () => {
                 description: `Order ${verifyData.order_number} has been placed.`,
               });
 
+              // Fire-and-forget: push order to Zoho Books
+              supabase.functions.invoke("zoho-sync", {
+                body: { action: "push_order", order_id: verifyData.order_id },
+              }).catch((err) => console.warn("Zoho order push failed (non-blocking):", err));
+
               // Navigate to order confirmation
               navigate(`/order/${verifyData.order_id}`);
             } catch (err: unknown) {

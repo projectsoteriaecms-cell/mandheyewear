@@ -12,6 +12,7 @@ import {
   FolderSimple,
   CalendarCheck,
   FileText,
+  Receipt,
 } from "@phosphor-icons/react";
 
 export interface NavItem {
@@ -68,6 +69,12 @@ export const navItems: NavItem[] = [
     title: "Categories",
     href: "/admin/categories",
     icon: FolderSimple,
+    requiresManager: true,
+  },
+  {
+    title: "Orders",
+    href: "/admin/orders",
+    icon: Receipt,
     requiresManager: true,
   },
   {

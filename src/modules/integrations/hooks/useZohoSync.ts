@@ -183,11 +183,21 @@ export function useZohoSync() {
     }
   }, [pollSyncLog, invalidateProductQueries, queryClient]);
 
+  const pushOrder = useCallback(async (orderId: string) => {
+    const { data, error } = await supabase.functions.invoke("zoho-sync", {
+      body: { action: "push_order", order_id: orderId },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    invalidateProductQueries();
+    return data;
+  }, [invalidateProductQueries]);
+
   const reset = useCallback(() => {
     stopPolling();
     setStatus("idle");
     setResult(null);
   }, [stopPolling]);
 
-  return { status, result, pullItems, syncStock, linkProduct, reset };
+  return { status, result, pullItems, syncStock, linkProduct, pushOrder, reset };
 }

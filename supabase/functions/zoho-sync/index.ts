@@ -876,6 +876,13 @@ serve(async (req) => {
 
       if (orderErr || !order) throw new Error(`Order not found: ${orderId}`);
 
+      // Fetch customer profile for Zoho contact info
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, email, phone_number")
+        .eq("user_id", order.user_id)
+        .maybeSingle();
+
       const lineItems = (order.order_items || [])
         .filter((oi: any) => oi.products?.zoho_item_id)
         .map((oi: any) => ({
@@ -886,18 +893,39 @@ serve(async (req) => {
 
       if (lineItems.length === 0) throw new Error("No items with Zoho mapping found");
 
+      const salesOrderPayload: Record<string, unknown> = {
+        salesorder_number: order.order_number,
+        date: order.created_at.split("T")[0],
+        line_items: lineItems,
+        notes: order.notes || "",
+        reference_number: order.payment_reference || "",
+      };
+
+      // Add customer info if profile exists
+      if (profile) {
+        salesOrderPayload.customer_name = profile.full_name || profile.email || "";
+        if (profile.email) salesOrderPayload.contact_persons_email = profile.email;
+        if (profile.phone_number) salesOrderPayload.phone = profile.phone_number;
+      }
+
+      // Add shipping address if available
+      const shipping = order.shipping_address as Record<string, unknown> | null;
+      if (shipping) {
+        salesOrderPayload.shipping_address = {
+          address: shipping.address || "",
+          city: shipping.city || "",
+          state: shipping.state || "",
+          country: "Nigeria",
+        };
+      }
+
       const soRes = await fetch(`${ZOHO_BOOKS_API}/salesorders?organization_id=${orgId}`, {
         method: "POST",
         headers: {
           Authorization: `Zoho-oauthtoken ${accessToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          salesorder_number: order.order_number,
-          date: order.created_at.split("T")[0],
-          line_items: lineItems,
-          notes: order.notes || "",
-        }),
+        body: JSON.stringify(salesOrderPayload),
       });
       const soData = await soRes.json();
 
