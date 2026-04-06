@@ -1,52 +1,49 @@
 
 
-## Testing the Full Order → Payment → Zoho Reconciliation Flow
+## Fix M&H → Zoho Product Mapping for Order Push Testing
 
-### What We're Testing
+### The Problem
+The current sync uses exact name matching to link ECMS products to Zoho items. ECMS and Zoho use completely different naming conventions, so only 1 of 837 M&H products matched automatically. Without `zoho_item_id` on M&H products, the `push_order` action will always fail with "No items with Zoho mapping found."
 
-The complete chain: Customer adds items to cart → Checkout → Paystack test payment → Order created → Auto-push to Zoho Books → Reconciliation card updates on dashboard.
+### Approach: AI-Assisted Fuzzy Matching
 
-### Current State (Already Wired)
+Instead of requiring exact names, we'll add a smarter matching strategy that uses multiple signals:
 
-1. **Checkout → Zoho push**: Already connected (line 196 in Checkout.tsx). After successful Paystack verification, a fire-and-forget call pushes the order to Zoho Books.
-2. **Edge function `push_order`**: Creates a Sales Order in Zoho Books with line items, customer info, and shipping address.
-3. **Admin Orders page**: Shows sync status per order with manual "Push to Zoho" button.
-4. **Reconciliation card**: Shows push stats on the Inventory page.
+**Step 1 — Add SKU-based matching to the sync**
+Update `processPage()` in `zoho-sync/index.ts` to also match by SKU (not just name). If a Zoho item's SKU matches an ECMS product's SKU, link them.
 
-### The Problem for Testing
+**Step 2 — Add fuzzy name matching**
+Strip common prefixes/suffixes (like "Frame :", "ACCESSORIES :", price tags like "25K", "105K") and compare the core product identifier. Use token-based overlap scoring:
+- Extract brand name, model code, and dimensions from both naming formats
+- Score matches based on shared tokens (e.g., "Polaroid", "PLD D482", "086", "145")
+- Auto-link if confidence > 80%, flag for manual review if 50-80%
 
-The `push_order` action requires products in the order to have a `zoho_item_id` set (line 887-894 in zoho-sync). If the M&H e-commerce products (the ones with images that customers buy) don't have `zoho_item_id` mapped, the Zoho push will fail with "No items with Zoho mapping found."
+**Step 3 — Bulk manual linking tool**
+Enhance the existing "Link to Zoho" dialog to support:
+- Side-by-side fuzzy search (search ECMS products, see suggested Zoho matches)
+- Bulk link mode for faster processing
+- Show match confidence scores
 
-### Test Plan (Step-by-Step)
+**Step 4 — Quick test with manual link**
+For immediate testing, manually link 2-3 M&H products to their Zoho item IDs using the existing `link_product` action, then run a test order with those products.
 
-**Step 1 — Verify product mapping**
-Check how many M&H products have `zoho_item_id` set. If none/few do, we need to ensure at least a couple of test products are linked before testing.
+### Technical Details
 
-**Step 2 — Place a test order using Paystack test mode**
-- Log in as a customer
-- Add a Zoho-mapped product to cart
-- Complete checkout with test card: `4084 0840 8408 4081`, CVV: `408`, OTP: `123456`
-- Confirm order is created with `payment_status = 'paid'`
+**File: `supabase/functions/zoho-sync/index.ts`**
+- In `processPage()`, after name-based matching, add a second pass matching by SKU
+- Add a `fuzzyMatch()` function that tokenizes names and scores overlap
+- Products with score > 0.8 get auto-linked; 0.5-0.8 get flagged in metadata
 
-**Step 3 — Verify Zoho push fired**
-- Check `zoho_sync_log` for a `push_order` entry matching the order
-- Check edge function logs for any errors
-- Verify the Sales Order appeared in Zoho Books
+**File: `src/modules/products/components/LinkToZohoDialog.tsx`**
+- Add fuzzy search: when selecting an ECMS product, auto-suggest the top 3 Zoho matches by token similarity
+- Add bulk mode: select multiple pairs and link all at once
 
-**Step 4 — Verify reconciliation dashboard**
-- Go to Admin → Inventory and confirm the Reconciliation Card shows "1 synced"
-- Go to Admin → Orders and confirm the order shows as synced
+**File: New helper** — `supabase/functions/zoho-sync/matching.ts` (inline in index.ts since no subfolder imports)
+- Token extraction: strip "Frame :", price tags, normalize spacing
+- Scoring: Jaccard similarity on token sets
 
-**Step 5 — Test the manual push fallback**
-- If the auto-push failed (e.g., missing mapping), use the "Push to Zoho" button on the Admin Orders page
-
-### What I'll Build
-
-1. **Quick data check** — Query how many purchasable products have `zoho_item_id` set. If zero, we'll need to either run a sync or manually map a test product before the test can succeed.
-2. **Test the edge function directly** — Call the `push_order` action with a known order ID (if any exist) to verify the Zoho API connection works, without needing to go through checkout.
-3. **Fix any gaps** — If the auto-push silently fails due to missing mappings, add better error visibility (e.g., log to `zoho_sync_log` even when no items have Zoho IDs, so the reconciliation card shows the failure).
-
-### Shall I Start?
-
-I'll begin by querying the database to check product mappings and existing orders, then test the edge function directly. This will tell us exactly where we stand before you need to place a test payment.
+### Files Modified
+1. `supabase/functions/zoho-sync/index.ts` — Add SKU matching + fuzzy name matching
+2. `src/modules/products/components/LinkToZohoDialog.tsx` — Add fuzzy suggestions + bulk mode
+3. For immediate testing: manually link 2-3 products via edge function call
 
