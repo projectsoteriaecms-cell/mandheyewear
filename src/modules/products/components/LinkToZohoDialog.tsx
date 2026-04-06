@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useZohoSync } from "@/modules/integrations";
@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MagnifyingGlass, Link as LinkIcon, ShoppingBag } from "@phosphor-icons/react";
+import { MagnifyingGlass, Link as LinkIcon, ShoppingBag, Lightning } from "@phosphor-icons/react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -22,6 +22,33 @@ type Product = Database["public"]["Tables"]["products"]["Row"];
 interface LinkToZohoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+// ── Fuzzy matching helpers (mirrors edge function logic) ──
+
+function stripNamePrefix(name: string): string {
+  return name.replace(/^(Frame|FRAME|Frames|FRAMES|ACCESSORIES|Ropes|Sunglasses|Contact Lenses?|Lenses?|Solutions?|Medications?|Cleanser|Packaging)\s*:\s*/i, "").trim();
+}
+
+function tokenizeName(name: string): Set<string> {
+  const stripped = stripNamePrefix(name);
+  const cleaned = stripped
+    .replace(/\bFRAME\b/gi, "")
+    .replace(/\bFRAMES\b/gi, "")
+    .toLowerCase()
+    .trim();
+  const tokens = cleaned.split(/[\s]+/).filter(t => t.length > 0);
+  return new Set(tokens);
+}
+
+function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
+  if (a.size === 0 && b.size === 0) return 0;
+  let intersection = 0;
+  for (const token of a) {
+    if (b.has(token)) intersection++;
+  }
+  const union = a.size + b.size - intersection;
+  return union === 0 ? 0 : intersection / union;
 }
 
 export function LinkToZohoDialog({ open, onOpenChange }: LinkToZohoDialogProps) {
@@ -66,7 +93,7 @@ export function LinkToZohoDialog({ open, onOpenChange }: LinkToZohoDialogProps) 
         .not("zoho_item_id", "is", null)
         .is("image_url", null)
         .order("name")
-        .limit(50);
+        .limit(100);
 
       if (zohoSearch) {
         query = query.or(`name.ilike.%${zohoSearch}%,sku.ilike.%${zohoSearch}%`);
@@ -78,6 +105,22 @@ export function LinkToZohoDialog({ open, onOpenChange }: LinkToZohoDialogProps) 
     },
     enabled: open,
   });
+
+  // Compute fuzzy suggestions when an ECMS product is selected
+  const fuzzyMatches = useMemo(() => {
+    if (!selectedEcms || !zohoProducts) return [];
+    const ecmsTokens = tokenizeName(selectedEcms.name);
+    
+    const scored = zohoProducts.map(zp => ({
+      product: zp,
+      score: jaccardSimilarity(ecmsTokens, tokenizeName(zp.name)),
+    }));
+
+    return scored
+      .filter(s => s.score > 0.2)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+  }, [selectedEcms, zohoProducts]);
 
   const handleLink = async () => {
     if (!selectedEcms || !selectedZoho?.zoho_item_id) return;
@@ -104,6 +147,12 @@ export function LinkToZohoDialog({ open, onOpenChange }: LinkToZohoDialogProps) 
     }
   };
 
+  const scoreColor = (score: number) => {
+    if (score >= 0.6) return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+    if (score >= 0.4) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+    return "bg-muted text-muted-foreground";
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[85vh]">
@@ -113,7 +162,7 @@ export function LinkToZohoDialog({ open, onOpenChange }: LinkToZohoDialogProps) 
             Link Products to Zoho
           </DialogTitle>
           <DialogDescription>
-            Select an ECMS product and a Zoho product to merge them. The ECMS product keeps its images and description; pricing syncs from Zoho.
+            Select an ECMS product and a Zoho product to merge them. Fuzzy suggestions appear automatically when you select an ECMS product.
           </DialogDescription>
         </DialogHeader>
 
@@ -135,7 +184,10 @@ export function LinkToZohoDialog({ open, onOpenChange }: LinkToZohoDialogProps) 
                 {ecmsProducts?.map((p) => (
                   <button
                     key={p.id}
-                    onClick={() => setSelectedEcms(p as Product)}
+                    onClick={() => {
+                      setSelectedEcms(p as Product);
+                      setSelectedZoho(null); // Reset Zoho selection for new suggestions
+                    }}
                     className={`w-full text-left p-2 rounded-md text-sm transition-colors ${
                       selectedEcms?.id === p.id
                         ? "bg-primary/10 border border-primary"
@@ -166,7 +218,15 @@ export function LinkToZohoDialog({ open, onOpenChange }: LinkToZohoDialogProps) 
 
           {/* Zoho Products Column */}
           <div className="space-y-3">
-            <h3 className="font-medium text-sm">Zoho Products (no images)</h3>
+            <h3 className="font-medium text-sm flex items-center gap-2">
+              Zoho Products (no images)
+              {selectedEcms && fuzzyMatches.length > 0 && (
+                <Badge variant="outline" className="text-xs">
+                  <Lightning className="h-3 w-3 mr-1" weight="fill" />
+                  {fuzzyMatches.length} suggestions
+                </Badge>
+              )}
+            </h3>
             <div className="relative">
               <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -176,7 +236,36 @@ export function LinkToZohoDialog({ open, onOpenChange }: LinkToZohoDialogProps) 
                 className="pl-9"
               />
             </div>
-            <ScrollArea className="h-[300px] border rounded-lg">
+
+            {/* Fuzzy suggestions panel */}
+            {selectedEcms && fuzzyMatches.length > 0 && !zohoSearch && (
+              <div className="border rounded-lg bg-accent/20 p-2 space-y-1">
+                <p className="text-xs text-muted-foreground font-medium px-1">Suggested matches:</p>
+                {fuzzyMatches.map(({ product: p, score }) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedZoho(p as Product)}
+                    className={`w-full text-left p-2 rounded-md text-sm transition-colors ${
+                      selectedZoho?.id === p.id
+                        ? "bg-primary/10 border border-primary"
+                        : "hover:bg-accent"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium truncate">{p.name}</p>
+                        <p className="text-xs text-muted-foreground font-mono">{p.sku}</p>
+                      </div>
+                      <Badge className={`text-xs shrink-0 ${scoreColor(score)}`}>
+                        {Math.round(score * 100)}%
+                      </Badge>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <ScrollArea className={`border rounded-lg ${selectedEcms && fuzzyMatches.length > 0 && !zohoSearch ? "h-[140px]" : "h-[300px]"}`}>
               <div className="p-2 space-y-1">
                 {zohoProducts?.map((p) => (
                   <button
