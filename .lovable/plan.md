@@ -1,50 +1,52 @@
 
 
-## Sync E-Commerce Transactions Back to Zoho + Stock Reconciliation
+## Testing the Full Order → Payment → Zoho Reconciliation Flow
 
-### Current State
+### What We're Testing
 
-Your Zoho integration currently works **one-way (inbound only)**:
-- Products and stock levels are pulled FROM Zoho into your platform
-- A `push_order` action already exists in the backend function to create Sales Orders in Zoho Books, but **it is never triggered** — no e-commerce orders are sent back to Zoho today
+The complete chain: Customer adds items to cart → Checkout → Paystack test payment → Order created → Auto-push to Zoho Books → Reconciliation card updates on dashboard.
 
-This means Zoho Books has no visibility into what's being sold on the e-commerce side, creating a gap in your accounting and stock records.
+### Current State (Already Wired)
 
-### What We'll Build
+1. **Checkout → Zoho push**: Already connected (line 196 in Checkout.tsx). After successful Paystack verification, a fire-and-forget call pushes the order to Zoho Books.
+2. **Edge function `push_order`**: Creates a Sales Order in Zoho Books with line items, customer info, and shipping address.
+3. **Admin Orders page**: Shows sync status per order with manual "Push to Zoho" button.
+4. **Reconciliation card**: Shows push stats on the Inventory page.
 
-**1. Auto-push orders to Zoho after successful payment**
-When a customer completes checkout and payment is verified, automatically create a Sales Order in Zoho Books. This connects the existing `push_order` backend action to the checkout flow.
+### The Problem for Testing
 
-**2. Stock reconciliation dashboard panel**
-A new section on the Inventory page showing:
-- Orders pushed to Zoho vs pending
-- Stock discrepancies (platform stock vs last Zoho sync)
-- Failed sync attempts that need attention
+The `push_order` action requires products in the order to have a `zoho_item_id` set (line 887-894 in zoho-sync). If the M&H e-commerce products (the ones with images that customers buy) don't have `zoho_item_id` mapped, the Zoho push will fail with "No items with Zoho mapping found."
 
-**3. Manual "Push to Zoho" button for older orders**
-For any orders that were placed before this feature goes live, or that failed to sync, staff can manually push them from the Orders admin page.
+### Test Plan (Step-by-Step)
 
-### Technical Details
+**Step 1 — Verify product mapping**
+Check how many M&H products have `zoho_item_id` set. If none/few do, we need to ensure at least a couple of test products are linked before testing.
 
-**File: `src/pages/Checkout.tsx`**
-After successful payment verification, call `supabase.functions.invoke("zoho-sync", { body: { action: "push_order", order_id } })` in a fire-and-forget pattern (don't block the user's success screen if it fails).
+**Step 2 — Place a test order using Paystack test mode**
+- Log in as a customer
+- Add a Zoho-mapped product to cart
+- Complete checkout with test card: `4084 0840 8408 4081`, CVV: `408`, OTP: `123456`
+- Confirm order is created with `payment_status = 'paid'`
 
-**File: `src/pages/admin/Orders.tsx` (or order detail component)**
-Add a "Sync to Zoho" button per order. Show sync status (synced/pending/failed) based on whether a matching `zoho_sync_log` entry exists for that order.
+**Step 3 — Verify Zoho push fired**
+- Check `zoho_sync_log` for a `push_order` entry matching the order
+- Check edge function logs for any errors
+- Verify the Sales Order appeared in Zoho Books
 
-**File: `src/pages/admin/Inventory.tsx`**
-Add a "Zoho Reconciliation" card showing:
-- Last sync timestamp
-- Orders awaiting push
-- Stock variance summary (items where local stock differs from last Zoho pull)
+**Step 4 — Verify reconciliation dashboard**
+- Go to Admin → Inventory and confirm the Reconciliation Card shows "1 synced"
+- Go to Admin → Orders and confirm the order shows as synced
 
-**File: `supabase/functions/zoho-sync/index.ts`**
-Minor update: the `push_order` action currently doesn't include a `customer_id` field in the Zoho Sales Order — we should add customer info from the order's profile if available.
+**Step 5 — Test the manual push fallback**
+- If the auto-push failed (e.g., missing mapping), use the "Push to Zoho" button on the Admin Orders page
 
-### Files Modified
-1. `src/pages/Checkout.tsx` — Auto-push order to Zoho after payment
-2. `src/pages/admin/Inventory.tsx` — Add reconciliation summary card
-3. `src/modules/integrations/hooks/useZohoSync.ts` — Add `pushOrder` method
-4. Order admin component — Add manual "Sync to Zoho" button + status indicator
-5. `supabase/functions/zoho-sync/index.ts` — Enhance `push_order` with customer data
+### What I'll Build
+
+1. **Quick data check** — Query how many purchasable products have `zoho_item_id` set. If zero, we'll need to either run a sync or manually map a test product before the test can succeed.
+2. **Test the edge function directly** — Call the `push_order` action with a known order ID (if any exist) to verify the Zoho API connection works, without needing to go through checkout.
+3. **Fix any gaps** — If the auto-push silently fails due to missing mappings, add better error visibility (e.g., log to `zoho_sync_log` even when no items have Zoho IDs, so the reconciliation card shows the failure).
+
+### Shall I Start?
+
+I'll begin by querying the database to check product mappings and existing orders, then test the edge function directly. This will tell us exactly where we stand before you need to place a test payment.
 
