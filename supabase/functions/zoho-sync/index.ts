@@ -874,9 +874,10 @@ serve(async (req) => {
       const result = await processPage(supabase, accessToken, orgId, 1, warehouseMappings, defaultBranchId, userId);
 
       const totals = {
-        processed: result.matched + result.newProducts,
+        processed: result.matched + result.fuzzyMatched + result.newProducts,
         failed: result.failed,
         matched: result.matched,
+        fuzzyMatched: result.fuzzyMatched,
         newProducts: result.newProducts,
         stockUpdated: result.stockUpdated,
         stockSkipped: result.stockSkipped,
@@ -896,6 +897,7 @@ serve(async (req) => {
           sync_id: syncId,
           page_1_processed: totals.processed,
           page_1_matched: result.matched,
+          page_1_fuzzy_matched: result.fuzzyMatched,
           page_1_new: result.newProducts,
           page_1_stock_updated: result.stockUpdated,
           page_1_stock_skipped: result.stockSkipped,
