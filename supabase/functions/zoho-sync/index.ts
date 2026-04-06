@@ -456,7 +456,7 @@ async function processPage(
 async function updateSyncProgress(
   supabase: ReturnType<typeof createClient>,
   syncId: string,
-  totals: { processed: number; failed: number; matched: number; newProducts: number; stockUpdated: number; stockSkipped: number },
+  totals: { processed: number; failed: number; matched: number; newProducts: number; stockUpdated: number; stockSkipped: number; fuzzyMatched?: number },
   currentPage: number,
   finalize: boolean,
 ) {
@@ -467,6 +467,7 @@ async function updateSyncProgress(
       total_processed: totals.processed,
       total_failed: totals.failed,
       matched_existing: totals.matched,
+      fuzzy_matched: totals.fuzzyMatched || 0,
       new_products: totals.newProducts,
       current_page: currentPage,
       stock_updated: totals.stockUpdated,
@@ -485,7 +486,7 @@ async function chainNextPage(
   syncId: string,
   page: number,
   accessToken: string,
-  totals: { processed: number; failed: number; matched: number; newProducts: number; stockUpdated: number; stockSkipped: number },
+  totals: { processed: number; failed: number; matched: number; newProducts: number; stockUpdated: number; stockSkipped: number; fuzzyMatched?: number },
 ) {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
