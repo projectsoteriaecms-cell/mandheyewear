@@ -12,6 +12,7 @@ import {
   FolderSimple,
   CalendarCheck,
   FileText,
+  Receipt,
 } from "@phosphor-icons/react";
 
 export interface NavItem {
