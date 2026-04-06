@@ -7,6 +7,7 @@ import { useZohoSync } from "@/modules/integrations/hooks/useZohoSync";
 import { supabase } from "@/integrations/supabase/client";
 import { StatCard } from "@/shared/layouts/admin/dashboard/StatCard";
 import { InventoryFilters } from "./inventory/InventoryFilters";
+import { ReconciliationCard } from "./inventory/ReconciliationCard";
 import { InventoryTable } from "./inventory/InventoryTable";
 import {
   Select,
