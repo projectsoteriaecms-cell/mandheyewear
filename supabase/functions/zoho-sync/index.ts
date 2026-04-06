@@ -533,6 +533,7 @@ serve(async (req) => {
       total_processed = 0, total_failed = 0,
       total_matched = 0, total_new = 0,
       total_stock_updated = 0, total_stock_skipped = 0,
+      total_fuzzy_matched = 0,
     } = body;
 
     // Load warehouse mappings and default branch for stock sync
@@ -550,9 +551,10 @@ serve(async (req) => {
     try {
       const result = await processPage(supabase, access_token, orgId, page, warehouseMappings, defaultBranchId, performedBy);
       const totals = {
-        processed: total_processed + result.matched + result.newProducts,
+        processed: total_processed + result.matched + result.fuzzyMatched + result.newProducts,
         failed: total_failed + result.failed,
         matched: total_matched + result.matched,
+        fuzzyMatched: total_fuzzy_matched + result.fuzzyMatched,
         newProducts: total_new + result.newProducts,
         stockUpdated: total_stock_updated + result.stockUpdated,
         stockSkipped: total_stock_skipped + result.stockSkipped,
