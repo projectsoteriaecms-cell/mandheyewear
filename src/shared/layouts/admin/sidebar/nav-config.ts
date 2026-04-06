@@ -72,6 +72,12 @@ export const navItems: NavItem[] = [
     requiresManager: true,
   },
   {
+    title: "Orders",
+    href: "/admin/orders",
+    icon: Receipt,
+    requiresManager: true,
+  },
+  {
     title: "Appointments",
     href: "/admin/appointments",
     icon: CalendarCheck,

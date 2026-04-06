@@ -166,6 +166,9 @@ const Inventory = () => {
           />
         </div>
 
+        {/* Zoho Reconciliation */}
+        <ReconciliationCard />
+
         {/* Filters */}
         <InventoryFilters
           searchTerm={searchTerm}

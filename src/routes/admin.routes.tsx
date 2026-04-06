@@ -52,4 +52,5 @@ export const adminRoutes = [
   <Route key="/admin/settings" path="/admin/settings" element={withSuspense(Settings)} />,
   <Route key="/admin/categories" path="/admin/categories" element={withSuspense(Categories)} />,
   <Route key="/admin/delivery-report" path="/admin/delivery-report" element={withSuspense(DeliveryReport)} />,
+  <Route key="/admin/orders" path="/admin/orders" element={withSuspense(Orders)} />,
 ];
