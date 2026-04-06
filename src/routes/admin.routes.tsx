@@ -20,6 +20,7 @@ const Reports = lazy(() => import("@/pages/admin/Reports"));
 const Settings = lazy(() => import("@/pages/admin/Settings"));
 const Categories = lazy(() => import("@/pages/admin/Categories"));
 const DeliveryReport = lazy(() => import("@/pages/admin/DeliveryReport"));
+const Orders = lazy(() => import("@/pages/admin/Orders"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
