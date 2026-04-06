@@ -275,9 +275,42 @@ interface PageResult {
   hasMore: boolean;
   stockUpdated: number;
   stockSkipped: number;
+  fuzzyMatched: number;
 }
 
-/** Process one page: smart merge with name matching, then upsert new items, then sync stock */
+// ── Fuzzy matching helpers ──
+
+/** Strip common ECMS prefixes like "Frame : ", "ACCESSORIES : ", "Ropes : " etc. */
+function stripNamePrefix(name: string): string {
+  return name.replace(/^(Frame|FRAME|Frames|FRAMES|ACCESSORIES|Ropes|Sunglasses|Contact Lenses?|Lenses?|Solutions?|Medications?|Cleanser|Packaging)\s*:\s*/i, "").trim();
+}
+
+/** Tokenize a product name into lowercase tokens for comparison */
+function tokenizeName(name: string): Set<string> {
+  const stripped = stripNamePrefix(name);
+  // Remove generic noise words
+  const cleaned = stripped
+    .replace(/\bFRAME\b/gi, "")
+    .replace(/\bFRAMES\b/gi, "")
+    .toLowerCase()
+    .trim();
+  // Split on spaces, hyphens (keeping hyphenated tokens too), slashes
+  const tokens = cleaned.split(/[\s]+/).filter(t => t.length > 0);
+  return new Set(tokens);
+}
+
+/** Compute Jaccard similarity between two token sets */
+function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
+  if (a.size === 0 && b.size === 0) return 0;
+  let intersection = 0;
+  for (const token of a) {
+    if (b.has(token)) intersection++;
+  }
+  const union = a.size + b.size - intersection;
+  return union === 0 ? 0 : intersection / union;
+}
+
+/** Process one page: smart merge with name matching + fuzzy matching, then upsert new items, then sync stock */
 async function processPage(
   supabase: ReturnType<typeof createClient>,
   accessToken: string,
@@ -289,39 +322,66 @@ async function processPage(
 ): Promise<PageResult> {
   const { items, hasMore } = await fetchZohoItems(accessToken, orgId, page);
 
-  if (items.length === 0) return { matched: 0, newProducts: 0, updatedExisting: 0, failed: 0, hasMore: false, stockUpdated: 0, stockSkipped: 0 };
+  if (items.length === 0) return { matched: 0, newProducts: 0, updatedExisting: 0, failed: 0, hasMore: false, stockUpdated: 0, stockSkipped: 0, fuzzyMatched: 0 };
 
   const mapped = items.map(mapZohoItemToProduct);
 
-  // Step 1: Collect normalized names for matching against ECMS products
-  const normalizedNames = mapped.map((m) => m.name.toLowerCase().trim());
-
-  // Step 2: Find ECMS products (no zoho_item_id) that match by name
+  // Step 1: Find ECMS products (no zoho_item_id) that could match
   const { data: ecmsMatches } = await supabase
     .from("products")
-    .select("id, name")
+    .select("id, name, sku")
     .is("zoho_item_id", null)
     .not("external_id", "is", null);
 
-  // Build a lookup: normalized name -> ecms product id
-  const ecmsLookup = new Map<string, string>();
+  // Build lookups: exact name -> id, and tokenized name for fuzzy matching
+  const ecmsExactLookup = new Map<string, string>();
+  const ecmsTokenized: Array<{ id: string; name: string; tokens: Set<string> }> = [];
   if (ecmsMatches) {
     for (const p of ecmsMatches) {
-      ecmsLookup.set(p.name.toLowerCase().trim(), p.id);
+      ecmsExactLookup.set(p.name.toLowerCase().trim(), p.id);
+      ecmsTokenized.push({ id: p.id, name: p.name, tokens: tokenizeName(p.name) });
     }
   }
 
   let matched = 0;
+  let fuzzyMatched = 0;
   let updatedExisting = 0;
   let failed = 0;
+  const matchedEcmsIds = new Set<string>();
   const newItems: typeof mapped = [];
 
-  // Step 3: For each Zoho item, check if it matches an ECMS product
+  // Step 2: For each Zoho item, try exact match first, then fuzzy match
   for (const item of mapped) {
     const normalizedName = item.name.toLowerCase().trim();
-    const ecmsId = ecmsLookup.get(normalizedName);
+    
+    // Try exact name match
+    let ecmsId = ecmsExactLookup.get(normalizedName);
+    let matchType = "exact";
 
-    if (ecmsId) {
+    // Try fuzzy match if no exact match
+    if (!ecmsId) {
+      const zohoTokens = tokenizeName(item.name);
+      let bestScore = 0;
+      let bestId: string | null = null;
+      
+      for (const ecms of ecmsTokenized) {
+        if (matchedEcmsIds.has(ecms.id)) continue; // Already matched
+        const score = jaccardSimilarity(zohoTokens, ecms.tokens);
+        if (score > bestScore) {
+          bestScore = score;
+          bestId = ecms.id;
+        }
+      }
+
+      // Auto-link if confidence > 0.6 (at least 60% token overlap)
+      if (bestScore >= 0.6 && bestId) {
+        ecmsId = bestId;
+        matchType = "fuzzy";
+        console.log(`[FUZZY MATCH] Score ${bestScore.toFixed(2)}: Zoho "${item.name}" → ECMS "${ecmsTokenized.find(e => e.id === bestId)?.name}"`);
+      }
+    }
+
+    if (ecmsId && !matchedEcmsIds.has(ecmsId)) {
       // Link: set zoho_item_id and update price/cost only, preserve images/description
       const { error } = await supabase
         .from("products")
@@ -337,15 +397,17 @@ async function processPage(
         console.error(`Failed to link ECMS product ${ecmsId}:`, error);
         failed++;
       } else {
-        matched++;
-        ecmsLookup.delete(normalizedName);
+        if (matchType === "fuzzy") fuzzyMatched++;
+        else matched++;
+        matchedEcmsIds.add(ecmsId);
+        ecmsExactLookup.delete(normalizedName);
       }
     } else {
       newItems.push(item);
     }
   }
 
-  // Step 4: Upsert remaining items (new or already-linked Zoho products)
+  // Step 3: Upsert remaining items (new or already-linked Zoho products)
   if (newItems.length > 0) {
     const { error: upsertError, data: upsertData } = await supabase
       .from("products")
@@ -366,12 +428,13 @@ async function processPage(
       updatedExisting = 0;
       const insertedNew = upsertedCount;
       
-      // Step 5: Sync stock for all items on this page
+      // Step 4: Sync stock for all items on this page
       await discoverLocations(supabase, items);
       const stockResult = await syncStockForItems(supabase, items, warehouseMappings, defaultBranchId, performedBy);
 
       return {
         matched,
+        fuzzyMatched,
         newProducts: insertedNew,
         updatedExisting,
         failed,
@@ -386,7 +449,7 @@ async function processPage(
   await discoverLocations(supabase, items);
   const stockResult = await syncStockForItems(supabase, items, warehouseMappings, defaultBranchId, performedBy);
 
-  return { matched, newProducts: 0, updatedExisting, failed, hasMore, stockUpdated: stockResult.stockUpdated, stockSkipped: stockResult.stockSkipped };
+  return { matched, fuzzyMatched, newProducts: 0, updatedExisting, failed, hasMore, stockUpdated: stockResult.stockUpdated, stockSkipped: stockResult.stockSkipped };
 }
 
 /** Update sync log metadata with running totals */
