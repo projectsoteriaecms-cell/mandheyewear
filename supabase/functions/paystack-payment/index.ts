@@ -135,8 +135,32 @@ async function handleVerify(
   const paymentData = data.data;
   const metadata = paymentData.metadata || {};
   const shippingAddress = metadata.shipping_address || {};
-  const cartItems = metadata.cart_items || [];
   const totalAmount = paymentData.amount / 100; // Convert kobo to naira
+
+  // Read cart items from the database (not from Paystack metadata — metadata has size limits)
+  const { data: dbCartItems, error: cartError } = await supabase
+    .from("cart_items")
+    .select("product_id, quantity, product:products(price)")
+    .eq("user_id", userId);
+
+  if (cartError) {
+    console.error("Failed to fetch cart items from DB:", cartError);
+  }
+
+  const cartItems = (dbCartItems || []).map((ci: any) => ({
+    product_id: ci.product_id,
+    quantity: ci.quantity,
+    price: ci.product?.price || 0,
+  }));
+
+  console.log(`Verify: userId=${userId}, cartItems=${cartItems.length}, totalAmount=${totalAmount}`);
+
+  if (cartItems.length === 0) {
+    // Fallback: try Paystack metadata (for backward compatibility)
+    const metaCartItems = metadata.cart_items || [];
+    console.log(`No DB cart items, falling back to metadata: ${metaCartItems.length} items`);
+    cartItems.push(...metaCartItems);
+  }
 
   // Create order
   const { data: order, error: orderError } = await supabase
@@ -182,7 +206,11 @@ async function handleVerify(
 
     if (itemsError) {
       console.error("Order items error:", itemsError);
+    } else {
+      console.log(`Inserted ${orderItems.length} order items for order ${order.id}`);
     }
+  } else {
+    console.warn(`No cart items found for user ${userId} — order ${order.id} has no line items`);
   }
 
   // Clear user's cart
