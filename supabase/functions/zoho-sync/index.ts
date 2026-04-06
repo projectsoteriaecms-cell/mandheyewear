@@ -861,7 +861,7 @@ serve(async (req) => {
 
     const { data: syncLog } = await supabase
       .from("zoho_sync_log")
-      .insert({ sync_type: "push_order", direction: "outbound", status: "pending", performed_by: userId })
+      .insert({ sync_type: "push_order", direction: "outbound", status: "pending", performed_by: userId, metadata: { order_id: orderId } })
       .select()
       .single();
     const syncId = syncLog?.id;
