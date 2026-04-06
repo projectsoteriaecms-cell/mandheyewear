@@ -508,6 +508,7 @@ async function chainNextPage(
       total_new: totals.newProducts,
       total_stock_updated: totals.stockUpdated,
       total_stock_skipped: totals.stockSkipped,
+      total_fuzzy_matched: totals.fuzzyMatched || 0,
     }),
   }).catch((err) => console.error("Chain invoke failed:", err));
 }
