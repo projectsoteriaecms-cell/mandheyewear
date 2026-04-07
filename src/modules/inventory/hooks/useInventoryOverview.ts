@@ -68,7 +68,7 @@ export const useInventoryStats = (): ReturnType<typeof useQuery<InventoryStats>>
       // Fetch inventory joined with branches to split by is_mh_location
       const { data: inventory, error: invError } = await supabase
         .from("inventory")
-        .select("quantity_on_hand, low_stock_threshold, product_id, branch_id, branch:branches(is_mh_location)");
+        .select("quantity_on_hand, low_stock_threshold, product_id, branch_id, branch:branches(is_mh_location), product:products(item_type)");
 
       if (invError) throw invError;
 
@@ -116,6 +116,7 @@ export const useInventoryStats = (): ReturnType<typeof useQuery<InventoryStats>>
         product_id: string;
         branch_id: string;
         branch: { is_mh_location: boolean | null };
+        product: { item_type: string | null };
       }>;
 
       const mhItems = items.filter(i => i.branch?.is_mh_location === true);
@@ -129,6 +130,14 @@ export const useInventoryStats = (): ReturnType<typeof useQuery<InventoryStats>>
       const mhStockUnits = mhItems.reduce((sum, i) => sum + (i.quantity_on_hand || 0), 0);
       const mhLowStock = mhItems.filter(i => i.quantity_on_hand > 0 && i.quantity_on_hand <= (i.low_stock_threshold || 5)).length;
       const mhOutOfStock = mhItems.filter(i => i.quantity_on_hand === 0).length;
+
+      // M&H by item type
+      const mhByType = {
+        frames: mhItems.filter(i => i.product?.item_type === 'frames').reduce((sum, i) => sum + (i.quantity_on_hand || 0), 0),
+        lenses: mhItems.filter(i => i.product?.item_type === 'lenses').reduce((sum, i) => sum + (i.quantity_on_hand || 0), 0),
+        contactLenses: mhItems.filter(i => i.product?.item_type === 'contact_lenses').reduce((sum, i) => sum + (i.quantity_on_hand || 0), 0),
+        accessories: mhItems.filter(i => ['accessories', 'solutions', 'cleanser', 'other', 'medications', 'packaging'].includes(i.product?.item_type || '')).reduce((sum, i) => sum + (i.quantity_on_hand || 0), 0),
+      };
 
       // Central stats
       const centralStockUnits = centralItems.reduce((sum, i) => sum + (i.quantity_on_hand || 0), 0);
@@ -152,6 +161,7 @@ export const useInventoryStats = (): ReturnType<typeof useQuery<InventoryStats>>
           featuredOnline: mhFeaturedCount || 0,
           lowStock: mhLowStock,
           outOfStock: mhOutOfStock,
+          byType: mhByType,
         },
         central: {
           stockUnits: centralStockUnits,
