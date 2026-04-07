@@ -735,11 +735,10 @@ serve(async (req) => {
           if (primaryIsAi) {
             const mainIdx = extras.findIndex((url: string) => /\/main\.\w+/.test(url));
             if (mainIdx !== -1) {
+              const originalMain = extras[mainIdx];
               extras[mainIdx] = primaryUrl!;
-              primaryUrl = extras.splice(mainIdx, 1, primaryUrl!)[0];
-              // Actually: swap properly
-              const originalMain = extras[mainIdx]; // this is now the old primaryUrl
-              extras[mainIdx] = primaryUrl!; // wrong, let me redo
+              primaryUrl = originalMain;
+              bfSwapped++;
             }
           }
 
