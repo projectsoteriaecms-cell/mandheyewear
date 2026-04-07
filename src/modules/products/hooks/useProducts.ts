@@ -53,6 +53,10 @@ export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion", w
         query = query.not("image_url", "is", null);
       }
 
+      if (withImagesOnly || brandLine === "m_and_h_fashion") {
+        query = query.gt("price", 0);
+      }
+
       return fetchAllRows(query);
     },
   });
@@ -92,6 +96,7 @@ export const useFeaturedProducts = (limit = 4) => {
         .eq("is_active", true)
         .eq("brand_line", "m_and_h_fashion")
         .not("image_url", "is", null)
+        .gt("price", 0)
         .order("price", { ascending: false });
 
       if (error) throw error;
