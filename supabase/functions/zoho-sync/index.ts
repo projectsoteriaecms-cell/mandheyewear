@@ -684,6 +684,99 @@ serve(async (req) => {
     }
   }
 
+  // ─── fix_brand_images: bulk remove packaging shots & fix primary images (no auth) ───
+  if (action === "fix_brand_images") {
+    try {
+      const KNOWN_BRANDS = [
+        'GUCCI','VERSACE','PRADA','EMPORIO ARMANI','BURBERRY','CARTIER',
+        'MONT BLANC','DOLCE & GABBANA','TOM FORD','MARC JACOBS','SWAROVSKI',
+        'MIU MIU','CAROLINA HERRERA','TIFFANY & CO','BALENCIAGA','BVLGARI',
+        'JIMMY CHOO','CHOPARD','GENTLE MONSTER','CHROME HEART','LINDA FARROW',
+        'MCM','MOSCHINO','POLAROID','CARRERA','CARRERA DUCATI','TED BAKER',
+        'TOMMY HILFIGER','RAYBAN','RAY-BAN','POLO RALPH LAUREN','HUGO',
+        'HUGO BOSS','DAVID BECKHAM','VICTORIA BECKHAM','GUESS','OAKLEY',
+        'ARNETTE','VOGUE','LEVI','PUMA','CALVIN KLEIN','SANDRO','DKNY',
+        'ARMANI EXCHANGE','DANIEL HECHTER','JOHN RICHMOND','LA MARTINA',
+        'WILLIAMS MORRIS','COLUMBIA','PIERRE CARDIN','MIRAFLEX','JIMMY FAIRLY',
+        'FREIGEIST',
+      ];
+
+      const { data: bfProducts, error: bfErr } = await supabase
+        .from("products")
+        .select("id, sku, brand, image_url, additional_images")
+        .eq("is_active", true)
+        .eq("item_type", "frames")
+        .not("additional_images", "is", null)
+        .not("brand", "is", null);
+
+      if (bfErr) throw bfErr;
+
+      const bfAffected = (bfProducts || []).filter((p: any) => {
+        const brand = (p.brand || "").toUpperCase().trim();
+        return KNOWN_BRANDS.includes(brand) &&
+          Array.isArray(p.additional_images) &&
+          p.additional_images.length >= 5;
+      });
+
+      let bfFixed = 0, bfSwapped = 0, bfDeleted = 0;
+      const bfErrors: { sku: string; error: string }[] = [];
+      const bfFiles: string[] = [];
+
+      for (const product of bfAffected) {
+        try {
+          const extras: string[] = [...product.additional_images];
+          let primaryUrl: string | null = product.image_url;
+
+          const packagingUrl = extras.pop()!;
+          const pathMatch = packagingUrl.match(/\/product-images\/(.+)$/);
+          if (pathMatch) bfFiles.push(pathMatch[1]);
+
+          const primaryIsAi = primaryUrl && /\/additional-\d+/.test(primaryUrl);
+          if (primaryIsAi) {
+            const mainIdx = extras.findIndex((url: string) => /\/main\.\w+/.test(url));
+            if (mainIdx !== -1) {
+              const originalMain = extras[mainIdx];
+              extras[mainIdx] = primaryUrl!;
+              primaryUrl = originalMain;
+              bfSwapped++;
+            }
+          }
+
+          const { error: updateErr } = await supabase
+            .from("products")
+            .update({ image_url: primaryUrl, additional_images: extras })
+            .eq("id", product.id);
+
+          if (updateErr) throw updateErr;
+          bfFixed++;
+        } catch (err: any) {
+          bfErrors.push({ sku: product.sku, error: err?.message || "Unknown" });
+        }
+      }
+
+      for (let i = 0; i < bfFiles.length; i += 20) {
+        const batch = bfFiles.slice(i, i + 20);
+        const { error: delErr } = await supabase.storage
+          .from("product-images")
+          .remove(batch);
+        if (!delErr) bfDeleted += batch.length;
+      }
+
+      return new Response(JSON.stringify({
+        success: true, action, total: bfAffected.length, fixed: bfFixed,
+        swapped: bfSwapped, storage_deleted: bfDeleted, errors: bfErrors,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return new Response(JSON.stringify({ error: message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  }
+
   // ── Initial call (client-facing, requires auth) ──
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
