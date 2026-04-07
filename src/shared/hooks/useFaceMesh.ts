@@ -16,19 +16,31 @@ export const useFaceMesh = () => {
   const faceMeshRef = useRef<FaceMesh | null>(null);
   const cameraRef = useRef<Camera | null>(null);
   const onResultsCallbackRef = useRef<((results: Results) => void) | null>(null);
+  const isInitializingRef = useRef(false);
 
-  // Store an external onResults handler (used by FaceMeshCanvas to draw)
   const setOnResults = useCallback((cb: (results: Results) => void) => {
     onResultsCallbackRef.current = cb;
   }, []);
 
+  const safeCleanup = useCallback(() => {
+    try {
+      cameraRef.current?.stop();
+    } catch (_) { /* ignore */ }
+    cameraRef.current = null;
+
+    try {
+      faceMeshRef.current?.close();
+    } catch (_) { /* ignore - WASM instance may already be deleted */ }
+    faceMeshRef.current = null;
+  }, []);
+
   const start = useCallback(async () => {
-    if (isReady || isLoading) return;
+    if (isInitializingRef.current || faceMeshRef.current) return;
+    isInitializingRef.current = true;
     setIsLoading(true);
     setError(null);
 
     try {
-      // Check for camera support
       if (!navigator.mediaDevices?.getUserMedia) {
         throw new Error("Camera not supported on this device/browser");
       }
@@ -51,19 +63,19 @@ export const useFaceMesh = () => {
         } else {
           setFaceData(null);
         }
-        // Forward to external callback for canvas drawing
         onResultsCallbackRef.current?.(results);
       });
 
       faceMeshRef.current = faceMesh;
 
-      // Start webcam
       const video = videoRef.current;
       if (!video) throw new Error("Video element not mounted");
 
       const camera = new Camera(video, {
         onFrame: async () => {
-          await faceMesh.send({ image: video });
+          if (faceMeshRef.current) {
+            await faceMeshRef.current.send({ image: video });
+          }
         },
         width: 640,
         height: 480,
@@ -75,6 +87,7 @@ export const useFaceMesh = () => {
       setIsReady(true);
     } catch (err: any) {
       console.error("FaceMesh init error:", err);
+      safeCleanup();
       if (err.name === "NotAllowedError") {
         setError("Camera permission denied. Please allow camera access and try again.");
       } else if (err.name === "NotFoundError") {
@@ -84,17 +97,16 @@ export const useFaceMesh = () => {
       }
     } finally {
       setIsLoading(false);
+      isInitializingRef.current = false;
     }
-  }, [isReady, isLoading]);
+  }, [safeCleanup]);
 
   const stop = useCallback(() => {
-    cameraRef.current?.stop();
-    cameraRef.current = null;
-    faceMeshRef.current?.close();
-    faceMeshRef.current = null;
+    safeCleanup();
+    isInitializingRef.current = false;
     setIsReady(false);
     setFaceData(null);
-  }, []);
+  }, [safeCleanup]);
 
   const captureSnapshot = useCallback((canvas: HTMLCanvasElement | null): string | null => {
     if (!canvas) return null;
@@ -104,10 +116,10 @@ export const useFaceMesh = () => {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      cameraRef.current?.stop();
-      faceMeshRef.current?.close();
+      safeCleanup();
+      isInitializingRef.current = false;
     };
-  }, []);
+  }, [safeCleanup]);
 
   return {
     isReady,
