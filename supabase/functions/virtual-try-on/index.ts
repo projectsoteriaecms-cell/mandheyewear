@@ -323,6 +323,17 @@ serve(async (req) => {
         ? userPhoto
         : `data:image/jpeg;base64,${userImageBase64}`;
     }
+
+    // Try to fetch the frame reference image
+    let frameImage: { base64: string; mimeType: string } | null = null;
+    if (frameDetails.imageUrl) {
+      frameImage = await fetchFrameImageAsBase64(frameDetails.imageUrl);
+    }
+    
+    const hasFrameReference = !!frameImage;
+    console.log(`Frame reference image available: ${hasFrameReference}`);
+
+    const prompt = buildPrompt(frameDetails, hasFrameReference);
     
     const frameImageDataUrl = frameImage 
       ? `data:${frameImage.mimeType};base64,${frameImage.base64}`
