@@ -42,14 +42,14 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
-    // Filter: known brands with exactly 5+ additional images (packaging still present)
+    // Filter: known brands that either have 5+ images (packaging to remove) OR need primary fix
     const affected = (products || []).filter((p) => {
       const brand = (p.brand || "").toUpperCase().trim();
-      return (
-        KNOWN_BRANDS.has(brand) &&
-        Array.isArray(p.additional_images) &&
-        p.additional_images.length >= 5
-      );
+      if (!KNOWN_BRANDS.has(brand)) return false;
+      const hasPackaging = Array.isArray(p.additional_images) && p.additional_images.length >= 5;
+      const needsPrimaryFix = p.image_url && !p.image_url.includes("/main.") &&
+        Array.isArray(p.additional_images) && p.additional_images.some((url: string) => url.includes("/main."));
+      return hasPackaging || needsPrimaryFix;
     });
 
     const results = {
