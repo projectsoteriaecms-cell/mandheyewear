@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ImageOff } from "lucide-react";
+import { getDisplayImages } from "@/modules/products/lib/image-utils";
 
 interface ProductImageGalleryProps {
   mainImage: string | null;
@@ -14,11 +15,8 @@ export const ProductImageGallery = ({
   additionalImages,
   productName,
 }: ProductImageGalleryProps) => {
-  // Only use actual product images - no mixing with other products
-  const hasImages = mainImage || (additionalImages && additionalImages.length > 0);
-  const images = mainImage
-    ? [mainImage, ...(additionalImages || [])]
-    : additionalImages || [];
+  const images = getDisplayImages({ image_url: mainImage, additional_images: additionalImages });
+  const hasImages = images.length > 0;
 
   const [selectedImage, setSelectedImage] = useState(0);
 

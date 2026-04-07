@@ -6,3 +6,4 @@ export * from "./parsers";
 export * from "./validators";
 export * from "./transformers";
 export * from "./prompt-builders";
+export * from "./image-utils";

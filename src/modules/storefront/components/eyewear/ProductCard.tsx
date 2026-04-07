@@ -34,7 +34,7 @@ const getCategoryLabel = (product: Product): string => {
 };
 
 export const ProductCard = ({ product }: ProductCardProps) => {
-  const imageUrl = product.image_url || "/placeholder.svg";
+  const imageUrl = getHeroImage(product) || "/placeholder.svg";
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
