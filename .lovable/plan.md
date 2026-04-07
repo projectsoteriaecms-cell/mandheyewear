@@ -1,38 +1,69 @@
 
 
-## Remove Packaging Shots & Fix Primary Images for All Known-Brand Products
+## Inline Virtual Try-On: One-Click VTO from Any Product Page
 
-### The Problem
-27 known-brand products still have AI-generated images as their primary `image_url`, and 68 known-brand products have packaging/casing shots (the last image in `additional_images`) that may show incorrect "M&H Opticals" branding. The frontend `getDisplayImages` utility helps reorder on display, but the underlying data is still wrong.
+### Current State
+Right now, every "Virtual Try-On" button (on ProductCard, ProductDetail, AddToCartSection) simply navigates to `/try-on?product={id}`. The user must then upload a photo on the TryOn page before generating. There is no stored VTO photo on the user profile.
 
-### What We'll Do (One-Time Bulk Data Fix)
+### What We'll Build
+A modal-based inline VTO experience: logged-in users who have a saved selfie on their profile can click "Virtual Try-On" on any product and instantly get an AI-generated try-on result — no page navigation, no re-uploading.
 
-**Step 1: Remove the packaging shot (last image) from all 68 known-brand products with full galleries**
-- For each product with 5+ additional images, remove the last entry from `additional_images` (the packaging/casing shot)
-- This eliminates the M&H-branded casing image entirely
+### How It Works
 
-**Step 2: Fix the 27 products where `image_url` is still an AI-generated image**
-- Find the original upload (`/main.` URL) in `additional_images`
-- Swap it into `image_url`
-- Move the old AI `image_url` into `additional_images` where `/main.` was
-
-**Step 3: Delete the packaging image files from storage**
-- Remove the actual files from the `product-images` bucket so they don't linger
+```text
+User clicks "Virtual Try-On" on any product
+  ├─ Not logged in → redirect to /login
+  ├─ Logged in, no saved photo → navigate to /try-on?product={id} (current behavior)
+  └─ Logged in, has saved VTO photo →
+       Open inline modal → auto-generate try-on → show result
+       Actions: Add to Cart, Wishlist, Share, Try Different Photo
+```
 
 ### Implementation
-All done via a single edge function call or SQL operations — no manual per-product work needed.
 
-**Files Modified:**
-1. `supabase/functions/zoho-sync/index.ts` — Add a `fix_brand_images` action that:
-   - Queries all 68 known-brand products with full galleries
-   - Removes the last `additional_images` entry (packaging shot)
-   - Swaps `image_url` to the original `/main.*` photo where needed
-   - Deletes the removed image files from storage
-2. No frontend changes needed — `getDisplayImages` already handles ordering correctly as a safeguard
+**1. Add `vto_photo_url` to profiles table**
+- New nullable text column on `profiles` to store the user's preferred VTO selfie (a Supabase Storage URL)
+- Migration: `ALTER TABLE profiles ADD COLUMN vto_photo_url text;`
 
-### Scope
-- 68 products affected (known brands with 5+ additional images)
-- 27 of those also need `image_url` swapped back to the original photo
-- Fully reversible if needed (images stay in storage until explicitly deleted)
-- One-click execution from admin or direct edge function call
+**2. Photo persistence on the TryOn page**
+- When a user uploads a photo on `/try-on`, offer a "Save as my try-on photo" toggle
+- Uploads the image to `product-images` bucket under `vto-photos/{userId}.webp`
+- Saves the public URL to `profiles.vto_photo_url`
+- Also allow saving from the dashboard profile section
+
+**3. New `InlineTryOnModal` component**
+- File: `src/components/try-on/InlineTryOnModal.tsx`
+- Props: `productId`, `open`, `onOpenChange`
+- Fetches the product details, loads the user's `vto_photo_url` from profile
+- Calls `useVirtualTryOn.generateTryOn()` automatically on open
+- Shows: loading spinner → result image → action buttons (Add to Cart, Wishlist, Close)
+- Fallback link: "Use a different photo →" navigates to `/try-on?product={id}`
+
+**4. New `useInlineTryOn` hook**
+- File: `src/modules/personalization/hooks/useInlineTryOn.ts`
+- Checks auth status + profile `vto_photo_url`
+- Returns `{ canInlineTryOn, savedPhotoUrl, triggerTryOn }` 
+- `triggerTryOn(productId)` opens the modal if photo exists, otherwise navigates to `/try-on`
+
+**5. Update all VTO button locations**
+- `ProductCard.tsx` — replace `navigate('/try-on?product=...')` with `triggerTryOn(product.id)`
+- `ProductDetail.tsx` — same for both desktop and mobile VTO buttons
+- `AddToCartSection.tsx` — same
+- `ProductListCard.tsx` — same
+- Each renders the `<InlineTryOnModal />` conditionally
+
+### Files Modified
+1. **Migration** — Add `vto_photo_url` column to profiles
+2. `src/components/try-on/InlineTryOnModal.tsx` (new) — Modal with auto-generate VTO
+3. `src/modules/personalization/hooks/useInlineTryOn.ts` (new) — Hook for inline VTO logic
+4. `src/pages/TryOn.tsx` — Add "Save as my try-on photo" option after upload
+5. `src/modules/storefront/components/eyewear/ProductCard.tsx` — Use inline VTO
+6. `src/pages/ProductDetail.tsx` — Use inline VTO
+7. `src/components/product/AddToCartSection.tsx` — Use inline VTO
+8. `src/modules/storefront/components/eyewear/ProductListCard.tsx` — Use inline VTO
+
+### User Flow Summary
+- **New users / no photo**: Same as today — navigate to /try-on page
+- **Returning users with saved photo**: Click VTO button → modal opens → AI generates instantly → result appears in 5-10 seconds → Add to Cart right there
+- **Want to change photo**: Link in modal takes them to full /try-on page, or they can update from dashboard
 
