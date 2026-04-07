@@ -130,7 +130,7 @@ export const MainNav = () => {
           {/* Icon Actions */}
           <div className="flex items-center gap-1">
             {/* Search */}
-            <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
+            <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted" onClick={() => setSearchOpen(true)}>
               <MagnifyingGlass weight="light" className="h-5 w-5" />
             </Button>
 
