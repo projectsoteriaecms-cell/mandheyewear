@@ -25,16 +25,21 @@ export interface OverlayTransform {
 }
 
 // Smoothing factor for EMA (lower = smoother, more stable)
-const SMOOTH_FACTOR = 0.15;
+const SMOOTH_FACTOR = 0.08;
 // Extra padding multiplier on ear width for the frame
-const TEMPLE_PADDING = 1.35;
+const TEMPLE_PADDING = 1.55;
 // Depth scaling sensitivity (lower = less erratic)
 const DEPTH_SCALE_FACTOR = 0.8;
 // Max per-frame delta as fraction of canvas dimension (velocity damping)
-const MAX_POSITION_DELTA = 0.05;
-const MAX_SIZE_DELTA = 0.08;
+const MAX_POSITION_DELTA = 0.03;
+const MAX_SIZE_DELTA = 0.04;
+// Max angle change per frame in radians
+const MAX_ANGLE_DELTA = 0.02;
+// Number of warmup frames to skip before showing overlay
+const WARMUP_FRAMES = 3;
 
 let prevTransform: OverlayTransform | null = null;
+let frameCount = 0;
 
 export function resetSmoothing(): void {
   prevTransform = null;
