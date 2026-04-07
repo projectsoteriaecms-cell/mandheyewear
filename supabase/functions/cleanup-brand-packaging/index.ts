@@ -54,7 +54,11 @@ Deno.serve(async (req) => {
       const hasPackaging = p.additional_images.length >= 5;
       const needsPrimaryFix = p.image_url && isAiGenerated(p.image_url) &&
         p.additional_images.some((url: string) => isOriginalPhoto(url));
-      return hasPackaging || needsPrimaryFix;
+      // Also catch: AI primary (main.webp) with no original .png available — swap with first gallery image
+      const needsAnySwap = p.image_url && p.image_url.endsWith("main.webp") &&
+        p.additional_images.length > 0 &&
+        !p.additional_images.some((url: string) => isOriginalPhoto(url));
+      return hasPackaging || needsPrimaryFix || needsAnySwap;
     });
 
     const results = {
