@@ -4,6 +4,8 @@ export { TryOnHistory } from "./TryOnHistory";
 export { PhotoUpload } from "./PhotoUpload";
 export { TryOnModeToggle, type TryOnMode } from "./TryOnModeToggle";
 export { LiveARTryOn } from "./LiveARTryOn";
+export { FaceMeshCanvas } from "./FaceMeshCanvas";
+export { ARFrameSelector } from "./ARFrameSelector";
 export { CameraKitCanvas } from "./CameraKitCanvas";
 export { ARLensSelector } from "./ARLensSelector";
 export { TryOnTour } from "./TryOnTour";

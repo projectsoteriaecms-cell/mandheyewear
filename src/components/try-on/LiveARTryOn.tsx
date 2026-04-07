@@ -1,98 +1,82 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Camera, Info, ArrowLeft } from "lucide-react";
+import { Camera, ArrowLeft, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { CameraKitCanvas } from "./CameraKitCanvas";
-import { ARLensSelector } from "./ARLensSelector";
-import { useCameraKit } from "@/shared/hooks/useCameraKit";
-import { SNAP_CONFIG, isCameraKitConfigured } from "@/config/snap-lenses";
+import { FaceMeshCanvas } from "./FaceMeshCanvas";
+import { ARFrameSelector } from "./ARFrameSelector";
+import { isCameraKitConfigured } from "@/config/snap-lenses";
 import type { TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
 
+interface FrameProduct {
+  id: string;
+  name: string;
+  image_url: string | null;
+  price: number;
+  color?: string | null;
+  style?: string | null;
+  sku?: string;
+}
+
 interface LiveARTryOnProps {
+  products: FrameProduct[];
+  productsLoading?: boolean;
   onCapture: (result: TryOnResultType) => void;
   onSwitchToPhoto: () => void;
 }
 
-export const LiveARTryOn = ({ onCapture, onSwitchToPhoto }: LiveARTryOnProps) => {
+export const LiveARTryOn = ({
+  products,
+  productsLoading = false,
+  onCapture,
+  onSwitchToPhoto,
+}: LiveARTryOnProps) => {
+  const [selectedProduct, setSelectedProduct] = useState<FrameProduct | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [arError, setArError] = useState<string | null>(null);
-  
-  const {
-    isInitialized,
-    isLoading,
-    currentLens,
-    availableLenses,
-    switchLens,
-    captureFrame,
-  } = useCameraKit();
-
-  const handleLensSelect = useCallback(async (lensId: string) => {
-    await switchLens(lensId);
-  }, [switchLens]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const handleCapture = useCallback(async () => {
-    if (!isInitialized) {
-      toast.error("Camera not ready");
-      return;
-    }
-
     setIsCapturing(true);
-    
+
     try {
-      const imageData = await captureFrame();
-      
-      if (imageData) {
-        // Create a TryOnResult-compatible object
-        const result: TryOnResultType = {
-          success: true,
-          compositeImage: imageData,
-          frameDetails: currentLens ? {
-            id: currentLens.productId || currentLens.id,
-            name: currentLens.name,
-            imageUrl: currentLens.thumbnailUrl,
-          } : undefined,
-          timestamp: Date.now(),
-          usedFrameReference: false, // AR captures aren't "verified" like AI VTO
-        };
-        
-        onCapture(result);
-        toast.success("Snapshot saved to history!");
-      } else {
-        toast.error("Failed to capture snapshot");
+      const canvas = document.querySelector<HTMLCanvasElement>("[data-ar-canvas]");
+      if (!canvas) {
+        toast.error("Canvas not ready");
+        return;
       }
+
+      const imageData = canvas.toDataURL("image/png");
+
+      const result: TryOnResultType = {
+        success: true,
+        compositeImage: imageData,
+        frameDetails: selectedProduct
+          ? {
+              id: selectedProduct.id,
+              name: selectedProduct.name,
+              imageUrl: selectedProduct.image_url || undefined,
+              price: selectedProduct.price,
+              sku: selectedProduct.sku,
+            }
+          : undefined,
+        timestamp: Date.now(),
+        usedFrameReference: false,
+      };
+
+      onCapture(result);
+      toast.success("Snapshot saved to history!");
     } catch (error) {
       console.error("Capture error:", error);
       toast.error("Failed to capture snapshot");
     } finally {
       setIsCapturing(false);
     }
-  }, [isInitialized, captureFrame, currentLens, onCapture]);
-
-  const isConfigured = isCameraKitConfigured();
+  }, [selectedProduct, onCapture]);
 
   return (
     <div className="space-y-6">
-      {/* Info alert for unconfigured state */}
-      {!isConfigured && (
-        <Alert className="bg-amber-500/10 border-amber-500/30">
-          <Info className="h-4 w-4 text-amber-500" />
-          <AlertDescription className="text-sm">
-            <strong>Setup Required:</strong> Live AR mode needs Snapchat Camera Kit credentials.
-            Add your API Token and Lens Group ID to enable real-time AR try-on.
-            <Button
-              variant="link"
-              size="sm"
-              className="px-1 h-auto text-amber-600"
-              onClick={onSwitchToPhoto}
-            >
-              Use Photo Mode instead →
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* AR Error display */}
       {arError && (
         <Alert variant="destructive">
@@ -103,20 +87,24 @@ export const LiveARTryOn = ({ onCapture, onSwitchToPhoto }: LiveARTryOnProps) =>
       {/* Main AR Canvas */}
       <Card className="overflow-hidden border-0 shadow-lg">
         <CardContent className="p-0">
-          <CameraKitCanvas
-            onInitialized={() => setArError(null)}
+          <FaceMeshCanvas
+            frameImageUrl={selectedProduct?.image_url || null}
+            onInitialized={() => {
+              setArError(null);
+              setIsInitialized(true);
+            }}
             onError={(error) => setArError(error)}
             className="w-full"
           />
         </CardContent>
       </Card>
 
-      {/* Lens Selector */}
-      <ARLensSelector
-        lenses={availableLenses}
-        currentLensId={currentLens?.id || null}
-        onSelectLens={handleLensSelect}
-        isLoading={isLoading}
+      {/* Frame Selector — real products */}
+      <ARFrameSelector
+        products={products}
+        selectedProductId={selectedProduct?.id || null}
+        onSelectProduct={(p) => setSelectedProduct(p)}
+        isLoading={productsLoading}
         disabled={!isInitialized}
       />
 
@@ -127,12 +115,12 @@ export const LiveARTryOn = ({ onCapture, onSwitchToPhoto }: LiveARTryOnProps) =>
           size="lg"
           className="w-full"
           onClick={handleCapture}
-          disabled={!isInitialized || isCapturing}
+          disabled={!isInitialized || isCapturing || !selectedProduct}
         >
           <Camera className="h-5 w-5 mr-2" />
           {isCapturing ? "Capturing..." : "Capture & Save to History"}
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -147,9 +135,19 @@ export const LiveARTryOn = ({ onCapture, onSwitchToPhoto }: LiveARTryOnProps) =>
       {/* Instructions */}
       {isInitialized && (
         <p className="text-xs text-center text-muted-foreground">
-          Select a frame style above to see it on your face in real-time.
+          Select a frame above to see it on your face in real-time.
           Tap capture to save to your try-on history.
         </p>
+      )}
+
+      {/* Hint if no frame selected */}
+      {isInitialized && !selectedProduct && (
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 text-accent text-sm font-medium">
+            <Sparkles className="h-4 w-4" />
+            Select a frame above to see it on your face
+          </div>
+        </div>
       )}
     </div>
   );

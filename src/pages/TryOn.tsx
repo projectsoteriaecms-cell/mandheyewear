@@ -187,7 +187,9 @@ const TryOn = () => {
           {tryOnMode === "ar" ? (
             /* Live AR Mode */
             <div className="max-w-lg mx-auto mb-8">
-              <LiveARTryOn 
+              <LiveARTryOn
+                products={frameProducts}
+                productsLoading={productsLoading}
                 onCapture={handleARCapture}
                 onSwitchToPhoto={handleSwitchToPhoto}
               />
