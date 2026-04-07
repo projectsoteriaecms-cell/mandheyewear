@@ -5,8 +5,10 @@
  *  - #33  → left eye outer corner
  *  - #263 → right eye outer corner
  *  - #6   → nose bridge (between the eyes)
- *  - #234 → left ear/temple area
- *  - #454 → right ear/temple area
+ *  - #234 → left temple area
+ *  - #454 → right temple area
+ *  - #159 → left eye top
+ *  - #386 → right eye top
  */
 
 interface Point {
@@ -14,7 +16,7 @@ interface Point {
   y: number;
 }
 
-interface OverlayTransform {
+export interface OverlayTransform {
   centerX: number;
   centerY: number;
   width: number;
@@ -22,16 +24,42 @@ interface OverlayTransform {
   angle: number;
 }
 
-const SCALE_FACTOR = 2.4; // how much wider than eye-to-eye distance
-const ASPECT_RATIO = 0.45; // height relative to width for typical glasses
+// Smoothing factor for EMA (0 = no update, 1 = no smoothing)
+const SMOOTH_FACTOR = 0.3;
+// Extra padding multiplier on temple width for the frame
+const TEMPLE_PADDING = 1.15;
+// Depth scaling sensitivity
+const DEPTH_SCALE_FACTOR = 2.0;
+
+let prevTransform: OverlayTransform | null = null;
+
+export function resetSmoothing(): void {
+  prevTransform = null;
+}
+
+function ema(prev: number, curr: number, alpha: number): number {
+  return prev + alpha * (curr - prev);
+}
 
 export function computeGlassesTransform(
   landmarks: { x: number; y: number; z: number }[],
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
+  imageAspectRatio: number = 0.45
 ): OverlayTransform | null {
   if (!landmarks || landmarks.length < 468) return null;
 
+  // Temple landmarks for face width
+  const leftTemple: Point = {
+    x: landmarks[234].x * canvasWidth,
+    y: landmarks[234].y * canvasHeight,
+  };
+  const rightTemple: Point = {
+    x: landmarks[454].x * canvasWidth,
+    y: landmarks[454].y * canvasHeight,
+  };
+
+  // Eye landmarks for angle and vertical positioning
   const leftEye: Point = {
     x: landmarks[33].x * canvasWidth,
     y: landmarks[33].y * canvasHeight,
@@ -40,25 +68,65 @@ export function computeGlassesTransform(
     x: landmarks[263].x * canvasWidth,
     y: landmarks[263].y * canvasHeight,
   };
+
+  // Eye top landmarks for vertical centering
+  const leftEyeTop: Point = {
+    x: landmarks[159].x * canvasWidth,
+    y: landmarks[159].y * canvasHeight,
+  };
+  const rightEyeTop: Point = {
+    x: landmarks[386].x * canvasWidth,
+    y: landmarks[386].y * canvasHeight,
+  };
+
+  // Nose bridge
   const noseBridge: Point = {
     x: landmarks[6].x * canvasWidth,
     y: landmarks[6].y * canvasHeight,
   };
 
-  const eyeDistance = Math.sqrt(
-    Math.pow(rightEye.x - leftEye.x, 2) + Math.pow(rightEye.y - leftEye.y, 2)
+  // Width from temple-to-temple distance
+  const templeDistance = Math.sqrt(
+    Math.pow(rightTemple.x - leftTemple.x, 2) +
+      Math.pow(rightTemple.y - leftTemple.y, 2)
   );
 
-  const angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+  // Angle from eye corners
+  const angle = Math.atan2(
+    rightEye.y - leftEye.y,
+    rightEye.x - leftEye.x
+  );
 
-  const width = eyeDistance * SCALE_FACTOR;
-  const height = width * ASPECT_RATIO;
+  // Depth-aware scaling using nose bridge Z
+  const avgZ = landmarks[6].z;
+  const depthScale = 1 + avgZ * DEPTH_SCALE_FACTOR;
 
-  // Center slightly above nose bridge (shift up a tiny bit for natural look)
+  const width = templeDistance * TEMPLE_PADDING * depthScale;
+  // imageAspectRatio = naturalHeight / naturalWidth
+  const height = width * imageAspectRatio;
+
+  // Vertical center: blend eye-top midpoint with nose bridge
+  const eyeTopMidY = (leftEyeTop.y + rightEyeTop.y) / 2;
   const centerX = noseBridge.x;
-  const centerY = noseBridge.y - height * 0.05;
+  const centerY = eyeTopMidY * 0.4 + noseBridge.y * 0.6;
 
-  return { centerX, centerY, width, height, angle };
+  const raw: OverlayTransform = { centerX, centerY, width, height, angle };
+
+  // Apply EMA smoothing
+  if (prevTransform) {
+    const smoothed: OverlayTransform = {
+      centerX: ema(prevTransform.centerX, raw.centerX, SMOOTH_FACTOR),
+      centerY: ema(prevTransform.centerY, raw.centerY, SMOOTH_FACTOR),
+      width: ema(prevTransform.width, raw.width, SMOOTH_FACTOR),
+      height: ema(prevTransform.height, raw.height, SMOOTH_FACTOR),
+      angle: ema(prevTransform.angle, raw.angle, SMOOTH_FACTOR),
+    };
+    prevTransform = smoothed;
+    return smoothed;
+  }
+
+  prevTransform = raw;
+  return raw;
 }
 
 export function drawGlassesOverlay(
