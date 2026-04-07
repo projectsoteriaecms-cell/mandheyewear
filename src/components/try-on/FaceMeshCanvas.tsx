@@ -1,7 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { Results } from "@mediapipe/face_mesh";
 import { useFaceMesh } from "@/shared/hooks/useFaceMesh";
-import { computeGlassesTransform, drawGlassesOverlay } from "@/shared/lib/glasses-overlay";
+import { computeGlassesTransform, drawGlassesOverlay, resetSmoothing } from "@/shared/lib/glasses-overlay";
 import { Loader2, VideoOff, AlertCircle, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 
