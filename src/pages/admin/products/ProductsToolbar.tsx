@@ -8,6 +8,7 @@ import {
   CloudArrowDown,
   Sparkle,
 } from "@phosphor-icons/react";
+import { BulkPackagingFixButton } from "@/modules/products/components/BulkPackagingFixButton";
 
 interface ProductsToolbarProps {
   isAdmin: boolean;
