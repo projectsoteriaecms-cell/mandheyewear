@@ -21,13 +21,16 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmailCaptureModal } from "./EmailCaptureModal";
+import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
 import { useVTOEmailCapture } from "@/modules/personalization/hooks/useVTOEmailCapture";
-import type { TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
+import type { TryOnResult as TryOnResultType, MultiAngleResults } from "@/modules/personalization/hooks/useVirtualTryOn";
 
 interface TryOnResultProps {
   result: TryOnResultType | null;
   userPhoto: string | null;
   isGenerating: boolean;
+  multiAngleResults?: MultiAngleResults;
+  isGeneratingAngles?: boolean;
   onRetry?: () => void;
   onAddToCart?: () => void;
   onAddToWishlist?: () => void;
@@ -39,6 +42,8 @@ export const TryOnResult = ({
   result,
   userPhoto,
   isGenerating,
+  multiAngleResults,
+  isGeneratingAngles,
   onRetry,
   onAddToCart,
   onAddToWishlist,
