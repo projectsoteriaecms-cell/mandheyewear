@@ -48,6 +48,7 @@ export const MainNav = () => {
   const { data: role } = useUserRole();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
   
   const isStaff = hasAdminAccess(role ?? null);
 
