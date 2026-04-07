@@ -25,19 +25,25 @@ export interface OverlayTransform {
 }
 
 // Smoothing factor for EMA (lower = smoother, more stable)
-const SMOOTH_FACTOR = 0.15;
+const SMOOTH_FACTOR = 0.08;
 // Extra padding multiplier on ear width for the frame
-const TEMPLE_PADDING = 1.35;
+const TEMPLE_PADDING = 1.55;
 // Depth scaling sensitivity (lower = less erratic)
 const DEPTH_SCALE_FACTOR = 0.8;
 // Max per-frame delta as fraction of canvas dimension (velocity damping)
-const MAX_POSITION_DELTA = 0.05;
-const MAX_SIZE_DELTA = 0.08;
+const MAX_POSITION_DELTA = 0.03;
+const MAX_SIZE_DELTA = 0.04;
+// Max angle change per frame in radians
+const MAX_ANGLE_DELTA = 0.02;
+// Number of warmup frames to skip before showing overlay
+const WARMUP_FRAMES = 3;
 
 let prevTransform: OverlayTransform | null = null;
+let frameCount = 0;
 
 export function resetSmoothing(): void {
   prevTransform = null;
+  frameCount = 0;
 }
 
 function ema(prev: number, curr: number, alpha: number): number {
@@ -123,15 +129,17 @@ export function computeGlassesTransform(
 
   let raw: OverlayTransform = { centerX, centerY, width, height, angle };
 
+  frameCount++;
+
   // Apply velocity damping + EMA smoothing
   if (prevTransform) {
-    // Clamp large jumps first
+    // Clamp large jumps first (including angle)
     raw = {
       centerX: clampDelta(prevTransform.centerX, raw.centerX, MAX_POSITION_DELTA, canvasWidth),
       centerY: clampDelta(prevTransform.centerY, raw.centerY, MAX_POSITION_DELTA, canvasHeight),
       width: clampDelta(prevTransform.width, raw.width, MAX_SIZE_DELTA, canvasWidth),
       height: clampDelta(prevTransform.height, raw.height, MAX_SIZE_DELTA, canvasHeight),
-      angle: raw.angle,
+      angle: clampDelta(prevTransform.angle, raw.angle, MAX_ANGLE_DELTA, 1),
     };
 
     const smoothed: OverlayTransform = {
@@ -142,10 +150,16 @@ export function computeGlassesTransform(
       angle: ema(prevTransform.angle, raw.angle, SMOOTH_FACTOR),
     };
     prevTransform = smoothed;
+
+    // Skip rendering during warmup frames
+    if (frameCount <= WARMUP_FRAMES) return null;
+
     return smoothed;
   }
 
   prevTransform = raw;
+  // Skip rendering during warmup
+  if (frameCount <= WARMUP_FRAMES) return null;
   return raw;
 }
 
