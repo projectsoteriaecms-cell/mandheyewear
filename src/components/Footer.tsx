@@ -39,15 +39,28 @@ const NewsletterBanner = () => {
     if (!email) return;
 
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast({
-      title: "Welcome to the family!",
-      description: "You've been added to our newsletter.",
-    });
-    
-    setEmail("");
-    setIsSubmitting(false);
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { error } = await supabase
+        .from("newsletter_subscribers")
+        .upsert({ email }, { onConflict: "email" });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Welcome to the family!",
+        description: "You've been added to our newsletter.",
+      });
+      setEmail("");
+    } catch {
+      toast({
+        title: "Couldn't subscribe",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
