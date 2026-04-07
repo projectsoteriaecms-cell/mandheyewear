@@ -1,5 +1,5 @@
 import { AdminLayout } from "@/shared/layouts/admin";
-import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple, FileText, Image, Storefront, ArrowsClockwise, Cube, MapPin } from "@phosphor-icons/react";
+import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple, FileText, Image, Storefront, ArrowsClockwise, Cube, MapPin, Eyeglasses, Drop, FirstAid } from "@phosphor-icons/react";
 import { useInventoryStats, useLowStockAlerts } from "@/modules/inventory";
 import { usePurchaseOrders, useStockTransfers } from "@/modules/inventory";
 import { useProductImageStats } from "@/modules/products";
@@ -100,11 +100,41 @@ const AdminDashboard = () => {
               />
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard
-                  title="M&H Stock Units"
+                  title="Frames"
+                  value={stats?.mh.byType.frames.toLocaleString() || "0"}
+                  icon={Eyeglasses}
+                  loading={statsLoading}
+                  description="Frame units in M&H"
+                />
+                <StatCard
+                  title="Lenses"
+                  value={stats?.mh.byType.lenses.toLocaleString() || "0"}
+                  icon={Drop}
+                  loading={statsLoading}
+                  description="Lens units in M&H"
+                />
+                <StatCard
+                  title="Contact Lenses"
+                  value={stats?.mh.byType.contactLenses.toLocaleString() || "0"}
+                  icon={Drop}
+                  loading={statsLoading}
+                  description="Contact lens units in M&H"
+                />
+                <StatCard
+                  title="Accessories"
+                  value={stats?.mh.byType.accessories.toLocaleString() || "0"}
+                  icon={FirstAid}
+                  loading={statsLoading}
+                  description="Solutions, cleanser & other"
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
+                <StatCard
+                  title="Total M&H Units"
                   value={stats?.mh.stockUnits.toLocaleString() || "0"}
                   icon={Package}
                   loading={statsLoading}
-                  description="Total units in M&H branch"
+                  description="All item types combined"
                 />
                 <StatCard
                   title="Featured Online"

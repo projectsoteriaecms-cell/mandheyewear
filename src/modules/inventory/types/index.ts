@@ -49,6 +49,12 @@ export interface InventoryStats {
     featuredOnline: number;
     lowStock: number;
     outOfStock: number;
+    byType: {
+      frames: number;
+      lenses: number;
+      contactLenses: number;
+      accessories: number;
+    };
   };
   // Central / other branches breakdown
   central: {
