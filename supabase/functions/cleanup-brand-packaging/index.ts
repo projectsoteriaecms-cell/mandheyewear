@@ -82,12 +82,19 @@ Deno.serve(async (req) => {
         let newImageUrl = product.image_url;
         let newAdditional = images;
 
-        // Fix primary image: if image_url is AI-generated (.webp), swap with first original (.png)
+        // Fix primary image: if image_url is AI-generated (.webp), swap with original or first gallery image
         if (product.image_url && isAiGenerated(product.image_url)) {
           const origIdx = newAdditional.findIndex((url: string) => isOriginalPhoto(url));
           if (origIdx !== -1) {
+            // Swap with original .png reference
             newImageUrl = newAdditional[origIdx];
             newAdditional[origIdx] = product.image_url;
+            results.primaryFixed++;
+          } else if (newAdditional.length > 0) {
+            // No original exists — swap with first gallery image (front-facing shot)
+            const oldPrimary = product.image_url;
+            newImageUrl = newAdditional[0];
+            newAdditional[0] = oldPrimary;
             results.primaryFixed++;
           }
         }
