@@ -16,6 +16,7 @@ import { hasAdminAccess } from "@/shared/lib/permissions";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { SearchDialog } from "@/components/search/SearchDialog";
 import mhLogo from "@/assets/mh-logo.png";
 import mhLogoGold from "@/assets/mh-logo-gold.png";
 
