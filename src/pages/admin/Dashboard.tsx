@@ -132,27 +132,34 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Section B: Central / Other Branches */}
+            {/* Section B: Soteria Medical */}
             <div>
               <SectionHeader
                 icon={Buildings}
-                title="Central / Other Branches"
+                title="Soteria Medical"
                 description="Soteria branch inventory — excess stock available for sourcing"
               />
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard
-                  title="Central Stock Units"
+                  title="Soteria Stock Units"
                   value={stats?.central.stockUnits.toLocaleString() || "0"}
                   icon={Cube}
                   loading={statsLoading}
-                  description="Units across other branches"
+                  description="Units across Soteria branches"
                 />
                 <StatCard
-                  title="Central Products"
+                  title="Soteria Products"
                   value={stats?.central.productCount.toLocaleString() || "0"}
                   icon={Package}
                   loading={statsLoading}
-                  description="Unique products in other branches"
+                  description="Unique products in Soteria branches"
+                />
+                <StatCard
+                  title="Branches"
+                  value={stats?.central.branchCount || 0}
+                  icon={MapPin}
+                  loading={statsLoading}
+                  description="Active Soteria locations"
                 />
                 <StatCard
                   title="Available for Sourcing"
@@ -162,46 +169,46 @@ const AdminDashboard = () => {
                   variant={stats?.central.availableForSourcing ? "warning" : "default"}
                   description="Out at M&H, in stock elsewhere"
                 />
-                <StatCard
-                  title="Branches"
-                  value={stats?.central.branchCount || 0}
-                  icon={MapPin}
-                  loading={statsLoading}
-                  description="Active non-M&H locations"
-                />
               </div>
             </div>
 
-            {/* Combined overview row */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <StatCard
-                title="Total Stock (All)"
-                value={stats?.totalItems.toLocaleString() || "0"}
+            {/* Section C: Combined Totals */}
+            <div>
+              <SectionHeader
                 icon={Package}
-                loading={statsLoading}
-                description="Combined across all branches"
+                title="Combined Totals"
+                description="Aggregated inventory across all branches and brand lines"
               />
-              <StatCard
-                title="Total Products (All)"
-                value={stats?.totalProductCount.toLocaleString() || "0"}
-                icon={Cube}
-                loading={statsLoading}
-                description="All active products in system"
-              />
-              <StatCard
-                title="Active Suppliers"
-                value={stats?.supplierCount || 0}
-                icon={Users}
-                loading={statsLoading}
-              />
-              <StatCard
-                title="Out of Stock (M&H)"
-                value={stats?.mh.outOfStock || 0}
-                icon={Warning}
-                loading={statsLoading}
-                variant={stats?.mh.outOfStock ? "danger" : "default"}
-                description="M&H products with zero stock"
-              />
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                  title="Total Stock (All)"
+                  value={stats?.totalItems.toLocaleString() || "0"}
+                  icon={Package}
+                  loading={statsLoading}
+                  description="Combined across all branches"
+                />
+                <StatCard
+                  title="Total Products (All)"
+                  value={stats?.totalProductCount.toLocaleString() || "0"}
+                  icon={Cube}
+                  loading={statsLoading}
+                  description="All active products in system"
+                />
+                <StatCard
+                  title="Active Suppliers"
+                  value={stats?.supplierCount || 0}
+                  icon={Users}
+                  loading={statsLoading}
+                />
+                <StatCard
+                  title="Out of Stock (M&H)"
+                  value={stats?.mh.outOfStock || 0}
+                  icon={Warning}
+                  loading={statsLoading}
+                  variant={stats?.mh.outOfStock ? "danger" : "default"}
+                  description="M&H products with zero stock"
+                />
+              </div>
             </div>
 
             {/* Action Cards */}
