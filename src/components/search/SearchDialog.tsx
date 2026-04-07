@@ -24,7 +24,7 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const debouncedQuery = useDebounce(query, 300);
+  const debouncedQuery = useDebouncedValue(query, 300);
   const navigate = useNavigate();
 
   const search = useCallback(async (term: string) => {
