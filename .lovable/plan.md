@@ -1,44 +1,35 @@
 
 
-## Break Down M&H Stock Units by Item Type on Dashboard
+## Remove M&H Packaging Images from Known-Brand Products
 
 ### Problem
-The M&H section shows 291K total stock units as one number. Most of that is lenses (~290K). You need to see where those units actually sit: Frames, Lenses, Contact Lenses, Accessories.
+95 known-brand products (Gucci, Carrera, Polaroid, etc.) still have a packaging/case image as the last entry in their `additional_images` array. This packaging image was AI-generated with "M&H Opticals" branding, which is wrong for these brands. Additionally, 36 products have their `image_url` pointing to an AI-generated shot instead of the original uploaded photo (`main.*`).
 
-### Changes
+### Scope
+- **95 products** with 5 additional images → need the last image (packaging) removed
+- **36 products** with `image_url` not pointing to `main.*` → need primary image fixed
+- **133 products** with 4 additional images → already cleaned (previous batch), no action needed
 
-**1. Update `useInventoryStats` hook** (`src/modules/inventory/hooks/useInventoryOverview.ts`)
+### Solution: Edge function for bulk cleanup
 
-- Fetch inventory with product `item_type` included: change the select to include `product:products(is_active, item_type, brand_line)` alongside `branch:branches(is_mh_location)`
-- After filtering M&H items, compute per-type stock units:
-  - `frames` — sum of quantity_on_hand where item_type = 'frames'
-  - `lenses` — item_type = 'lenses'
-  - `contactLenses` — item_type = 'contact_lenses'
-  - `accessories` — item_type in ('accessories', 'solutions', 'cleanser', 'other', 'medications')
-- Return these as `mh.byType: { frames, lenses, contactLenses, accessories }` in the stats object
+**Create `supabase/functions/cleanup-brand-packaging/index.ts`**
 
-**2. Update `InventoryStats` type** (`src/modules/inventory/types/index.ts`)
+A one-time cleanup edge function that:
 
-- Add `byType` to the `mh` object:
-```typescript
-byType: {
-  frames: number;
-  lenses: number;
-  contactLenses: number;
-  accessories: number;
-};
-```
+1. **Fetches** all known-brand, m_and_h_fashion frame products with 5+ additional images
+2. **Removes** the last entry from `additional_images` (the packaging shot)
+3. **Deletes** the removed image file from storage
+4. **Fixes primary image**: For any product where `image_url` does not contain `/main.`, find the `main.*` URL in `additional_images`, move it to `image_url`, and remove it from the array
+5. Returns a summary of changes made
 
-**3. Update Dashboard UI** (`src/pages/admin/Dashboard.tsx`)
+**Update `src/modules/products/components/BulkPackagingFixButton.tsx`**
 
-- Replace the single "M&H Stock Units" card with 4 item-type cards in the M&H section:
-  - **Frames** — `stats.mh.byType.frames` units
-  - **Lenses** — `stats.mh.byType.lenses` units
-  - **Contact Lenses** — `stats.mh.byType.contactLenses` units
-  - **Accessories** — `stats.mh.byType.accessories` units
-- Keep the existing Featured Online, Low Stock, and With Images cards in the M&H section (second row if needed)
-- The total M&H stock can remain visible as a description or be removed since the breakdown replaces it
+Repurpose or add a second button "Remove M&H Packaging" that calls this new edge function instead of regenerating images. This gives you a one-click cleanup from the admin dashboard without waiting for AI credits.
 
-### Result
-The M&H section will show exactly where the 291K units sit (expect ~290K in Lenses, ~200 in Frames, etc.), making the data immediately actionable.
+### What this achieves
+- Immediately removes all incorrect M&H-branded packaging images from known-brand products
+- Ensures the original reference photo is always the hero/primary image
+- No AI credits needed — this is purely a data and storage cleanup
+- Products go from 6 gallery images to 5 (or 5 to 4), losing only the incorrect packaging shot
+- When AI credits are restored, the "Fix Brand Packaging" button can regenerate correct brand-specific packaging
 
