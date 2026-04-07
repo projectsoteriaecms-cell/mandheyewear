@@ -43,12 +43,17 @@ Deno.serve(async (req) => {
     if (error) throw error;
 
     // Filter: known brands that either have 5+ images (packaging to remove) OR need primary fix
+    // Original uploads are .png, AI-generated are .webp
+    const isOriginalPhoto = (url: string) => url.endsWith(".png") || url.includes("/main.");
+    const isAiGenerated = (url: string) => url.endsWith(".webp");
+
     const affected = (products || []).filter((p) => {
       const brand = (p.brand || "").toUpperCase().trim();
       if (!KNOWN_BRANDS.has(brand)) return false;
-      const hasPackaging = Array.isArray(p.additional_images) && p.additional_images.length >= 5;
-      const needsPrimaryFix = p.image_url && !p.image_url.includes("/main.") &&
-        Array.isArray(p.additional_images) && p.additional_images.some((url: string) => url.includes("/main."));
+      if (!Array.isArray(p.additional_images)) return false;
+      const hasPackaging = p.additional_images.length >= 5;
+      const needsPrimaryFix = p.image_url && isAiGenerated(p.image_url) &&
+        p.additional_images.some((url: string) => isOriginalPhoto(url));
       return hasPackaging || needsPrimaryFix;
     });
 
@@ -73,13 +78,12 @@ Deno.serve(async (req) => {
         let newImageUrl = product.image_url;
         let newAdditional = images;
 
-        // Fix primary image: if image_url doesn't contain '/main.', find the main photo
-        if (product.image_url && !product.image_url.includes("/main.")) {
-          const mainIdx = newAdditional.findIndex((url: string) => url.includes("/main."));
-          if (mainIdx !== -1) {
-            newImageUrl = newAdditional[mainIdx];
-            // Put current image_url into additional at the position where main was
-            newAdditional[mainIdx] = product.image_url;
+        // Fix primary image: if image_url is AI-generated (.webp), swap with first original (.png)
+        if (product.image_url && isAiGenerated(product.image_url)) {
+          const origIdx = newAdditional.findIndex((url: string) => isOriginalPhoto(url));
+          if (origIdx !== -1) {
+            newImageUrl = newAdditional[origIdx];
+            newAdditional[origIdx] = product.image_url;
             results.primaryFixed++;
           }
         }
