@@ -1,49 +1,42 @@
 
 
-## Fix M&H → Zoho Product Mapping for Order Push Testing
+## Fix Known Brand Packaging Images (Remove M&H Branding)
 
 ### The Problem
-The current sync uses exact name matching to link ECMS products to Zoho items. ECMS and Zoho use completely different naming conventions, so only 1 of 837 M&H products matched automatically. Without `zoho_item_id` on M&H products, the `push_order` action will always fail with "No items with Zoho mapping found."
 
-### Approach: AI-Assisted Fuzzy Matching
+Around 40+ known brand products (Gucci, Polaroid, Ray-Ban, Tommy Hilfiger, etc.) have AI-generated packaging shots that incorrectly show "M&H Opticals" on the leather case. The prompt logic in the code is already correct — known brands get their own brand name on the case. The issue is that these images were likely generated before the brand classification was properly wired, or the AI ignored the prompt. The fix requires **regenerating the packaging shot** for all affected products.
 
-Instead of requiring exact names, we'll add a smarter matching strategy that uses multiple signals:
+### What We'll Build
 
-**Step 1 — Add SKU-based matching to the sync**
-Update `processPage()` in `zoho-sync/index.ts` to also match by SKU (not just name). If a Zoho item's SKU matches an ECMS product's SKU, link them.
+**1. Bulk packaging regeneration tool**
+Add a "Fix Brand Packaging" action on the Admin Products page (or Image Manager) that:
+- Finds all known-brand products with 5+ generated images (full gallery)
+- Regenerates ONLY the packaging shot (slot 6 / last image in `additional_images`) using the correct brand-specific prompt
+- Runs sequentially to avoid rate limits, showing progress
 
-**Step 2 — Add fuzzy name matching**
-Strip common prefixes/suffixes (like "Frame :", "ACCESSORIES :", price tags like "25K", "105K") and compare the core product identifier. Use token-based overlap scoring:
-- Extract brand name, model code, and dimensions from both naming formats
-- Score matches based on shared tokens (e.g., "Polaroid", "PLD D482", "086", "145")
-- Auto-link if confidence > 80%, flag for manual review if 50-80%
-
-**Step 3 — Bulk manual linking tool**
-Enhance the existing "Link to Zoho" dialog to support:
-- Side-by-side fuzzy search (search ECMS products, see suggested Zoho matches)
-- Bulk link mode for faster processing
-- Show match confidence scores
-
-**Step 4 — Quick test with manual link**
-For immediate testing, manually link 2-3 M&H products to their Zoho item IDs using the existing `link_product` action, then run a test order with those products.
+**2. How it works**
+For each affected product:
+- Call the existing `generate-product-image` edge function with just the `packaging` shot slug
+- Use the product's first image as the reference photo
+- Replace the last image in `additional_images` with the new one
 
 ### Technical Details
 
-**File: `supabase/functions/zoho-sync/index.ts`**
-- In `processPage()`, after name-based matching, add a second pass matching by SKU
-- Add a `fuzzyMatch()` function that tokenizes names and scores overlap
-- Products with score > 0.8 get auto-linked; 0.5-0.8 get flagged in metadata
+**File: `supabase/functions/generate-product-image/index.ts`**
+- Add a new action `regenerate_shot` that accepts a product ID and a specific shot slug (e.g., `packaging`)
+- Generates only that one shot and replaces it in the correct position in `additional_images`
 
-**File: `src/modules/products/components/LinkToZohoDialog.tsx`**
-- Add fuzzy search: when selecting an ECMS product, auto-suggest the top 3 Zoho matches by token similarity
-- Add bulk mode: select multiple pairs and link all at once
+**File: `src/modules/products/components/BulkPackagingFixButton.tsx`** (new)
+- Button component that queries known-brand products with full galleries
+- Calls the edge function for each, showing a progress bar
+- Logs results (success/fail per product)
 
-**File: New helper** — `supabase/functions/zoho-sync/matching.ts` (inline in index.ts since no subfolder imports)
-- Token extraction: strip "Frame :", price tags, normalize spacing
-- Scoring: Jaccard similarity on token sets
+**File: `src/pages/admin/Products.tsx`**
+- Add the bulk fix button to the toolbar (visible to admins only)
 
-### Files Modified
-1. `supabase/functions/zoho-sync/index.ts` — Add SKU matching + fuzzy name matching
-2. `src/modules/products/components/LinkToZohoDialog.tsx` — Add fuzzy suggestions + bulk mode
-3. For immediate testing: manually link 2-3 products via edge function call
+### Scope
+- ~40 known-brand products need their packaging shot regenerated
+- Each regeneration takes ~10-15 seconds
+- Total runtime: ~7-10 minutes with sequential processing
+- No changes needed to the prompt logic (already correct)
 
