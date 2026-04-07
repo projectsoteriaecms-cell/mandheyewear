@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowsClockwise, Package } from "@phosphor-icons/react";
+import { ArrowsClockwise, Package, Trash } from "@phosphor-icons/react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LUXURY_BRANDS } from "@/modules/products/lib/brand-classification";
@@ -30,6 +30,8 @@ export const BulkPackagingFixButton = () => {
   const [progress, setProgress] = useState({ done: 0, total: 0, failed: 0 });
   const [results, setResults] = useState<FixResult[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isCleaningUp, setIsCleaningUp] = useState(false);
+  const [showCleanupConfirm, setShowCleanupConfirm] = useState(false);
 
   const runFix = useCallback(async () => {
     setShowConfirm(false);
@@ -37,7 +39,6 @@ export const BulkPackagingFixButton = () => {
     setResults([]);
 
     try {
-      // Fetch all known-brand products with full galleries
       const brandArray = Array.from(LUXURY_BRANDS);
       const { data: products, error } = await supabase
         .from("products")
@@ -49,7 +50,6 @@ export const BulkPackagingFixButton = () => {
 
       if (error) throw error;
 
-      // Filter client-side for known brands with 5+ additional images
       const affected = (products || []).filter((p) => {
         const brand = (p.brand || "").toUpperCase().trim();
         return (
@@ -80,7 +80,6 @@ export const BulkPackagingFixButton = () => {
               body: {
                 productId: product.id,
                 shotSlug: "packaging",
-                // Use the primary image as reference for consistency
                 referenceImageUrls: product.image_url ? [product.image_url] : undefined,
               },
             }
@@ -115,7 +114,6 @@ export const BulkPackagingFixButton = () => {
         setProgress({ done: i + 1, total: affected.length, failed: failCount });
         setResults([...allResults]);
 
-        // Brief pause between calls to avoid rate limits
         if (i < affected.length - 1) {
           await new Promise((r) => setTimeout(r, 1000));
         }
@@ -130,16 +128,48 @@ export const BulkPackagingFixButton = () => {
     }
   }, []);
 
+  const runCleanup = useCallback(async () => {
+    setShowCleanupConfirm(false);
+    setIsCleaningUp(true);
+
+    try {
+      toast.info("Removing M&H packaging from known-brand products…");
+
+      const { data, error } = await supabase.functions.invoke("cleanup-brand-packaging", {
+        method: "POST",
+      });
+
+      if (error) throw error;
+
+      const result = data as any;
+      if (result.error) throw new Error(result.error);
+
+      toast.success(
+        `Cleanup complete: ${result.packagingRemoved} packaging removed, ${result.primaryFixed} primary images fixed, ${result.storageDeleted} files deleted` +
+        (result.errors?.length ? `. ${result.errors.length} errors.` : "")
+      );
+
+      if (result.errors?.length) {
+        console.warn("Cleanup errors:", result.errors);
+      }
+    } catch (err: any) {
+      toast.error("Cleanup failed: " + (err?.message || "Unknown error"));
+    } finally {
+      setIsCleaningUp(false);
+    }
+  }, []);
+
   const pct = progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0;
 
   return (
     <>
+      {/* Regenerate packaging button */}
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
         <AlertDialogTrigger asChild>
           <Button
             variant="outline"
             onClick={() => setShowConfirm(true)}
-            disabled={isRunning}
+            disabled={isRunning || isCleaningUp}
             className="whitespace-nowrap"
           >
             {isRunning ? (
@@ -158,13 +188,48 @@ export const BulkPackagingFixButton = () => {
             <AlertDialogDescription>
               This will regenerate the packaging shot (last image) for all known-brand
               products with full galleries. The AI will use each brand's own name on
-              the case instead of "M&H Opticals". This affects ~132 products and will
-              take approximately 20-30 minutes.
+              the case instead of "M&H Opticals". This requires AI credits.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={runFix}>Start Fix</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Remove M&H packaging button */}
+      <AlertDialog open={showCleanupConfirm} onOpenChange={setShowCleanupConfirm}>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="outline"
+            onClick={() => setShowCleanupConfirm(true)}
+            disabled={isRunning || isCleaningUp}
+            className="whitespace-nowrap text-destructive hover:text-destructive"
+          >
+            {isCleaningUp ? (
+              <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" weight="bold" />
+            ) : (
+              <Trash className="mr-2 h-4 w-4" weight="light" />
+            )}
+            {isCleaningUp ? "Removing…" : "Remove M&H Packaging"}
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove M&H Packaging from Known Brands?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the last gallery image (M&H-branded packaging/case) from
+              all known-brand products that still have 5+ additional images. It will also
+              fix any primary images that point to AI-generated shots instead of original
+              reference photos. No AI credits needed — this is a data cleanup only.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={runCleanup} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove Packaging
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
