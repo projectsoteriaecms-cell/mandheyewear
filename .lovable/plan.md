@@ -1,77 +1,36 @@
 
 
-## Build Live AR Try-On with TensorFlow.js Face Mesh
+## Improve Glasses Overlay Face Tracking & Fit
 
-Replace the non-functional Camera Kit shell with a working TensorFlow.js + MediaPipe Face Mesh implementation that overlays product images on the user's face in real-time via webcam. Camera Kit code stays as a fallback when configured.
+The current overlay uses only 3 landmarks (eye corners + nose bridge) with fixed scale/aspect ratios. This causes poor fitting because: the width doesn't adapt to actual face width, the vertical position uses a tiny fixed offset, and there's no smoothing so the overlay jitters frame-to-frame.
 
-### How It Works
+### Changes (single file: `src/shared/lib/glasses-overlay.ts`)
 
-The webcam feed streams to a `<video>` element. MediaPipe Face Mesh detects 468 facial landmarks every frame. We use key landmarks (eye corners, nose bridge, ear tips) to compute position, width, and rotation for the glasses overlay. A `<canvas>` composites the video frame + the product's `image_url` on top, giving real-time AR.
+**1. Use temple landmarks for accurate width**
+- Use landmarks #234 (left temple) and #454 (right temple) instead of eye distance × fixed scale factor
+- This makes the frame width match the actual face width, adapting to distance from camera and face size
 
-```text
-Webcam → Video element → Face Mesh detects landmarks
-                              ↓
-Canvas draws: video frame + product image overlay
-              (positioned at eye/nose landmarks)
-```
+**2. Better vertical positioning**
+- Use the midpoint between eye landmarks #159 (left eye top) and #386 (right eye top) combined with the nose bridge to place frames at the correct eye-level height
+- Shift center to sit naturally across the brow line, not just above the nose
 
-### Changes
+**3. Add temporal smoothing (EMA filter)**
+- Apply exponential moving average to centerX, centerY, width, height, and angle
+- This eliminates jitter/flicker when the face moves slightly between frames
+- Smoothing factor ~0.3 (responsive but stable)
 
-**1. Install dependencies**
-- `@mediapipe/face_mesh` — face landmark detection
-- `@mediapipe/camera_utils` — webcam helper
+**4. Use actual image aspect ratio**
+- Instead of hardcoded `ASPECT_RATIO = 0.45`, compute height from the loaded image's natural width/height ratio
+- Pass `imageAspectRatio` into `computeGlassesTransform` so different frame shapes render correctly
 
-**2. New: `src/shared/hooks/useFaceMesh.ts`**
-- Initializes MediaPipe Face Mesh model
-- Manages webcam stream lifecycle (start/stop, permission handling)
-- On each frame: runs face detection, returns 468 landmarks
-- Exposes: `isReady`, `isLoading`, `error`, `landmarks`, `videoRef`, `canvasRef`, `start()`, `stop()`
+**5. Add depth-aware scaling**
+- Use landmark z-coordinates to slightly adjust scale when the user leans forward/back
+- Subtle effect to improve realism
 
-**3. New: `src/shared/lib/glasses-overlay.ts`**
-- Pure utility: given landmarks + frame image, computes overlay transform
-- Key landmarks used: left eye outer (#33), right eye outer (#263), nose bridge (#6)
-- Calculates: center position, width (eye-to-eye × scale factor), rotation angle
-- Draws the product image onto the canvas with correct transform
+### File changes
 
-**4. New: `src/components/try-on/FaceMeshCanvas.tsx`**
-- Replaces `CameraKitCanvas` as default AR view
-- Renders hidden `<video>` + visible `<canvas>`
-- Animation loop: draw video frame → run face mesh → draw glasses overlay
-- Shows loading skeleton while model loads, permission-denied state, error state
-- Shows "No face detected" indicator when landmarks are empty
-- LIVE indicator when running
+- **`src/shared/lib/glasses-overlay.ts`** — rewrite transform logic with temple landmarks, smoothing, dynamic aspect ratio
+- **`src/components/try-on/FaceMeshCanvas.tsx`** — pass image aspect ratio to the transform function, store smoothing state in a ref
 
-**5. New: `src/components/try-on/ARFrameSelector.tsx`**
-- Replaces `ARLensSelector` — shows actual product catalog frames (not Snap lenses)
-- Horizontal scrollable list of frame products with thumbnail + name
-- Takes products from the same `useProducts` data used in Photo Mode
-- Filters to `item_type === "frames"` with valid `image_url`
-
-**6. Rewrite: `src/components/try-on/LiveARTryOn.tsx`**
-- Use `FaceMeshCanvas` instead of `CameraKitCanvas`
-- Use `ARFrameSelector` with real products instead of `ARLensSelector` with Snap lenses
-- Pass selected product's `image_url` to the canvas for overlay
-- Capture button takes a snapshot of the canvas (toDataURL)
-- If `isCameraKitConfigured()` is true, show a toggle to switch to Camera Kit premium mode (keeps existing code path)
-- Accept products list as a prop from `TryOn.tsx`
-
-**7. Update: `src/pages/TryOn.tsx`**
-- Pass `frameProducts` to `LiveARTryOn` so it can populate the frame selector
-- No other changes needed — mode toggle and history already work
-
-**8. Update: `src/components/try-on/index.ts`**
-- Export new components (`FaceMeshCanvas`, `ARFrameSelector`)
-
-### What stays unchanged
-- All Camera Kit files (`useCameraKit.ts`, `CameraKitCanvas.tsx`, `ARLensSelector.tsx`, `snap-lenses.ts`) — kept intact as premium path
-- Photo Mode — completely untouched
-- `TryOnModeToggle` — no changes
-- Try-on history integration — same interface
-
-### Technical Notes
-- MediaPipe Face Mesh runs entirely in-browser (no API calls, no credits)
-- Works on Chrome, Edge, Safari, Firefox with webcam support
-- Product images are pre-loaded as `Image` objects for smooth rendering
-- Canvas capture uses `canvas.toDataURL("image/png")` for snapshots
-- Frame overlay uses 2D canvas transforms (translate, rotate, scale) for proper positioning
+No other files change.
 
