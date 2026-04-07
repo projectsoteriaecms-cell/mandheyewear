@@ -98,10 +98,10 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        results.packagingRemoved++;
+        if (removedUrl) results.packagingRemoved++;
 
         // Delete the removed image from storage
-        if (removedUrl.includes("/product-images/")) {
+        if (removedUrl && removedUrl.includes("/product-images/")) {
           const storagePath = removedUrl.split("/product-images/").pop();
           if (storagePath) {
             const decodedPath = decodeURIComponent(storagePath);
