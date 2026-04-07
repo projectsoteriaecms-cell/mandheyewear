@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN vto_photo_url text;
