@@ -304,22 +304,25 @@ serve(async (req) => {
 
     console.log(`Processing virtual try-on for frame: ${frameDetails.name}`);
 
-    // Try to fetch the frame reference image
-    let frameImage: { base64: string; mimeType: string } | null = null;
-    if (frameDetails.imageUrl) {
-      frameImage = await fetchFrameImageAsBase64(frameDetails.imageUrl);
+    // Handle userPhoto: could be base64 data URL or a remote URL
+    let userImageBase64: string;
+    let userImageDataUrl: string;
+
+    if (userPhoto.startsWith("http://") || userPhoto.startsWith("https://")) {
+      // It's a URL - fetch it and convert to base64
+      console.log("Fetching user photo from URL:", userPhoto.substring(0, 80) + "...");
+      const fetched = await fetchFrameImageAsBase64(userPhoto);
+      if (!fetched) {
+        return json({ success: false, error: "Could not load your saved photo. Please upload a new one." }, 400);
+      }
+      userImageBase64 = fetched.base64;
+      userImageDataUrl = `data:${fetched.mimeType};base64,${fetched.base64}`;
+    } else {
+      userImageBase64 = stripDataUrlPrefix(userPhoto);
+      userImageDataUrl = userPhoto.startsWith("data:")
+        ? userPhoto
+        : `data:image/jpeg;base64,${userImageBase64}`;
     }
-    
-    const hasFrameReference = !!frameImage;
-    console.log(`Frame reference image available: ${hasFrameReference}`);
-
-    const prompt = buildPrompt(frameDetails, hasFrameReference);
-
-    // Prepare image inputs
-    const userImageBase64 = stripDataUrlPrefix(userPhoto);
-    const userImageDataUrl = userPhoto.startsWith("data:")
-      ? userPhoto
-      : `data:image/jpeg;base64,${userImageBase64}`;
     
     const frameImageDataUrl = frameImage 
       ? `data:${frameImage.mimeType};base64,${frameImage.base64}`
