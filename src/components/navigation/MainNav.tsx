@@ -182,6 +182,7 @@ export const MainNav = () => {
           </div>
         </div>
       </div>
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   );
 };
