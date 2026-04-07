@@ -43,6 +43,7 @@ let frameCount = 0;
 
 export function resetSmoothing(): void {
   prevTransform = null;
+  frameCount = 0;
 }
 
 function ema(prev: number, curr: number, alpha: number): number {
