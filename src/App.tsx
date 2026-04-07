@@ -40,6 +40,7 @@ const App = () => {
         <BrowserRouter>
           <MetaPixelTracker />
           <AppRoutes />
+          <WhatsAppButton />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
