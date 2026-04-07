@@ -951,6 +951,7 @@ export type Database = {
           prescription_on_file: boolean | null
           updated_at: string
           user_id: string
+          vto_photo_url: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -964,6 +965,7 @@ export type Database = {
           prescription_on_file?: boolean | null
           updated_at?: string
           user_id: string
+          vto_photo_url?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -977,6 +979,7 @@ export type Database = {
           prescription_on_file?: boolean | null
           updated_at?: string
           user_id?: string
+          vto_photo_url?: string | null
         }
         Relationships: []
       }

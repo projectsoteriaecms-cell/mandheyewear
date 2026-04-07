@@ -1,7 +1,11 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, X, RefreshCw } from "lucide-react";
+import { Camera, Upload, X, RefreshCw, Save, Check, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useUpdateProfile } from "@/modules/personalization/hooks/useProfile";
+import { toast } from "sonner";
 
 interface PhotoUploadProps {
   photo: string | null;
@@ -15,6 +19,48 @@ export const PhotoUpload = ({
   isProcessing = false,
 }: PhotoUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user, isAuthenticated } = useAuth();
+  const updateProfile = useUpdateProfile();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSaveAsVtoPhoto = useCallback(async () => {
+    if (!user || !photo) return;
+    setIsSaving(true);
+    try {
+      // Convert base64 to blob
+      const res = await fetch(photo);
+      const blob = await res.blob();
+      const ext = blob.type.includes("png") ? "png" : "webp";
+      const filePath = `vto-photos/${user.id}.${ext}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(filePath, blob, { upsert: true, contentType: blob.type });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(filePath);
+
+      // Update profile
+      await updateProfile.mutateAsync({
+        userId: user.id,
+        updates: { vto_photo_url: publicUrl },
+      });
+
+      setIsSaved(true);
+      toast.success("Photo saved! You can now use one-click try-on from any product page.");
+    } catch (err) {
+      console.error("Failed to save VTO photo:", err);
+      toast.error("Failed to save photo. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [user, photo, updateProfile]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -95,6 +141,34 @@ export const PhotoUpload = ({
               <li>Keep a neutral expression</li>
             </ul>
           </div>
+
+          {/* Save as VTO photo */}
+          {isAuthenticated && (
+            <Button
+              variant={isSaved ? "outline" : "gold"}
+              size="sm"
+              className="w-full"
+              onClick={handleSaveAsVtoPhoto}
+              disabled={isSaving || isSaved}
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : isSaved ? (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Saved as my try-on photo
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save as my try-on photo
+                </>
+              )}
+            </Button>
+          )}
 
           <input
             ref={fileInputRef}

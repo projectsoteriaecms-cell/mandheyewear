@@ -7,6 +7,8 @@ import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import type { Product } from "@/modules/products/hooks/useProducts";
+import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
+import { InlineTryOnModal } from "@/components/try-on";
 
 import frame1 from "@/assets/frame-1.jpg";
 import frame2 from "@/assets/frame-2.jpg";
@@ -41,6 +43,7 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { modalOpen, targetProductId, savedPhotoUrl, triggerTryOn, closeModal, setModalOpen } = useInlineTryOn();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -53,9 +56,7 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
   };
 
   const handleTryOn = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    navigate(`/try-on?product=${product.id}`);
+    triggerTryOn(product.id, e);
   };
 
   return (
@@ -140,6 +141,14 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
           </CardContent>
         </div>
       </Card>
+      {savedPhotoUrl && (
+        <InlineTryOnModal
+          productId={targetProductId}
+          savedPhotoUrl={savedPhotoUrl}
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+        />
+      )}
     </Link>
   );
 };
