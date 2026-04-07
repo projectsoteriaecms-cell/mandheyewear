@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { MagnifyingGlass, Heart, User, SignOut, Gear, Sparkle, Camera } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { hasAdminAccess } from "@/shared/lib/permissions";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { SearchDialog } from "@/components/search/SearchDialog";
 import mhLogo from "@/assets/mh-logo.png";
 import mhLogoGold from "@/assets/mh-logo-gold.png";
 
@@ -46,6 +48,7 @@ export const MainNav = () => {
   const { data: role } = useUserRole();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
   
   const isStaff = hasAdminAccess(role ?? null);
 
@@ -127,7 +130,7 @@ export const MainNav = () => {
           {/* Icon Actions */}
           <div className="flex items-center gap-1">
             {/* Search */}
-            <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
+            <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted" onClick={() => setSearchOpen(true)}>
               <MagnifyingGlass weight="light" className="h-5 w-5" />
             </Button>
 
@@ -179,6 +182,7 @@ export const MainNav = () => {
           </div>
         </div>
       </div>
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   );
 };

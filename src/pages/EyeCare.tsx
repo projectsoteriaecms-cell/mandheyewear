@@ -18,42 +18,42 @@ const EyeCare = () => {
       title: "Comprehensive Eye Exams",
       description: "Complete evaluation of your eye health and vision, including refraction, eye pressure testing, and retinal examination. Recommended annually for adults.",
       duration: "45-60 minutes",
-      price: "From $150"
+      price: "From ₦25,000"
     },
     {
       icon: Activity,
       title: "Diabetic Eye Screening",
       description: "Specialized screening to detect diabetic retinopathy and other diabetes-related eye conditions. Essential for managing long-term eye health.",
       duration: "30-45 minutes",
-      price: "From $120"
+      price: "From ₦20,000"
     },
     {
       icon: Droplet,
       title: "Glaucoma Testing",
       description: "Advanced diagnostic testing to detect glaucoma early, including tonometry, visual field testing, and optic nerve imaging.",
       duration: "30 minutes",
-      price: "From $100"
+      price: "From ₦15,000"
     },
     {
       icon: Glasses,
       title: "Contact Lens Fitting",
       description: "Professional fitting and training for contact lenses, including measurement of corneal curvature and personalized lens selection.",
       duration: "60 minutes",
-      price: "From $180"
+      price: "From ₦30,000"
     },
     {
       icon: Users,
       title: "Pediatric Eye Care",
       description: "Specialized eye exams for children, including vision development assessment, amblyopia screening, and school-readiness evaluations.",
       duration: "45 minutes",
-      price: "From $130"
+      price: "From ₦20,000"
     },
     {
       icon: Stethoscope,
       title: "Specialty Consultations",
       description: "Expert consultations for complex eye conditions, including cataracts, macular degeneration, dry eye syndrome, and more.",
       duration: "60-90 minutes",
-      price: "From $200"
+      price: "From ₦35,000"
     }
   ];
 
@@ -61,7 +61,7 @@ const EyeCare = () => {
     "Board-Certified Ophthalmologists & Optometrists",
     "State-of-the-Art Diagnostic Equipment",
     "Same-Day Emergency Eye Care",
-    "Comprehensive Health Insurance Accepted",
+    "HMO & Health Insurance Accepted",
     "Convenient Online Booking",
     "Flexible Appointment Scheduling"
   ];
@@ -114,8 +114,8 @@ const EyeCare = () => {
                         </div>
                       </div>
                     </div>
-                    <Button variant="outline" className="w-full">
-                      Learn More & Book
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to="/booking">Learn More & Book</Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -148,12 +148,12 @@ const EyeCare = () => {
                   Insurance & Payment
                 </h3>
                 <p className="text-muted-foreground">
-                  We accept most major health insurance plans, including Medicare and Medicaid. 
+                  We accept most major HMO and health insurance plans. 
                   Our team will work with you to maximize your benefits and minimize out-of-pocket costs.
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li>• Flexible payment plans available</li>
-                  <li>• FSA and HSA accepted</li>
+                  <li>• Major HMO plans accepted</li>
                   <li>• Transparent pricing with no hidden fees</li>
                   <li>• Insurance verification before your visit</li>
                 </ul>
