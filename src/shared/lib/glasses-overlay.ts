@@ -129,15 +129,17 @@ export function computeGlassesTransform(
 
   let raw: OverlayTransform = { centerX, centerY, width, height, angle };
 
+  frameCount++;
+
   // Apply velocity damping + EMA smoothing
   if (prevTransform) {
-    // Clamp large jumps first
+    // Clamp large jumps first (including angle)
     raw = {
       centerX: clampDelta(prevTransform.centerX, raw.centerX, MAX_POSITION_DELTA, canvasWidth),
       centerY: clampDelta(prevTransform.centerY, raw.centerY, MAX_POSITION_DELTA, canvasHeight),
       width: clampDelta(prevTransform.width, raw.width, MAX_SIZE_DELTA, canvasWidth),
       height: clampDelta(prevTransform.height, raw.height, MAX_SIZE_DELTA, canvasHeight),
-      angle: raw.angle,
+      angle: clampDelta(prevTransform.angle, raw.angle, MAX_ANGLE_DELTA, 1),
     };
 
     const smoothed: OverlayTransform = {
@@ -148,10 +150,16 @@ export function computeGlassesTransform(
       angle: ema(prevTransform.angle, raw.angle, SMOOTH_FACTOR),
     };
     prevTransform = smoothed;
+
+    // Skip rendering during warmup frames
+    if (frameCount <= WARMUP_FRAMES) return null;
+
     return smoothed;
   }
 
   prevTransform = raw;
+  // Skip rendering during warmup
+  if (frameCount <= WARMUP_FRAMES) return null;
   return raw;
 }
 
