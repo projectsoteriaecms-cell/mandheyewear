@@ -5,8 +5,8 @@
  *  - #33  → left eye outer corner
  *  - #263 → right eye outer corner
  *  - #6   → nose bridge (between the eyes)
- *  - #234 → left temple area
- *  - #454 → right temple area
+ *  - #127 → left tragion (ear area)
+ *  - #356 → right tragion (ear area)
  *  - #159 → left eye top
  *  - #386 → right eye top
  */
@@ -24,12 +24,15 @@ export interface OverlayTransform {
   angle: number;
 }
 
-// Smoothing factor for EMA (0 = no update, 1 = no smoothing)
-const SMOOTH_FACTOR = 0.3;
-// Extra padding multiplier on temple width for the frame
-const TEMPLE_PADDING = 1.15;
-// Depth scaling sensitivity
-const DEPTH_SCALE_FACTOR = 2.0;
+// Smoothing factor for EMA (lower = smoother, more stable)
+const SMOOTH_FACTOR = 0.15;
+// Extra padding multiplier on ear width for the frame
+const TEMPLE_PADDING = 1.35;
+// Depth scaling sensitivity (lower = less erratic)
+const DEPTH_SCALE_FACTOR = 0.8;
+// Max per-frame delta as fraction of canvas dimension (velocity damping)
+const MAX_POSITION_DELTA = 0.05;
+const MAX_SIZE_DELTA = 0.08;
 
 let prevTransform: OverlayTransform | null = null;
 
@@ -41,6 +44,15 @@ function ema(prev: number, curr: number, alpha: number): number {
   return prev + alpha * (curr - prev);
 }
 
+function clampDelta(prev: number, curr: number, maxDelta: number, refSize: number): number {
+  const delta = curr - prev;
+  const maxAbs = maxDelta * refSize;
+  if (Math.abs(delta) > maxAbs) {
+    return prev + Math.sign(delta) * maxAbs;
+  }
+  return curr;
+}
+
 export function computeGlassesTransform(
   landmarks: { x: number; y: number; z: number }[],
   canvasWidth: number,
@@ -49,14 +61,14 @@ export function computeGlassesTransform(
 ): OverlayTransform | null {
   if (!landmarks || landmarks.length < 468) return null;
 
-  // Temple landmarks for face width
-  const leftTemple: Point = {
-    x: landmarks[234].x * canvasWidth,
-    y: landmarks[234].y * canvasHeight,
+  // Ear/tragion landmarks for face width (ear-to-ear)
+  const leftEar: Point = {
+    x: landmarks[127].x * canvasWidth,
+    y: landmarks[127].y * canvasHeight,
   };
-  const rightTemple: Point = {
-    x: landmarks[454].x * canvasWidth,
-    y: landmarks[454].y * canvasHeight,
+  const rightEar: Point = {
+    x: landmarks[356].x * canvasWidth,
+    y: landmarks[356].y * canvasHeight,
   };
 
   // Eye landmarks for angle
@@ -85,10 +97,10 @@ export function computeGlassesTransform(
     y: landmarks[6].y * canvasHeight,
   };
 
-  // Width from temple-to-temple distance
-  const templeDistance = Math.sqrt(
-    Math.pow(rightTemple.x - leftTemple.x, 2) +
-      Math.pow(rightTemple.y - leftTemple.y, 2)
+  // Width from ear-to-ear distance
+  const earDistance = Math.sqrt(
+    Math.pow(rightEar.x - leftEar.x, 2) +
+      Math.pow(rightEar.y - leftEar.y, 2)
   );
 
   // Angle from eye corners
@@ -101,18 +113,27 @@ export function computeGlassesTransform(
   const avgZ = landmarks[6].z;
   const depthScale = 1 + avgZ * DEPTH_SCALE_FACTOR;
 
-  const width = templeDistance * TEMPLE_PADDING * depthScale;
+  const width = earDistance * TEMPLE_PADDING * depthScale;
   const height = width * imageAspectRatio;
 
-  // Vertical center: blend eye-top midpoint with nose bridge
+  // Vertical center: mostly eye-top level (where glasses actually sit)
   const eyeTopMidY = (leftEyeTop.y + rightEyeTop.y) / 2;
   const centerX = noseBridge.x;
-  const centerY = eyeTopMidY * 0.4 + noseBridge.y * 0.6;
+  const centerY = eyeTopMidY * 0.7 + noseBridge.y * 0.3;
 
-  const raw: OverlayTransform = { centerX, centerY, width, height, angle };
+  let raw: OverlayTransform = { centerX, centerY, width, height, angle };
 
-  // Apply EMA smoothing
+  // Apply velocity damping + EMA smoothing
   if (prevTransform) {
+    // Clamp large jumps first
+    raw = {
+      centerX: clampDelta(prevTransform.centerX, raw.centerX, MAX_POSITION_DELTA, canvasWidth),
+      centerY: clampDelta(prevTransform.centerY, raw.centerY, MAX_POSITION_DELTA, canvasHeight),
+      width: clampDelta(prevTransform.width, raw.width, MAX_SIZE_DELTA, canvasWidth),
+      height: clampDelta(prevTransform.height, raw.height, MAX_SIZE_DELTA, canvasHeight),
+      angle: raw.angle,
+    };
+
     const smoothed: OverlayTransform = {
       centerX: ema(prevTransform.centerX, raw.centerX, SMOOTH_FACTOR),
       centerY: ema(prevTransform.centerY, raw.centerY, SMOOTH_FACTOR),
