@@ -2,11 +2,14 @@ import { useRef, useEffect, useCallback, useState } from "react";
 import { Results } from "@mediapipe/face_mesh";
 import { useFaceMesh } from "@/shared/hooks/useFaceMesh";
 import { computeGlassesTransform, drawGlassesOverlay, resetSmoothing } from "@/shared/lib/glasses-overlay";
-import { Loader2, VideoOff, AlertCircle, Radio } from "lucide-react";
+import { detectWhiteBackground, removeWhiteBackground } from "@/shared/lib/ar-image-utils";
+import { Loader2, VideoOff, AlertCircle, Radio, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FaceMeshCanvasProps {
   frameImageUrl: string | null;
+  /** Whether the selected image has been flagged as not AR-ready */
+  arWarning?: string | null;
   onInitialized?: () => void;
   onError?: (error: string) => void;
   className?: string;
@@ -14,33 +17,56 @@ interface FaceMeshCanvasProps {
 
 export const FaceMeshCanvas = ({
   frameImageUrl,
+  arWarning,
   onInitialized,
   onError,
   className,
 }: FaceMeshCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const frameImageRef = useRef<HTMLImageElement | null>(null);
+  const frameSourceRef = useRef<HTMLImageElement | HTMLCanvasElement | null>(null);
+  const frameAspectRef = useRef(0.45);
   const [faceDetected, setFaceDetected] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [hasWhiteBg, setHasWhiteBg] = useState(false);
+  const prevFrameUrlRef = useRef<string | null>(null);
 
   const { isReady, isLoading, error, videoRef, start, setOnResults, captureSnapshot } = useFaceMesh();
 
   // Load the frame overlay image when URL changes
   useEffect(() => {
     if (!frameImageUrl) {
-      frameImageRef.current = null;
+      frameSourceRef.current = null;
       setImageLoaded(false);
+      setHasWhiteBg(false);
       return;
+    }
+
+    // Reset smoothing when frame changes
+    if (prevFrameUrlRef.current !== frameImageUrl) {
+      resetSmoothing();
+      prevFrameUrlRef.current = frameImageUrl;
     }
 
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      frameImageRef.current = img;
+      frameAspectRef.current = img.naturalHeight / img.naturalWidth || 0.45;
+
+      // Check for white background and remove it if detected
+      const whiteDetected = detectWhiteBackground(img);
+      setHasWhiteBg(whiteDetected);
+
+      if (whiteDetected) {
+        // Process the image to remove white background
+        const processed = removeWhiteBackground(img);
+        frameSourceRef.current = processed;
+      } else {
+        frameSourceRef.current = img;
+      }
       setImageLoaded(true);
     };
     img.onerror = () => {
-      frameImageRef.current = null;
+      frameSourceRef.current = null;
       setImageLoaded(false);
     };
     img.src = frameImageUrl;
@@ -78,16 +104,21 @@ export const FaceMeshCanvas = ({
         z: lm.z,
       }));
 
-      if (frameImageRef.current) {
-        const img = frameImageRef.current;
-        const aspectRatio = img.naturalHeight / img.naturalWidth || 0.45;
-        const transform = computeGlassesTransform(mirroredLandmarks, canvas.width, canvas.height, aspectRatio);
+      if (frameSourceRef.current) {
+        const transform = computeGlassesTransform(
+          mirroredLandmarks,
+          canvas.width,
+          canvas.height,
+          frameAspectRef.current
+        );
         if (transform) {
-          drawGlassesOverlay(ctx, img, transform);
+          drawGlassesOverlay(ctx, frameSourceRef.current, transform, { mirrorFlip: true });
         }
       }
     } else {
       setFaceDetected(false);
+      // Reset smoothing when face is lost so frame doesn't "stick"
+      resetSmoothing();
     }
   }, [videoRef]);
 
@@ -157,7 +188,7 @@ export const FaceMeshCanvas = ({
       {isReady && !faceDetected && !error && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-2">
           <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
-          <span className="text-xs text-muted-foreground">No face detected</span>
+          <span className="text-xs text-muted-foreground">No face detected — look at the camera</span>
         </div>
       )}
 
@@ -173,6 +204,22 @@ export const FaceMeshCanvas = ({
       {isReady && frameImageUrl && !imageLoaded && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm rounded-full px-3 py-1.5">
           <span className="text-xs text-muted-foreground">Loading frame image…</span>
+        </div>
+      )}
+
+      {/* White background removed notice */}
+      {isReady && imageLoaded && hasWhiteBg && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-amber-500/90 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-2">
+          <ImageOff className="h-3.5 w-3.5 text-white" />
+          <span className="text-xs text-white font-medium">Background auto-removed</span>
+        </div>
+      )}
+
+      {/* AR warning from parent (not AR-ready asset) */}
+      {isReady && arWarning && !hasWhiteBg && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-2 max-w-[90%]">
+          <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+          <span className="text-xs text-muted-foreground truncate">{arWarning}</span>
         </div>
       )}
     </div>

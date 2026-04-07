@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -6,13 +6,14 @@ import { Camera, ArrowLeft, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { FaceMeshCanvas } from "./FaceMeshCanvas";
 import { ARFrameSelector } from "./ARFrameSelector";
-import { isCameraKitConfigured } from "@/config/snap-lenses";
+import { pickAROverlayImage } from "@/shared/lib/ar-image-utils";
 import type { TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
 
 interface FrameProduct {
   id: string;
   name: string;
   image_url: string | null;
+  additional_images?: string[] | null;
   price: number;
   color?: string | null;
   style?: string | null;
@@ -36,6 +37,15 @@ export const LiveARTryOn = ({
   const [isCapturing, setIsCapturing] = useState(false);
   const [arError, setArError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Pick the best AR overlay image for the selected product
+  const arImage = useMemo(() => {
+    if (!selectedProduct) return null;
+    return pickAROverlayImage(
+      selectedProduct.image_url,
+      selectedProduct.additional_images ?? null
+    );
+  }, [selectedProduct]);
 
   const handleCapture = useCallback(async () => {
     setIsCapturing(true);
@@ -88,7 +98,8 @@ export const LiveARTryOn = ({
       <Card className="overflow-hidden border-0 shadow-lg">
         <CardContent className="p-0">
           <FaceMeshCanvas
-            frameImageUrl={selectedProduct?.image_url || null}
+            frameImageUrl={arImage?.url || null}
+            arWarning={arImage && !arImage.arReady ? arImage.reason : null}
             onInitialized={() => {
               setArError(null);
               setIsInitialized(true);

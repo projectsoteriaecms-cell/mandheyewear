@@ -59,7 +59,7 @@ export function computeGlassesTransform(
     y: landmarks[454].y * canvasHeight,
   };
 
-  // Eye landmarks for angle and vertical positioning
+  // Eye landmarks for angle
   const leftEye: Point = {
     x: landmarks[33].x * canvasWidth,
     y: landmarks[33].y * canvasHeight,
@@ -102,7 +102,6 @@ export function computeGlassesTransform(
   const depthScale = 1 + avgZ * DEPTH_SCALE_FACTOR;
 
   const width = templeDistance * TEMPLE_PADDING * depthScale;
-  // imageAspectRatio = naturalHeight / naturalWidth
   const height = width * imageAspectRatio;
 
   // Vertical center: blend eye-top midpoint with nose bridge
@@ -129,16 +128,29 @@ export function computeGlassesTransform(
   return raw;
 }
 
+export interface DrawOptions {
+  /** Flip the overlay image horizontally to match mirrored webcam (default: true) */
+  mirrorFlip?: boolean;
+}
+
 export function drawGlassesOverlay(
   ctx: CanvasRenderingContext2D,
-  image: HTMLImageElement,
-  transform: OverlayTransform
+  image: HTMLImageElement | HTMLCanvasElement,
+  transform: OverlayTransform,
+  options: DrawOptions = {}
 ): void {
   const { centerX, centerY, width, height, angle } = transform;
+  const { mirrorFlip = true } = options;
 
   ctx.save();
   ctx.translate(centerX, centerY);
   ctx.rotate(angle);
+
+  // Flip horizontally so the frame faces the same direction as the mirrored selfie
+  if (mirrorFlip) {
+    ctx.scale(-1, 1);
+  }
+
   ctx.drawImage(image, -width / 2, -height / 2, width, height);
   ctx.restore();
 }
