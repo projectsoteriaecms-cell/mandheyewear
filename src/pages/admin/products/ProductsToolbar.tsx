@@ -8,6 +8,7 @@ import {
   CloudArrowDown,
   Sparkle,
 } from "@phosphor-icons/react";
+import { BulkPackagingFixButton } from "@/modules/products/components/BulkPackagingFixButton";
 
 interface ProductsToolbarProps {
   isAdmin: boolean;
@@ -61,6 +62,7 @@ export const ProductsToolbar = ({
               : "Enrich Metadata"}
           </Button>
         )}
+        {isAdmin && <BulkPackagingFixButton />}
         {isAdmin && (
           <Button variant="outline" onClick={onPullItems} disabled={syncStatus === "syncing"}>
             {syncStatus === "syncing" ? (
