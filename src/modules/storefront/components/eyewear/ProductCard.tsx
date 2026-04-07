@@ -12,6 +12,7 @@ import type { Product } from "@/modules/products/hooks/useProducts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { StockStatus } from "./StockBadge";
+import { getHeroImage } from "@/modules/products/lib/image-utils";
 
 interface ProductCardProps {
   product: Product;
