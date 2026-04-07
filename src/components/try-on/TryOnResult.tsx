@@ -60,16 +60,38 @@ export const TryOnResult = ({
     skipCapture,
   } = useVTOEmailCapture();
 
-  // Perform the actual download
+  // Download a single image
+  const downloadImage = (url: string, label: string) => {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `try-on-${result?.frameDetails?.name || "frame"}-${label}-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Perform the actual download - downloads all available angles
   const performDownload = () => {
-    if (result?.compositeImage) {
-      const link = document.createElement("a");
-      link.href = result.compositeImage;
-      link.download = `try-on-${result.frameDetails?.name || "frame"}-${Date.now()}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    const frameName = result?.frameDetails?.name || "frame";
+    const images: { url: string; label: string }[] = [];
+
+    // Collect all available angle images
+    if (multiAngleResults?.front) {
+      images.push({ url: multiAngleResults.front, label: "front" });
+    } else if (result?.compositeImage) {
+      images.push({ url: result.compositeImage, label: "front" });
     }
+    if (multiAngleResults?.left) {
+      images.push({ url: multiAngleResults.left, label: "left" });
+    }
+    if (multiAngleResults?.right) {
+      images.push({ url: multiAngleResults.right, label: "right" });
+    }
+
+    // Download each with a small delay to avoid browser blocking
+    images.forEach((img, i) => {
+      setTimeout(() => downloadImage(img.url, img.label), i * 300);
+    });
   };
 
   // Handle download button click - show email capture for guests
@@ -346,7 +368,7 @@ export const TryOnResult = ({
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={handleDownload}>
               <Download className="h-4 w-4 mr-2" />
-              Download
+              {(multiAngleResults?.left || multiAngleResults?.right) ? "Download All" : "Download"}
             </Button>
             
             {navigator.share && (

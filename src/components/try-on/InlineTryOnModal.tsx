@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, ShoppingBag, Heart, Camera, ExternalLink } from "lucide-react";
+import { Loader2, ShoppingBag, Heart, Camera, ExternalLink, Download } from "lucide-react";
 import { useProduct } from "@/modules/products/hooks/useProducts";
 import { useVirtualTryOn, type FrameDetails } from "@/modules/personalization/hooks/useVirtualTryOn";
 import { useCart } from "@/modules/orders/hooks/useCart";
@@ -197,6 +197,31 @@ export const InlineTryOnModal = ({
                   onClick={handleAddToWishlist}
                 >
                   <Heart className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    const images: { url: string; label: string }[] = [];
+                    if (multiAngleResults.front || currentResult?.compositeImage) {
+                      images.push({ url: multiAngleResults.front || currentResult.compositeImage!, label: "front" });
+                    }
+                    if (multiAngleResults.left) images.push({ url: multiAngleResults.left, label: "left" });
+                    if (multiAngleResults.right) images.push({ url: multiAngleResults.right, label: "right" });
+                    images.forEach((img, i) => {
+                      setTimeout(() => {
+                        const link = document.createElement("a");
+                        link.href = img.url;
+                        link.download = `try-on-${product?.name || "frame"}-${img.label}-${Date.now()}.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }, i * 300);
+                    });
+                  }}
+                  title={multiAngleResults.left || multiAngleResults.right ? "Download all angles" : "Download"}
+                >
+                  <Download className="h-4 w-4" />
                 </Button>
               </div>
 
