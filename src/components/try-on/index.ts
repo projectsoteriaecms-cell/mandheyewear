@@ -9,3 +9,4 @@ export { ARLensSelector } from "./ARLensSelector";
 export { TryOnTour } from "./TryOnTour";
 export { TourStep } from "./TourStep";
 export { EmailCaptureModal } from "./EmailCaptureModal";
+export { InlineTryOnModal } from "./InlineTryOnModal";
