@@ -1,84 +1,38 @@
 
 
-## Frontend E-Commerce Audit: Pending & Unfinished Items
+## Remove Packaging Shots & Fix Primary Images for All Known-Brand Products
 
-### Overview
-The storefront has solid foundations — homepage, catalog, product detail, checkout, order tracking, user dashboard, style quiz, virtual try-on, booking, branches, and informational pages are all built. Here's what needs tidying up, organized by priority.
+### The Problem
+27 known-brand products still have AI-generated images as their primary `image_url`, and 68 known-brand products have packaging/casing shots (the last image in `additional_images`) that may show incorrect "M&H Opticals" branding. The frontend `getDisplayImages` utility helps reorder on display, but the underlying data is still wrong.
 
----
+### What We'll Do (One-Time Bulk Data Fix)
 
-### Priority 1 — Broken or Non-Functional Features
+**Step 1: Remove the packaging shot (last image) from all 68 known-brand products with full galleries**
+- For each product with 5+ additional images, remove the last entry from `additional_images` (the packaging/casing shot)
+- This eliminates the M&H-branded casing image entirely
 
-| # | Issue | Where | Impact |
-|---|-------|-------|--------|
-| 1 | **Contact form doesn't actually send** | `Contact.tsx` line 122 | "Send Message" button has no handler — the form submits to nothing |
-| 2 | **Newsletter signup is fake** | `Footer.tsx` lines 37-50 | Just shows a toast after a 1-second delay, doesn't store the email anywhere |
-| 3 | **Search icon does nothing** | `MainNav.tsx` — MagnifyingGlass icon | There's no search dialog or search page; clicking the icon has no action |
-| 4 | **Emergency Contact button is dead** | `Contact.tsx` line 194 | `<Button>` with no onClick or href |
-| 5 | **EyeCare prices in USD** | `EyeCare.tsx` lines 21-56 | All 6 services show "$150", "$120" etc. — should be Naira (₦) pricing |
-| 6 | **Services table is empty** | Database: 0 rows | Booking page hardcodes services; the `services` table is unused |
+**Step 2: Fix the 27 products where `image_url` is still an AI-generated image**
+- Find the original upload (`/main.` URL) in `additional_images`
+- Swap it into `image_url`
+- Move the old AI `image_url` into `additional_images` where `/main.` was
 
-### Priority 2 — Missing E-Commerce Features
+**Step 3: Delete the packaging image files from storage**
+- Remove the actual files from the `product-images` bucket so they don't linger
 
-| # | Feature | Status | What's Needed |
-|---|---------|--------|---------------|
-| 7 | **Product search** | Missing entirely | No search bar, no search results page — customers can't find products by name/brand |
-| 8 | **WhatsApp contact button** | Missing | No floating WhatsApp chat button (standard for Nigerian e-commerce) |
-| 9 | **Stock/availability indicator** | Missing on storefront | Products show no stock status — 92% have zero stock but customers can still add to cart |
-| 10 | **"Out of Stock" handling** | Missing | No visual indicator or disabled cart button for zero-stock items |
-| 11 | **Shipping cost calculation** | Missing | Checkout shows no shipping fee — total = just product subtotal |
-| 12 | **Order email confirmation** | Not functional | Requires RESEND_API_KEY which isn't configured |
+### Implementation
+All done via a single edge function call or SQL operations — no manual per-product work needed.
 
-### Priority 3 — UX Polish & Content Gaps
+**Files Modified:**
+1. `supabase/functions/zoho-sync/index.ts` — Add a `fix_brand_images` action that:
+   - Queries all 68 known-brand products with full galleries
+   - Removes the last `additional_images` entry (packaging shot)
+   - Swaps `image_url` to the original `/main.*` photo where needed
+   - Deletes the removed image files from storage
+2. No frontend changes needed — `getDisplayImages` already handles ordering correctly as a safeguard
 
-| # | Issue | Details |
-|---|-------|---------|
-| 13 | **489 products have no images** | 58% of catalog shows placeholder frames — these should either be hidden or clearly marked |
-| 14 | **Contact page hours say "(Hours to be confirmed)"** | Line 150 — needs real hours |
-| 15 | **"Partners" page** | `Partners.tsx` exists but not sure what's on it — may be stub content |
-| 16 | **Product detail has no reviews section** | No review/rating system — the star icon in ProductDetail is decorative |
-| 17 | **No "Recently Viewed" section** | Common e-commerce feature, not implemented |
-| 18 | **No breadcrumb on Product Detail page** | Eyewear page has breadcrumbs but product detail doesn't |
-| 19 | **Related Products uses brand_line filter** | `ProductDetail.tsx` line 32 — this shows ALL m_and_h_fashion products, not truly related ones |
-
-### Priority 4 — Data Integrity
-
-| # | Issue | Count |
-|---|-------|-------|
-| 20 | **Only 3 products mapped to Zoho** | 834 products have no `zoho_item_id` — orders with unmapped products won't sync |
-| 21 | **Suppliers table empty** | 0 rows — procurement features won't work |
-| 22 | **Services table empty** | 0 rows — booking system uses hardcoded services list |
-
----
-
-### Recommended Fix Order
-
-**Quick wins (can fix in one session):**
-1. Contact form → wire to edge function or mailto fallback
-2. Newsletter → store emails in a table
-3. EyeCare prices → convert to Naira
-4. Remove "(Hours to be confirmed)" text
-5. Emergency Contact button → add tel: link
-6. Disable "Add to Cart" for zero-stock items
-
-**Medium effort (1-2 sessions each):**
-7. Product search dialog (Cmd+K style overlay searching products table)
-8. WhatsApp floating button
-9. Stock availability badges on product cards
-10. Shipping cost display at checkout
-
-**Larger features (separate sessions):**
-11. Order confirmation emails (needs RESEND_API_KEY)
-12. Hide or flag no-image products in catalog
-13. Bulk Zoho product mapping (fuzzy matching already built, needs to be run at scale)
-
-### Files That Need Changes
-- `src/pages/Contact.tsx` — form handler + emergency button
-- `src/pages/EyeCare.tsx` — USD → NGN prices
-- `src/components/Footer.tsx` — real newsletter storage
-- `src/components/navigation/MainNav.tsx` — search functionality
-- `src/components/product/AddToCartSection.tsx` — stock check
-- `src/modules/storefront/components/eyewear/ProductCard.tsx` — stock badge
-- New: Search dialog component
-- New: WhatsApp floating button component
+### Scope
+- 68 products affected (known brands with 5+ additional images)
+- 27 of those also need `image_url` swapped back to the original photo
+- Fully reversible if needed (images stay in storage until explicitly deleted)
+- One-click execution from admin or direct edge function call
 
