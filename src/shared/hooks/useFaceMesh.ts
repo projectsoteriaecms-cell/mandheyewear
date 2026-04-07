@@ -124,8 +124,9 @@ export const useFaceMesh = () => {
           const bs = result.faceBlendshapes?.[0]?.categories ?? null;
           setBlendshapes(bs as BlendshapeEntry[] | null);
 
-          const mat = result.facialTransformationMatrixes?.[0]?.data
-            ? Array.from(result.facialTransformationMatrixes[0].data as Float32Array)
+          const rawData = result.facialTransformationMatrixes?.[0]?.data;
+          const mat = rawData
+            ? Array.from(rawData as unknown as ArrayLike<number>)
             : null;
 
           onResultsCallbackRef.current?.({

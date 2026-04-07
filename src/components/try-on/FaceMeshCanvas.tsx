@@ -135,7 +135,7 @@ export const FaceMeshCanvas = ({
 
       // Head pose guidance from transformation matrix
       if (result.transformationMatrix && result.transformationMatrix.length >= 16) {
-        const { extractPoseFromMatrix } = require("@/shared/lib/glasses-overlay");
+        const { extractPoseFromMatrix } = await import("@/shared/lib/glasses-overlay");
         const pose = extractPoseFromMatrix(result.transformationMatrix);
         if (pose) {
           const yawDeg = (pose.yaw * 180) / Math.PI;
