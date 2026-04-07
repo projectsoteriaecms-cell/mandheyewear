@@ -12,6 +12,8 @@ export interface FrameDetails {
   sku?: string;
 }
 
+export type TryOnAngle = "front" | "three_quarter_left" | "three_quarter_right";
+
 export interface TryOnResult {
   success: boolean;
   compositeImage?: string;
@@ -21,22 +23,26 @@ export interface TryOnResult {
   usedFrameReference?: boolean;
 }
 
+export interface MultiAngleResults {
+  front?: string;
+  left?: string;
+  right?: string;
+}
+
 export const useVirtualTryOn = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentResult, setCurrentResult] = useState<TryOnResult | null>(null);
   const [savedTryOns, setSavedTryOns] = useState<TryOnResult[]>([]);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  const [multiAngleResults, setMultiAngleResults] = useState<MultiAngleResults>({});
+  const [isGeneratingAngles, setIsGeneratingAngles] = useState(false);
 
-  const generateTryOn = useCallback(async (
+  const generateSingleAngle = useCallback(async (
     photo: string,
-    frameDetails: FrameDetails
+    frameDetails: FrameDetails,
+    angle: TryOnAngle = "front"
   ): Promise<TryOnResult> => {
-    setIsGenerating(true);
-    setCurrentResult(null);
-
     try {
-      console.log("Starting virtual try-on for:", frameDetails.name);
-
       const { data, error } = await supabase.functions.invoke("virtual-try-on", {
         body: {
           userPhoto: photo,
@@ -46,62 +52,103 @@ export const useVirtualTryOn = () => {
             style: frameDetails.style,
             imageUrl: frameDetails.imageUrl,
           },
+          angle,
         },
       });
 
       if (error) {
-        console.error("Edge function error:", error);
-        const result: TryOnResult = {
+        return {
           success: false,
-          error: error.message || "Failed to generate try-on. Please try again.",
+          error: error.message || "Failed to generate try-on.",
           timestamp: Date.now(),
         };
-        setCurrentResult(result);
-        toast.error(result.error);
-        return result;
       }
 
       if (!data.success) {
-        const result: TryOnResult = {
+        return {
           success: false,
           error: data.error || "Unable to generate try-on image.",
           timestamp: Date.now(),
         };
-        setCurrentResult(result);
-        toast.error(result.error);
-        return result;
       }
 
-      const result: TryOnResult = {
+      return {
         success: true,
         compositeImage: data.compositeImage,
-        frameDetails: frameDetails,
+        frameDetails,
         timestamp: Date.now(),
         usedFrameReference: data.usedFrameReference ?? false,
       };
-
-      setCurrentResult(result);
-      setSavedTryOns((prev) => [result, ...prev].slice(0, 10)); // Keep last 10
-      toast.success("Try-on generated successfully!");
-
-      return result;
     } catch (err) {
-      console.error("Virtual try-on error:", err);
-      const result: TryOnResult = {
+      return {
         success: false,
         error: err instanceof Error ? err.message : "An unexpected error occurred",
         timestamp: Date.now(),
       };
+    }
+  }, []);
+
+  const generateTryOn = useCallback(async (
+    photo: string,
+    frameDetails: FrameDetails
+  ): Promise<TryOnResult> => {
+    setIsGenerating(true);
+    setCurrentResult(null);
+    setMultiAngleResults({});
+
+    try {
+      const result = await generateSingleAngle(photo, frameDetails, "front");
+
       setCurrentResult(result);
-      toast.error(result.error);
+
+      if (result.success) {
+        setSavedTryOns((prev) => [result, ...prev].slice(0, 10));
+        toast.success("Try-on generated successfully!");
+      } else {
+        toast.error(result.error);
+      }
+
       return result;
     } finally {
       setIsGenerating(false);
     }
-  }, []);
+  }, [generateSingleAngle]);
+
+  const generateMultiAngle = useCallback(async (
+    photo: string,
+    frameDetails: FrameDetails
+  ) => {
+    // First generate front view
+    const frontResult = await generateTryOn(photo, frameDetails);
+
+    if (!frontResult.success || !frontResult.compositeImage) return;
+
+    // Set front in multi-angle
+    setMultiAngleResults({ front: frontResult.compositeImage });
+    setIsGeneratingAngles(true);
+
+    // Generate left and right in parallel (background)
+    const generateSide = async (angle: TryOnAngle, key: "left" | "right") => {
+      const result = await generateSingleAngle(photo, frameDetails, angle);
+      if (result.success && result.compositeImage) {
+        setMultiAngleResults((prev) => ({ ...prev, [key]: result.compositeImage }));
+      }
+    };
+
+    try {
+      await Promise.allSettled([
+        generateSide("three_quarter_left", "left"),
+        generateSide("three_quarter_right", "right"),
+      ]);
+    } finally {
+      setIsGeneratingAngles(false);
+    }
+  }, [generateTryOn, generateSingleAngle]);
 
   const clearResult = useCallback(() => {
     setCurrentResult(null);
+    setMultiAngleResults({});
+    setIsGeneratingAngles(false);
   }, []);
 
   const clearHistory = useCallback(() => {
@@ -110,9 +157,9 @@ export const useVirtualTryOn = () => {
 
   const setPhoto = useCallback((photo: string | null) => {
     setUserPhoto(photo);
-    // Clear results when photo changes
     if (photo !== userPhoto) {
       setCurrentResult(null);
+      setMultiAngleResults({});
     }
   }, [userPhoto]);
 
@@ -121,14 +168,16 @@ export const useVirtualTryOn = () => {
   }, []);
 
   return {
-    // State
     isGenerating,
     currentResult,
     savedTryOns,
     userPhoto,
+    multiAngleResults,
+    isGeneratingAngles,
     
-    // Actions
     generateTryOn,
+    generateMultiAngle,
+    generateSingleAngle,
     clearResult,
     clearHistory,
     setPhoto,

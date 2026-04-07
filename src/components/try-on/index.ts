@@ -10,3 +10,4 @@ export { TryOnTour } from "./TryOnTour";
 export { TourStep } from "./TourStep";
 export { EmailCaptureModal } from "./EmailCaptureModal";
 export { InlineTryOnModal } from "./InlineTryOnModal";
+export { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
