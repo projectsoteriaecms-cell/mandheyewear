@@ -54,7 +54,11 @@ Deno.serve(async (req) => {
       const hasPackaging = p.additional_images.length >= 5;
       const needsPrimaryFix = p.image_url && isAiGenerated(p.image_url) &&
         p.additional_images.some((url: string) => isOriginalPhoto(url));
-      return hasPackaging || needsPrimaryFix;
+      // Also catch: AI primary (main.webp) with no original .png available — swap with first gallery image
+      const needsAnySwap = p.image_url && p.image_url.endsWith("main.webp") &&
+        p.additional_images.length > 0 &&
+        !p.additional_images.some((url: string) => isOriginalPhoto(url));
+      return hasPackaging || needsPrimaryFix || needsAnySwap;
     });
 
     const results = {
@@ -78,12 +82,19 @@ Deno.serve(async (req) => {
         let newImageUrl = product.image_url;
         let newAdditional = images;
 
-        // Fix primary image: if image_url is AI-generated (.webp), swap with first original (.png)
+        // Fix primary image: if image_url is AI-generated (.webp), swap with original or first gallery image
         if (product.image_url && isAiGenerated(product.image_url)) {
           const origIdx = newAdditional.findIndex((url: string) => isOriginalPhoto(url));
           if (origIdx !== -1) {
+            // Swap with original .png reference
             newImageUrl = newAdditional[origIdx];
             newAdditional[origIdx] = product.image_url;
+            results.primaryFixed++;
+          } else if (newAdditional.length > 0) {
+            // No original exists — swap with first gallery image (front-facing shot)
+            const oldPrimary = product.image_url;
+            newImageUrl = newAdditional[0];
+            newAdditional[0] = oldPrimary;
             results.primaryFixed++;
           }
         }
