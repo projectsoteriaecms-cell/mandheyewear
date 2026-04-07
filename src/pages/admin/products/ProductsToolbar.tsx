@@ -62,6 +62,7 @@ export const ProductsToolbar = ({
               : "Enrich Metadata"}
           </Button>
         )}
+        {isAdmin && <BulkPackagingFixButton />}
         {isAdmin && (
           <Button variant="outline" onClick={onPullItems} disabled={syncStatus === "syncing"}>
             {syncStatus === "syncing" ? (
