@@ -1,42 +1,41 @@
 
 
-## Fix Known Brand Packaging Images (Remove M&H Branding)
+## Auto-Swap Packaging Images Off Primary Preview for 132 Known-Brand Products
 
 ### The Problem
 
-Around 40+ known brand products (Gucci, Polaroid, Ray-Ban, Tommy Hilfiger, etc.) have AI-generated packaging shots that incorrectly show "M&H Opticals" on the leather case. The prompt logic in the code is already correct — known brands get their own brand name on the case. The issue is that these images were likely generated before the brand classification was properly wired, or the AI ignored the prompt. The fix requires **regenerating the packaging shot** for all affected products.
+123 of 132 known-brand products currently have an AI-generated image (often the packaging shot with incorrect M&H branding) as their primary/preview image (`image_url`), while the original uploaded reference photo (`main.webp`/`main.png`) sits buried in `additional_images`. This means the catalog shows the wrong image as the hero shot.
 
-### What We'll Build
+### The Fix
 
-**1. Bulk packaging regeneration tool**
-Add a "Fix Brand Packaging" action on the Admin Products page (or Image Manager) that:
-- Finds all known-brand products with 5+ generated images (full gallery)
-- Regenerates ONLY the packaging shot (slot 6 / last image in `additional_images`) using the correct brand-specific prompt
-- Runs sequentially to avoid rate limits, showing progress
+A one-time bulk data operation that for each affected product:
+1. Finds the original uploaded photo (URL containing `/main.`) inside `additional_images`
+2. Swaps it into `image_url` (making it the catalog preview)
+3. Moves the current `image_url` (the AI-generated shot) into the position where `main.*` was in `additional_images`
 
-**2. How it works**
-For each affected product:
-- Call the existing `generate-product-image` edge function with just the `packaging` shot slug
-- Use the product's first image as the reference photo
-- Replace the last image in `additional_images` with the new one
+This preserves the full gallery order while ensuring the real product photo is always the hero.
 
-### Technical Details
+### Implementation
 
-**File: `supabase/functions/generate-product-image/index.ts`**
-- Add a new action `regenerate_shot` that accepts a product ID and a specific shot slug (e.g., `packaging`)
-- Generates only that one shot and replaces it in the correct position in `additional_images`
+**One-time script** (run via edge function or direct execution):
+- Query all 132 known-brand products with full galleries where `image_url LIKE '%/additional-%'`
+- For each product, find the index of the `main.*` URL in `additional_images`
+- Swap `image_url` with that array entry
+- Update the product row
 
-**File: `src/modules/products/components/BulkPackagingFixButton.tsx`** (new)
-- Button component that queries known-brand products with full galleries
-- Calls the edge function for each, showing a progress bar
-- Logs results (success/fail per product)
+**Catalog-level safeguard** (permanent):
+- Add a utility function `getDisplayImages(product)` that always prioritizes the original upload (`/main.` URL) as the first image, regardless of DB ordering
+- Use this in the product card, quick view, and product detail page so even if future AI generation shuffles images again, the catalog always shows the real photo first
 
-**File: `src/pages/admin/Products.tsx`**
-- Add the bulk fix button to the toolbar (visible to admins only)
+### Files Modified
+1. `supabase/functions/zoho-sync/index.ts` (or a new small edge function) — Add a `fix_primary_images` action for the one-time bulk swap
+2. `src/modules/products/lib/image-utils.ts` (new) — `getDisplayImages()` helper that reorders images to prioritize real photos
+3. `src/modules/products/components/BulkPackagingFixButton.tsx` — Add a second action "Fix Primary Images" that triggers the swap, with progress tracking
+4. Product card / catalog components — Use `getDisplayImages()` for rendering
 
 ### Scope
-- ~40 known-brand products need their packaging shot regenerated
-- Each regeneration takes ~10-15 seconds
-- Total runtime: ~7-10 minutes with sequential processing
-- No changes needed to the prompt logic (already correct)
+- 123 products need the swap (those where `image_url` is an AI-generated image)
+- 91 of those have the original `main.*` photo in `additional_images[0]`, making the swap straightforward
+- The remaining ~32 may have `main.*` in other positions — the script handles all positions
+- This is a safe, reversible operation (the images stay in the gallery, just reordered)
 
