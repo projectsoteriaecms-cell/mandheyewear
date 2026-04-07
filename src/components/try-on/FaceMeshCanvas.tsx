@@ -79,9 +79,11 @@ export const FaceMeshCanvas = ({
       }));
 
       if (frameImageRef.current) {
-        const transform = computeGlassesTransform(mirroredLandmarks, canvas.width, canvas.height);
+        const img = frameImageRef.current;
+        const aspectRatio = img.naturalHeight / img.naturalWidth || 0.45;
+        const transform = computeGlassesTransform(mirroredLandmarks, canvas.width, canvas.height, aspectRatio);
         if (transform) {
-          drawGlassesOverlay(ctx, frameImageRef.current, transform);
+          drawGlassesOverlay(ctx, img, transform);
         }
       }
     } else {
@@ -94,9 +96,10 @@ export const FaceMeshCanvas = ({
     setOnResults(handleResults);
   }, [setOnResults, handleResults]);
 
-  // Auto-start on mount
+  // Auto-start on mount, reset smoothing on unmount
   useEffect(() => {
     start();
+    return () => { resetSmoothing(); };
   }, [start]);
 
   // Notify parent
