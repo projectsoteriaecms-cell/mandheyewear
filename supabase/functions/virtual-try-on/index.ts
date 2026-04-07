@@ -82,7 +82,10 @@ This is a three-quarter right view showing how the glasses look from the right s
 The right temple arm and right lens should be more visible. Maintain natural head proportions and lighting.`;
     case "front":
     default:
-      return "";
+      return `
+ANGLE INSTRUCTION: Show the person facing directly forward (front view) wearing the glasses on their face.
+This MUST be a photo of the PERSON wearing the glasses — NOT a product shot, NOT the glasses on a case or table.
+The person's face, eyes, nose, and ears must be clearly visible with the glasses properly worn.`;
   }
 };
 
