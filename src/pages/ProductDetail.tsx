@@ -13,10 +13,12 @@ import { AddToCartSection } from "@/components/product/AddToCartSection";
 import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { MobileActionBar } from "@/components/mobile";
+import { InlineTryOnModal } from "@/components/try-on";
 import { useProduct, useProducts } from "@/modules/products/hooks/useProducts";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
+import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { ArrowLeft, Star, ShoppingBag, Sparkles } from "lucide-react";
 
 const ProductDetail = () => {
@@ -34,6 +36,7 @@ const ProductDetail = () => {
   const { isAuthenticated } = useAuth();
   const { trackViewContent } = useMetaPixel();
   const navigate = useNavigate();
+  const { modalOpen, targetProductId, savedPhotoUrl, triggerTryOn, setModalOpen } = useInlineTryOn();
 
   // Track ViewContent event when product loads
   useEffect(() => {
@@ -231,7 +234,7 @@ const ProductDetail = () => {
                   <Button
                     variant="outline"
                     className="flex-1"
-                    onClick={() => navigate(`/try-on?product=${product.id}`)}
+                    onClick={() => triggerTryOn(product.id)}
                   >
                     <Sparkles className="h-4 w-4 mr-2" />
                     Try On
@@ -245,7 +248,7 @@ const ProductDetail = () => {
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => navigate(`/try-on?product=${product.id}`)}
+                  onClick={() => triggerTryOn(product.id)}
                 >
                   <Sparkles className="h-4 w-4 mr-2" />
                   Virtual Try-On
@@ -285,6 +288,15 @@ const ProductDetail = () => {
       />
 
       <Footer />
+
+      {savedPhotoUrl && (
+        <InlineTryOnModal
+          productId={targetProductId}
+          savedPhotoUrl={savedPhotoUrl}
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+        />
+      )}
     </div>
   );
 };

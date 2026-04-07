@@ -8,6 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StockBadge } from "@/modules/storefront/components/eyewear/StockBadge";
 import { RequestItemDialog } from "@/modules/storefront/components/eyewear/RequestItemDialog";
+import { InlineTryOnModal } from "@/components/try-on";
+import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import type { StockStatus } from "@/modules/storefront/components/eyewear/StockBadge";
 import type { Product } from "@/modules/products/hooks/useProducts";
 
@@ -20,6 +22,7 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { modalOpen, targetProductId, savedPhotoUrl, triggerTryOn, setModalOpen } = useInlineTryOn();
 
   const { data: availability } = useQuery({
     queryKey: ["product-availability", product.id],
@@ -117,7 +120,7 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
         )}
 
         <div className="flex gap-3">
-          <Button variant="gold" className="flex-1" onClick={() => navigate(`/try-on?product=${product.id}`)}>
+          <Button variant="gold" className="flex-1" onClick={() => triggerTryOn(product.id)}>
             <Camera className="mr-2 h-4 w-4" />
             Virtual Try-On
           </Button>
@@ -125,6 +128,15 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
             <Heart className="h-5 w-5" />
           </Button>
         </div>
+
+        {savedPhotoUrl && (
+          <InlineTryOnModal
+            productId={targetProductId}
+            savedPhotoUrl={savedPhotoUrl}
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+          />
+        )}
       </div>
 
       {/* Trust Badges */}

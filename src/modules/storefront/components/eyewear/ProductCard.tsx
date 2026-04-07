@@ -13,7 +13,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { StockStatus } from "./StockBadge";
 import { getHeroImage } from "@/modules/products/lib/image-utils";
-
+import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
+import { InlineTryOnModal } from "@/components/try-on";
 interface ProductCardProps {
   product: Product;
 }
@@ -38,6 +39,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { modalOpen, targetProductId, savedPhotoUrl, triggerTryOn, closeModal, setModalOpen } = useInlineTryOn();
 
   const { data: availability } = useQuery({
     queryKey: ["product-availability", product.id],
@@ -64,9 +66,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   const handleTryOn = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    navigate(`/try-on?product=${product.id}`);
+    triggerTryOn(product.id, e);
   };
 
   const isOutOfStock = stockStatus === "out_of_stock";
@@ -159,6 +159,14 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         </CardContent>
       </Card>
+      {savedPhotoUrl && (
+        <InlineTryOnModal
+          productId={targetProductId}
+          savedPhotoUrl={savedPhotoUrl}
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+        />
+      )}
     </Link>
   );
 };
