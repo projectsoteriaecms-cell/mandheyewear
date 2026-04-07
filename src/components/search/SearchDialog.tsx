@@ -4,7 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { supabase } from "@/integrations/supabase/client";
-import { useDebounce } from "@/shared/hooks/useDebounce";
+import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
 
 interface SearchResult {
   id: string;
