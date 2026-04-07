@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { useFaceMesh, type FaceMeshResultData } from "@/shared/hooks/useFaceMesh";
-import { computeGlassesTransform, drawGlassesOverlay, resetSmoothing } from "@/shared/lib/glasses-overlay";
+import { computeGlassesTransform, drawGlassesOverlay, resetSmoothing, extractPoseFromMatrix } from "@/shared/lib/glasses-overlay";
 import { detectWhiteBackground, removeWhiteBackground } from "@/shared/lib/ar-image-utils";
 import { Loader2, VideoOff, AlertCircle, Radio, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -135,7 +135,6 @@ export const FaceMeshCanvas = ({
 
       // Head pose guidance from transformation matrix
       if (result.transformationMatrix && result.transformationMatrix.length >= 16) {
-        const { extractPoseFromMatrix } = await import("@/shared/lib/glasses-overlay");
         const pose = extractPoseFromMatrix(result.transformationMatrix);
         if (pose) {
           const yawDeg = (pose.yaw * 180) / Math.PI;
