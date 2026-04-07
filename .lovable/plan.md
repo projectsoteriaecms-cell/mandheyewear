@@ -1,34 +1,70 @@
 
 
-## Fix Remaining 26 Known-Brand Products with AI Primary Images
+## Upgrade Live AR to Modern MediaPipe Vision Tasks API
 
-### Problem
-The previous cleanup successfully swapped primary images for products that had original `.png` reference photos available. But **26 known-brand products** have `main.webp` as their primary image (AI-generated, potentially showing M&H packaging) and **no original `.png` reference photo** in their gallery. All 26 have 4 additional AI-generated `.webp` images (the packaging shot was already removed).
+### What's Changing
 
-### Solution
-For these 26 products, simply swap `image_url` with the **first additional image** (`additional_images[0]`). The first additional image is a front-facing product shot (not packaging), so it makes a much better hero image. Move the current `main.webp` into the gallery where it was.
+You're currently using the **legacy** `@mediapipe/face_mesh` package (v0.4, 2021-era). Google has since released the modern **`@mediapipe/tasks-vision`** API which is actively maintained and unlocks powerful features your current setup can't do.
 
-### Changes
+### What You'll Get
 
-**Update `supabase/functions/cleanup-brand-packaging/index.ts`**
+1. **Face Blendshapes (52 expressions)** — detect smiles, blinks, eyebrow raises, jaw open, etc. This enables:
+   - "Smile to capture" — auto-snap a photo when the user smiles
+   - Expression-based frame recommendations ("these frames look great when you smile")
+   - Fun UI reactions (sparkle effects when user winks)
 
-Expand the filtering logic to also catch products where:
-- `image_url` ends with `main.webp` (AI-generated primary)
-- No original `.png` exists in the gallery
-- Has at least 1 additional image to swap with
+2. **Facial Transformation Matrix** — a full 4×4 3D pose matrix giving exact head rotation (pitch/yaw/roll) and translation. This means:
+   - **Proper 3D-aware frame tilting** — frames follow head turns accurately, not just 2D angle
+   - **Head pose guidance** — "turn slightly left to see the side profile"
+   - **Occlusion handling** — hide parts of frames behind the nose/face when turning
 
-For these products, swap `image_url` with `additional_images[0]` and put the old primary into position 0 of the array.
+3. **Better performance** — the new API uses WebAssembly more efficiently, supports GPU delegate, and has a cleaner lifecycle (no more WASM deletion errors)
 
-The updated filter condition becomes:
-```
-hasPackaging || needsPrimaryFix || needsAnySwap
-```
-Where `needsAnySwap` is: known brand + `image_url` ends with `main.webp` + has additional images but none are `.png`.
+4. **Face geometry mesh** — proper UV-mapped 3D mesh for future upgrades (e.g., sunglasses lens tint that follows face contours)
 
-**No UI changes needed** — the existing "Remove M&H Packaging" button already calls this function.
+### Technical Plan
 
-### Scope
-- 26 products affected (GUESS, POLAROID, SANDRO, TED BAKER, JOHN RICHMOND, WILLIAMS MORRIS, PIERRE CARDIN, Chopard, Calvin Klein, etc.)
-- Pure database swap — no AI credits, no storage changes
-- The `main.webp` is not deleted, just moved into the gallery
+**Step 1 — Swap the dependency**
+- Remove: `@mediapipe/face_mesh`, `@mediapipe/camera_utils`
+- Add: `@mediapipe/tasks-vision`
+
+**Step 2 — Rewrite `useFaceMesh` hook** (`src/shared/hooks/useFaceMesh.ts`)
+- Use `FaceLandmarker` from `@mediapipe/tasks-vision` instead of legacy `FaceMesh`
+- Use `FilesetResolver.forVisionTasks()` to load WASM
+- Run in `VIDEO` mode with `requestAnimationFrame` loop (replaces the Camera util)
+- Expose blendshapes and transformation matrix in the returned state
+- Keep the same external API shape (`start`, `stop`, `videoRef`, `faceData`, `setOnResults`) so downstream components don't break
+
+**Step 3 — Update `FaceMeshCanvas`** (`src/components/try-on/FaceMeshCanvas.tsx`)
+- Adapt the results handler to the new `FaceLandmarkerResult` shape (`.faceLandmarks[0]` instead of `.multiFaceLandmarks[0]`)
+- Pass transformation matrix to `computeGlassesTransform` for 3D-aware positioning
+
+**Step 4 — Enhance `glasses-overlay.ts`** (`src/shared/lib/glasses-overlay.ts`)
+- Accept optional transformation matrix for true 3D rotation
+- Use yaw from the matrix to scale frame width (perspective foreshortening when turning head)
+- Use pitch to adjust vertical offset
+
+**Step 5 — Add "Smile to Capture" feature**
+- New `useBlendshapes` utility that reads the `mouthSmileLeft` + `mouthSmileRight` blendshape scores
+- When smile score > 0.6 for 500ms, auto-trigger capture with a visual countdown
+- Toggle on/off via a small button in the AR UI
+
+**Step 6 — Add Head Pose Guidance overlay**
+- Small directional indicator in the AR canvas: "Turn left ←" / "Look straight"
+- Uses yaw/pitch from the transformation matrix
+- Helps users see frames from different angles
+
+### Files Modified
+| File | Change |
+|------|--------|
+| `package.json` | Swap mediapipe packages |
+| `src/shared/hooks/useFaceMesh.ts` | Full rewrite to `FaceLandmarker` API |
+| `src/components/try-on/FaceMeshCanvas.tsx` | Adapt to new result shape + blendshapes |
+| `src/shared/lib/glasses-overlay.ts` | Add 3D matrix support |
+| `src/components/try-on/LiveARTryOn.tsx` | Add smile-capture toggle + head pose UI |
+
+### What Stays the Same
+- All downstream components (ARFrameSelector, TryOnHistory, capture flow) — unchanged
+- White background removal logic — unchanged
+- The overall UX flow — unchanged, just better tracking
 
