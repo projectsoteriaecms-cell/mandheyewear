@@ -63,7 +63,12 @@ Deno.serve(async (req) => {
     for (const product of affected) {
       try {
         const images: string[] = [...product.additional_images];
-        const removedUrl = images.pop()!; // Remove last image (packaging)
+        let removedUrl: string | null = null;
+        
+        // Remove packaging (last image) if 5+ additional images
+        if (images.length >= 5) {
+          removedUrl = images.pop()!;
+        }
         
         let newImageUrl = product.image_url;
         let newAdditional = images;
