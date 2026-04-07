@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Camera, ArrowLeft, Sparkles } from "lucide-react";
+import { Camera, ArrowLeft, Sparkles, Smile } from "lucide-react";
 import { toast } from "sonner";
 import { FaceMeshCanvas } from "./FaceMeshCanvas";
 import { ARFrameSelector } from "./ARFrameSelector";
@@ -37,8 +37,8 @@ export const LiveARTryOn = ({
   const [isCapturing, setIsCapturing] = useState(false);
   const [arError, setArError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [smileCaptureEnabled, setSmileCaptureEnabled] = useState(false);
 
-  // Pick the best AR overlay image for the selected product
   const arImage = useMemo(() => {
     if (!selectedProduct) return null;
     return pickAROverlayImage(
@@ -48,6 +48,7 @@ export const LiveARTryOn = ({
   }, [selectedProduct]);
 
   const handleCapture = useCallback(async () => {
+    if (isCapturing) return;
     setIsCapturing(true);
 
     try {
@@ -83,18 +84,23 @@ export const LiveARTryOn = ({
     } finally {
       setIsCapturing(false);
     }
-  }, [selectedProduct, onCapture]);
+  }, [selectedProduct, onCapture, isCapturing]);
+
+  const handleSmileCapture = useCallback(() => {
+    if (smileCaptureEnabled && selectedProduct && !isCapturing) {
+      toast("😄 Smile detected!", { description: "Capturing..." });
+      handleCapture();
+    }
+  }, [smileCaptureEnabled, selectedProduct, isCapturing, handleCapture]);
 
   return (
     <div className="space-y-6">
-      {/* AR Error display */}
       {arError && (
         <Alert variant="destructive">
           <AlertDescription>{arError}</AlertDescription>
         </Alert>
       )}
 
-      {/* Main AR Canvas */}
       <Card className="overflow-hidden border-0 shadow-lg">
         <CardContent className="p-0">
           <FaceMeshCanvas
@@ -105,12 +111,12 @@ export const LiveARTryOn = ({
               setIsInitialized(true);
             }}
             onError={(error) => setArError(error)}
+            onSmileDetected={handleSmileCapture}
             className="w-full"
           />
         </CardContent>
       </Card>
 
-      {/* Frame Selector — real products */}
       <ARFrameSelector
         products={products}
         selectedProductId={selectedProduct?.id || null}
@@ -119,18 +125,35 @@ export const LiveARTryOn = ({
         disabled={!isInitialized}
       />
 
-      {/* Capture Button */}
       <div className="flex flex-col gap-3">
-        <Button
-          variant="gold"
-          size="lg"
-          className="w-full"
-          onClick={handleCapture}
-          disabled={!isInitialized || isCapturing || !selectedProduct}
-        >
-          <Camera className="h-5 w-5 mr-2" />
-          {isCapturing ? "Capturing..." : "Capture & Save to History"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="gold"
+            size="lg"
+            className="flex-1"
+            onClick={handleCapture}
+            disabled={!isInitialized || isCapturing || !selectedProduct}
+          >
+            <Camera className="h-5 w-5 mr-2" />
+            {isCapturing ? "Capturing..." : "Capture & Save"}
+          </Button>
+
+          <Button
+            variant={smileCaptureEnabled ? "default" : "outline"}
+            size="lg"
+            onClick={() => setSmileCaptureEnabled(!smileCaptureEnabled)}
+            disabled={!isInitialized || !selectedProduct}
+            title="Toggle smile-to-capture"
+          >
+            <Smile className={`h-5 w-5 ${smileCaptureEnabled ? "text-primary-foreground" : "text-muted-foreground"}`} />
+          </Button>
+        </div>
+
+        {smileCaptureEnabled && (
+          <p className="text-xs text-center text-accent font-medium">
+            😄 Smile to auto-capture is ON
+          </p>
+        )}
 
         <Button
           variant="ghost"
@@ -143,7 +166,6 @@ export const LiveARTryOn = ({
         </Button>
       </div>
 
-      {/* Instructions */}
       {isInitialized && (
         <p className="text-xs text-center text-muted-foreground">
           Select a frame above to see it on your face in real-time.
@@ -151,7 +173,6 @@ export const LiveARTryOn = ({
         </p>
       )}
 
-      {/* Hint if no frame selected */}
       {isInitialized && !selectedProduct && (
         <div className="text-center">
           <div className="inline-flex items-center gap-2 text-accent text-sm font-medium">
