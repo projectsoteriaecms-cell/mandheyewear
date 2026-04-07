@@ -1,5 +1,5 @@
 /**
- * Glasses overlay positioning using MediaPipe Face Mesh landmarks.
+ * Glasses overlay positioning using MediaPipe Face Landmarker landmarks.
  *
  * Key landmarks:
  *  - #33  → left eye outer corner
@@ -59,11 +59,38 @@ function clampDelta(prev: number, curr: number, maxDelta: number, refSize: numbe
   return curr;
 }
 
+/**
+ * Extract yaw and pitch from a 4×4 column-major transformation matrix.
+ */
+export function extractPoseFromMatrix(matrix: number[]): { yaw: number; pitch: number; roll: number } | null {
+  if (!matrix || matrix.length < 16) return null;
+
+  // Column-major: m[col*4 + row]
+  const m00 = matrix[0], m10 = matrix[1], m20 = matrix[2];
+  const m01 = matrix[4], m11 = matrix[5], m21 = matrix[6];
+  const m02 = matrix[8], m12 = matrix[9], m22 = matrix[10];
+
+  const pitch = Math.asin(-m20);
+  const cosPitch = Math.cos(pitch);
+
+  let yaw: number, roll: number;
+  if (Math.abs(cosPitch) > 0.001) {
+    yaw = Math.atan2(m10, m00);
+    roll = Math.atan2(m21, m22);
+  } else {
+    yaw = Math.atan2(-m01, m11);
+    roll = 0;
+  }
+
+  return { yaw, pitch, roll };
+}
+
 export function computeGlassesTransform(
   landmarks: { x: number; y: number; z: number }[],
   canvasWidth: number,
   canvasHeight: number,
-  imageAspectRatio: number = 0.45
+  imageAspectRatio: number = 0.45,
+  transformationMatrix?: number[] | null
 ): OverlayTransform | null {
   if (!landmarks || landmarks.length < 468) return null;
 
@@ -115,9 +142,18 @@ export function computeGlassesTransform(
     rightEye.x - leftEye.x
   );
 
-  // Depth-aware scaling using nose bridge Z
-  const avgZ = landmarks[6].z;
-  const depthScale = 1 + avgZ * DEPTH_SCALE_FACTOR;
+  // Depth-aware scaling
+  let depthScale = 1;
+  if (transformationMatrix) {
+    const pose = extractPoseFromMatrix(transformationMatrix);
+    if (pose) {
+      // Foreshorten width based on yaw (head turning left/right)
+      depthScale = Math.cos(pose.yaw * 0.5);
+    }
+  } else {
+    const avgZ = landmarks[6].z;
+    depthScale = 1 + avgZ * DEPTH_SCALE_FACTOR;
+  }
 
   const width = earDistance * TEMPLE_PADDING * depthScale;
   const height = width * imageAspectRatio;
@@ -133,7 +169,6 @@ export function computeGlassesTransform(
 
   // Apply velocity damping + EMA smoothing
   if (prevTransform) {
-    // Clamp large jumps first (including angle)
     raw = {
       centerX: clampDelta(prevTransform.centerX, raw.centerX, MAX_POSITION_DELTA, canvasWidth),
       centerY: clampDelta(prevTransform.centerY, raw.centerY, MAX_POSITION_DELTA, canvasHeight),
@@ -151,14 +186,11 @@ export function computeGlassesTransform(
     };
     prevTransform = smoothed;
 
-    // Skip rendering during warmup frames
     if (frameCount <= WARMUP_FRAMES) return null;
-
     return smoothed;
   }
 
   prevTransform = raw;
-  // Skip rendering during warmup
   if (frameCount <= WARMUP_FRAMES) return null;
   return raw;
 }
@@ -181,7 +213,6 @@ export function drawGlassesOverlay(
   ctx.translate(centerX, centerY);
   ctx.rotate(angle);
 
-  // Flip horizontally so the frame faces the same direction as the mirrored selfie
   if (mirrorFlip) {
     ctx.scale(-1, 1);
   }

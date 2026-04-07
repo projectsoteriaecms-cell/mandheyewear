@@ -1,6 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from "react";
-import { Results } from "@mediapipe/face_mesh";
-import { useFaceMesh } from "@/shared/hooks/useFaceMesh";
+import { useFaceMesh, type FaceMeshResultData } from "@/shared/hooks/useFaceMesh";
 import { computeGlassesTransform, drawGlassesOverlay, resetSmoothing } from "@/shared/lib/glasses-overlay";
 import { detectWhiteBackground, removeWhiteBackground } from "@/shared/lib/ar-image-utils";
 import { Loader2, VideoOff, AlertCircle, Radio, ImageOff } from "lucide-react";
@@ -8,10 +7,10 @@ import { cn } from "@/lib/utils";
 
 interface FaceMeshCanvasProps {
   frameImageUrl: string | null;
-  /** Whether the selected image has been flagged as not AR-ready */
   arWarning?: string | null;
   onInitialized?: () => void;
   onError?: (error: string) => void;
+  onSmileDetected?: () => void;
   className?: string;
 }
 
@@ -20,6 +19,7 @@ export const FaceMeshCanvas = ({
   arWarning,
   onInitialized,
   onError,
+  onSmileDetected,
   className,
 }: FaceMeshCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -28,7 +28,9 @@ export const FaceMeshCanvas = ({
   const [faceDetected, setFaceDetected] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [hasWhiteBg, setHasWhiteBg] = useState(false);
+  const [headPoseHint, setHeadPoseHint] = useState<string | null>(null);
   const prevFrameUrlRef = useRef<string | null>(null);
+  const smileTimerRef = useRef<number | null>(null);
 
   const { isReady, isLoading, error, videoRef, start, setOnResults, captureSnapshot } = useFaceMesh();
 
@@ -41,7 +43,6 @@ export const FaceMeshCanvas = ({
       return;
     }
 
-    // Reset smoothing when frame changes
     if (prevFrameUrlRef.current !== frameImageUrl) {
       resetSmoothing();
       prevFrameUrlRef.current = frameImageUrl;
@@ -51,13 +52,10 @@ export const FaceMeshCanvas = ({
     img.crossOrigin = "anonymous";
     img.onload = () => {
       frameAspectRef.current = img.naturalHeight / img.naturalWidth || 0.45;
-
-      // Check for white background and remove it if detected
       const whiteDetected = detectWhiteBackground(img);
       setHasWhiteBg(whiteDetected);
 
       if (whiteDetected) {
-        // Process the image to remove white background
         const processed = removeWhiteBackground(img);
         frameSourceRef.current = processed;
       } else {
@@ -72,8 +70,8 @@ export const FaceMeshCanvas = ({
     img.src = frameImageUrl;
   }, [frameImageUrl]);
 
-  // Drawing callback for each face mesh result
-  const handleResults = useCallback((results: Results) => {
+  // Drawing callback for each face landmarker result
+  const handleResults = useCallback((result: FaceMeshResultData) => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
     if (!canvas || !video) return;
@@ -81,7 +79,6 @@ export const FaceMeshCanvas = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Match canvas size to video
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
 
@@ -92,13 +89,11 @@ export const FaceMeshCanvas = ({
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     ctx.restore();
 
-    // Draw glasses overlay if face detected and frame image loaded
-    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+    if (result.landmarks && result.landmarks.length > 0) {
       setFaceDetected(true);
-      const landmarks = results.multiFaceLandmarks[0] as { x: number; y: number; z: number }[];
-      
+
       // Mirror the landmark x-coordinates to match mirrored video
-      const mirroredLandmarks = landmarks.map((lm) => ({
+      const mirroredLandmarks = result.landmarks.map((lm) => ({
         x: 1 - lm.x,
         y: lm.y,
         z: lm.z,
@@ -109,18 +104,58 @@ export const FaceMeshCanvas = ({
           mirroredLandmarks,
           canvas.width,
           canvas.height,
-          frameAspectRef.current
+          frameAspectRef.current,
+          result.transformationMatrix
         );
         if (transform) {
           drawGlassesOverlay(ctx, frameSourceRef.current, transform, { mirrorFlip: true });
         }
       }
+
+      // Smile detection
+      if (result.blendshapes && onSmileDetected) {
+        const smileL = result.blendshapes.find((b) => b.categoryName === "mouthSmileLeft")?.score ?? 0;
+        const smileR = result.blendshapes.find((b) => b.categoryName === "mouthSmileRight")?.score ?? 0;
+        const avgSmile = (smileL + smileR) / 2;
+
+        if (avgSmile > 0.6) {
+          if (smileTimerRef.current === null) {
+            smileTimerRef.current = window.setTimeout(() => {
+              onSmileDetected();
+              smileTimerRef.current = null;
+            }, 500);
+          }
+        } else {
+          if (smileTimerRef.current !== null) {
+            clearTimeout(smileTimerRef.current);
+            smileTimerRef.current = null;
+          }
+        }
+      }
+
+      // Head pose guidance from transformation matrix
+      if (result.transformationMatrix && result.transformationMatrix.length >= 16) {
+        const { extractPoseFromMatrix } = require("@/shared/lib/glasses-overlay");
+        const pose = extractPoseFromMatrix(result.transformationMatrix);
+        if (pose) {
+          const yawDeg = (pose.yaw * 180) / Math.PI;
+          if (yawDeg > 20) {
+            setHeadPoseHint("Turn right to see side view →");
+          } else if (yawDeg < -20) {
+            setHeadPoseHint("← Turn left to see side view");
+          } else {
+            setHeadPoseHint(null);
+          }
+        }
+      } else {
+        setHeadPoseHint(null);
+      }
     } else {
       setFaceDetected(false);
-      // Reset smoothing when face is lost so frame doesn't "stick"
+      setHeadPoseHint(null);
       resetSmoothing();
     }
-  }, [videoRef]);
+  }, [videoRef, onSmileDetected]);
 
   // Wire up the drawing callback
   useEffect(() => {
@@ -130,7 +165,12 @@ export const FaceMeshCanvas = ({
   // Auto-start on mount, reset smoothing on unmount
   useEffect(() => {
     start();
-    return () => { resetSmoothing(); };
+    return () => {
+      resetSmoothing();
+      if (smileTimerRef.current !== null) {
+        clearTimeout(smileTimerRef.current);
+      }
+    };
   }, [start]);
 
   // Notify parent
@@ -152,16 +192,8 @@ export const FaceMeshCanvas = ({
 
   return (
     <div className={cn("relative bg-muted rounded-lg overflow-hidden", className)}>
-      {/* Hidden video element for webcam feed */}
-      <video
-        ref={videoRef}
-        className="hidden"
-        playsInline
-        muted
-        autoPlay
-      />
+      <video ref={videoRef} className="hidden" playsInline muted autoPlay />
 
-      {/* Visible canvas */}
       <canvas
         ref={canvasRef}
         className="w-full aspect-[4/3] object-cover"
@@ -200,7 +232,14 @@ export const FaceMeshCanvas = ({
         </div>
       )}
 
-      {/* Frame overlay status */}
+      {/* Head pose guidance */}
+      {isReady && faceDetected && headPoseHint && (
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 bg-accent/90 backdrop-blur-sm rounded-full px-3 py-1.5">
+          <span className="text-xs text-accent-foreground font-medium">{headPoseHint}</span>
+        </div>
+      )}
+
+      {/* Frame loading */}
       {isReady && frameImageUrl && !imageLoaded && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm rounded-full px-3 py-1.5">
           <span className="text-xs text-muted-foreground">Loading frame image…</span>
@@ -215,7 +254,7 @@ export const FaceMeshCanvas = ({
         </div>
       )}
 
-      {/* AR warning from parent (not AR-ready asset) */}
+      {/* AR warning */}
       {isReady && arWarning && !hasWhiteBg && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-2 max-w-[90%]">
           <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
