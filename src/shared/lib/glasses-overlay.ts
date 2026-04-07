@@ -151,6 +151,7 @@ export function drawGlassesOverlay(
     ctx.scale(-1, 1);
   }
 
+  ctx.scale(1, -1);
   ctx.drawImage(image, -width / 2, -height / 2, width, height);
   ctx.restore();
 }
