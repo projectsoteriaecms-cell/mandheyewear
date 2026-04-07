@@ -5,6 +5,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+type TryOnAngle = "front" | "three_quarter_left" | "three_quarter_right";
+
 interface TryOnRequest {
   userPhoto: string; // base64 image
   frameDetails: {
@@ -13,6 +15,7 @@ interface TryOnRequest {
     style?: string;
     imageUrl?: string;
   };
+  angle?: TryOnAngle;
 }
 
 type GeneratedTryOn = {
@@ -65,7 +68,25 @@ const fetchFrameImageAsBase64 = async (imageUrl: string): Promise<{ base64: stri
   }
 };
 
-const buildPrompt = (frameDetails: TryOnRequest["frameDetails"], hasFrameReference: boolean) => {
+const getAngleInstruction = (angle: TryOnAngle): string => {
+  switch (angle) {
+    case "three_quarter_left":
+      return `
+ANGLE INSTRUCTION: Show the person turned approximately 30 degrees to their LEFT (viewer's right). 
+This is a three-quarter left view showing how the glasses look from the left side.
+The left temple arm and left lens should be more visible. Maintain natural head proportions and lighting.`;
+    case "three_quarter_right":
+      return `
+ANGLE INSTRUCTION: Show the person turned approximately 30 degrees to their RIGHT (viewer's left).
+This is a three-quarter right view showing how the glasses look from the right side.
+The right temple arm and right lens should be more visible. Maintain natural head proportions and lighting.`;
+    case "front":
+    default:
+      return "";
+  }
+};
+
+const buildPrompt = (frameDetails: TryOnRequest["frameDetails"], hasFrameReference: boolean, angle: TryOnAngle = "front") => {
   const frameDescription = [
     frameDetails.name,
     frameDetails.color && `in ${frameDetails.color} color`,
@@ -74,8 +95,9 @@ const buildPrompt = (frameDetails: TryOnRequest["frameDetails"], hasFrameReferen
     .filter(Boolean)
     .join(" ");
 
+  const angleInstruction = getAngleInstruction(angle);
+
   if (hasFrameReference) {
-    // Enhanced prompt when we have the actual frame image
     return `You are an expert eyewear designer and photo editor.
 
 IMPORTANT: You have been provided with TWO images:
@@ -92,13 +114,13 @@ Your task:
 - The result should look like a real photograph, not a digital overlay
 - Maintain the original photo quality and background
 - Ensure the frame temples extend naturally towards the ears
+${angleInstruction}
 
 Frame details for reference: ${frameDescription}
 
 Generate a complete, photorealistic image of the person wearing the EXACT glasses from the reference image.`;
   }
 
-  // Fallback prompt when no frame reference image is available
   return `You are an expert eyewear designer and photo editor.
 
 Given this front-facing face photo, create a photorealistic image showing the person wearing eyeglasses with these specifications:
@@ -109,6 +131,7 @@ Given this front-facing face photo, create a photorealistic image showing the pe
 - The result should look like a real photograph, not a digital overlay
 - Maintain the original photo quality and background
 - Ensure the frame temples extend naturally towards the ears
+${angleInstruction}
 
 Important: Generate a complete, photorealistic image of the person wearing the described glasses. The output should be indistinguishable from a real photo of someone wearing glasses.`;
 };
@@ -292,7 +315,7 @@ serve(async (req) => {
   try {
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 
-    const { userPhoto, frameDetails }: TryOnRequest = await req.json();
+    const { userPhoto, frameDetails, angle = "front" }: TryOnRequest = await req.json();
 
     if (!userPhoto) {
       return json({ success: false, error: "User photo is required" }, 400);
@@ -333,7 +356,8 @@ serve(async (req) => {
     const hasFrameReference = !!frameImage;
     console.log(`Frame reference image available: ${hasFrameReference}`);
 
-    const prompt = buildPrompt(frameDetails, hasFrameReference);
+    console.log(`Generating angle: ${angle}`);
+    const prompt = buildPrompt(frameDetails, hasFrameReference, angle);
     
     const frameImageDataUrl = frameImage 
       ? `data:${frameImage.mimeType};base64,${frameImage.base64}`

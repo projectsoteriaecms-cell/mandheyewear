@@ -21,13 +21,16 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmailCaptureModal } from "./EmailCaptureModal";
+import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
 import { useVTOEmailCapture } from "@/modules/personalization/hooks/useVTOEmailCapture";
-import type { TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
+import type { TryOnResult as TryOnResultType, MultiAngleResults } from "@/modules/personalization/hooks/useVirtualTryOn";
 
 interface TryOnResultProps {
   result: TryOnResultType | null;
   userPhoto: string | null;
   isGenerating: boolean;
+  multiAngleResults?: MultiAngleResults;
+  isGeneratingAngles?: boolean;
   onRetry?: () => void;
   onAddToCart?: () => void;
   onAddToWishlist?: () => void;
@@ -39,6 +42,8 @@ export const TryOnResult = ({
   result,
   userPhoto,
   isGenerating,
+  multiAngleResults,
+  isGeneratingAngles,
   onRetry,
   onAddToCart,
   onAddToWishlist,
@@ -224,46 +229,79 @@ export const TryOnResult = ({
             </div>
           )}
 
-          {/* Comparison View */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Original Photo */}
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground text-center">Original</p>
-              <div className="aspect-[4/3] bg-muted rounded-lg overflow-hidden">
-                {userPhoto ? (
+          {/* Multi-angle carousel or comparison view */}
+          {multiAngleResults && (multiAngleResults.front || multiAngleResults.left || multiAngleResults.right) ? (
+            <>
+              <TryOnCarousel
+                slides={[
+                  {
+                    angle: "three_quarter_left",
+                    label: "Left Side",
+                    url: multiAngleResults.left,
+                    loading: !!isGeneratingAngles && !multiAngleResults.left,
+                  },
+                  {
+                    angle: "front",
+                    label: "Front",
+                    url: result.compositeImage,
+                    loading: false,
+                  },
+                  {
+                    angle: "three_quarter_right",
+                    label: "Right Side",
+                    url: multiAngleResults.right,
+                    loading: !!isGeneratingAngles && !multiAngleResults.right,
+                  },
+                ]}
+                aspectRatio="aspect-[4/3]"
+              />
+              {isGeneratingAngles && (
+                <p className="text-xs text-center text-muted-foreground animate-pulse">
+                  Generating more angles...
+                </p>
+              )}
+            </>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {/* Original Photo */}
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground text-center">Original</p>
+                <div className="aspect-[4/3] bg-muted rounded-lg overflow-hidden">
+                  {userPhoto ? (
+                    <img
+                      src={userPhoto}
+                      alt="Original photo"
+                      className="w-full h-full object-cover"
+                      style={{ imageOrientation: "from-image" }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                      No Photo
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Generated Result */}
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground text-center">With Frames</p>
+                <div className="aspect-[4/3] bg-muted rounded-lg overflow-hidden relative group">
                   <img
-                    src={userPhoto}
-                    alt="Original photo"
+                    src={result.compositeImage}
+                    alt="Try-on result"
                     className="w-full h-full object-cover"
                     style={{ imageOrientation: "from-image" }}
                   />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    No Photo
-                  </div>
-                )}
+                  <button 
+                    className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center"
+                    onClick={() => setIsFullscreenOpen(true)}
+                  >
+                    <Maximize2 className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                </div>
               </div>
             </div>
-
-            {/* Generated Result */}
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground text-center">With Frames</p>
-              <div className="aspect-[4/3] bg-muted rounded-lg overflow-hidden relative group">
-                <img
-                  src={result.compositeImage}
-                  alt="Try-on result"
-                  className="w-full h-full object-cover"
-                  style={{ imageOrientation: "from-image" }}
-                />
-                <button 
-                  className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center"
-                  onClick={() => setIsFullscreenOpen(true)}
-                >
-                  <Maximize2 className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Fullscreen Modal */}
           <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>

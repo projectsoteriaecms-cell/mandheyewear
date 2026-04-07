@@ -13,6 +13,7 @@ import { useVirtualTryOn, type FrameDetails } from "@/modules/personalization/ho
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useWishlist } from "@/modules/orders/hooks/useWishlist";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
 
 interface InlineTryOnModalProps {
   productId: string | null;
@@ -32,7 +33,14 @@ export const InlineTryOnModal = ({
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
   const { data: product, isLoading: productLoading } = useProduct(productId || "");
-  const { generateTryOn, currentResult, isGenerating, clearResult } = useVirtualTryOn();
+  const {
+    generateMultiAngle,
+    currentResult,
+    isGenerating,
+    multiAngleResults,
+    isGeneratingAngles,
+    clearResult,
+  } = useVirtualTryOn();
   const hasTriggered = useRef(false);
   const [generationStarted, setGenerationStarted] = useState(false);
 
@@ -52,9 +60,9 @@ export const InlineTryOnModal = ({
         sku: product.sku,
       };
 
-      generateTryOn(savedPhotoUrl, frameDetails);
+      generateMultiAngle(savedPhotoUrl, frameDetails);
     }
-  }, [open, product, savedPhotoUrl, generateTryOn, generationStarted]);
+  }, [open, product, savedPhotoUrl, generateMultiAngle, generationStarted]);
 
   // Reset when modal closes
   useEffect(() => {
@@ -92,6 +100,28 @@ export const InlineTryOnModal = ({
 
   const showLoading = productLoading || isGenerating || (!currentResult && generationStarted);
 
+  // Build carousel slides
+  const carouselSlides: CarouselSlide[] = [
+    {
+      angle: "three_quarter_left",
+      label: "Left Side",
+      url: multiAngleResults.left,
+      loading: isGeneratingAngles && !multiAngleResults.left,
+    },
+    {
+      angle: "front",
+      label: "Front",
+      url: currentResult?.compositeImage || multiAngleResults.front,
+      loading: isGenerating,
+    },
+    {
+      angle: "three_quarter_right",
+      label: "Right Side",
+      url: multiAngleResults.right,
+      loading: isGeneratingAngles && !multiAngleResults.right,
+    },
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -111,20 +141,25 @@ export const InlineTryOnModal = ({
           )}
 
           {/* Result area */}
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary flex items-center justify-center">
-            {showLoading ? (
+          {showLoading && !currentResult ? (
+            <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary flex items-center justify-center">
               <div className="flex flex-col items-center gap-3 text-muted-foreground">
                 <Loader2 className="h-8 w-8 animate-spin text-accent" />
                 <p className="text-sm font-medium">Generating your try-on...</p>
                 <p className="text-xs">This takes about 5–10 seconds</p>
               </div>
-            ) : currentResult?.success && currentResult.compositeImage ? (
-              <img
-                src={currentResult.compositeImage}
-                alt={`Virtual try-on with ${product?.name}`}
-                className="w-full h-full object-contain"
-              />
-            ) : currentResult && !currentResult.success ? (
+            </div>
+          ) : currentResult?.success ? (
+            <>
+              <TryOnCarousel slides={carouselSlides} />
+              {isGeneratingAngles && (
+                <p className="text-xs text-center text-muted-foreground animate-pulse">
+                  Generating more angles...
+                </p>
+              )}
+            </>
+          ) : currentResult && !currentResult.success ? (
+            <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary flex items-center justify-center">
               <div className="flex flex-col items-center gap-3 text-center px-4">
                 <p className="text-sm text-destructive font-medium">
                   {currentResult.error || "Unable to generate try-on"}
@@ -140,8 +175,8 @@ export const InlineTryOnModal = ({
                   Try Again
                 </Button>
               </div>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
 
           {/* Action buttons - only show after successful result */}
           {currentResult?.success && (
