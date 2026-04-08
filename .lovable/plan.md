@@ -1,37 +1,44 @@
 
 
-## Auto-Extract Frame Measurements for All Products
+## Fix Live AR: Stabilize Face Detection + Test 3D Tracking
 
-### Current State
-- **101 products** already have measurements (lens_width, bridge_size, temple_length)
-- **~2,000 products** have the `XX-XX-XXX` pattern in their names (e.g., "55-19-145") — these can be extracted instantly via regex
-- **~10,800 frames** total are missing measurements
-- An enrichment edge function already exists but needs a fix: it currently only processes try-on-eligible products (those with images). We need it to process ALL frame products.
+### Problem from Session Replay
 
-### What This Plan Does
+The "No face detected" banner is flickering on/off every ~200ms. This happens because `faceDetected` state is set to `false` on every single frame where MediaPipe doesn't return landmarks — which can happen due to motion blur, brief occlusion, or GPU frame drops. When detection drops for even 1 frame, the 3D scene hides the glasses (`groupRef.current.visible = false`) and resets.
 
-1. **Fix the edge function** to process all frame products missing measurements (not just those with images), and increase the batch size limit
-2. **Run it in batches** to extract measurements from product names using regex first, then AI fallback for ambiguous names
-3. **Also extract `frame_shape` and `frame_material`** from product names via the AI path (e.g., "Cat Eye", "Aviator", "Titanium", "Acetate")
+### Root Cause
 
-### Technical Changes
+In `FaceMeshCanvas.tsx` line 113:
+```typescript
+setFaceDetected(false);  // fires on EVERY missed frame
+```
+And in `ThreeARScene.tsx` line 94:
+```typescript
+if (groupRef.current) groupRef.current.visible = false;  // hides immediately
+```
 
-**File: `supabase/functions/enrich-frame-measurements/index.ts`**
-- Remove the `.not("image_url", "is", null)` filter so ALL frame products get processed
-- Add a `mode` parameter: `"all"` processes all frames, `"tryon_only"` keeps current behavior
-- Increase default batch_size to 200 for regex-heavy runs
-- Add regex pattern for space-separated measurements (e.g., `55 47 17 140` seen in Julia Backer products)
-- Extract `frame_material` via AI alongside shape
+There's zero tolerance for dropped frames — one miss and everything disappears.
 
-**No UI changes needed** — you can trigger enrichment via the existing admin tools or we can run it directly after deployment.
+### Fixes
 
-### Expected Results
-- ~2,000 products enriched instantly via regex (no AI credits used)
-- Remaining products attempted via AI fallback in subsequent batches
-- Total coverage goes from 101 → potentially 2,000+ products with full measurements
+**File: `src/shared/hooks/useFaceMesh.ts`**
+- Add a "grace period" counter: only report no-face after **5 consecutive** missed frames (~150ms at 30fps)
+- Keep sending the last known good landmarks during the grace window so the 3D scene stays stable
 
-### Files Modified
-| File | Change |
-|------|--------|
-| `supabase/functions/enrich-frame-measurements/index.ts` | Remove image filter, add broader regex patterns, extract material |
+**File: `src/components/try-on/FaceMeshCanvas.tsx`**
+- Debounce `setFaceDetected(false)` — only switch to "no face" after 300ms of continuous misses
+- In 3D mode, keep passing the last valid landmarks/matrix to ThreeARScene during brief detection gaps
+
+**File: `src/components/try-on/ThreeARScene.tsx`**  
+- Don't hide the glasses group on a single missed frame — keep the last position for up to 300ms
+- Add `preserveDrawingBuffer: true` to the Canvas for reliable snapshot capture (already present, confirm working)
+
+### What stays the same
+- ParametricGlasses3D geometry — unchanged
+- Measurement enrichment — already done (435 products ready)
+- 2D fallback path — unchanged
+- Smile-to-capture — unchanged
+
+### Expected result
+Face tracking becomes stable — glasses stay on the face even during brief detection drops. The "No face detected" banner only shows after a clear, sustained absence (300ms+). 3D parametric frames render and track head rotation smoothly.
 
