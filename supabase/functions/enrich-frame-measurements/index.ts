@@ -277,20 +277,20 @@ serve(async (req) => {
             enriched++;
           }
         } else {
-          // Insert new record
-          const { error: insertErr } = await supabase
+          // Upsert record
+          const { error: upsertErr } = await supabase
             .from("frame_attributes")
-            .insert({
+            .upsert({
               product_id: product.id,
               lens_width: measurements.lens_width,
               bridge_size: measurements.bridge_size,
               temple_length: measurements.temple_length,
               frame_shape: measurements.frame_shape,
               frame_material: measurements.frame_material,
-            });
+            }, { onConflict: "product_id" });
 
-          if (insertErr) {
-            errors.push(`Insert ${product.id}: ${insertErr.message}`);
+          if (upsertErr) {
+            errors.push(`Upsert ${product.id}: ${upsertErr.message}`);
           } else {
             enriched++;
           }
