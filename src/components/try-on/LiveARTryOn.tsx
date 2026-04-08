@@ -26,6 +26,7 @@ interface LiveARTryOnProps {
   productsLoading?: boolean;
   onCapture: (result: TryOnResultType) => void;
   onSwitchToPhoto: () => void;
+  totalFrameCount?: number;
 }
 
 export const LiveARTryOn = ({
@@ -33,6 +34,7 @@ export const LiveARTryOn = ({
   productsLoading = false,
   onCapture,
   onSwitchToPhoto,
+  totalFrameCount,
 }: LiveARTryOnProps) => {
   const [selectedProduct, setSelectedProduct] = useState<FrameProduct | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -143,16 +145,11 @@ export const LiveARTryOn = ({
       </Card>
 
       {/* 3D indicator */}
-      {selectedProduct && is3DReady && (
+      {selectedProduct && (
         <div className="flex items-center justify-center gap-2 text-sm">
           <Box className="h-4 w-4 text-accent" />
           <span className="text-accent font-medium">3D Try-On Active</span>
           <span className="text-muted-foreground">— Frame rotates with your head</span>
-        </div>
-      )}
-      {selectedProduct && !is3DReady && (
-        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <span>2D Preview — frame measurements needed for 3D</span>
         </div>
       )}
 
@@ -162,6 +159,7 @@ export const LiveARTryOn = ({
         onSelectProduct={(p) => setSelectedProduct(p)}
         isLoading={productsLoading}
         disabled={!isInitialized}
+        totalFrameCount={totalFrameCount}
       />
 
       <div className="flex flex-col gap-3">

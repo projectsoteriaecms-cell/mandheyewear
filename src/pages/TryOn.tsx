@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSEO } from "@/shared/hooks/useSEO";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -90,6 +92,28 @@ const TryOn = () => {
   const frameProducts = products
     ?.filter((p) => p.item_type === "frames" && p.image_url)
     .sort((a, b) => a.name.localeCompare(b.name)) || [];
+
+  // Fetch 3D-ready product IDs for AR mode
+  const { data: arReadyIds } = useQuery({
+    queryKey: ["ar-ready-product-ids"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("frame_attributes")
+        .select("product_id")
+        .not("lens_width", "is", null)
+        .not("bridge_size", "is", null)
+        .not("temple_length", "is", null);
+      if (error) throw error;
+      return new Set((data || []).map((r) => r.product_id));
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // AR products: only 3D-ready frames
+  const arFrameProducts = useMemo(
+    () => (arReadyIds ? frameProducts.filter((p) => arReadyIds.has(p.id)) : []),
+    [frameProducts, arReadyIds]
+  );
 
   const handleTryOn = async (frame: FrameDetails) => {
     if (!userPhoto) {
@@ -188,10 +212,11 @@ const TryOn = () => {
             /* Live AR Mode */
             <div className="max-w-lg mx-auto mb-8">
               <LiveARTryOn
-                products={frameProducts}
-                productsLoading={productsLoading}
+                products={arFrameProducts}
+                productsLoading={productsLoading || !arReadyIds}
                 onCapture={handleARCapture}
                 onSwitchToPhoto={handleSwitchToPhoto}
+                totalFrameCount={frameProducts.length}
               />
             </div>
           ) : (

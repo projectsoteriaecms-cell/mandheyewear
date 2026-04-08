@@ -17,6 +17,7 @@ interface ARFrameSelectorProps {
   onSelectProduct: (product: FrameProduct) => void;
   isLoading?: boolean;
   disabled?: boolean;
+  totalFrameCount?: number;
 }
 
 export const ARFrameSelector = ({
@@ -25,6 +26,7 @@ export const ARFrameSelector = ({
   onSelectProduct,
   isLoading = false,
   disabled = false,
+  totalFrameCount,
 }: ARFrameSelectorProps) => {
   if (isLoading) {
     return (
@@ -95,6 +97,11 @@ export const ARFrameSelector = ({
         </div>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
+      {totalFrameCount && totalFrameCount > products.length && (
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          {products.length} frames available for 3D try-on · {(totalFrameCount - products.length).toLocaleString()}+ more coming soon
+        </p>
+      )}
     </div>
   );
 };
