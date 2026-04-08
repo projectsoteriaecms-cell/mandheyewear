@@ -111,6 +111,11 @@ export const useFaceMesh = () => {
           return;
         }
 
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
+          rafIdRef.current = requestAnimationFrame(detect);
+          return;
+        }
+
         const now = performance.now();
         if (now === lastTimestamp) {
           rafIdRef.current = requestAnimationFrame(detect);
