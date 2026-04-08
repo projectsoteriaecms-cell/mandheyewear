@@ -1,38 +1,65 @@
 
 
-## Problem: Catalog Images Showing Cases/Packaging Used as AR Overlay
+## The Real Problem: Rendering Quality, Not Tracking
 
-When you select a frame in Live AR that **doesn't have 3D measurements** (the majority — only 101 out of ~10,800 have measurements), the system falls back to the **2D overlay path**. This takes the product's catalog image and stretches it onto your face. If that image shows the frame inside a case, on a display, or with packaging, that's exactly what gets plastered on your face — useless for try-on.
+The MediaPipe face tracking is working correctly — landmarks, transformation matrix, blendshapes all functioning. The issue is that `ParametricGlasses3D.tsx` creates **procedural geometry** (extruded rectangles/ovals with tube temples). These will never look like real frames.
 
-Even for the 101 products WITH 3D measurements, the thumbnail in the frame selector still shows whatever the `image_url` is (which could be a case photo), making it look broken even if the 3D parametric rendering would work fine underneath.
+### Option Comparison
 
-### Two-Part Fix
+```text
+┌─────────────────────────┬──────────────┬─────────────┬──────────────┐
+│ Approach                │ Visual Quality│ Per-Product │ Effort       │
+│                         │              │ Work        │              │
+├─────────────────────────┼──────────────┼─────────────┼──────────────┤
+│ A. Enhanced 2D Overlay  │ ★★★★☆        │ None        │ Medium       │
+│    (AI-segmented images)│ (photo-real) │ (automated) │ (1-2 days)   │
+├─────────────────────────┼──────────────┼─────────────┼──────────────┤
+│ B. 3D Model Files       │ ★★★★★        │ High        │ Very High    │
+│    (.glb per product)   │ (best)       │ ($5-50 each)│ (months)     │
+├─────────────────────────┼──────────────┼─────────────┼──────────────┤
+│ C. Better Parametric    │ ★★★☆☆        │ None        │ Medium       │
+│    (PBR materials, etc) │ (still fake) │             │ (1-2 days)   │
+├─────────────────────────┼──────────────┼─────────────┼──────────────┤
+│ D. Third-Party SDK      │ ★★★★★        │ Varies      │ High         │
+│    (Banuba, Designhubz) │ (pro-grade)  │ ($$$/month) │ (weeks)      │
+└─────────────────────────┴──────────────┴─────────────┴──────────────┘
+```
 
-**1. Filter the AR frame selector to only show 3D-ready products**
+### Recommended: Option A — Enhanced 2D Overlay with AI Segmentation
 
-Right now all ~frame products with images appear in the AR selector. Since the 2D overlay with a case photo is useless, we should only show products that have full 3D measurements (the 101 products). This way every frame in the AR selector actually works properly with parametric 3D rendering.
+This is what **Warby Parker, Zenni, and most successful try-on platforms actually use** — 2D product images, properly segmented and overlaid with perspective transforms. The key is having **clean, front-facing frame images with transparent backgrounds**.
 
-- **File: `src/pages/TryOn.tsx`** — Pass a filtered list to `LiveARTryOn` that only includes products with 3D-ready frame attributes, or add a query that joins `frame_attributes` to check for measurements
-- **File: `src/components/try-on/LiveARTryOn.tsx`** — Remove the 2D fallback indicator since all shown products will be 3D
+**What we'd build:**
 
-**2. Add a "coming soon" count showing how many frames aren't yet 3D-ready**
+1. **AI Frame Segmentation Edge Function** — Takes each product's catalog image, uses an AI model to extract just the frame (no case, no background, no packaging), outputs a clean PNG with transparency. Stores the result as `ar_overlay_url` in `frame_attributes`.
 
-Below the AR frame selector, show a message like "101 frames available for 3D try-on · 10,700+ more coming soon" so users understand more are on the way.
+2. **Improved 2D Overlay Renderer** — The current 2D path already handles perspective (yaw scaling via cos), position tracking, and smoothing. We enhance it with:
+   - Better aspect ratio handling from the segmented images
+   - Lens tint overlay (semi-transparent colored fill matching product color)
+   - Subtle shadow beneath the frame for realism
 
-- **File: `src/components/try-on/ARFrameSelector.tsx`** — Accept a `totalCount` prop and display the "more coming" message
+3. **Batch Process All Products** — Run the segmentation on all ~10,800 products that have images. No manual work per product — fully automated.
 
-### Technical Detail
+**Result**: Every product with an image becomes try-on ready (not just 101). The overlay looks like the actual product because it IS the actual product image.
 
-We need to fetch frame attributes for the product list to know which ones are 3D-ready. Two options:
-- **Option A (simpler):** Create a new hook or RPC that returns product IDs with complete measurements, then filter client-side
-- **Option B (efficient):** Add a database view or modify the products query to join `frame_attributes` and filter server-side
+### What Changes
 
-Option A is faster to implement — fetch all frame_attribute product_ids where all 3 measurements exist, then filter `frameProducts` to only those IDs before passing to `LiveARTryOn`.
-
-### Files Modified
 | File | Change |
 |------|--------|
-| `src/pages/TryOn.tsx` | Fetch 3D-ready product IDs, filter AR product list |
-| `src/components/try-on/ARFrameSelector.tsx` | Add total/coming-soon count display |
-| `src/components/try-on/LiveARTryOn.tsx` | Remove 2D fallback messaging since all AR products will be 3D |
+| New edge function `segment-frame-image` | AI-powered background removal + frame extraction |
+| `frame_attributes` table | Add `ar_overlay_url` column for segmented images |
+| `FaceMeshCanvas.tsx` | Use `ar_overlay_url` when available, improve overlay rendering |
+| `LiveARTryOn.tsx` | Remove 3D-only filter, show all products with AR overlays |
+| `ParametricGlasses3D.tsx` | Keep as fallback only for products without images |
+
+### Why Not 3D Models?
+
+Real .glb files per frame would look amazing but require either:
+- A 3D artist modeling each of 10,800+ frames ($50K-500K)
+- AI 3D reconstruction (emerging tech, not production-ready for eyewear)
+- Manufacturer-provided CAD files (most don't share these)
+
+### Why Not Third-Party SDKs?
+
+Banuba, Designhubz, FittingBox etc. offer turnkey solutions but cost $500-5,000/month and still require per-product setup. They're viable long-term but the 2D overlay approach gets us 90% of the way for free.
 
