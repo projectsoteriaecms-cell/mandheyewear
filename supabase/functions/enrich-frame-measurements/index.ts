@@ -18,29 +18,52 @@ interface ExtractedMeasurements {
   bridge_size: number | null;
   temple_length: number | null;
   frame_shape: string | null;
+  frame_material: string | null;
 }
 
 /**
- * Try to extract measurements from product name/description using regex first.
- * Pattern: digits-digits-digits (e.g., "54-18-145", "52 17-140")
+ * Try to extract measurements from product name/description using regex.
+ * Patterns:
+ *   - "54-18-145", "52–17–140" (hyphen/dash separated)
+ *   - "54 18 145" (space separated, 3 numbers)
+ *   - "55 47 17 140" (4 numbers: lens_width, frame_width, bridge, temple)
  */
 function regexExtract(text: string): ExtractedMeasurements {
-  // Match patterns like 54-18-145, 52 17-140, 49-17-135
-  const pattern = /(\d{2})\s*[-–]\s*(\d{2})\s*[-–]\s*(\d{3})/;
-  const match = text.match(pattern);
-  if (match) {
-    return {
-      lens_width: parseInt(match[1], 10),
-      bridge_size: parseInt(match[2], 10),
-      temple_length: parseInt(match[3], 10),
-      frame_shape: null,
-    };
+  const base = { frame_shape: null, frame_material: null };
+
+  // Universal pattern: 3 numbers (2-digit, 2-digit, 3-digit) separated by
+  // any mix of spaces, hyphens, dashes, or combinations thereof
+  // Matches: "54-18-145", "54 18 145", "54 18-140", "53-18 140", "54 15 140"
+  const mainPattern = /(\d{2})\s*[-–—]?\s*(\d{2})\s*[-–—]?\s*(\d{3})/;
+  const mainMatch = text.match(mainPattern);
+  if (mainMatch) {
+    const lw = parseInt(mainMatch[1], 10);
+    const bs = parseInt(mainMatch[2], 10);
+    const tl = parseInt(mainMatch[3], 10);
+    // Validate ranges to avoid false positives
+    if (lw >= 38 && lw <= 65 && bs >= 10 && bs <= 28 && tl >= 110 && tl <= 160) {
+      return { lens_width: lw, bridge_size: bs, temple_length: tl, ...base };
+    }
   }
-  return { lens_width: null, bridge_size: null, temple_length: null, frame_shape: null };
+
+  // Pattern 2: 4 numbers (lens, frame_width, bridge, temple)
+  // e.g. "55 47 17 140"
+  const fourNumPattern = /\b(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{3})\b/;
+  const fourMatch = text.match(fourNumPattern);
+  if (fourMatch) {
+    const lw = parseInt(fourMatch[1], 10);
+    const bs = parseInt(fourMatch[3], 10);
+    const tl = parseInt(fourMatch[4], 10);
+    if (lw >= 38 && lw <= 65 && bs >= 10 && bs <= 28 && tl >= 110 && tl <= 160) {
+      return { lens_width: lw, bridge_size: bs, temple_length: tl, ...base };
+    }
+  }
+
+  return { lens_width: null, bridge_size: null, temple_length: null, ...base };
 }
 
 /**
- * Use AI to extract measurements when regex fails.
+ * Use AI to extract measurements + shape + material when regex fails.
  */
 async function aiExtract(
   name: string,
@@ -52,7 +75,7 @@ async function aiExtract(
 Product name: "${name}"
 ${description ? `Description: "${description}"` : ""}
 
-Return JSON: {"lens_width": number|null, "bridge_size": number|null, "temple_length": number|null, "frame_shape": "rectangle"|"round"|"oval"|"aviator"|"cat-eye"|"square"|"browline"|null}
+Return JSON: {"lens_width": number|null, "bridge_size": number|null, "temple_length": number|null, "frame_shape": "rectangle"|"round"|"oval"|"aviator"|"cat-eye"|"square"|"browline"|null, "frame_material": "acetate"|"metal"|"titanium"|"tr90"|"nylon"|"plastic"|"wood"|"mixed"|null}
 
 Rules:
 - lens_width is typically 40-62mm
@@ -60,7 +83,8 @@ Rules:
 - temple_length is typically 120-155mm
 - If a measurement like "54-18-145" appears, that means lens_width=54, bridge_size=18, temple_length=145
 - If you can't determine a value with confidence, use null
-- frame_shape should be inferred from brand/model keywords if possible`;
+- frame_shape should be inferred from brand/model keywords if possible
+- frame_material should be inferred from keywords like "acetate", "metal", "titanium", etc.`;
 
   const response = await fetch(
     "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -92,8 +116,12 @@ Rules:
                     type: ["string", "null"],
                     enum: ["rectangle", "round", "oval", "aviator", "cat-eye", "square", "browline", null],
                   },
+                  frame_material: {
+                    type: ["string", "null"],
+                    enum: ["acetate", "metal", "titanium", "tr90", "nylon", "plastic", "wood", "mixed", null],
+                  },
                 },
-                required: ["lens_width", "bridge_size", "temple_length", "frame_shape"],
+                required: ["lens_width", "bridge_size", "temple_length", "frame_shape", "frame_material"],
               },
             },
           },
@@ -105,7 +133,7 @@ Rules:
 
   if (!response.ok) {
     console.error("AI gateway error:", response.status);
-    return { lens_width: null, bridge_size: null, temple_length: null, frame_shape: null };
+    return { lens_width: null, bridge_size: null, temple_length: null, frame_shape: null, frame_material: null };
   }
 
   const data = await response.json();
@@ -118,12 +146,13 @@ Rules:
         bridge_size: typeof args.bridge_size === "number" ? args.bridge_size : null,
         temple_length: typeof args.temple_length === "number" ? args.temple_length : null,
         frame_shape: typeof args.frame_shape === "string" ? args.frame_shape : null,
+        frame_material: typeof args.frame_material === "string" ? args.frame_material : null,
       };
     }
   } catch (e) {
     console.error("Failed to parse AI response:", e);
   }
-  return { lens_width: null, bridge_size: null, temple_length: null, frame_shape: null };
+  return { lens_width: null, bridge_size: null, temple_length: null, frame_shape: null, frame_material: null };
 }
 
 serve(async (req) => {
@@ -139,34 +168,51 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { batch_size = 50, dry_run = false } = await req.json().catch(() => ({}));
+    const { batch_size = 200, dry_run = false, mode = "all", regex_only = false } = await req.json().catch(() => ({}));
 
-    // Get try-on eligible frames without measurements
-    const { data: products, error: fetchErr } = await supabase
+    // Build query for frame products
+    let query = supabase
       .from("products")
       .select("id, name, description")
       .eq("item_type", "frames")
-      .eq("is_active", true)
-      .not("image_url", "is", null)
-      .limit(batch_size);
+      .eq("is_active", true);
 
+    // In "tryon_only" mode, only process products with images
+    if (mode === "tryon_only") {
+      query = query.not("image_url", "is", null);
+    }
+
+    const { data: products, error: fetchErr } = await query.limit(batch_size);
     if (fetchErr) throw fetchErr;
 
     // Get existing frame_attributes to skip already-enriched products
     const productIds = (products || []).map((p: any) => p.id);
-    const { data: existingAttrs } = await supabase
-      .from("frame_attributes")
-      .select("product_id, lens_width, bridge_size, temple_length")
-      .in("product_id", productIds);
+    if (productIds.length === 0) {
+      return new Response(
+        JSON.stringify({ total_candidates: 0, message: "No products to process" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Batch lookup in chunks of 500 to avoid query limits
+    const allExistingAttrs: any[] = [];
+    for (let i = 0; i < productIds.length; i += 500) {
+      const chunk = productIds.slice(i, i + 500);
+      const { data: attrs } = await supabase
+        .from("frame_attributes")
+        .select("product_id, lens_width, bridge_size, temple_length")
+        .in("product_id", chunk);
+      if (attrs) allExistingAttrs.push(...attrs);
+    }
 
     const alreadyEnriched = new Set(
-      (existingAttrs || [])
+      allExistingAttrs
         .filter((a: any) => a.lens_width != null && a.bridge_size != null && a.temple_length != null)
         .map((a: any) => a.product_id)
     );
 
     const hasPartialRecord = new Map(
-      (existingAttrs || []).map((a: any) => [a.product_id, true])
+      allExistingAttrs.map((a: any) => [a.product_id, true])
     );
 
     const toProcess = (products || []).filter(
@@ -186,7 +232,7 @@ serve(async (req) => {
 
         if (measurements.lens_width != null) {
           regexHits++;
-        } else {
+        } else if (!regex_only) {
           // Fall back to AI
           measurements = await aiExtract(product.name, product.description, LOVABLE_API_KEY);
           if (measurements.lens_width != null) {
@@ -194,6 +240,9 @@ serve(async (req) => {
           }
           // Small delay to avoid rate limiting
           await new Promise((r) => setTimeout(r, 200));
+        } else {
+          skipped++;
+          continue;
         }
 
         // Only save if we got at least lens_width
@@ -214,6 +263,7 @@ serve(async (req) => {
           if (measurements.bridge_size != null) updates.bridge_size = measurements.bridge_size;
           if (measurements.temple_length != null) updates.temple_length = measurements.temple_length;
           if (measurements.frame_shape != null) updates.frame_shape = measurements.frame_shape;
+          if (measurements.frame_material != null) updates.frame_material = measurements.frame_material;
 
           const { error: updateErr } = await supabase
             .from("frame_attributes")
@@ -227,19 +277,20 @@ serve(async (req) => {
             enriched++;
           }
         } else {
-          // Insert new record
-          const { error: insertErr } = await supabase
+          // Upsert record
+          const { error: upsertErr } = await supabase
             .from("frame_attributes")
-            .insert({
+            .upsert({
               product_id: product.id,
               lens_width: measurements.lens_width,
               bridge_size: measurements.bridge_size,
               temple_length: measurements.temple_length,
               frame_shape: measurements.frame_shape,
-            });
+              frame_material: measurements.frame_material,
+            }, { onConflict: "product_id" });
 
-          if (insertErr) {
-            errors.push(`Insert ${product.id}: ${insertErr.message}`);
+          if (upsertErr) {
+            errors.push(`Upsert ${product.id}: ${upsertErr.message}`);
           } else {
             enriched++;
           }
@@ -259,6 +310,7 @@ serve(async (req) => {
         skipped,
         errors: errors.slice(0, 10),
         dry_run,
+        mode,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
