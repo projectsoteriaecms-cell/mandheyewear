@@ -1,0 +1,1 @@
+ALTER TABLE public.frame_attributes ADD COLUMN ar_overlay_url text DEFAULT NULL;

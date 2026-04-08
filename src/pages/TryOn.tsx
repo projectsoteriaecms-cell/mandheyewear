@@ -93,23 +93,24 @@ const TryOn = () => {
     ?.filter((p) => p.item_type === "frames" && p.image_url)
     .sort((a, b) => a.name.localeCompare(b.name)) || [];
 
-  // Fetch 3D-ready product IDs for AR mode
+  // Fetch product IDs that have AR overlays OR 3D measurements (AR-ready)
   const { data: arReadyIds } = useQuery({
     queryKey: ["ar-ready-product-ids"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("frame_attributes")
-        .select("product_id")
-        .not("lens_width", "is", null)
-        .not("bridge_size", "is", null)
-        .not("temple_length", "is", null);
+        .select("product_id, ar_overlay_url, lens_width, bridge_size, temple_length");
       if (error) throw error;
-      return new Set((data || []).map((r) => r.product_id));
+      // Include products that have an AR overlay OR full 3D measurements
+      const ids = (data || [])
+        .filter((r) => r.ar_overlay_url || (r.lens_width && r.bridge_size && r.temple_length))
+        .map((r) => r.product_id);
+      return new Set(ids);
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  // AR products: only 3D-ready frames
+  // AR products: those with overlays or 3D measurements
   const arFrameProducts = useMemo(
     () => (arReadyIds ? frameProducts.filter((p) => arReadyIds.has(p.id)) : []),
     [frameProducts, arReadyIds]
