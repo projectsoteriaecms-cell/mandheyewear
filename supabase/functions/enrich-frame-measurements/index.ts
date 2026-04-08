@@ -31,42 +31,32 @@ interface ExtractedMeasurements {
 function regexExtract(text: string): ExtractedMeasurements {
   const base = { frame_shape: null, frame_material: null };
 
-  // Pattern 1: XX-XX-XXX (hyphen/dash separated)
-  const dashPattern = /(\d{2})\s*[-–—]\s*(\d{2})\s*[-–—]\s*(\d{3})/;
-  const dashMatch = text.match(dashPattern);
-  if (dashMatch) {
-    return {
-      lens_width: parseInt(dashMatch[1], 10),
-      bridge_size: parseInt(dashMatch[2], 10),
-      temple_length: parseInt(dashMatch[3], 10),
-      ...base,
-    };
+  // Universal pattern: 3 numbers (2-digit, 2-digit, 3-digit) separated by
+  // any mix of spaces, hyphens, dashes, or combinations thereof
+  // Matches: "54-18-145", "54 18 145", "54 18-140", "53-18 140", "54 15 140"
+  const mainPattern = /(\d{2})\s*[-–—]?\s*(\d{2})\s*[-–—]?\s*(\d{3})/;
+  const mainMatch = text.match(mainPattern);
+  if (mainMatch) {
+    const lw = parseInt(mainMatch[1], 10);
+    const bs = parseInt(mainMatch[2], 10);
+    const tl = parseInt(mainMatch[3], 10);
+    // Validate ranges to avoid false positives
+    if (lw >= 38 && lw <= 65 && bs >= 10 && bs <= 28 && tl >= 110 && tl <= 160) {
+      return { lens_width: lw, bridge_size: bs, temple_length: tl, ...base };
+    }
   }
 
-  // Pattern 2: 4 space-separated numbers (lens, frame_width, bridge, temple)
+  // Pattern 2: 4 numbers (lens, frame_width, bridge, temple)
   // e.g. "55 47 17 140"
   const fourNumPattern = /\b(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{3})\b/;
   const fourMatch = text.match(fourNumPattern);
   if (fourMatch) {
-    return {
-      lens_width: parseInt(fourMatch[1], 10),
-      bridge_size: parseInt(fourMatch[3], 10),
-      temple_length: parseInt(fourMatch[4], 10),
-      ...base,
-    };
-  }
-
-  // Pattern 3: 3 space-separated numbers (lens, bridge, temple)
-  // e.g. "54 18 145"
-  const threeNumPattern = /\b(\d{2})\s+(\d{2})\s+(\d{3})\b/;
-  const threeMatch = text.match(threeNumPattern);
-  if (threeMatch) {
-    return {
-      lens_width: parseInt(threeMatch[1], 10),
-      bridge_size: parseInt(threeMatch[2], 10),
-      temple_length: parseInt(threeMatch[3], 10),
-      ...base,
-    };
+    const lw = parseInt(fourMatch[1], 10);
+    const bs = parseInt(fourMatch[3], 10);
+    const tl = parseInt(fourMatch[4], 10);
+    if (lw >= 38 && lw <= 65 && bs >= 10 && bs <= 28 && tl >= 110 && tl <= 160) {
+      return { lens_width: lw, bridge_size: bs, temple_length: tl, ...base };
+    }
   }
 
   return { lens_width: null, bridge_size: null, temple_length: null, ...base };
