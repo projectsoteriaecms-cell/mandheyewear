@@ -25,18 +25,18 @@ export interface OverlayTransform {
 }
 
 // Smoothing factor for EMA (lower = smoother, more stable)
-const SMOOTH_FACTOR = 0.08;
+const SMOOTH_FACTOR = 0.35;
 // Extra padding multiplier on ear width for the frame
 const TEMPLE_PADDING = 1.55;
 // Depth scaling sensitivity (lower = less erratic)
 const DEPTH_SCALE_FACTOR = 0.8;
 // Max per-frame delta as fraction of canvas dimension (velocity damping)
-const MAX_POSITION_DELTA = 0.03;
-const MAX_SIZE_DELTA = 0.04;
+const MAX_POSITION_DELTA = 0.08;
+const MAX_SIZE_DELTA = 0.08;
 // Max angle change per frame in radians
-const MAX_ANGLE_DELTA = 0.02;
+const MAX_ANGLE_DELTA = 0.05;
 // Number of warmup frames to skip before showing overlay
-const WARMUP_FRAMES = 3;
+const WARMUP_FRAMES = 2;
 
 let prevTransform: OverlayTransform | null = null;
 let frameCount = 0;
@@ -114,14 +114,14 @@ export function computeGlassesTransform(
     y: landmarks[263].y * canvasHeight,
   };
 
-  // Eye top landmarks for vertical centering
-  const leftEyeTop: Point = {
-    x: landmarks[159].x * canvasWidth,
-    y: landmarks[159].y * canvasHeight,
+  // Brow ridge landmarks for vertical centering (where frames actually rest)
+  const leftBrow: Point = {
+    x: landmarks[65].x * canvasWidth,
+    y: landmarks[65].y * canvasHeight,
   };
-  const rightEyeTop: Point = {
-    x: landmarks[386].x * canvasWidth,
-    y: landmarks[386].y * canvasHeight,
+  const rightBrow: Point = {
+    x: landmarks[295].x * canvasWidth,
+    y: landmarks[295].y * canvasHeight,
   };
 
   // Nose bridge
@@ -136,8 +136,8 @@ export function computeGlassesTransform(
       Math.pow(rightEar.y - leftEar.y, 2)
   );
 
-  // Angle from eye corners
-  const angle = Math.atan2(
+  // Angle from eye corners + roll from transformation matrix
+  let angle = Math.atan2(
     rightEye.y - leftEye.y,
     rightEye.x - leftEye.x
   );
@@ -147,8 +147,10 @@ export function computeGlassesTransform(
   if (transformationMatrix) {
     const pose = extractPoseFromMatrix(transformationMatrix);
     if (pose) {
-      // Foreshorten width based on yaw (head turning left/right)
-      depthScale = Math.cos(pose.yaw * 0.5);
+      // Foreshorten width based on full yaw
+      depthScale = Math.cos(pose.yaw);
+      // Blend roll from matrix into angle for better tilt tracking
+      angle = angle * 0.4 + pose.roll * 0.6;
     }
   } else {
     const avgZ = landmarks[6].z;
@@ -158,10 +160,10 @@ export function computeGlassesTransform(
   const width = earDistance * TEMPLE_PADDING * depthScale;
   const height = width * imageAspectRatio;
 
-  // Vertical center: mostly eye-top level (where glasses actually sit)
-  const eyeTopMidY = (leftEyeTop.y + rightEyeTop.y) / 2;
+  // Vertical center: brow ridge blended with nose bridge
+  const browMidY = (leftBrow.y + rightBrow.y) / 2;
   const centerX = noseBridge.x;
-  const centerY = eyeTopMidY * 0.7 + noseBridge.y * 0.3;
+  const centerY = browMidY * 0.6 + noseBridge.y * 0.4;
 
   let raw: OverlayTransform = { centerX, centerY, width, height, angle };
 
@@ -217,7 +219,6 @@ export function drawGlassesOverlay(
     ctx.scale(-1, 1);
   }
 
-  ctx.scale(1, -1);
   ctx.drawImage(image, -width / 2, -height / 2, width, height);
   ctx.restore();
 }
