@@ -261,6 +261,7 @@ export type Database = {
       }
       frame_attributes: {
         Row: {
+          ar_overlay_url: string | null
           bridge_size: number | null
           created_at: string
           frame_material: string | null
@@ -275,6 +276,7 @@ export type Database = {
           temple_length: number | null
         }
         Insert: {
+          ar_overlay_url?: string | null
           bridge_size?: number | null
           created_at?: string
           frame_material?: string | null
@@ -289,6 +291,7 @@ export type Database = {
           temple_length?: number | null
         }
         Update: {
+          ar_overlay_url?: string | null
           bridge_size?: number | null
           created_at?: string
           frame_material?: string | null
