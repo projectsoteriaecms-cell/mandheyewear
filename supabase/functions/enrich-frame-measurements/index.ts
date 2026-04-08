@@ -232,7 +232,7 @@ serve(async (req) => {
 
         if (measurements.lens_width != null) {
           regexHits++;
-        } else {
+        } else if (!regex_only) {
           // Fall back to AI
           measurements = await aiExtract(product.name, product.description, LOVABLE_API_KEY);
           if (measurements.lens_width != null) {
@@ -240,6 +240,9 @@ serve(async (req) => {
           }
           // Small delay to avoid rate limiting
           await new Promise((r) => setTimeout(r, 200));
+        } else {
+          skipped++;
+          continue;
         }
 
         // Only save if we got at least lens_width
