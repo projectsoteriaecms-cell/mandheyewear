@@ -9,6 +9,8 @@ import { ARFrameSelector } from "./ARFrameSelector";
 import { pickAROverlayImage } from "@/shared/lib/ar-image-utils";
 import { useFrameAttributes, has3DMeasurements } from "@/shared/hooks/useFrameAttributes";
 import type { TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FrameProduct {
   id: string;
@@ -46,13 +48,33 @@ export const LiveARTryOn = ({
   const { data: frameAttrs } = useFrameAttributes(selectedProduct?.id || null);
   const is3DReady = has3DMeasurements(frameAttrs);
 
+  // Fetch ar_overlay_url for the selected product
+  const { data: overlayData } = useQuery({
+    queryKey: ["ar-overlay", selectedProduct?.id],
+    queryFn: async () => {
+      if (!selectedProduct?.id) return null;
+      const { data } = await supabase
+        .from("frame_attributes")
+        .select("ar_overlay_url")
+        .eq("product_id", selectedProduct.id)
+        .maybeSingle();
+      return data?.ar_overlay_url as string | null;
+    },
+    enabled: !!selectedProduct?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Use ar_overlay_url if available, otherwise fall back to catalog image
   const arImage = useMemo(() => {
     if (!selectedProduct) return null;
+    if (overlayData) {
+      return { url: overlayData, arReady: true };
+    }
     return pickAROverlayImage(
       selectedProduct.image_url,
       selectedProduct.additional_images ?? null
     );
-  }, [selectedProduct]);
+  }, [selectedProduct, overlayData]);
 
   // Derive frame color from product color
   const frameColor = useMemo(() => {
@@ -144,12 +166,18 @@ export const LiveARTryOn = ({
         </CardContent>
       </Card>
 
-      {/* 3D indicator */}
-      {selectedProduct && (
+      {/* Mode indicator */}
+      {selectedProduct && is3DReady && (
         <div className="flex items-center justify-center gap-2 text-sm">
           <Box className="h-4 w-4 text-accent" />
           <span className="text-accent font-medium">3D Try-On Active</span>
           <span className="text-muted-foreground">— Frame rotates with your head</span>
+        </div>
+      )}
+      {selectedProduct && !is3DReady && overlayData && (
+        <div className="flex items-center justify-center gap-2 text-sm">
+          <Sparkles className="h-4 w-4 text-accent" />
+          <span className="text-accent font-medium">AI-Segmented Overlay</span>
         </div>
       )}
 
