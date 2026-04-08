@@ -257,6 +257,9 @@ export const FaceMeshCanvas = ({
       if (smileTimerRef.current !== null) {
         clearTimeout(smileTimerRef.current);
       }
+      if (faceDetectedTimerRef.current !== null) {
+        clearTimeout(faceDetectedTimerRef.current);
+      }
     };
   }, [start]);
 
