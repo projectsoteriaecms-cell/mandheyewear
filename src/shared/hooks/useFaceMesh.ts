@@ -34,6 +34,9 @@ export const useFaceMesh = () => {
   const rafIdRef = useRef<number | null>(null);
   const isInitializingRef = useRef(false);
   const onResultsCallbackRef = useRef<((result: FaceMeshResultData) => void) | null>(null);
+  const missedFramesRef = useRef(0);
+  const lastGoodResultRef = useRef<{ landmarks: NormalizedLandmark[]; blendshapes: BlendshapeEntry[] | null; transformationMatrix: number[] | null } | null>(null);
+  const GRACE_FRAMES = 5; // ~150ms at 30fps
 
   const setOnResults = useCallback((cb: (result: FaceMeshResultData) => void) => {
     onResultsCallbackRef.current = cb;
@@ -118,6 +121,7 @@ export const useFaceMesh = () => {
         const result: FaceLandmarkerResult = faceLandmarkerRef.current.detectForVideo(video, now);
 
         if (result.faceLandmarks && result.faceLandmarks.length > 0) {
+          missedFramesRef.current = 0;
           const lm = result.faceLandmarks[0];
           setFaceData({ landmarks: lm as { x: number; y: number; z: number }[] });
 
@@ -129,19 +133,29 @@ export const useFaceMesh = () => {
             ? Array.from(rawData as unknown as ArrayLike<number>)
             : null;
 
+          lastGoodResultRef.current = { landmarks: lm, blendshapes: bs as BlendshapeEntry[] | null, transformationMatrix: mat };
+
           onResultsCallbackRef.current?.({
             landmarks: lm,
             blendshapes: bs as BlendshapeEntry[] | null,
             transformationMatrix: mat,
           });
         } else {
-          setFaceData(null);
-          setBlendshapes(null);
-          onResultsCallbackRef.current?.({
-            landmarks: [],
-            blendshapes: null,
-            transformationMatrix: null,
-          });
+          missedFramesRef.current++;
+          if (missedFramesRef.current <= GRACE_FRAMES && lastGoodResultRef.current) {
+            // Grace period: keep sending last good result
+            onResultsCallbackRef.current?.(lastGoodResultRef.current);
+          } else {
+            // Exceeded grace period — report no face
+            setFaceData(null);
+            setBlendshapes(null);
+            lastGoodResultRef.current = null;
+            onResultsCallbackRef.current?.({
+              landmarks: [],
+              blendshapes: null,
+              transformationMatrix: null,
+            });
+          }
         }
 
         rafIdRef.current = requestAnimationFrame(detect);

@@ -47,6 +47,9 @@ export const FaceMeshCanvas = ({
   const [currentLandmarks, setCurrentLandmarks] = useState<{ x: number; y: number; z: number }[] | null>(null);
   const [currentMatrix, setCurrentMatrix] = useState<number[] | null>(null);
   const [videoDimensions, setVideoDimensions] = useState({ width: 640, height: 480 });
+  const faceDetectedTimerRef = useRef<number | null>(null);
+  const lastValidLandmarksRef = useRef<{ x: number; y: number; z: number }[] | null>(null);
+  const lastValidMatrixRef = useRef<number[] | null>(null);
 
   const { isReady, isLoading, error, videoRef, start, setOnResults, captureSnapshot } = useFaceMesh();
 
@@ -100,8 +103,12 @@ export const FaceMeshCanvas = ({
       setVideoDimensions({ width: vw, height: vh });
 
       if (result.landmarks && result.landmarks.length > 0) {
+        // Clear any pending "no face" timer
+        if (faceDetectedTimerRef.current !== null) {
+          clearTimeout(faceDetectedTimerRef.current);
+          faceDetectedTimerRef.current = null;
+        }
         setFaceDetected(true);
-        // Mirror the landmarks
         const mirrored = result.landmarks.map(lm => ({
           x: 1 - lm.x,
           y: lm.y,
@@ -109,10 +116,21 @@ export const FaceMeshCanvas = ({
         }));
         setCurrentLandmarks(mirrored);
         setCurrentMatrix(result.transformationMatrix);
+        lastValidLandmarksRef.current = mirrored;
+        lastValidMatrixRef.current = result.transformationMatrix;
       } else {
-        setFaceDetected(false);
-        setCurrentLandmarks(null);
-        setCurrentMatrix(null);
+        // Debounce: only set faceDetected=false after 300ms of continuous misses
+        if (faceDetectedTimerRef.current === null) {
+          faceDetectedTimerRef.current = window.setTimeout(() => {
+            setFaceDetected(false);
+            setCurrentLandmarks(null);
+            setCurrentMatrix(null);
+            lastValidLandmarksRef.current = null;
+            lastValidMatrixRef.current = null;
+            faceDetectedTimerRef.current = null;
+          }, 300);
+        }
+        // Keep last valid landmarks active during debounce window
       }
 
       // Still draw to 2D canvas for snapshot capture (video only)
@@ -148,6 +166,10 @@ export const FaceMeshCanvas = ({
       ctx.restore();
 
       if (result.landmarks && result.landmarks.length > 0) {
+        if (faceDetectedTimerRef.current !== null) {
+          clearTimeout(faceDetectedTimerRef.current);
+          faceDetectedTimerRef.current = null;
+        }
         setFaceDetected(true);
 
         const mirroredLandmarks = result.landmarks.map((lm) => ({
@@ -169,8 +191,13 @@ export const FaceMeshCanvas = ({
           }
         }
       } else {
-        setFaceDetected(false);
-        resetSmoothing();
+        if (faceDetectedTimerRef.current === null) {
+          faceDetectedTimerRef.current = window.setTimeout(() => {
+            setFaceDetected(false);
+            resetSmoothing();
+            faceDetectedTimerRef.current = null;
+          }, 300);
+        }
       }
     }
 

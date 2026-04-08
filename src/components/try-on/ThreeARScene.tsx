@@ -93,13 +93,23 @@ function FaceTracked3DFrame({
   const smoothedRot = useRef(new THREE.Euler());
   const smoothedScale = useRef(1);
   const initialized = useRef(false);
+  const lastSeenTime = useRef(0);
+  const PERSIST_MS = 300; // Keep glasses visible for 300ms after tracking loss
 
   useFrame(() => {
-    if (!groupRef.current || !landmarks || landmarks.length < 468) {
-      if (groupRef.current) groupRef.current.visible = false;
+    if (!groupRef.current) return;
+
+    if (!landmarks || landmarks.length < 468) {
+      // Keep visible during grace period
+      if (initialized.current && (performance.now() - lastSeenTime.current) < PERSIST_MS) {
+        // Keep last position — don't hide
+        return;
+      }
+      groupRef.current.visible = false;
       return;
     }
 
+    lastSeenTime.current = performance.now();
     groupRef.current.visible = true;
 
     // Get key landmark positions in NDC (-1 to 1 space)
