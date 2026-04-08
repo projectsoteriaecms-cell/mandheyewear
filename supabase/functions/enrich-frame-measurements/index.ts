@@ -168,7 +168,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { batch_size = 200, dry_run = false, mode = "all" } = await req.json().catch(() => ({}));
+    const { batch_size = 200, dry_run = false, mode = "all", regex_only = false } = await req.json().catch(() => ({}));
 
     // Build query for frame products
     let query = supabase
