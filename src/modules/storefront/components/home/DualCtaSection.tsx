@@ -5,8 +5,8 @@ import heroEyewear from "@/assets/hero-eyewear.jpg";
 import heroEyeCare from "@/assets/hero-eye-care.jpg";
 
 const panels = [
-  { tag: "/EYEWEAR", title: "Fashion Eyewear", subtitle: "Designer frames that define your style", image: heroEyewear, link: "/eyewear", cta: "Shop Collection" },
-  { tag: "/EYE CARE", title: "Clinical Eye Care", subtitle: "Precision diagnostics & comprehensive exams", image: heroEyeCare, link: "/booking", cta: "Book Eye Exam" },
+  { tag: "/EYEWEAR", title: "Sharper Style", subtitle: "Frames that speak before you do.", image: heroEyewear, link: "/eyewear", cta: "Shop Collection" },
+  { tag: "/EYE CARE", title: "Sharp Eyes", subtitle: "Precision care from certified specialists.", image: heroEyeCare, link: "/booking", cta: "Book Eye Exam" },
 ];
 
 export const DualCtaSection = () => {
