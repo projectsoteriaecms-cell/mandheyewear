@@ -478,6 +478,14 @@ All colors MUST be HSL.
     animation-play-state: paused;
   }
 
+  /* Marquee reverse direction */
+  .marquee-reverse {
+    animation: marquee-scroll-reverse 40s linear infinite;
+  }
+  .marquee-reverse:hover {
+    animation-play-state: paused;
+  }
+
   /* Editorial number labels */
   .editorial-number {
     @apply font-display font-bold text-xs tracking-[0.3em] uppercase;
