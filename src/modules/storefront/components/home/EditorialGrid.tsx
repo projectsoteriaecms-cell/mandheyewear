@@ -32,7 +32,7 @@ export const EditorialGrid = () => {
           <div>
             <p className="text-xs sm:text-sm font-display font-bold tracking-[0.3em] uppercase text-mh-gold mb-2 sm:mb-3">The Visionary Standard</p>
             <h2 className="text-3xl sm:text-5xl lg:text-6xl font-display font-bold text-ink leading-[0.95]">
-              Stay sharp<span className="text-mh-gold">.</span> In every sense<span className="text-mh-gold">.</span>
+              Stay sharp<span className="inline-block w-[0.25em] h-[0.25em] rounded-full bg-mh-gold align-middle mx-0.5 relative -top-[0.05em] shadow-[0_0_8px_hsl(45_100%_45%/0.5)]" /> In every sense<span className="text-mh-gold">.</span>
             </h2>
           </div>
           <span className="hidden sm:block text-sm font-display tracking-widest text-ink/30 uppercase">©26</span>

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ArrowDown, Tag } from "@phosphor-icons/react";
 import { useCountUp } from "@/shared/hooks/useCountUp";
@@ -8,9 +8,35 @@ import frame2 from "@/assets/frame-2.jpg";
 import frame3 from "@/assets/frame-3.jpg";
 import frame4 from "@/assets/frame-4.jpg";
 
+const frameImages = [heroEyewear, frame1, frame2, frame3, frame4];
+
+/** Inline SVG twin-lens "OO" glyph — two connected circles like spectacle lenses */
+const TwinLensSVG = ({ className = "" }: { className?: string }) => (
+  <svg
+    viewBox="0 0 52 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={`inline-block align-middle lens-shimmer ${className}`}
+    style={{ width: "1.1em", height: "0.55em" }}
+  >
+    {/* Left lens */}
+    <circle cx="13" cy="12" r="10" stroke="currentColor" strokeWidth="2.2" fill="none" />
+    {/* Right lens */}
+    <circle cx="39" cy="12" r="10" stroke="currentColor" strokeWidth="2.2" fill="none" />
+    {/* Bridge connecting the two lenses */}
+    <path d="M23 12 Q26 7 29 12" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+  </svg>
+);
+
 export const HeroSection = () => {
   const [loaded, setLoaded] = useState(false);
   const statsRef = useRef<HTMLDivElement>(null);
+
+  // Image carousel state
+  const [img1Index, setImg1Index] = useState(0);
+  const [img2Index, setImg2Index] = useState(1);
+  const [fading1, setFading1] = useState(false);
+  const [fading2, setFading2] = useState(false);
 
   const stat1 = useCountUp({ end: 50, suffix: "K+" });
   const stat2 = useCountUp({ end: 5, suffix: "+" });
@@ -20,6 +46,35 @@ export const HeroSection = () => {
     const t = setTimeout(() => setLoaded(true), 100);
     return () => clearTimeout(t);
   }, []);
+
+  // Rotating image carousel — slot 1
+  useEffect(() => {
+    if (!loaded) return;
+    const interval = setInterval(() => {
+      setFading1(true);
+      setTimeout(() => {
+        setImg1Index((prev) => (prev + 1) % frameImages.length);
+        setFading1(false);
+      }, 600);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [loaded]);
+
+  // Rotating image carousel — slot 2 (offset by 2.5s)
+  useEffect(() => {
+    if (!loaded) return;
+    const timeout = setTimeout(() => {
+      const interval = setInterval(() => {
+        setFading2(true);
+        setTimeout(() => {
+          setImg2Index((prev) => (prev + 1) % frameImages.length);
+          setFading2(false);
+        }, 600);
+      }, 5000);
+      return () => clearInterval(interval);
+    }, 2500);
+    return () => clearTimeout(timeout);
+  }, [loaded]);
 
   return (
     <section className="section-ink-grain relative overflow-hidden min-h-screen flex flex-col justify-center">
@@ -52,6 +107,7 @@ export const HeroSection = () => {
         {/* Giant typographic headline */}
         <div className="relative mb-8 sm:mb-12">
           <h1 className="font-display font-extrabold text-[clamp(2.2rem,9vw,8rem)] leading-[0.88] tracking-tight text-cream">
+            {/* Line 1: "A clearer [IMG]" */}
             {["A", "clearer", "IMG1"].map((word, i) => (
               <span key={i} className="inline-block overflow-hidden">
                 <span
@@ -62,12 +118,11 @@ export const HeroSection = () => {
                   }}
                 >
                   {word === "IMG1" ? (
-                    <span className="relative inline-block align-middle mx-1 sm:mx-2">
+                    <span className="relative inline-block align-middle mx-1 sm:mx-2 w-[1.2em] sm:w-[1.6em] h-[0.6em] sm:h-[0.7em]">
                       <img
-                        src={heroEyewear}
+                        src={frameImages[img1Index]}
                         alt="Outlook"
-                        className={`inline-block w-[1.2em] sm:w-[1.6em] h-[0.6em] sm:h-[0.7em] object-cover rounded-full border-2 border-mh-gold/20 shadow-lg transition-all duration-[900ms] ${loaded ? "blur-0 scale-100" : "blur-lg scale-105"}`}
-                        style={{ transitionDelay: "1000ms" }}
+                        className={`absolute inset-0 w-full h-full object-cover rounded-full border-2 border-mh-gold/20 shadow-lg transition-all duration-[600ms] ${fading1 ? "opacity-0 blur-md scale-95" : "opacity-100 blur-0 scale-100"}`}
                       />
                     </span>
                   ) : (
@@ -77,7 +132,8 @@ export const HeroSection = () => {
               </span>
             ))}
             <br />
-            {["outlook", "IMG2", "on", "life"].map((word, i) => (
+            {/* Line 2: "outl[OO]k [IMG] on life" — with twin-lens OO */}
+            {["OUTLOOK", "IMG2", "on", "life"].map((word, i) => (
               <span key={`b-${i}`} className="inline-block overflow-hidden">
                 <span
                   className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
@@ -86,13 +142,16 @@ export const HeroSection = () => {
                     transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
                   }}
                 >
-                  {word === "IMG2" ? (
-                    <span className="relative inline-block align-middle mx-1 sm:mx-2">
+                  {word === "OUTLOOK" ? (
+                    <span className="text-mh-gold">
+                      outl<TwinLensSVG />k{" "}
+                    </span>
+                  ) : word === "IMG2" ? (
+                    <span className="relative inline-block align-middle mx-1 sm:mx-2 w-[1.0em] sm:w-[1.4em] h-[0.6em] sm:h-[0.7em]">
                       <img
-                        src={frame1}
+                        src={frameImages[img2Index]}
                         alt="Life"
-                        className={`inline-block w-[1.0em] sm:w-[1.4em] h-[0.6em] sm:h-[0.7em] object-cover rounded-full border-2 border-mh-gold/20 shadow-lg transition-all duration-[900ms] ${loaded ? "blur-0 scale-100" : "blur-lg scale-105"}`}
-                        style={{ transitionDelay: "1100ms" }}
+                        className={`absolute inset-0 w-full h-full object-cover rounded-full border-2 border-mh-gold/20 shadow-lg transition-all duration-[600ms] ${fading2 ? "opacity-0 blur-md scale-95" : "opacity-100 blur-0 scale-100"}`}
                       />
                     </span>
                   ) : word === "life" ? (
