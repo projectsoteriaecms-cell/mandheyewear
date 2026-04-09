@@ -32,24 +32,24 @@ export const TestimonialSection = () => {
   const t = testimonials[active];
 
   return (
-    <section className="section-cream py-24 lg:py-32">
+    <section className="section-cream py-16 sm:py-24 lg:py-32">
       <div
         ref={sectionReveal.ref as React.RefObject<HTMLDivElement>}
         className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center transition-all duration-700 ${sectionReveal.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
       >
         {/* Header */}
-        <p className="text-sm font-display font-bold tracking-[0.3em] uppercase text-mh-gold mb-3">Soft Life, Sharp Vision</p>
-        <h2 className="text-4xl sm:text-5xl font-display font-bold text-ink leading-[0.95] mb-4">
+        <p className="text-xs sm:text-sm font-display font-bold tracking-[0.3em] uppercase text-mh-gold mb-2 sm:mb-3">Soft Life, Sharp Vision</p>
+        <h2 className="text-3xl sm:text-5xl font-display font-bold text-ink leading-[0.95] mb-4">
           What they say<span className="text-mh-gold">.</span>
         </h2>
 
-        <div className="flex items-center justify-center gap-3 mb-12">
+        <div className="flex items-center justify-center gap-3 mb-8 sm:mb-12">
           <div className="flex">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
                 weight="fill"
-                className={`w-5 h-5 text-mh-gold ${sectionReveal.inView ? "animate-elastic-in" : "opacity-0"}`}
+                className={`w-4 h-4 sm:w-5 sm:h-5 text-mh-gold ${sectionReveal.inView ? "animate-elastic-in" : "opacity-0"}`}
                 style={{ animationDelay: `${i * 100 + 200}ms` }}
               />
             ))}
@@ -58,12 +58,12 @@ export const TestimonialSection = () => {
           <span className="text-sm text-ink/40">· 145 Reviews</span>
         </div>
 
-        {/* Featured quote — blur transition */}
-        <div className="relative min-h-[200px] flex flex-col items-center justify-center">
-          <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[120px] font-display font-bold text-mh-gold/8 leading-none select-none animate-float-gentle">"</span>
+        {/* Featured quote */}
+        <div className="relative min-h-[180px] sm:min-h-[200px] flex flex-col items-center justify-center">
+          <span className="absolute -top-2 sm:-top-4 left-1/2 -translate-x-1/2 text-[80px] sm:text-[120px] font-display font-bold text-mh-gold/8 leading-none select-none animate-float-gentle">"</span>
 
           <blockquote
-            className={`text-ink/80 text-xl sm:text-2xl leading-relaxed max-w-2xl mx-auto mb-8 relative z-10 transition-all duration-400 ${fading ? "opacity-0 blur-sm scale-[0.98]" : "opacity-100 blur-0 scale-100"}`}
+            className={`text-ink/80 text-lg sm:text-2xl leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8 relative z-10 transition-all duration-400 ${fading ? "opacity-0 blur-sm scale-[0.98]" : "opacity-100 blur-0 scale-100"}`}
           >
             "{t.quote}"
           </blockquote>
@@ -74,20 +74,20 @@ export const TestimonialSection = () => {
           </div>
         </div>
 
-        {/* Dot navigation */}
-        <div className="flex items-center justify-center gap-3 mt-8">
+        {/* Dot navigation — larger touch targets on mobile */}
+        <div className="flex items-center justify-center gap-3 mt-6 sm:mt-8">
           {testimonials.map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
-              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === active ? "bg-mh-gold w-8" : "bg-ink/15 hover:bg-ink/30"}`}
+              className={`h-3 sm:h-2.5 rounded-full transition-all duration-300 ${i === active ? "bg-mh-gold w-8" : "bg-ink/15 hover:bg-ink/30 w-3 sm:w-2.5"}`}
               aria-label={`View testimonial ${i + 1}`}
             />
           ))}
         </div>
 
         {/* Link */}
-        <div className="mt-10">
+        <div className="mt-8 sm:mt-10">
           <Link
             to="/reviews"
             className="inline-flex items-center gap-2 text-sm font-display font-semibold tracking-wide uppercase text-mh-gold hover:gap-3 transition-all duration-300"

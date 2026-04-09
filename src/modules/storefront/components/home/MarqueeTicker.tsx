@@ -31,37 +31,37 @@ const ghostItems = [
 
 export const MarqueeTicker = () => {
   return (
-    <section className="section-ink py-5 overflow-hidden border-y border-mh-gold/10 relative">
+    <section className="section-ink py-3 sm:py-5 overflow-hidden border-y border-mh-gold/10 relative">
       {/* Gold glow line between rows */}
       <div className="absolute left-0 right-0 top-1/3 h-px bg-gradient-to-r from-transparent via-mh-gold/20 to-transparent" />
       <div className="absolute left-0 right-0 top-2/3 h-px bg-gradient-to-r from-transparent via-mh-gold/10 to-transparent" />
 
-      {/* Row 1 — scrolls left (25s) */}
-      <div className="marquee-track flex whitespace-nowrap mb-3">
+      {/* Row 1 */}
+      <div className="marquee-track flex whitespace-nowrap mb-2 sm:mb-3">
         {[...topItems, ...topItems].map((item, index) => (
-          <span key={index} className="inline-flex items-center gap-6 mx-6">
-            <span className="font-display font-bold text-base sm:text-lg tracking-[0.2em] uppercase text-cream/80">
+          <span key={index} className="inline-flex items-center gap-3 sm:gap-6 mx-3 sm:mx-6">
+            <span className="font-display font-bold text-xs sm:text-lg tracking-[0.2em] uppercase text-cream/80">
               {item}
             </span>
-            <span className="text-mh-gold text-xs font-bold">✦</span>
+            <span className="text-mh-gold text-[10px] sm:text-xs font-bold">✦</span>
           </span>
         ))}
       </div>
 
-      {/* Row 2 — scrolls right (35s) */}
-      <div className="marquee-reverse flex whitespace-nowrap mb-3">
+      {/* Row 2 */}
+      <div className="marquee-reverse flex whitespace-nowrap mb-2 sm:mb-3">
         {[...bottomItems, ...bottomItems].map((item, index) => (
-          <span key={index} className="inline-flex items-center gap-6 mx-6">
-            <span className="font-display font-bold text-base sm:text-lg tracking-[0.2em] uppercase text-cream/40">
+          <span key={index} className="inline-flex items-center gap-3 sm:gap-6 mx-3 sm:mx-6">
+            <span className="font-display font-bold text-xs sm:text-lg tracking-[0.2em] uppercase text-cream/40">
               {item}
             </span>
-            <span className="text-flame/60 text-xs font-bold">+</span>
+            <span className="text-flame/60 text-[10px] sm:text-xs font-bold">+</span>
           </span>
         ))}
       </div>
 
-      {/* Row 3 — ghost row, fastest (18s), very faint */}
-      <div className="marquee-ghost flex whitespace-nowrap">
+      {/* Row 3 — hidden on mobile */}
+      <div className="hidden sm:flex marquee-ghost whitespace-nowrap">
         {[...ghostItems, ...ghostItems].map((item, index) => (
           <span key={index} className="inline-flex items-center gap-6 mx-6">
             <span className="font-display font-bold text-sm tracking-[0.2em] uppercase text-cream/15">
