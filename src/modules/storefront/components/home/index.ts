@@ -1,6 +1,10 @@
 export { HeroSection } from "./HeroSection";
+export { MarqueeTicker } from "./MarqueeTicker";
+export { EditorialGrid } from "./EditorialGrid";
 export { CategoryCards } from "./CategoryCards";
-export { QuickDiscovery } from "./QuickDiscovery";
+export { TestimonialSection } from "./TestimonialSection";
+export { DualCtaSection } from "./DualCtaSection";
+export { TrustBadges } from "./TrustBadges";
 export { QuizPromo } from "./QuizPromo";
 export { VirtualTryOn } from "./VirtualTryOn";
-export { TrustBadges } from "./TrustBadges";
+export { QuickDiscovery } from "./QuickDiscovery";
