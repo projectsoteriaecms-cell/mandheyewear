@@ -160,13 +160,30 @@ export const HeroSection = () => {
             transform: loaded ? "perspective(1000px) rotateX(0deg)" : "perspective(1000px) rotateX(8deg)",
           }}
         >
-          <div className="max-w-md space-y-4 sm:space-y-6">
-            <p className="text-cream/80 text-lg sm:text-xl leading-relaxed font-display font-semibold">
-              For those who see the future before it arrives.<br />
-              <span className="text-cream/50 font-body font-normal text-base sm:text-lg">Clarity without compromise — your world, in high definition.</span>
-            </p>
-            <p className="text-cream/30 text-sm leading-relaxed font-body">
-              A new frame of mind. Because your outlook should be as loud as your ambition, but as silent as true luxury.
+          <div className="max-w-md space-y-5 sm:space-y-7">
+            {/* Visionary pillar — lead statement */}
+            <div className="relative pl-4 sm:pl-5 border-l-2 border-mh-gold/40">
+              <p className="font-display font-bold text-lg sm:text-xl leading-snug text-cream tracking-tight">
+                For those who see the future<br className="hidden sm:block" /> before it arrives.
+              </p>
+            </div>
+
+            {/* Clarity tagline — glass-morphic chip */}
+            <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-cream/[0.06] backdrop-blur-md border border-cream/10 shadow-[0_0_20px_rgba(212,175,55,0.08)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-mh-gold animate-pulse" />
+              <span className="font-display font-semibold text-sm sm:text-base text-cream/90 tracking-wide">
+                Clarity without compromise
+              </span>
+              <span className="text-cream/30 font-light">—</span>
+              <span className="font-body text-sm sm:text-base text-cream/60 italic">
+                your world, in HD
+              </span>
+            </div>
+
+            {/* Shakara pillar — editorial whisper */}
+            <p className="text-cream/35 text-xs sm:text-sm leading-relaxed font-body tracking-wide max-w-sm">
+              A new frame of mind. Your outlook should be as loud as your ambition,<br className="hidden sm:block" />
+              <span className="text-cream/50 font-display font-medium">but as silent as true luxury.</span>
             </p>
             <div className="flex items-center gap-4 sm:gap-8" ref={statsRef}>
               <div>
