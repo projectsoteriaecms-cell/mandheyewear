@@ -1,6 +1,8 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ArrowDown, Tag } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useCountUp } from "@/shared/hooks/useCountUp";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
 import frame1 from "@/assets/frame-1.jpg";
@@ -8,7 +10,7 @@ import frame2 from "@/assets/frame-2.jpg";
 import frame3 from "@/assets/frame-3.jpg";
 import frame4 from "@/assets/frame-4.jpg";
 
-const frameImages = [heroEyewear, frame1, frame2, frame3, frame4];
+const staticFallbacks = [heroEyewear, frame1, frame2, frame3, frame4];
 
 /** Inline SVG twin-lens "OO" glyph — two connected circles like spectacle lenses */
 const TwinLensSVG = ({ className = "" }: { className?: string }) => (
@@ -19,24 +21,95 @@ const TwinLensSVG = ({ className = "" }: { className?: string }) => (
     className={`inline-block align-middle lens-shimmer ${className}`}
     style={{ width: "1.1em", height: "0.55em" }}
   >
-    {/* Left lens */}
     <circle cx="13" cy="12" r="10" stroke="currentColor" strokeWidth="2.2" fill="none" />
-    {/* Right lens */}
     <circle cx="39" cy="12" r="10" stroke="currentColor" strokeWidth="2.2" fill="none" />
-    {/* Bridge connecting the two lenses */}
     <path d="M23 12 Q26 7 29 12" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
   </svg>
+);
+
+/** Stable pill container with crossfading images — no container movement */
+const FrameSlot = ({
+  currentSrc,
+  nextSrc,
+  fading,
+  className,
+  alt,
+}: {
+  currentSrc: string;
+  nextSrc: string;
+  fading: boolean;
+  className?: string;
+  alt: string;
+}) => (
+  <span className={`relative inline-block align-middle overflow-hidden rounded-full border-2 border-mh-gold/20 shadow-lg ${className}`}>
+    <img
+      src={currentSrc}
+      alt={alt}
+      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${fading ? "opacity-0" : "opacity-100"}`}
+    />
+    <img
+      src={nextSrc}
+      alt={alt}
+      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${fading ? "opacity-100" : "opacity-0"}`}
+    />
+  </span>
 );
 
 export const HeroSection = () => {
   const [loaded, setLoaded] = useState(false);
   const statsRef = useRef<HTMLDivElement>(null);
 
-  // Image carousel state
+  // Fetch real product images
+  const { data: productImages } = useQuery({
+    queryKey: ["hero-frame-images"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("image_url")
+        .eq("is_active", true)
+        .eq("brand_line", "m_and_h_fashion")
+        .eq("item_type", "frames")
+        .not("image_url", "is", null)
+        .neq("image_url", "")
+        .limit(20);
+      return (data || []).map((p) => p.image_url).filter(Boolean) as string[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Build the master frames array: DB images first, then static fallbacks (capped at 20)
+  const allFrames = useMemo(() => {
+    const dbImages = productImages || [];
+    if (dbImages.length >= 4) return dbImages.slice(0, 20);
+    // Merge with fallbacks, deduplicated
+    const merged = [...dbImages, ...staticFallbacks];
+    const unique = Array.from(new Set(merged));
+    return unique.slice(0, 20);
+  }, [productImages]);
+
+  // Carousel state
   const [img1Index, setImg1Index] = useState(0);
   const [img2Index, setImg2Index] = useState(1);
+  const [next1Index, setNext1Index] = useState(0);
+  const [next2Index, setNext2Index] = useState(1);
   const [fading1, setFading1] = useState(false);
   const [fading2, setFading2] = useState(false);
+
+  // Refs to always have latest indices in interval callbacks
+  const img1Ref = useRef(img1Index);
+  const img2Ref = useRef(img2Index);
+  img1Ref.current = img1Index;
+  img2Ref.current = img2Index;
+
+  const getNextIndex = useCallback(
+    (current: number, otherSlot: number) => {
+      if (allFrames.length <= 2) return (current + 1) % allFrames.length;
+      let next = (current + 1) % allFrames.length;
+      if (next === otherSlot) next = (next + 1) % allFrames.length;
+      return next;
+    },
+    [allFrames.length]
+  );
 
   const stat1 = useCountUp({ end: 50, suffix: "K+" });
   const stat2 = useCountUp({ end: 5, suffix: "+" });
@@ -47,34 +120,38 @@ export const HeroSection = () => {
     return () => clearTimeout(t);
   }, []);
 
-  // Rotating image carousel — slot 1
+  // Slot 1 rotation
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || allFrames.length < 2) return;
     const interval = setInterval(() => {
+      const nextIdx = getNextIndex(img1Ref.current, img2Ref.current);
+      setNext1Index(nextIdx);
       setFading1(true);
       setTimeout(() => {
-        setImg1Index((prev) => (prev + 1) % frameImages.length);
+        setImg1Index(nextIdx);
         setFading1(false);
-      }, 600);
+      }, 500);
     }, 5000);
     return () => clearInterval(interval);
-  }, [loaded]);
+  }, [loaded, allFrames.length, getNextIndex]);
 
-  // Rotating image carousel — slot 2 (offset by 2.5s)
+  // Slot 2 rotation (offset by 2.5s)
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || allFrames.length < 2) return;
     const timeout = setTimeout(() => {
       const interval = setInterval(() => {
+        const nextIdx = getNextIndex(img2Ref.current, img1Ref.current);
+        setNext2Index(nextIdx);
         setFading2(true);
         setTimeout(() => {
-          setImg2Index((prev) => (prev + 1) % frameImages.length);
+          setImg2Index(nextIdx);
           setFading2(false);
-        }, 600);
+        }, 500);
       }, 5000);
       return () => clearInterval(interval);
     }, 2500);
     return () => clearTimeout(timeout);
-  }, [loaded]);
+  }, [loaded, allFrames.length, getNextIndex]);
 
   return (
     <section className="section-ink-grain relative overflow-hidden min-h-screen flex flex-col justify-center">
@@ -118,13 +195,13 @@ export const HeroSection = () => {
                   }}
                 >
                   {word === "IMG1" ? (
-                    <span className="relative inline-block align-middle mx-1 sm:mx-2 w-[1.2em] sm:w-[1.6em] h-[0.6em] sm:h-[0.7em]">
-                      <img
-                        src={frameImages[img1Index]}
-                        alt="Outlook"
-                        className={`absolute inset-0 w-full h-full object-cover rounded-full border-2 border-mh-gold/20 shadow-lg transition-all duration-[600ms] ${fading1 ? "opacity-0 blur-md scale-95" : "opacity-100 blur-0 scale-100"}`}
-                      />
-                    </span>
+                    <FrameSlot
+                      currentSrc={allFrames[img1Index] || staticFallbacks[0]}
+                      nextSrc={allFrames[next1Index] || staticFallbacks[0]}
+                      fading={fading1}
+                      className="mx-1 sm:mx-2 w-[1.2em] sm:w-[1.6em] h-[0.6em] sm:h-[0.7em]"
+                      alt="Eyewear frame"
+                    />
                   ) : (
                     <>{word} </>
                   )}
@@ -147,13 +224,13 @@ export const HeroSection = () => {
                       outl<TwinLensSVG />k{" "}
                     </span>
                   ) : word === "IMG2" ? (
-                    <span className="relative inline-block align-middle mx-1 sm:mx-2 w-[1.0em] sm:w-[1.4em] h-[0.6em] sm:h-[0.7em]">
-                      <img
-                        src={frameImages[img2Index]}
-                        alt="Life"
-                        className={`absolute inset-0 w-full h-full object-cover rounded-full border-2 border-mh-gold/20 shadow-lg transition-all duration-[600ms] ${fading2 ? "opacity-0 blur-md scale-95" : "opacity-100 blur-0 scale-100"}`}
-                      />
-                    </span>
+                    <FrameSlot
+                      currentSrc={allFrames[img2Index] || staticFallbacks[1]}
+                      nextSrc={allFrames[next2Index] || staticFallbacks[1]}
+                      fading={fading2}
+                      className="mx-1 sm:mx-2 w-[1.0em] sm:w-[1.4em] h-[0.6em] sm:h-[0.7em]"
+                      alt="Eyewear frame"
+                    />
                   ) : word === "life" ? (
                     <span className="italic font-semibold text-cream/60">{word}<span className="text-mh-gold">.</span></span>
                   ) : (
