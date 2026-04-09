@@ -1,47 +1,103 @@
 
 
-## Phase 1: Design Identity Overhaul — Color Palette & Base System
+## Phase 2: Homepage & Navigation — Editorial Ink/Cream/Gold/Flame Update
 
-This phase focuses exclusively on the **foundation**: swapping the color palette, updating CSS variables, gradients, and shadows to match the new direction. No component layouts change yet — just the design tokens that everything else depends on.
+This phase updates the homepage sections and navigation to create an alternating Ink ↔ Cream editorial rhythm (like Vogue magazine layouts) and fully leverage the new Gold + Flame accent system.
 
-### Design Decisions (Based on Your Answers)
+### Design Pattern: Alternating Section Blocks
 
-- **Palette**: Ink (#1A1A2E deep charcoal) + Cream (#FAF7F2 warm off-white) as base, replacing blue/white
-- **Accents**: M&H Gold stays as primary accent (CTAs, active states), Flame (#FF5A36 warm coral) added as secondary accent (sale tags, alerts, urgency)
-- **Navy**: Retained for Soteria clinical sections
-- **Typography**: Keep Cormorant Garamond + Inter (no change)
-- **Light mode**: Cream-dominant backgrounds with Ink used for hero/feature sections
-- **Dark mode**: Full Ink backgrounds with Cream text and warm accent glows
+```text
+┌─────────────────────────────────────┐
+│  Navigation: Ink TopBar + Cream Nav │  (already working)
+├─────────────────────────────────────┤
+│  Hero: INK background               │  Full-width Ink with Gold/Cream text
+├─────────────────────────────────────┤
+│  Quick Discovery: CREAM background   │  Warm cream, Gold accents
+├─────────────────────────────────────┤
+│  Category Cards: INK background      │  Already dark (feature-navy) ✓
+├─────────────────────────────────────┤
+│  Style Quiz: CREAM background        │  Cream base, Flame CTA accent
+├─────────────────────────────────────┤
+│  Featured Frames: INK background     │  Dark editorial product grid
+├─────────────────────────────────────┤
+│  Virtual Try-On: CREAM background    │  Light, airy tech showcase
+├─────────────────────────────────────┤
+│  Trust Badges: INK background        │  Dark with Gold icon accents
+├─────────────────────────────────────┤
+│  Footer: INK (already) ✓            │
+└─────────────────────────────────────┘
+```
 
-### What Changes
+### Changes by File
 
-**File: `src/index.css`** — Complete CSS variable overhaul:
+**1. `HeroSection.tsx`** — Convert to full Ink background editorial hero
+- Background: `bg-ink` (dark charcoal) instead of `bg-gradient-to-br from-background`
+- All text: Cream/white tones (`text-cream`, `text-cream/70`)
+- Accent badge underlines and CTAs stay Gold
+- Floating cards: glass-dark with cream text
+- Background orbs: Gold/Flame glows instead of primary/accent
 
-| Variable | Current | New (Light) | New (Dark) |
-|----------|---------|-------------|------------|
-| `--background` | `0 0% 100%` (white) | `36 33% 96%` (cream) | `240 30% 11%` (ink) |
-| `--foreground` | `210 25% 12%` (dark blue) | `240 20% 13%` (ink) | `36 25% 93%` (cream) |
-| `--primary` | `210 85% 40%` (blue) | `45 100% 45%` (gold) | `45 100% 55%` (gold) |
-| `--accent` | `45 100% 45%` (gold) | `45 100% 45%` (gold stays) | `45 100% 55%` |
-| New: `--flame` | — | `14 100% 61%` | `14 100% 65%` |
-| `--card` | white | cream | ink-lighter |
-| `--border` | blue-tint | warm neutral | warm dark |
-| All gradients | Blue-based | Ink/Cream/Gold based | Ink/Gold glows |
-| All shadows | Blue-tinted | Warm neutral | Warm dark glows |
+**2. `TopBar.tsx`** — Already Ink (bg-primary mapped to gold now, needs fix)
+- Background: explicit `bg-ink` instead of `bg-primary` (since primary is now Gold)
+- Text: `text-cream` and `text-cream/70`
+- "Book Eye Exam" button: Flame accent (`bg-flame text-white`)
 
-**File: `tailwind.config.ts`**:
-- Add `flame` color tokens (`flame`, `flame-light`, `flame-dark`)
-- Add `ink` and `cream` color tokens for direct use
-- Update `soteria-blue` to `navy` semantic naming
+**3. `MainNav.tsx`** — Cream background nav bar
+- Stays `bg-background` (cream in light, ink in dark) ✓
+- Active link indicators: Gold underline
+- Highlighted links (Style Quiz, Try-On): Flame color instead of accent
 
-**File: `index.html`**:
-- Update `theme-color` meta tags from blue to ink/cream
+**4. `MobileTopBar.tsx`** — Match desktop nav cream/ink scheme
+- Sheet header: `bg-ink` instead of `bg-primary`
+- Highlighted menu items: Flame tint
 
-### What Does NOT Change (Yet)
-- Component layouts, homepage structure, navigation — all untouched
-- Typography stays Cormorant Garamond + Inter
-- No new components or pages
+**5. `MobileBottomNav.tsx`** — Subtle update
+- Active icon: Gold instead of primary
 
-### Why This Order
-Every component references CSS variables. Changing the tokens first means every existing component automatically picks up the new palette on the next render. The follow-up phases (Homepage & Hero, Interactivity, Style Quiz, Dark/Light polish) build on this foundation.
+**6. `QuickDiscovery.tsx`** — Cream section
+- Section bg: `bg-background` (cream)
+- Promotional banner: Keep Ink internal gradient (already dark) ✓
+- Filter pills: Gold border accents
+- "Trending Frames" label: Gold
+
+**7. `CategoryCards.tsx`** — Already Ink ✓ (minor tweaks)
+- Section label "Explore Our Collection": Gold text
+- Arrow buttons: Gold accent (already using accent) ✓
+
+**8. `QuizPromo.tsx`** — Cream section with Flame CTA
+- Keep `bg-background` (cream) ✓
+- Primary CTA button: Add Flame variant (`bg-flame`) for urgency
+- Badge: Gold accent stays
+- "60 seconds" highlight: Flame color instead of primary
+
+**9. `FeaturedFrames.tsx`** — Convert to Ink background
+- Section bg: `feature-navy` (ink dark)
+- Text: Cream/white
+- Product cards: glass-dark styling with warm borders
+- "View All" link: Gold
+
+**10. `VirtualTryOn.tsx`** — Cream section
+- Section bg: `bg-background` instead of `bg-muted/30`
+- Badge and feature pills: Gold accents
+- CTA: Gold button
+
+**11. `TrustBadges.tsx`** — Convert to Ink background
+- Section bg: `feature-navy`
+- Text: Cream/white
+- Icon backgrounds: Gold tint
+- Highlight badges: Flame accent for urgency tags ("Save ₦15,000")
+- Section title: Update from "Soteria & M&H" to just "The M&H Difference"
+
+**12. `Index.tsx`** — Update floating chat button
+- Change from `bg-accent` to `bg-flame` for the Sparkle FAB
+
+**13. `src/index.css`** — Add `.section-ink` and `.section-cream` utility classes
+- `.section-ink`: Ink bg with cream text defaults
+- `.section-cream`: Cream bg with ink text defaults
+
+### What Does NOT Change
+- Footer (already Ink-based, working)
+- Component internal logic, data fetching, carousels
+- Typography (Cormorant Garamond + Inter stays)
+- Mobile bottom nav layout
 
