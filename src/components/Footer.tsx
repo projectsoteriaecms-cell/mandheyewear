@@ -158,7 +158,7 @@ export const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-card border-t border-border">
+    <footer className="bg-card border-t border-border pb-20 lg:pb-0">
       {/* Newsletter Banner */}
       <NewsletterBanner />
 
