@@ -4,10 +4,11 @@ import { Footer } from "@/components/Footer";
 import { FeaturedFrames } from "@/modules/storefront/components/shared";
 import {
   HeroSection,
+  MarqueeTicker,
+  EditorialGrid,
   CategoryCards,
-  QuickDiscovery,
-  QuizPromo,
-  VirtualTryOn,
+  TestimonialSection,
+  DualCtaSection,
   TrustBadges,
 } from "@/modules/storefront/components/home";
 import { useSEO } from "@/shared/hooks/useSEO";
@@ -35,30 +36,33 @@ const Index = () => {
       {/* Spacer for fixed navigation */}
       <div className="h-16 lg:h-[104px]" />
 
-      {/* Hero Section */}
+      {/* 1. Editorial Typographic Hero — Cream */}
       <HeroSection />
 
-      {/* Quick Discovery Section */}
-      <QuickDiscovery />
+      {/* 2. Marquee Ticker — Ink strip */}
+      <MarqueeTicker />
 
-      {/* Category Cards */}
+      {/* 3. Editorial Grid — Cream */}
+      <EditorialGrid />
+
+      {/* 4. Category Cards — Ink */}
       <CategoryCards />
 
-      {/* Style Quiz Promotion */}
-      <QuizPromo />
+      {/* 5. Testimonials — Cream */}
+      <TestimonialSection />
 
-      {/* Featured Frames - Dynamic from Database */}
+      {/* 6. Featured Frames — Ink */}
       <FeaturedFrames />
 
-      {/* Virtual Try-On Feature */}
-      <VirtualTryOn />
+      {/* 7. Dual CTA — Cream */}
+      <DualCtaSection />
 
-      {/* Trust Badges */}
+      {/* 8. Trust Strip — Ink */}
       <TrustBadges />
 
       {/* Chat Assistant Launcher */}
       <button 
-        className="fixed bottom-6 right-6 p-4 rounded-full bg-flame text-white shadow-flame hover:shadow-xl hover:scale-110 transition-all z-40 animate-float-slow"
+        className="fixed bottom-6 right-6 p-4 rounded-full bg-flame text-cream shadow-flame hover:shadow-xl hover:scale-110 transition-all z-40 animate-float-slow"
         aria-label="Open chat assistant"
       >
         <Sparkle weight="duotone" className="h-6 w-6" />

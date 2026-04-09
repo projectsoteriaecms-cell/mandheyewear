@@ -470,6 +470,19 @@ All colors MUST be HSL.
     transform: translateY(0);
   }
 
+  /* Marquee ticker animation */
+  .marquee-track {
+    animation: marquee-scroll 30s linear infinite;
+  }
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  /* Editorial number labels */
+  .editorial-number {
+    @apply font-display font-bold text-xs tracking-[0.3em] uppercase;
+  }
+
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
     .stagger-delay-1,
