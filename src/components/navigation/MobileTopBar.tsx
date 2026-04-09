@@ -114,11 +114,11 @@ export const MobileTopBar = () => {
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px] p-0 flex flex-col" hideCloseButton>
               {/* Header */}
-              <SheetHeader className="p-4 border-b border-border bg-primary">
+              <SheetHeader className="p-4 border-b border-cream/10 bg-ink">
                 <SheetTitle className="flex items-center justify-between">
                   <img src={mhLogoGold} alt="M&H Eyewear" className="h-14 w-auto" />
                   <SheetClose asChild>
-                    <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 -mr-2">
+                    <Button variant="ghost" size="icon" className="text-cream hover:bg-cream/10 -mr-2">
                       <X weight="light" className="h-5 w-5" />
                     </Button>
                   </SheetClose>
@@ -129,10 +129,10 @@ export const MobileTopBar = () => {
               <nav className="flex-1 overflow-y-auto py-2">
                 {menuItems.map(item => {
                 const Icon = item.icon;
-                return <Link key={item.name} to={item.path} onClick={() => setOpen(false)} className={cn("flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted", item.highlight && "bg-accent/10")}>
-                      <Icon weight={item.highlight ? "duotone" : "light"} className={cn("h-5 w-5", item.highlight ? "text-accent" : "text-muted-foreground")} />
+                return <Link key={item.name} to={item.path} onClick={() => setOpen(false)} className={cn("flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted", item.highlight && "bg-flame/5")}>
+                      <Icon weight={item.highlight ? "duotone" : "light"} className={cn("h-5 w-5", item.highlight ? "text-flame" : "text-muted-foreground")} />
                       <div>
-                        <div className={cn("font-medium text-sm", item.highlight ? "text-accent" : "text-foreground")}>
+                        <div className={cn("font-medium text-sm", item.highlight ? "text-flame" : "text-foreground")}>
                           {item.name}
                         </div>
                         <p className="text-xs text-muted-foreground">{item.description}</p>

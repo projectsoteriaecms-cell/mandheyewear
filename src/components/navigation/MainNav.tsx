@@ -91,14 +91,14 @@ export const MainNav = () => {
                   to={link.path}
                   className={cn(
                     "text-sm font-medium transition-smooth relative py-2 flex items-center gap-1.5",
-                    "text-accent hover:text-accent/80",
-                    location.pathname === link.path && "text-accent"
+                    "text-flame hover:text-flame/80",
+                    location.pathname === link.path && "text-flame"
                   )}
                 >
                   <Icon weight="duotone" className="h-4 w-4" />
                   {link.name}
                   {location.pathname === link.path && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent rounded-full" />
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-flame rounded-full" />
                   )}
                 </Link>
               );

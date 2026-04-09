@@ -80,12 +80,12 @@ export const QuickDiscovery = () => {
 
 
   return (
-    <section className="py-8 lg:py-12 bg-gradient-to-b from-primary/5 via-background to-background">
+    <section className="py-8 lg:py-12 bg-background">
       <div className="container px-4">
         {/* Trending Frames Row */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-medium text-primary uppercase tracking-wider">
+            <h2 className="text-sm font-medium text-mh-gold uppercase tracking-wider">
               Trending Frames
             </h2>
             <Link 
@@ -118,7 +118,7 @@ export const QuickDiscovery = () => {
                   to={`/eyewear/${product.id}`}
                   className="flex-shrink-0 w-32 snap-start group"
                 >
-                  <div className="relative w-32 h-32 rounded-xl bg-white border border-border overflow-hidden transition-all duration-300 group-hover:border-primary group-hover:shadow-lg group-hover:shadow-primary/10">
+                  <div className="relative w-32 h-32 rounded-xl bg-white border border-border overflow-hidden transition-all duration-300 group-hover:border-mh-gold group-hover:shadow-lg group-hover:shadow-mh-gold/10">
                     <img
                       src={product.image_url || "/placeholder.svg"}
                       alt={product.name}
@@ -264,9 +264,9 @@ export const QuickDiscovery = () => {
                 <Link
                   key={filter.filter}
                   to={`/eyewear?filter=${filter.filter}`}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-background border-2 border-primary/20 text-sm font-medium text-foreground hover:border-primary hover:bg-primary/5 whitespace-nowrap transition-all duration-200 hover:shadow-sm"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-background border-2 border-mh-gold/20 text-sm font-medium text-foreground hover:border-mh-gold hover:bg-mh-gold/5 whitespace-nowrap transition-all duration-200 hover:shadow-sm"
                 >
-                  <IconComponent weight="duotone" className="w-4 h-4 text-primary" />
+                  <IconComponent weight="duotone" className="w-4 h-4 text-mh-gold" />
                   {filter.label}
                 </Link>
               );

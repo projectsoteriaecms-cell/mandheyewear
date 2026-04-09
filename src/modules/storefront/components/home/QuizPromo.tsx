@@ -33,10 +33,10 @@ export const QuizPromo = () => {
             
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-foreground leading-tight animate-fade-in-up stagger-delay-1">
               Find your perfect frame in{" "}
-              <span className="text-primary relative">
-                60 seconds
-                <span className="absolute -bottom-1 left-0 w-full h-1 bg-primary/20 rounded-full" />
-              </span>
+               <span className="text-flame relative">
+                 60 seconds
+                 <span className="absolute -bottom-1 left-0 w-full h-1 bg-flame/20 rounded-full" />
+               </span>
             </h2>
             
             <p className="text-lg text-muted-foreground max-w-lg animate-fade-in-up stagger-delay-2">
@@ -62,7 +62,7 @@ export const QuizPromo = () => {
             <Button 
               size="lg" 
               asChild 
-              className="group h-14 px-8 text-base shadow-float hover:shadow-card-hover transition-all relative overflow-hidden animate-fade-in-up hover:scale-105"
+              className="group h-14 px-8 text-base shadow-float hover:shadow-card-hover transition-all relative overflow-hidden animate-fade-in-up hover:scale-105 bg-flame hover:bg-flame/90 text-white"
               style={{ animationDelay: '0.5s' }}
             >
               <Link to="/style-quiz" className="flex items-center gap-3">

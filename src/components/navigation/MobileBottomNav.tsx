@@ -34,13 +34,13 @@ export const MobileBottomNav = () => {
                 "flex flex-col items-center justify-center gap-0.5 py-2 px-2 rounded-xl transition-all touch-target touch-feedback no-select",
                 "min-w-[56px]",
                 active 
-                  ? "text-primary" 
+                  ? "text-mh-gold" 
                   : "text-muted-foreground active:text-foreground"
               )}
             >
               <div className={cn(
                 "relative p-1.5 rounded-xl transition-all",
-                active && "bg-primary/10"
+                active && "bg-mh-gold/10"
               )}>
                 <Icon 
                   weight={getIconWeight(active)}
@@ -50,12 +50,12 @@ export const MobileBottomNav = () => {
                   )} 
                 />
                 {active && (
-                  <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                  <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-mh-gold" />
                 )}
               </div>
               <span className={cn(
                 "text-[10px] font-medium transition-all leading-tight",
-                active ? "text-primary" : "text-muted-foreground"
+                active ? "text-mh-gold" : "text-muted-foreground"
               )}>
                 {item.name}
               </span>

@@ -23,7 +23,7 @@ const features = [
 
 export const VirtualTryOn = () => {
   return (
-    <section className="py-24 bg-muted/30 relative overflow-hidden">
+    <section className="py-24 bg-background relative overflow-hidden">
       {/* Background orbs */}
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-primary/5 blur-3xl animate-float-slow" />
       <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-accent/5 blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
