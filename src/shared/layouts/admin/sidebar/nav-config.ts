@@ -96,6 +96,12 @@ export const navItems: NavItem[] = [
     requiresManager: true,
   },
   {
+    title: "Promo Banner",
+    href: "/admin/promo-banner",
+    icon: Megaphone,
+    requiresAdmin: true,
+  },
+  {
     title: "Delivery Report",
     href: "/admin/delivery-report",
     icon: FileText,
