@@ -279,7 +279,7 @@ All colors MUST be HSL.
     color: hsl(var(--ink));
   }
 
-
+  .feature-card {
     background: hsl(var(--feature-card));
     border-color: hsl(var(--feature-border));
   }
