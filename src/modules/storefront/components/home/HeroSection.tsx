@@ -382,9 +382,9 @@ export const HeroSection = () => {
           </div>
         </div>
 
-        {/* Subtext + Stats + CTAs */}
+        {/* Subtext + CTAs */}
         <div
-          className={`flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8 sm:gap-10 transition-all duration-[800ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+          className={`flex flex-col items-start gap-8 sm:gap-10 transition-all duration-[800ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
           style={{
             transitionDelay: "1500ms",
             transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
@@ -413,35 +413,32 @@ export const HeroSection = () => {
               A new <span className="font-display font-bold text-mh-gold italic">frame</span> of mind. Your outlook should be as loud as your ambition,<br className="hidden sm:block" />
               <span className="text-cream/70 font-display font-semibold">but as silent as true luxury.</span>
             </p>
-            <div className="flex items-center gap-4 sm:gap-0" ref={statsRef}>
-              {"\n\n\n\n\n\n\n\n\n\n\n\n\n"}
-            </div>
-          </div>
 
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-            <Link
-              to="/eyewear"
-              className={`group inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-mh-gold text-ink font-display font-bold text-sm tracking-wide uppercase hover:scale-105 hover:shadow-glow-accent transition-all duration-300 shadow-gold w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
-              style={{
-                transitionDelay: "1800ms",
-                transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
-              }}
-            >
-              Shop Collection
-              <ArrowRight weight="bold" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              to="/booking"
-              className={`group inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-flame text-cream font-display font-bold text-sm tracking-wide uppercase hover:scale-105 transition-all duration-300 shadow-flame w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
-              style={{
-                transitionDelay: "1950ms",
-                transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
-              }}
-            >
-              Book Eye Exam
-              <ArrowRight weight="bold" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Link
+                to="/eyewear"
+                className={`group inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-mh-gold text-ink font-display font-bold text-sm tracking-wide uppercase hover:scale-105 hover:shadow-glow-accent transition-all duration-300 shadow-gold w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+                style={{
+                  transitionDelay: "1800ms",
+                  transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+                }}
+              >
+                Shop Collection
+                <ArrowRight weight="bold" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link
+                to="/booking"
+                className={`group inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-flame text-cream font-display font-bold text-sm tracking-wide uppercase hover:scale-105 transition-all duration-300 shadow-flame w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+                style={{
+                  transitionDelay: "1950ms",
+                  transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+                }}
+              >
+                Book Eye Exam
+                <ArrowRight weight="bold" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
