@@ -306,6 +306,7 @@ export default {
         // Breathing
         "breathe": "breathe 4s ease-in-out infinite",
         "marquee-scroll": "marquee-scroll 30s linear infinite",
+        "marquee-scroll-reverse": "marquee-scroll-reverse 40s linear infinite",
       },
     },
   },
