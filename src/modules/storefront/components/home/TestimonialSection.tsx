@@ -38,7 +38,7 @@ export const TestimonialSection = () => {
         className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center transition-all duration-700 ${sectionReveal.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
       >
         {/* Header */}
-        <p className="text-sm font-display font-bold tracking-[0.3em] uppercase text-mh-gold mb-3">Testimonials</p>
+        <p className="text-sm font-display font-bold tracking-[0.3em] uppercase text-mh-gold mb-3">Eye No Dey Lie</p>
         <h2 className="text-4xl sm:text-5xl font-display font-bold text-ink leading-[0.95] mb-4">
           What they say<span className="text-mh-gold">.</span>
         </h2>

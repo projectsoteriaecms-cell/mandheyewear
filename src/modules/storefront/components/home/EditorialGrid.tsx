@@ -9,12 +9,12 @@ import heroEyeCare from "@/assets/hero-eye-care.jpg";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
 
 const blocks = [
-  { number: "01", title: "Precision Eye Care", description: "Comprehensive eye exams and advanced diagnostics by certified optometrists across Nigeria.", image: heroEyeCare, link: "/booking", linkText: "Book Exam", span: "col-span-1 row-span-1" },
-  { number: "02", title: "Designer Frames", description: "Curated collections from world-renowned eyewear houses — crafted for distinction.", image: frame1, link: "/eyewear", linkText: "Shop Frames", span: "col-span-1 row-span-2", large: true },
-  { number: "03", title: "Virtual Try-On", description: "AI-powered face mapping lets you see every frame on your face before you buy.", image: frame3, link: "/try-on", linkText: "Try Now", span: "col-span-1 row-span-1" },
-  { number: "04", title: "Style Quiz", description: "Answer a few questions. We'll match you with frames that suit your face shape and personality.", image: frame2, link: "/style-quiz", linkText: "Take Quiz", span: "col-span-1 row-span-1" },
-  { number: "05", title: "Prescription Lenses", description: "From single vision to progressives — precision-cut lenses with anti-glare and blue-light coatings.", image: frame4, link: "/eyewear?category=lenses", linkText: "Explore", span: "col-span-1 row-span-1" },
-  { number: "06", title: "The M&H Experience", description: "Where clinical precision meets luxury fashion. One brand, two worlds, your vision.", image: heroEyewear, link: "/about", linkText: "Our Story", span: "col-span-1 row-span-1" },
+  { number: "01", title: "Sharp Eyes", description: "Certified optometrists. Advanced diagnostics. Your eye health, no compromise.", image: heroEyeCare, link: "/booking", linkText: "Book Exam", span: "col-span-1 row-span-1" },
+  { number: "02", title: "Sharper Style", description: "Designer frames that speak before you do — curated for those who refuse to blend in.", image: frame1, link: "/eyewear", linkText: "Shop Frames", span: "col-span-1 row-span-2", large: true },
+  { number: "03", title: "Virtual Try-On", description: "See am. Believe am. AI face mapping lets you try every frame before you commit.", image: frame3, link: "/try-on", linkText: "Try Now", span: "col-span-1 row-span-1" },
+  { number: "04", title: "Style Quiz", description: "Your face. Your canvas. We match frames to your shape, vibe, and personality.", image: frame2, link: "/style-quiz", linkText: "Take Quiz", span: "col-span-1 row-span-1" },
+  { number: "05", title: "Precision Lenses", description: "Single vision to progressives — anti-glare, blue-light filter, no dull moment for your eyes.", image: frame4, link: "/eyewear?category=lenses", linkText: "Explore", span: "col-span-1 row-span-1" },
+  { number: "06", title: "The M&H Experience", description: "Big vision. Bigger statement. Where clinical precision meets luxury fashion — na style wey dey see road.", image: heroEyewear, link: "/about", linkText: "Our Story", span: "col-span-1 row-span-1" },
 ];
 
 export const EditorialGrid = () => {
@@ -30,9 +30,9 @@ export const EditorialGrid = () => {
           className={`flex items-end justify-between mb-16 transition-all duration-700 ${headerReveal.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
           <div>
-            <p className="text-sm font-display font-bold tracking-[0.3em] uppercase text-mh-gold mb-3">All About Vision</p>
+            <p className="text-sm font-display font-bold tracking-[0.3em] uppercase text-mh-gold mb-3">The M&H Standard</p>
             <h2 className={`text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-ink leading-[0.95] ${headerReveal.inView ? "animate-text-reveal" : ""}`} style={{ clipPath: headerReveal.inView ? undefined : "inset(0 100% 0 0)" }}>
-              See differently<span className="text-mh-gold">.</span>
+              See more. Be more<span className="text-mh-gold">.</span>
             </h2>
           </div>
           <span className="hidden sm:block text-sm font-display tracking-widest text-ink/30 uppercase">©26</span>

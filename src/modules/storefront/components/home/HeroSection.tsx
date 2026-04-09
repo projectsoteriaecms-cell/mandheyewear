@@ -22,11 +22,12 @@ export const HeroSection = () => {
   }, []);
 
   return (
-    <section className="section-cream relative overflow-hidden min-h-screen flex flex-col justify-center">
-      {/* Background breathing glow */}
+    <section className="section-cream-grain relative overflow-hidden min-h-screen flex flex-col justify-center">
+      {/* Background breathing glow — warmer tones */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-mh-gold/5 blur-[120px] animate-breathe" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-flame/3 blur-[100px] animate-breathe" style={{ animationDelay: "2s" }} />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-mh-gold/3 blur-[100px] animate-breathe" style={{ animationDelay: "2s" }} />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-flame/3 blur-[100px] animate-breathe" style={{ animationDelay: "4s" }} />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 relative z-10 w-full">
@@ -40,7 +41,7 @@ export const HeroSection = () => {
         {/* Giant typographic headline — word-by-word text reveal */}
         <div className="relative mb-12">
           <h1 className="font-display font-extrabold text-[clamp(3rem,9vw,8rem)] leading-[0.88] tracking-tight text-ink">
-            {["where", "IMG1", "vision"].map((word, i) => (
+            {["A", "clearer", "IMG1"].map((word, i) => (
               <span
                 key={i}
                 className={`inline-block transition-all duration-[800ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-[40px]"}`}
@@ -48,7 +49,7 @@ export const HeroSection = () => {
               >
                 {word === "IMG1" ? (
                   <span className="relative inline-block align-middle mx-2 animate-float-slow">
-                    <img src={heroEyewear} alt="Vision" className="inline-block w-[1.6em] h-[0.7em] object-cover rounded-full shadow-lg" />
+                    <img src={heroEyewear} alt="Outlook" className="inline-block w-[1.6em] h-[0.7em] object-cover rounded-full shadow-lg" />
                   </span>
                 ) : (
                   <>{word} </>
@@ -56,20 +57,18 @@ export const HeroSection = () => {
               </span>
             ))}
             <br />
-            {["lives", "—", "IMG2", "now"].map((word, i) => (
+            {["outlook", "IMG2", "on", "life"].map((word, i) => (
               <span
                 key={`b-${i}`}
                 className={`inline-block transition-all duration-[800ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-[40px]"}`}
                 style={{ transitionDelay: `${750 + i * 150}ms` }}
               >
-                {word === "—" ? (
-                  <span className="text-mh-gold">— </span>
-                ) : word === "IMG2" ? (
+                {word === "IMG2" ? (
                   <span className="relative inline-block align-middle mx-2 animate-float" style={{ animationDelay: "1s" }}>
-                    <img src={frame1} alt="Now" className="inline-block w-[1.4em] h-[0.7em] object-cover rounded-full shadow-lg" />
+                    <img src={frame1} alt="Life" className="inline-block w-[1.4em] h-[0.7em] object-cover rounded-full shadow-lg" />
                   </span>
-                ) : word === "now" ? (
-                  <span className="italic font-semibold text-ink/60">{word}</span>
+                ) : word === "life" ? (
+                  <span className="italic font-semibold text-ink/60">{word}<span className="text-mh-gold">.</span></span>
                 ) : (
                   <>{word} </>
                 )}
@@ -120,15 +119,18 @@ export const HeroSection = () => {
           </div>
         </div>
 
-        {/* Stats + CTAs */}
+        {/* Subtext + Stats + CTAs */}
         <div
           className={`flex flex-col lg:flex-row items-start lg:items-end justify-between gap-10 transition-all duration-700 ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
           style={{ transitionDelay: "1500ms" }}
         >
           <div className="max-w-md space-y-6">
-            <p className="text-ink/50 text-lg leading-relaxed">
-              Not just eyewear — a unique blend of clinical precision and luxury fashion.
-              Find frames that feel like you.
+            <p className="text-ink/60 text-xl leading-relaxed font-display font-semibold">
+              Clarity without compromise.<br />
+              <span className="text-ink/40 font-body font-normal text-lg">Your world, in high definition.</span>
+            </p>
+            <p className="text-ink/35 text-sm leading-relaxed font-body">
+              Beyond the lens lies a world of detail — where health meets high-fashion, designed for those who see more.
             </p>
             <div className="flex items-center gap-8" ref={statsRef}>
               <div>

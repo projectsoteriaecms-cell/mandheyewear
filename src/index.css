@@ -279,6 +279,24 @@ All colors MUST be HSL.
     color: hsl(var(--ink));
   }
 
+  /* Cream section with subtle grain texture overlay */
+  .section-cream-grain {
+    background: hsl(var(--cream));
+    color: hsl(var(--ink));
+    position: relative;
+  }
+  .section-cream-grain::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    pointer-events: none;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+  }
+
   .feature-card {
     background: hsl(var(--feature-card));
     border-color: hsl(var(--feature-border));
