@@ -13,6 +13,7 @@ import {
   CalendarCheck,
   FileText,
   Receipt,
+  Megaphone,
 } from "@phosphor-icons/react";
 
 export interface NavItem {
