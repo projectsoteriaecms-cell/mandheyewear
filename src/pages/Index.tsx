@@ -58,7 +58,7 @@ const Index = () => {
 
       {/* Chat Assistant Launcher */}
       <button 
-        className="fixed bottom-6 right-6 p-4 rounded-full bg-accent text-accent-foreground shadow-gold hover:shadow-xl hover:scale-110 transition-all z-40 animate-float-slow"
+        className="fixed bottom-6 right-6 p-4 rounded-full bg-flame text-white shadow-flame hover:shadow-xl hover:scale-110 transition-all z-40 animate-float-slow"
         aria-label="Open chat assistant"
       >
         <Sparkle weight="duotone" className="h-6 w-6" />
