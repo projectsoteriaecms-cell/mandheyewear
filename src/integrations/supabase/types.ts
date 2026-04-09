@@ -986,6 +986,51 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_banners: {
+        Row: {
+          created_at: string
+          date_label: string
+          description: string
+          disclaimer: string
+          discount_prefix: string
+          discount_value: string
+          featured_product_ids: string[]
+          id: string
+          is_active: boolean
+          title_line1: string
+          title_line2: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_label?: string
+          description?: string
+          disclaimer?: string
+          discount_prefix?: string
+          discount_value?: string
+          featured_product_ids?: string[]
+          id?: string
+          is_active?: boolean
+          title_line1?: string
+          title_line2?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_label?: string
+          description?: string
+          disclaimer?: string
+          discount_prefix?: string
+          discount_value?: string
+          featured_product_ids?: string[]
+          id?: string
+          is_active?: boolean
+          title_line1?: string
+          title_line2?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       purchase_order_items: {
         Row: {
           created_at: string

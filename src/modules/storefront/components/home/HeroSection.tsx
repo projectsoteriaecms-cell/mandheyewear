@@ -55,11 +55,97 @@ const FrameSlot = ({
   </span>
 );
 
+interface PromoBanner {
+  id: string;
+  title_line1: string;
+  title_line2: string;
+  date_label: string;
+  description: string;
+  discount_prefix: string;
+  discount_value: string;
+  disclaimer: string;
+  featured_product_ids: string[];
+}
+
+const defaultBanner: PromoBanner = {
+  id: "",
+  title_line1: "New Season",
+  title_line2: "Collection",
+  date_label: "April 2026 Drop",
+  description: "Every frame you love — now with a fresh new twist. Explore our latest arrivals before they are gone.",
+  discount_prefix: "Up to",
+  discount_value: "20% OFF",
+  disclaimer: "T&Cs apply • Limited time offer",
+  featured_product_ids: [],
+};
+
 export const HeroSection = () => {
   const [loaded, setLoaded] = useState(false);
   const statsRef = useRef<HTMLDivElement>(null);
 
-  // Fetch real product images
+  // Fetch active promo banner
+  const { data: banner } = useQuery({
+    queryKey: ["active-promo-banner"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("promo_banners")
+        .select("*")
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+      if (error || !data) return defaultBanner;
+      return {
+        id: data.id,
+        title_line1: data.title_line1 || defaultBanner.title_line1,
+        title_line2: data.title_line2 || defaultBanner.title_line2,
+        date_label: data.date_label || defaultBanner.date_label,
+        description: data.description || defaultBanner.description,
+        discount_prefix: data.discount_prefix || defaultBanner.discount_prefix,
+        discount_value: data.discount_value || defaultBanner.discount_value,
+        disclaimer: data.disclaimer || defaultBanner.disclaimer,
+        featured_product_ids: (data.featured_product_ids || []) as string[],
+      } as PromoBanner;
+    },
+    staleTime: 60_000,
+  });
+
+  const activeBanner = banner || defaultBanner;
+
+  // Fetch featured product images
+  const { data: featuredImages } = useQuery({
+    queryKey: ["promo-featured-images", activeBanner.featured_product_ids],
+    queryFn: async () => {
+      if (!activeBanner.featured_product_ids.length) return [];
+      const { data } = await supabase
+        .from("products")
+        .select("id, image_url, name")
+        .in("id", activeBanner.featured_product_ids);
+      // Preserve the order from featured_product_ids
+      const map = new Map((data || []).map((p) => [p.id, p]));
+      return activeBanner.featured_product_ids
+        .map((id) => map.get(id))
+        .filter(Boolean) as { id: string; image_url: string | null; name: string }[];
+    },
+    enabled: activeBanner.featured_product_ids.length > 0,
+    staleTime: 60_000,
+  });
+
+  // Build featured frame images for the promo card (static, non-rotating)
+  const promoFrameImages = useMemo(() => {
+    const dbImages = (featuredImages || [])
+      .filter((p) => p.image_url)
+      .map((p) => ({ src: p.image_url!, alt: p.name }));
+    if (dbImages.length >= 3) return dbImages.slice(0, 4);
+    // Fill with static fallbacks
+    const fallbacks = [
+      { src: frame2, alt: "Frame" },
+      { src: frame3, alt: "Frame" },
+      { src: frame4, alt: "Frame" },
+    ];
+    return [...dbImages, ...fallbacks].slice(0, 3);
+  }, [featuredImages]);
+
+  // Fetch real product images for hero carousel
   const { data: productImages } = useQuery({
     queryKey: ["hero-frame-images"],
     queryFn: async () => {
@@ -81,7 +167,6 @@ export const HeroSection = () => {
   const allFrames = useMemo(() => {
     const dbImages = productImages || [];
     if (dbImages.length >= 4) return dbImages.slice(0, 20);
-    // Merge with fallbacks, deduplicated
     const merged = [...dbImages, ...staticFallbacks];
     const unique = Array.from(new Set(merged));
     return unique.slice(0, 20);
@@ -95,7 +180,6 @@ export const HeroSection = () => {
   const [fading1, setFading1] = useState(false);
   const [fading2, setFading2] = useState(false);
 
-  // Refs to always have latest indices in interval callbacks
   const img1Ref = useRef(img1Index);
   const img2Ref = useRef(img2Index);
   img1Ref.current = img1Index;
@@ -184,7 +268,6 @@ export const HeroSection = () => {
         {/* Giant typographic headline */}
         <div className="relative mb-8 sm:mb-12">
           <h1 className="font-display font-extrabold text-[clamp(2.2rem,9vw,8rem)] leading-[0.88] tracking-tight text-cream">
-            {/* Line 1: "A clearer [IMG]" */}
             {["A", "clearer", "IMG1"].map((word, i) => (
               <span key={i} className="inline-block overflow-hidden">
                 <span
@@ -209,7 +292,6 @@ export const HeroSection = () => {
               </span>
             ))}
             <br />
-            {/* Line 2: "outl[OO]k [IMG] on life" — with twin-lens OO */}
             {["OUTLOOK", "IMG2", "on", "life"].map((word, i) => (
               <span key={`b-${i}`} className="inline-block overflow-hidden">
                 <span
@@ -242,7 +324,7 @@ export const HeroSection = () => {
           </h1>
         </div>
 
-        {/* Promo banner */}
+        {/* Promo banner — dynamic from database */}
         <div
           className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-ink-light mb-8 sm:mb-12 border border-cream/5 transition-all duration-[900ms] ${loaded ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-12 scale-[0.95]"}`}
           style={{
@@ -258,30 +340,46 @@ export const HeroSection = () => {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_auto] items-center min-h-[180px] lg:min-h-[240px]">
             <div className="p-5 sm:p-8 lg:p-10 space-y-2 sm:space-y-3">
               <h2 className="font-display font-extrabold text-2xl sm:text-3xl lg:text-5xl text-cream leading-[1.05] uppercase">
-                New Season<br />
-                <span className="text-mh-gold">Collection</span>
+                {activeBanner.title_line1}<br />
+                <span className="text-mh-gold">{activeBanner.title_line2}</span>
               </h2>
               <div className="inline-block px-3 sm:px-4 py-1 sm:py-1.5 border-2 border-dashed border-mh-gold/50 rounded-lg">
-                <span className="font-display font-bold text-xs sm:text-sm text-mh-gold tracking-wide">April 2026 Drop</span>
+                <span className="font-display font-bold text-xs sm:text-sm text-mh-gold tracking-wide">{activeBanner.date_label}</span>
               </div>
             </div>
 
             <div className="px-5 sm:px-8 lg:px-4 pb-5 sm:pb-6 lg:pb-0 space-y-2 sm:space-y-3">
-              <p className="text-cream/70 text-base sm:text-lg font-body">Every frame you love</p>
+              <p className="text-cream/70 text-base sm:text-lg font-body">{activeBanner.description}</p>
               <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 bg-cream rounded-full">
                 <Tag weight="fill" className="w-4 h-4 sm:w-5 sm:h-5 text-flame" />
-                <span className="font-display font-extrabold text-ink text-xs sm:text-sm uppercase tracking-wider">Up to</span>
-                <span className="font-display font-extrabold text-flame text-2xl sm:text-3xl">20% OFF</span>
+                <span className="font-display font-extrabold text-ink text-xs sm:text-sm uppercase tracking-wider">{activeBanner.discount_prefix}</span>
+                <span className="font-display font-extrabold text-flame text-2xl sm:text-3xl">{activeBanner.discount_value}</span>
               </div>
-              <p className="text-cream/40 text-xs">T&Cs apply</p>
+              <p className="text-cream/40 text-xs">{activeBanner.disclaimer}</p>
             </div>
 
-            <div className="hidden lg:flex items-end justify-center px-6 pb-0 relative h-full">
-              <div className="relative w-[260px] h-[220px]">
-                <div className="absolute inset-0 bg-gradient-to-t from-mh-gold/20 to-transparent rounded-t-3xl" />
-                <img src={frame2} alt="Frame" className="absolute bottom-0 left-0 w-28 h-28 object-cover rounded-xl shadow-lg border-2 border-mh-gold/15 rotate-[-6deg] animate-float-slow" />
-                <img src={frame3} alt="Frame" className="absolute bottom-4 left-1/2 -translate-x-1/2 w-32 h-32 object-cover rounded-xl shadow-xl border-2 border-mh-gold/15 z-10 animate-float-gentle" />
-                <img src={frame4} alt="Frame" className="absolute bottom-0 right-0 w-28 h-28 object-cover rounded-xl shadow-lg border-2 border-mh-gold/15 rotate-[6deg] animate-float" style={{ animationDelay: "0.5s" }} />
+            {/* Featured frames — desktop: staggered column, mobile: horizontal row */}
+            <div className="flex lg:flex-col items-center justify-center gap-3 px-5 pb-5 lg:px-6 lg:pb-0 relative lg:h-full">
+              <div className="flex lg:flex-col items-end justify-center gap-2 lg:gap-0 lg:relative lg:w-[260px] lg:h-[220px]">
+                <div className="hidden lg:block absolute inset-0 bg-gradient-to-t from-mh-gold/20 to-transparent rounded-t-3xl" />
+                {promoFrameImages.map((img, i) => {
+                  const desktopPositions = [
+                    "lg:absolute lg:bottom-0 lg:left-0 lg:rotate-[-6deg]",
+                    "lg:absolute lg:bottom-4 lg:left-1/2 lg:-translate-x-1/2 lg:z-10",
+                    "lg:absolute lg:bottom-0 lg:right-0 lg:rotate-[6deg]",
+                    "lg:absolute lg:bottom-8 lg:left-1/2 lg:-translate-x-1/2 lg:z-20",
+                  ];
+                  return (
+                    <img
+                      key={i}
+                      src={img.src}
+                      alt={img.alt}
+                      className={`w-16 h-16 sm:w-20 sm:h-20 lg:w-28 lg:h-28 object-cover rounded-xl shadow-lg border-2 border-mh-gold/15 ${
+                        i === 1 ? "lg:w-32 lg:h-32 lg:shadow-xl" : ""
+                      } ${desktopPositions[i] || desktopPositions[2]}`}
+                    />
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -297,14 +395,12 @@ export const HeroSection = () => {
           }}
         >
           <div className="max-w-md space-y-5 sm:space-y-7">
-            {/* Visionary pillar — lead statement */}
             <div className="relative pl-4 sm:pl-5 border-l-2 border-mh-gold/40">
               <p className="font-display font-bold text-lg sm:text-xl leading-snug text-cream tracking-tight">
                 For those who see the future<br className="hidden sm:block" /> before it arrives.
               </p>
             </div>
 
-            {/* Clarity tagline — glass-morphic chip */}
             <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-cream/[0.06] backdrop-blur-md border border-cream/10 shadow-[0_0_20px_rgba(212,175,55,0.08)]">
               <span className="w-1.5 h-1.5 rounded-full bg-mh-gold animate-pulse" />
               <span className="font-display font-semibold text-sm sm:text-base text-cream/90 tracking-wide">
@@ -316,7 +412,6 @@ export const HeroSection = () => {
               </span>
             </div>
 
-            {/* Shakara pillar — editorial whisper */}
             <p className="text-cream/50 text-sm sm:text-base leading-relaxed font-body tracking-wide max-w-sm">
               A new <span className="font-display font-bold text-mh-gold italic">frame</span> of mind. Your outlook should be as loud as your ambition,<br className="hidden sm:block" />
               <span className="text-cream/70 font-display font-semibold">but as silent as true luxury.</span>
@@ -339,7 +434,7 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          {/* CTAs — full-width on mobile */}
+          {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
             <Link
               to="/eyewear"

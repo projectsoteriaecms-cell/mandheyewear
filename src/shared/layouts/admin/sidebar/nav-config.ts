@@ -13,6 +13,7 @@ import {
   CalendarCheck,
   FileText,
   Receipt,
+  Megaphone,
 } from "@phosphor-icons/react";
 
 export interface NavItem {
@@ -93,6 +94,12 @@ export const navItems: NavItem[] = [
     href: "/admin/reports",
     icon: ChartBar,
     requiresManager: true,
+  },
+  {
+    title: "Promo Banner",
+    href: "/admin/promo-banner",
+    icon: Megaphone,
+    requiresAdmin: true,
   },
   {
     title: "Delivery Report",
