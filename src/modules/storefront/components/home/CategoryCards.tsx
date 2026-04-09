@@ -33,12 +33,16 @@ export const CategoryCards = () => {
 
         {/* Cards */}
         <div ref={cardsRef as React.RefObject<HTMLDivElement>} className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6 perspective-1000">
-          {/* Large hero card */}
+          {/* Large hero card — Ken Burns + shimmer */}
           <Link
             to={categories[0].path}
             className={`group relative overflow-hidden rounded-2xl min-h-[400px] lg:min-h-[540px] hover-tilt transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
           >
             <img src={categories[0].image} alt={categories[0].name} className="absolute inset-0 w-full h-full object-cover animate-ken-burns" />
+            {/* Gold shimmer overlay */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute inset-0 -translate-x-full animate-shimmer-sweep bg-gradient-to-r from-transparent via-mh-gold/5 to-transparent" style={{ animationDuration: "4s" }} />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent group-hover:from-ink/95 transition-all duration-500" />
             <div className="absolute top-6 left-6">
               <span className="inline-block px-3 py-1.5 rounded-full bg-mh-gold/10 backdrop-blur-sm border border-mh-gold/20 text-cream text-xs font-display font-bold tracking-wider animate-pulse-soft">
@@ -54,14 +58,20 @@ export const CategoryCards = () => {
             </div>
           </Link>
 
-          {/* Two stacked cards */}
+          {/* Two stacked cards — flip-in entrance */}
           <div className="flex flex-col gap-5 lg:gap-6">
             {categories.slice(1).map((cat, i) => (
               <Link
                 key={cat.name}
                 to={cat.path}
-                className={`group relative overflow-hidden rounded-2xl min-h-[200px] lg:flex-1 hover-tilt transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
-                style={{ transitionDelay: inView ? `${(i + 1) * 150}ms` : "0ms" }}
+                className={`group relative overflow-hidden rounded-2xl min-h-[200px] lg:flex-1 hover-tilt transition-all duration-700 ${inView ? "opacity-100" : "opacity-0"}`}
+                style={{
+                  transitionDelay: inView ? `${(i + 1) * 150}ms` : "0ms",
+                  transform: inView
+                    ? "perspective(1000px) rotateY(0deg)"
+                    : "perspective(1000px) rotateY(-30deg)",
+                  transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+                }}
               >
                 <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent group-hover:from-ink/95 transition-all duration-500" />
