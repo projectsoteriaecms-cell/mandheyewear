@@ -1,97 +1,85 @@
 
 
-## Landing Page UX Overhaul — Hypnotic Editorial Experience
+## Copy & Vibe Overhaul — African Editorial Identity
 
-The current page is static and flat. Every section loads immediately with no motion, no reveals, no theatrics. This plan transforms it into an immersive, scroll-driven editorial experience that's hard to look away from.
-
-### Design Philosophy
-Merge a fashion lookbook's drama with clinical precision's trust. Every scroll should feel like turning a page of a luxury magazine — elements reveal themselves with choreographed timing, images breathe and shift, and the eye is guided through a visual story.
+### The Problem
+Current copy ("where vision lives — now") is generic and could belong to any global eyewear brand. It has no cultural texture, no double-meaning wordplay, and doesn't speak to an African audience. The background feels flat.
 
 ---
 
-### Changes
+### Copy Direction (Refined from your picks)
 
-**1. New hook: `useScrollReveal.ts`** — Intersection Observer-based scroll animation trigger
-- Watches elements as they enter the viewport
-- Applies staggered CSS class transitions (fade, slide, scale)
-- Configurable threshold and delay per element
-- Used by every section for choreographed reveals
+**Hero Headline (two-line reveal):**
+```
+A clearer satisfying outlook
+on life.
+```
+— "Outlook" is a triple pun: (1) how you see/your vision, (2) your perspective on life, (3) your look/appearance. Bridges clinical + fashion + identity.
 
-**2. Rewrite: `HeroSection.tsx`** — Full-viewport cinematic hero
-- **Full viewport height** (`min-h-screen`) with a layered parallax feel
-- **Animated text reveal**: Each word of "where vision lives — now" clips in sequentially with `text-reveal` animation on load (not on scroll — this is the opening hook)
-- **Floating product images**: The inline images get a continuous `float-slow` animation so they gently drift, creating life
-- **Parallax-layered background**: Subtle radial gradient that shifts with a CSS animation (slow `breathe` pulse on a gold glow behind the headline)
-- **Promo banner**: Stays but gets a shimmer sweep animation across it on load
-- **Stats counter**: Numbers animate up from 0 using a `useCountUp` hook when they scroll into view
-- **CTAs**: Magnetic hover effect — buttons subtly shift toward cursor direction on hover
-- **Scroll indicator**: A small animated chevron/line at the bottom pulsing to invite scrolling
+**Hero Subtext:**
+> "Clarity without compromise. Your world, in high definition."
 
-**3. Rewrite: `MarqueeTicker.tsx`** — Dual-direction ticker with glow
-- **Two rows** scrolling in opposite directions (like the VELOUR reference)
-- Top row: brand keywords scrolling left
-- Bottom row: different keywords scrolling right (slower speed)
-- Gold glow line separating the two
-- Text size increase — bolder presence
-- Slight vertical padding increase for drama
+**Supporting line (smaller, editorial):**
+> "Beyond the lens lies a world of detail — where health meets high-fashion, designed for those who see more."
 
-**4. Rewrite: `EditorialGrid.tsx`** — Scroll-revealed numbered cards
-- Each card uses `useScrollReveal` to fade + slide up with staggered delays
-- On hover: image does a slow Ken Burns zoom + the gradient overlay darkens
-- Number labels get a subtle `scale-spring` pop when they enter viewport
-- The section header "See differently." gets a `text-reveal` clip animation on scroll
+**Cultural punch lines** woven throughout the page (marquee, editorial grid captions, CTAs):
+- "Sharp eyes. Sharper style." — Nigerian swagger energy
+- "No dull moment. No dull frames."  — plays on the Naija expression
+- "Your face. Your canvas." — identity-first, relatable
+- "See am. Believe am." — subtle pidgin nod, universally understood
+- "Big vision. Bigger statement."
+- "Eye no dey lie." — pidgin proverb meets brand truth (the eye doesn't lie)
+- "Na style wey dey see road." — pidgin: "It's style that sees the way" (fashion + vision)
+- "Clarity dey cost — but we no go overcharge you." — cheeky, trust-building
 
-**5. Rewrite: `CategoryCards.tsx`** — Cinematic reveal + hover depth
-- Large card: Ken Burns slow zoom animation continuously playing
-- All cards: `hover-tilt` 3D perspective shift on hover
-- Scroll-triggered `cascade` reveal animation with stagger
-- Badge counts get a subtle `pulse-soft` animation
+**Marquee ticker items (culturally flavored):**
+Top row: `SHARP EYES • DESIGNER FRAMES • CLARITY WITHOUT COMPROMISE • AI STYLING • FREE EYE EXAMS • HIGH DEFINITION`
+Bottom row: `EYE NO DEY LIE • PRECISION LENSES • YOUR FACE YOUR CANVAS • VIRTUAL TRY-ON • BIG VISION • SAME DAY SERVICE`
 
-**6. Rewrite: `TestimonialSection.tsx`** — Auto-rotating spotlight
-- Auto-cycle through testimonials every 5 seconds with a crossfade transition
-- Show one large featured quote at a time (not 3-column grid)
-- Large opening quotation mark with `float-gentle` animation
-- Star rating sparkles with `glow-pulse`
-- Manual dot navigation below
+**Editorial Grid section header:**
+- Label: "The M&H Standard"
+- Headline: `See more. Be more.`
 
-**7. Rewrite: `DualCtaSection.tsx`** — Split-screen reveal
-- Each panel slides in from its respective side (left panel from left, right from right) on scroll
-- Hover: image scale + gold glow bloom from the bottom corner
-- A thin animated gold line divides the two panels
+**Dual CTA section headlines:**
+- Left: "Sharp Eyes" (clinical) → subtext: "Precision care from certified specialists."
+- Right: "Sharper Style" (fashion) → subtext: "Frames that speak before you do."
 
-**8. Rewrite: `TrustBadges.tsx`** — Ticker-style trust bar
-- Convert to a secondary marquee that scrolls horizontally on mobile
-- On desktop: staggered `pop-in` animation when scrolling into view
+---
 
-**9. New: `ScrollProgress.tsx`** — Gold progress bar
-- Thin gold line at the very top of the viewport (fixed) showing scroll progress
-- Adds a sense of intentional journey through the page
+### Background & Atmosphere Fix
 
-**10. Update: `Index.tsx`**
-- Add `ScrollProgress` component
-- All sections wrapped with scroll reveal triggers
+Replace the current flat cream with a **warm off-white (#FAF8F5) to soft warm gray gradient** — feels calm but premium. Add:
+- A subtle CSS noise/grain texture overlay (tiny repeating SVG) for tactile richness
+- The breathing gold glow stays but shifts to a warmer, deeper tone
+- Promo banner remains dark ink — high contrast preserved
 
-**11. New hook: `useCountUp.ts`**
-- Animates numbers from 0 to target value
-- Triggered by intersection observer
-- Used in hero stats (50K+, 5+, 2,800+)
+---
 
-**12. CSS additions in `index.css`**
-- `.marquee-reverse` for opposite-direction ticker
-- `.scroll-progress-bar` fixed positioning
-- Smooth scroll behavior on html element
+### File Changes
+
+**1. `HeroSection.tsx`** — New copy throughout
+- Headline: "A clearer outlook on life." with word-by-word reveal
+- Subtext: "Clarity without compromise. Your world, in high definition."
+- Supporting editorial line below
+- Background: warm off-white with subtle grain overlay
+- All existing animations preserved
+
+**2. `MarqueeTicker.tsx`** — Culturally flavored items
+- Replace generic items with the punch lines above
+- Mix English + subtle pidgin references
+
+**3. `EditorialGrid.tsx`** — New section header
+- "The M&H Standard" label, "See more. Be more." headline
+- Update block descriptions with punchier editorial copy
+
+**4. `DualCtaSection.tsx`** — "Sharp Eyes / Sharper Style" headlines
+
+**5. `TestimonialSection.tsx`** — Update header copy to "Eye no dey lie."
+
+**6. `index.css`** — Add subtle grain texture class using a tiny SVG noise pattern as a pseudo-element on the cream sections
 
 ### What Does NOT Change
-- Navigation, Footer, routing, data fetching, cart, auth
-- FeaturedFrames (database-driven, separate concern)
-- Color palette, typography (Syne + DM Sans), design tokens
-- Mobile bottom nav
-
-### Technical Notes
-- All animations use existing Tailwind keyframes + CSS classes (no new JS animation libraries)
-- `useScrollReveal` uses native `IntersectionObserver` — zero dependencies
-- `useCountUp` uses `requestAnimationFrame` — lightweight
-- Testimonial auto-rotation uses `setInterval` with cleanup
-- `prefers-reduced-motion` media query respected — all animations disabled for accessibility
-- No layout shift — elements have explicit dimensions before animation triggers
+- Layout structure, animations, components, routing
+- Promo banner content (sale details stay)
+- Stats, CTAs, images, all hooks
 
