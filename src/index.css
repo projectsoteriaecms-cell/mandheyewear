@@ -268,7 +268,18 @@ All colors MUST be HSL.
     background: hsl(var(--feature-bg));
   }
 
-  .feature-card {
+  /* Section utility classes - editorial alternating blocks */
+  .section-ink {
+    background: hsl(var(--ink));
+    color: hsl(var(--cream));
+  }
+
+  .section-cream {
+    background: hsl(var(--cream));
+    color: hsl(var(--ink));
+  }
+
+
     background: hsl(var(--feature-card));
     border-color: hsl(var(--feature-border));
   }
