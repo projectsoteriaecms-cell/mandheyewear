@@ -250,6 +250,10 @@ All colors MUST be HSL.
     box-shadow: var(--shadow-glow-primary);
   }
 
+  .shadow-flame {
+    box-shadow: var(--shadow-flame);
+  }
+
   /* Transition utilities */
   .transition-smooth {
     transition: var(--transition-smooth);
