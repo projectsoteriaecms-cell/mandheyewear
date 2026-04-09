@@ -23,15 +23,29 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        soteria: {
-          blue: "hsl(var(--soteria-blue))",
-          'blue-light': "hsl(var(--soteria-blue-light))",
-          'blue-dark': "hsl(var(--soteria-blue-dark))",
+        ink: {
+          DEFAULT: "hsl(var(--ink))",
+          light: "hsl(var(--ink-light))",
+          muted: "hsl(var(--ink-muted))",
+        },
+        cream: {
+          DEFAULT: "hsl(var(--cream))",
+          dark: "hsl(var(--cream-dark))",
+        },
+        navy: {
+          DEFAULT: "hsl(var(--navy))",
+          light: "hsl(var(--navy-light))",
+          dark: "hsl(var(--navy-dark))",
         },
         mh: {
           gold: "hsl(var(--mh-gold))",
           'gold-light': "hsl(var(--mh-gold-light))",
           'gold-dark': "hsl(var(--mh-gold-dark))",
+        },
+        flame: {
+          DEFAULT: "hsl(var(--flame))",
+          light: "hsl(var(--flame-light))",
+          dark: "hsl(var(--flame-dark))",
         },
         primary: {
           DEFAULT: "hsl(var(--primary))",
