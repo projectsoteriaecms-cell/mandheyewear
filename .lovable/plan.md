@@ -1,42 +1,38 @@
 
 
-## Dynamic Frame Carousel + "OUTLOOK" Typographic Logo Treatment
+## Dynamic Hero Frame Carousel — Real Product Images from Catalogue
 
-### Two Features
-
-**1. Rotating frame images in the headline (every 5 seconds)**
-
-The two inline images (`IMG1` and `IMG2`) in "A clearer [IMG1] outlook [IMG2] on life" currently show static images. We'll add a `useEffect` interval that cycles through `[heroEyewear, frame1, frame2, frame3, frame4]` with a crossfade animation. Each image slot cycles independently with offset timing for visual depth.
-
-- Add `currentImg1` and `currentImg2` state variables
-- `useEffect` with `setInterval(5000)` cycling through the frame images array
-- Crossfade transition: outgoing image fades + blurs out, incoming fades + blurs in (0.6s transition)
-- Two image elements stacked with `absolute` positioning — one fading out while the other fades in
-
-**2. "OUTLOOK" typographic logo treatment — twin-lens OO**
-
-Transform the word "outlook" so the two "O"s in "look" are rendered as connected lens shapes — like a pair of glasses viewed from the front. The word gets a distinct gold color treatment.
-
-- Split "outlook" into: `"outl"` + `"oo"` + `"k"`
-- The `"oo"` renders as an inline SVG: two circles connected by a bridge line (like spectacle lenses from the front), sized to match the font
-- The entire word gets `text-mh-gold` color to make it pop against cream text
-- The SVG lenses get a subtle shimmer animation (a gold highlight sweep every few seconds)
-- On mobile, the SVG scales proportionally with the `clamp()` font size using `1em`-based sizing
-
-**Strategic secondary placement:**
-- In the Editorial Grid section header "Stay sharp. In every sense." — the period after "sharp" becomes a tiny gold lens dot
-- In the Marquee ticker — the item "STAY SHARP IN EVERY SENSE" gets the OO lens treatment on any "OO" occurrences
+### The Problem
+Currently only 5 static asset images rotate in the hero. The user wants ~20 real frames from the product catalogue, with smooth image-only transitions (no container flicker), and the two slots must never show the same frame simultaneously.
 
 ---
 
-### Files Modified
+### Approach
 
-1. **`HeroSection.tsx`** — Image carousel logic + "outlook" SVG lens treatment
-2. **`EditorialGrid.tsx`** — Gold lens dot on "sharp."
-3. **`index.css`** — `@keyframes lens-shimmer` for the SVG highlight sweep
+**Fetch real product images from the database** — query up to 20 active products with images (same pattern already used in `QuickDiscovery.tsx`). Fall back to the 5 static assets if the query returns nothing.
+
+**Stable container, content-only crossfade** — the rounded-pill container stays perfectly still. Inside it, two `<img>` tags are stacked (`absolute`). The outgoing image fades to `opacity-0` while the incoming fades to `opacity-100`. No blur, no scale, no movement on the container itself.
+
+**No duplicate logic** — slot 2 always picks the next index that isn't currently showing in slot 1, and vice versa. Simple: slot 1 uses even indices, slot 2 uses odd indices from a shuffled array, or we track both and skip collisions.
+
+---
+
+### Changes — Single File
+
+**`HeroSection.tsx`**
+
+1. Add a `useQuery` call to fetch ~20 product `image_url`s from the `products` table (active, has image, frames only) — identical pattern to QuickDiscovery
+2. Merge fetched URLs with the 5 static fallbacks into a single `allFrames` array (deduplicated, capped at 20)
+3. Rewrite the carousel logic:
+   - Two state vars: `img1Index` and `img2Index`, initialized to `0` and `1`
+   - Two `fading` states for crossfade control
+   - On each 5s tick for slot 1: fade out current, after 500ms set new index (skipping whatever slot 2 is showing), fade in
+   - Slot 2 offset by 2.5s, same logic but skips slot 1's current index
+4. Fix the container: remove any transition/transform on the outer `<span>` wrapper. Only the `<img>` inside gets `transition-opacity duration-500`. No blur, no scale on transition — just a clean opacity swap
+5. Use two stacked `<img>` elements per slot (current + next) for seamless crossfade without any container movement
 
 ### What Does NOT Change
-- Layout, spacing, mobile responsiveness, all other copy
-- Promo banner, stats, CTAs, scroll indicator
-- All existing animations and transitions
+- Container shape, size, border, shadow — all stay fixed
+- Twin-lens SVG, headline layout, all other copy
+- Mobile responsiveness, promo banner, stats, CTAs
 
