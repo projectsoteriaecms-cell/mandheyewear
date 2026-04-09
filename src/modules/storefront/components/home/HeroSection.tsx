@@ -195,9 +195,6 @@ export const HeroSection = () => {
     [allFrames.length]
   );
 
-  const stat1 = useCountUp({ end: 50, suffix: "K+" });
-  const stat2 = useCountUp({ end: 5, suffix: "+" });
-  const stat3 = useCountUp({ end: 2800, suffix: "+" });
 
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 100);
@@ -416,21 +413,8 @@ export const HeroSection = () => {
               A new <span className="font-display font-bold text-mh-gold italic">frame</span> of mind. Your outlook should be as loud as your ambition,<br className="hidden sm:block" />
               <span className="text-cream/70 font-display font-semibold">but as silent as true luxury.</span>
             </p>
-            <div className="flex items-center gap-4 sm:gap-8" ref={statsRef}>
-              <div>
-                <p className="font-display font-extrabold text-xl sm:text-2xl text-cream" ref={stat1.ref as React.RefObject<HTMLParagraphElement>}>{stat1.displayValue}</p>
-                <p className="text-[10px] sm:text-xs text-cream/40 uppercase tracking-wider font-display">Happy Customers</p>
-              </div>
-              <div className="w-px h-8 sm:h-10 bg-cream/10" />
-              <div>
-                <p className="font-display font-extrabold text-xl sm:text-2xl text-cream" ref={stat2.ref as React.RefObject<HTMLParagraphElement>}>{stat2.displayValue}</p>
-                <p className="text-[10px] sm:text-xs text-cream/40 uppercase tracking-wider font-display">Locations</p>
-              </div>
-              <div className="w-px h-8 sm:h-10 bg-cream/10" />
-              <div>
-                <p className="font-display font-extrabold text-xl sm:text-2xl text-cream" ref={stat3.ref as React.RefObject<HTMLParagraphElement>}>{stat3.displayValue}</p>
-                <p className="text-[10px] sm:text-xs text-cream/40 uppercase tracking-wider font-display">Frames</p>
-              </div>
+            <div className="flex items-center gap-4 sm:gap-0" ref={statsRef}>
+              {"\n\n\n\n\n\n\n\n\n\n\n\n\n"}
             </div>
           </div>
 
