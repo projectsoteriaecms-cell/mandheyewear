@@ -1,134 +1,97 @@
 
 
-## Editorial Storytelling Landing Page Revamp
+## Landing Page UX Overhaul — Hypnotic Editorial Experience
 
-Inspired by the VELOUR reference — bold typographic hero, scrolling marquee tickers, numbered editorial sections, lifestyle imagery integrated into text, and a clean Cream/Ink alternating rhythm. Adapted for M&H Eyewear's unique dual identity: luxury fashion eyewear + clinical eye care.
+The current page is static and flat. Every section loads immediately with no motion, no reveals, no theatrics. This plan transforms it into an immersive, scroll-driven editorial experience that's hard to look away from.
 
-### Design Language (from references)
+### Design Philosophy
+Merge a fashion lookbook's drama with clinical precision's trust. Every scroll should feel like turning a page of a luxury magazine — elements reveal themselves with choreographed timing, images breathe and shift, and the eye is guided through a visual story.
 
-```text
-┌──────────────────────────────────────────────────┐
-│  HERO — Full-width typographic statement         │
-│  "where vision lives — now"                      │
-│  Giant Syne Bold text with product images         │
-│  floating between words. Cream bg, Ink text.     │
-├──────────────────────────────────────────────────┤
-│  MARQUEE TICKER — horizontal scrolling bar       │
-│  "SMART STYLING • PREMIUM FRAMES • EYE CARE •"  │
-│  Ink bg, Gold text, continuous loop              │
-├──────────────────────────────────────────────────┤
-│  EDITORIAL GRID — "All about vision ©26"         │
-│  Asymmetric image + text blocks, numbered        │
-│  01/06, 02/06 etc. Cream bg.                     │
-├──────────────────────────────────────────────────┤
-│  COLLECTION SHOWCASE — Category cards            │
-│  Large editorial images, minimal text overlay    │
-│  Ink bg section                                  │
-├──────────────────────────────────────────────────┤
-│  SOCIAL PROOF / TESTIMONIAL — editorial quote    │
-│  Large pull-quote with star rating               │
-│  Cream bg                                        │
-├──────────────────────────────────────────────────┤
-│  FEATURED FRAMES — product grid                  │
-│  Clean cards, Ink bg                             │
-├──────────────────────────────────────────────────┤
-│  DUAL CTA SPLIT — Eyewear | Eye Care            │
-│  Side-by-side editorial panels                   │
-│  Links to /eyewear and /booking                  │
-├──────────────────────────────────────────────────┤
-│  TRUST STRIP + FOOTER                            │
-└──────────────────────────────────────────────────┘
-```
+---
 
-### File Changes
+### Changes
 
-**1. New component: `src/modules/storefront/components/home/MarqueeTicker.tsx`**
-- Infinite horizontal scroll of brand/value keywords
-- "PREMIUM FRAMES • VIRTUAL TRY-ON • FREE EYE EXAMS • AI STYLING • DESIGNER EYEWEAR"
-- Ink background, Gold/Cream text, CSS animation (no JS)
-- Small orange `+` decorators between items (like VELOUR reference)
+**1. New hook: `useScrollReveal.ts`** — Intersection Observer-based scroll animation trigger
+- Watches elements as they enter the viewport
+- Applies staggered CSS class transitions (fade, slide, scale)
+- Configurable threshold and delay per element
+- Used by every section for choreographed reveals
 
-**2. Rewrite: `HeroSection.tsx`**
-- Replace carousel-based hero with a VELOUR-style typographic hero
-- Giant Syne Bold headline: `"where vision lives — now"` (or similar editorial statement)
-- Product/lifestyle images floating between text words (CSS grid/absolute positioning)
-- Cream background, Ink text, Gold accents
-- Small stats counter: "280K+ PEOPLE WE INSPIRE" style
-- Subtle tag labels: `/EYEWEAR`, `/EYE CARE`
-- Two CTAs: "Shop Collection" (Gold) + "Book Eye Exam" (Flame)
-- Remove Embla carousel dependency from hero
+**2. Rewrite: `HeroSection.tsx`** — Full-viewport cinematic hero
+- **Full viewport height** (`min-h-screen`) with a layered parallax feel
+- **Animated text reveal**: Each word of "where vision lives — now" clips in sequentially with `text-reveal` animation on load (not on scroll — this is the opening hook)
+- **Floating product images**: The inline images get a continuous `float-slow` animation so they gently drift, creating life
+- **Parallax-layered background**: Subtle radial gradient that shifts with a CSS animation (slow `breathe` pulse on a gold glow behind the headline)
+- **Promo banner**: Stays but gets a shimmer sweep animation across it on load
+- **Stats counter**: Numbers animate up from 0 using a `useCountUp` hook when they scroll into view
+- **CTAs**: Magnetic hover effect — buttons subtly shift toward cursor direction on hover
+- **Scroll indicator**: A small animated chevron/line at the bottom pulsing to invite scrolling
 
-**3. New component: `src/modules/storefront/components/home/EditorialGrid.tsx`**
-- "All about vision ©26" editorial section
-- Asymmetric grid with numbered blocks (01/06, 02/06...)
-- Mix of frame product images and short editorial copy
-- Each block has a small description + "LEARN MORE →" link
-- Cream background with Ink text
-- Replaces the old `QuickDiscovery` section in the page flow
+**3. Rewrite: `MarqueeTicker.tsx`** — Dual-direction ticker with glow
+- **Two rows** scrolling in opposite directions (like the VELOUR reference)
+- Top row: brand keywords scrolling left
+- Bottom row: different keywords scrolling right (slower speed)
+- Gold glow line separating the two
+- Text size increase — bolder presence
+- Slight vertical padding increase for drama
 
-**4. Rewrite: `CategoryCards.tsx`**
-- Convert from 3-column equal cards to an editorial asymmetric layout
-- One large hero card + two stacked smaller cards
-- Cleaner typography, less overlay clutter
-- Keep existing category data and routing
-- Ink background maintained
+**4. Rewrite: `EditorialGrid.tsx`** — Scroll-revealed numbered cards
+- Each card uses `useScrollReveal` to fade + slide up with staggered delays
+- On hover: image does a slow Ken Burns zoom + the gradient overlay darkens
+- Number labels get a subtle `scale-spring` pop when they enter viewport
+- The section header "See differently." gets a `text-reveal` clip animation on scroll
 
-**5. New component: `src/modules/storefront/components/home/TestimonialSection.tsx`**
-- Large editorial pull-quote testimonial
-- Star rating (5.0, 145 Reviews)
-- Customer name in brackets `[Customer Name]`
-- "See What Our Customers Are Saying" link
-- Cream background
-- Replaces old QuizPromo position (Quiz CTA moves into editorial grid)
+**5. Rewrite: `CategoryCards.tsx`** — Cinematic reveal + hover depth
+- Large card: Ken Burns slow zoom animation continuously playing
+- All cards: `hover-tilt` 3D perspective shift on hover
+- Scroll-triggered `cascade` reveal animation with stagger
+- Badge counts get a subtle `pulse-soft` animation
 
-**6. Rewrite: `VirtualTryOn.tsx`**
-- Simplify to a clean editorial split panel
-- Large image on one side, bold typographic headline on other
-- Keep AI try-on messaging but in editorial tone
-- Ink background
+**6. Rewrite: `TestimonialSection.tsx`** — Auto-rotating spotlight
+- Auto-cycle through testimonials every 5 seconds with a crossfade transition
+- Show one large featured quote at a time (not 3-column grid)
+- Large opening quotation mark with `float-gentle` animation
+- Star rating sparkles with `glow-pulse`
+- Manual dot navigation below
 
-**7. Rewrite: `TrustBadges.tsx`**
-- Convert to a horizontal strip/bar rather than 4-column grid
-- Cleaner, more editorial — single row with dividers
-- Or integrate into footer area
+**7. Rewrite: `DualCtaSection.tsx`** — Split-screen reveal
+- Each panel slides in from its respective side (left panel from left, right from right) on scroll
+- Hover: image scale + gold glow bloom from the bottom corner
+- A thin animated gold line divides the two panels
 
-**8. New component: `src/modules/storefront/components/home/DualCtaSection.tsx`**
-- Side-by-side "Fashion Eyewear" | "Clinical Eye Care" split
-- Each half has a large image, headline, and CTA
-- Represents the brand's dual identity
-- Cream background
+**8. Rewrite: `TrustBadges.tsx`** — Ticker-style trust bar
+- Convert to a secondary marquee that scrolls horizontally on mobile
+- On desktop: staggered `pop-in` animation when scrolling into view
 
-**9. Update: `Index.tsx`**
-- New section order:
-  1. HeroSection (typographic, Cream)
-  2. MarqueeTicker (Ink strip)
-  3. EditorialGrid (Cream) — replaces QuickDiscovery
-  4. CategoryCards (Ink)
-  5. TestimonialSection (Cream) — replaces QuizPromo
-  6. FeaturedFrames (Ink) — kept as-is with minor style tweaks
-  7. DualCtaSection (Cream) — replaces VirtualTryOn
-  8. TrustBadges (Ink strip)
-  9. Footer
+**9. New: `ScrollProgress.tsx`** — Gold progress bar
+- Thin gold line at the very top of the viewport (fixed) showing scroll progress
+- Adds a sense of intentional journey through the page
 
-**10. Update: `src/modules/storefront/components/home/index.ts`**
-- Export new components: MarqueeTicker, EditorialGrid, TestimonialSection, DualCtaSection
-- Keep QuizPromo and VirtualTryOn files but they won't be imported on Index
+**10. Update: `Index.tsx`**
+- Add `ScrollProgress` component
+- All sections wrapped with scroll reveal triggers
 
-**11. CSS additions in `src/index.css`**
-- `.marquee-track` animation for infinite horizontal scroll
-- `.editorial-number` styling for the 01/06 numbered labels
+**11. New hook: `useCountUp.ts`**
+- Animates numbers from 0 to target value
+- Triggered by intersection observer
+- Used in hero stats (50K+, 5+, 2,800+)
+
+**12. CSS additions in `index.css`**
+- `.marquee-reverse` for opposite-direction ticker
+- `.scroll-progress-bar` fixed positioning
+- Smooth scroll behavior on html element
 
 ### What Does NOT Change
-- Navigation (TopBar + MainNav) — already updated in Phase 2
-- Footer — already Ink-based and working
-- FeaturedFrames — keeps its database-driven product grid (minor style polish only)
+- Navigation, Footer, routing, data fetching, cart, auth
+- FeaturedFrames (database-driven, separate concern)
+- Color palette, typography (Syne + DM Sans), design tokens
 - Mobile bottom nav
-- All routing, data fetching, cart, auth logic
-- Typography system (Syne + DM Sans already applied)
 
 ### Technical Notes
-- Embla carousel removed from hero (simpler, more editorial)
-- Marquee uses pure CSS `@keyframes` for performance
-- All new components use existing Tailwind tokens (ink, cream, mh-gold, flame)
-- Images: reuse existing assets (hero-eyewear.jpg, hero-eye-care.jpg, frame-*.jpg) positioned editorially
+- All animations use existing Tailwind keyframes + CSS classes (no new JS animation libraries)
+- `useScrollReveal` uses native `IntersectionObserver` — zero dependencies
+- `useCountUp` uses `requestAnimationFrame` — lightweight
+- Testimonial auto-rotation uses `setInterval` with cleanup
+- `prefers-reduced-motion` media query respected — all animations disabled for accessibility
+- No layout shift — elements have explicit dimensions before animation triggers
 
