@@ -247,6 +247,10 @@ export default {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        "marquee-scroll-reverse": {
+          "0%": { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(0)" },
+        },
       },
       animation: {
         // Basic
@@ -302,6 +306,7 @@ export default {
         // Breathing
         "breathe": "breathe 4s ease-in-out infinite",
         "marquee-scroll": "marquee-scroll 30s linear infinite",
+        "marquee-scroll-reverse": "marquee-scroll-reverse 40s linear infinite",
       },
     },
   },

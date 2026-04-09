@@ -11,6 +11,7 @@ import {
   DualCtaSection,
   TrustBadges,
 } from "@/modules/storefront/components/home";
+import { ScrollProgress } from "@/modules/storefront/components/home/ScrollProgress";
 import { useSEO } from "@/shared/hooks/useSEO";
 import { JsonLd } from "@/components/seo";
 
@@ -22,6 +23,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <ScrollProgress />
       <Navigation />
       <JsonLd data={{
         "@context": "https://schema.org",
@@ -36,28 +38,13 @@ const Index = () => {
       {/* Spacer for fixed navigation */}
       <div className="h-16 lg:h-[104px]" />
 
-      {/* 1. Editorial Typographic Hero — Cream */}
       <HeroSection />
-
-      {/* 2. Marquee Ticker — Ink strip */}
       <MarqueeTicker />
-
-      {/* 3. Editorial Grid — Cream */}
       <EditorialGrid />
-
-      {/* 4. Category Cards — Ink */}
       <CategoryCards />
-
-      {/* 5. Testimonials — Cream */}
       <TestimonialSection />
-
-      {/* 6. Featured Frames — Ink */}
       <FeaturedFrames />
-
-      {/* 7. Dual CTA — Cream */}
       <DualCtaSection />
-
-      {/* 8. Trust Strip — Ink */}
       <TrustBadges />
 
       {/* Chat Assistant Launcher */}
