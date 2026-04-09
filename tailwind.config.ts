@@ -301,6 +301,7 @@ export default {
         "elastic-in": "elastic-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
         // Breathing
         "breathe": "breathe 4s ease-in-out infinite",
+        "marquee-scroll": "marquee-scroll 30s linear infinite",
       },
     },
   },
