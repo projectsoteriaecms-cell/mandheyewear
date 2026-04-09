@@ -62,7 +62,7 @@ export const QuizPromo = () => {
             <Button 
               size="lg" 
               asChild 
-              className="group h-14 px-8 text-base shadow-float hover:shadow-card-hover transition-all relative overflow-hidden animate-fade-in-up hover:scale-105"
+              className="group h-14 px-8 text-base shadow-float hover:shadow-card-hover transition-all relative overflow-hidden animate-fade-in-up hover:scale-105 bg-flame hover:bg-flame/90 text-white"
               style={{ animationDelay: '0.5s' }}
             >
               <Link to="/style-quiz" className="flex items-center gap-3">
