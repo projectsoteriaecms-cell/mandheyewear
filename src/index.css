@@ -490,7 +490,7 @@ All colors MUST be HSL.
 
   /* Marquee ticker animation */
   .marquee-track {
-    animation: marquee-scroll 30s linear infinite;
+    animation: marquee-scroll 25s linear infinite;
   }
   .marquee-track:hover {
     animation-play-state: paused;
@@ -498,10 +498,57 @@ All colors MUST be HSL.
 
   /* Marquee reverse direction */
   .marquee-reverse {
-    animation: marquee-scroll-reverse 40s linear infinite;
+    animation: marquee-scroll-reverse 35s linear infinite;
   }
   .marquee-reverse:hover {
     animation-play-state: paused;
+  }
+
+  /* Marquee third row — fastest, subliminal */
+  .marquee-ghost {
+    animation: marquee-scroll 18s linear infinite;
+  }
+  .marquee-ghost:hover {
+    animation-play-state: paused;
+  }
+
+  /* Scan-line hover effect for cards */
+  .scan-line-hover {
+    position: relative;
+    overflow: hidden;
+  }
+  .scan-line-hover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(var(--mh-gold)), transparent);
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: none;
+  }
+  .scan-line-hover:hover::after {
+    animation: scan-line 1.5s ease-in-out;
+  }
+
+  /* Deep ink hero with grain */
+  .section-ink-grain {
+    background: hsl(var(--ink));
+    color: hsl(var(--cream));
+    position: relative;
+  }
+  .section-ink-grain::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
   }
 
   /* Editorial number labels */

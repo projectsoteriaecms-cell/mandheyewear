@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "@phosphor-icons/react";
-import { useScrollReveal, useStaggerReveal } from "@/shared/hooks/useScrollReveal";
+import { useScrollReveal } from "@/shared/hooks/useScrollReveal";
 import frame1 from "@/assets/frame-1.jpg";
 import frame2 from "@/assets/frame-2.jpg";
 import frame3 from "@/assets/frame-3.jpg";
@@ -9,12 +9,12 @@ import heroEyeCare from "@/assets/hero-eye-care.jpg";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
 
 const blocks = [
-  { number: "01", title: "Sharp Eyes", description: "Certified optometrists. Advanced diagnostics. Your eye health, no compromise.", image: heroEyeCare, link: "/booking", linkText: "Book Exam", span: "col-span-1 row-span-1" },
-  { number: "02", title: "Sharper Style", description: "Designer frames that speak before you do — curated for those who refuse to blend in.", image: frame1, link: "/eyewear", linkText: "Shop Frames", span: "col-span-1 row-span-2", large: true },
+  { number: "01", title: "Sharp Eyes", description: "For those who see the future before it arrives. Certified optometrists. Advanced diagnostics.", image: heroEyeCare, link: "/booking", linkText: "Book Exam", span: "col-span-1 row-span-1" },
+  { number: "02", title: "Sharper Style", description: "A new frame of mind. Designer frames as loud as your ambition, as silent as true luxury.", image: frame1, link: "/eyewear", linkText: "Shop Frames", span: "col-span-1 row-span-2", large: true },
   { number: "03", title: "Virtual Try-On", description: "See am. Believe am. AI face mapping lets you try every frame before you commit.", image: frame3, link: "/try-on", linkText: "Try Now", span: "col-span-1 row-span-1" },
   { number: "04", title: "Style Quiz", description: "Your face. Your canvas. We match frames to your shape, vibe, and personality.", image: frame2, link: "/style-quiz", linkText: "Take Quiz", span: "col-span-1 row-span-1" },
   { number: "05", title: "Precision Lenses", description: "Single vision to progressives — anti-glare, blue-light filter, no dull moment for your eyes.", image: frame4, link: "/eyewear?category=lenses", linkText: "Explore", span: "col-span-1 row-span-1" },
-  { number: "06", title: "The M&H Experience", description: "Big vision. Bigger statement. Where clinical precision meets luxury fashion — na style wey dey see road.", image: heroEyewear, link: "/about", linkText: "Our Story", span: "col-span-1 row-span-1" },
+  { number: "06", title: "The M&H Experience", description: "Where soft life meets sharp vision — na style wey dey see road.", image: heroEyewear, link: "/about", linkText: "Our Story", span: "col-span-1 row-span-1" },
 ];
 
 export const EditorialGrid = () => {
@@ -30,28 +30,37 @@ export const EditorialGrid = () => {
           className={`flex items-end justify-between mb-16 transition-all duration-700 ${headerReveal.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
           <div>
-            <p className="text-sm font-display font-bold tracking-[0.3em] uppercase text-mh-gold mb-3">The M&H Standard</p>
-            <h2 className={`text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-ink leading-[0.95] ${headerReveal.inView ? "animate-text-reveal" : ""}`} style={{ clipPath: headerReveal.inView ? undefined : "inset(0 100% 0 0)" }}>
-              See more. Be more<span className="text-mh-gold">.</span>
+            <p className="text-sm font-display font-bold tracking-[0.3em] uppercase text-mh-gold mb-3">The Visionary Standard</p>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-ink leading-[0.95]">
+              Stay sharp<span className="text-mh-gold">.</span> In every sense<span className="text-mh-gold">.</span>
             </h2>
           </div>
           <span className="hidden sm:block text-sm font-display tracking-widest text-ink/30 uppercase">©26</span>
         </div>
 
         {/* Grid */}
-        <div ref={gridRef as React.RefObject<HTMLDivElement>} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+        <div ref={gridRef as React.RefObject<HTMLDivElement>} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 perspective-1000">
           {blocks.map((block, i) => (
             <Link
               key={block.number}
               to={block.link}
-              className={`group relative overflow-hidden rounded-2xl ${block.large ? "md:row-span-2 min-h-[500px]" : "min-h-[260px]"} bg-ink transition-all duration-700 ${gridInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
-              style={{ transitionDelay: gridInView ? `${i * 100}ms` : "0ms" }}
+              className={`group relative overflow-hidden rounded-2xl scan-line-hover ${block.large ? "md:row-span-2 min-h-[500px]" : "min-h-[260px]"} bg-ink transition-all duration-700 ${gridInView ? "opacity-100" : "opacity-0"}`}
+              style={{
+                transitionDelay: gridInView ? `${i * 100}ms` : "0ms",
+                transform: gridInView
+                  ? "perspective(1000px) rotateX(0deg) translateY(0)"
+                  : "perspective(1000px) rotateX(12deg) translateY(40px)",
+                transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+              }}
             >
               <img src={block.image} alt={block.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] group-hover:scale-110" />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent group-hover:from-ink/95 transition-all duration-500" />
 
               <div className="absolute top-5 left-5">
-                <span className={`font-display font-bold text-xs tracking-[0.3em] text-cream/40 uppercase ${gridInView ? "animate-scale-spring" : ""}`} style={{ animationDelay: `${i * 100 + 300}ms` }}>
+                <span
+                  className={`font-display font-bold text-xs tracking-[0.3em] text-cream/40 uppercase ${gridInView ? "animate-elastic-in" : "opacity-0"}`}
+                  style={{ animationDelay: `${i * 100 + 300}ms` }}
+                >
                   {block.number}/06
                 </span>
               </div>

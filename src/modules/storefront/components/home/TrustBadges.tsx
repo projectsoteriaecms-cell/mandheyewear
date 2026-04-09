@@ -20,12 +20,12 @@ export const TrustBadges = () => {
             return (
               <div
                 key={badge.title}
-                className={`flex items-center gap-3 transition-all duration-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
-                style={{ transitionDelay: inView ? `${index * 100}ms` : "0ms" }}
+                className={`flex items-center gap-3 ${inView ? "animate-pop-in" : "opacity-0"}`}
+                style={{ animationDelay: inView ? `${index * 100}ms` : "0ms" }}
               >
                 {index > 0 && <div className="hidden lg:block w-px h-8 bg-cream/10 -ml-5 mr-5" />}
                 <div className="w-10 h-10 rounded-xl bg-mh-gold/10 flex items-center justify-center">
-                  <Icon weight="duotone" className="h-5 w-5 text-mh-gold" />
+                  <Icon weight="duotone" className={`h-5 w-5 text-mh-gold ${inView ? "animate-orbit-slow" : ""}`} style={{ animationDuration: "30s" }} />
                 </div>
                 <div>
                   <p className="font-display font-semibold text-cream text-sm">{badge.title}</p>
