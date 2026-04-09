@@ -240,9 +240,9 @@ export const HeroSection = () => {
             </div>
 
             {/* Shakara pillar — editorial whisper */}
-            <p className="text-cream/35 text-xs sm:text-sm leading-relaxed font-body tracking-wide max-w-sm">
-              A new frame of mind. Your outlook should be as loud as your ambition,<br className="hidden sm:block" />
-              <span className="text-cream/50 font-display font-medium">but as silent as true luxury.</span>
+            <p className="text-cream/50 text-sm sm:text-base leading-relaxed font-body tracking-wide max-w-sm">
+              A new <span className="font-display font-bold text-mh-gold italic">frame</span> of mind. Your outlook should be as loud as your ambition,<br className="hidden sm:block" />
+              <span className="text-cream/70 font-display font-semibold">but as silent as true luxury.</span>
             </p>
             <div className="flex items-center gap-4 sm:gap-8" ref={statsRef}>
               <div>
