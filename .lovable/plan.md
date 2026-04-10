@@ -1,17 +1,20 @@
 
 
-## Fix: Keep "OUTLOOK" as One Unbreakable Unit
+## Reduce OUTLOOK Tracking — Remove Excessive Stretch
 
 ### Problem
-The "OUTLOOK" text is rendered as `OUTL` + `<GlassesOO>` + `K` as separate inline elements. The browser can line-break between these parts, splitting the word across lines.
+The "OUTLOOK" line has `tracking-[0.15em] sm:tracking-[0.2em]` which makes it look too stretched and unnatural.
 
 ### Fix — `HeroSection.tsx`
 
-**Line 227**: Add `whitespace-nowrap` to the OUTLOOK wrapper span to prevent any line-breaking within the word:
-
+**Line 227**: Remove the extra letter-spacing from the OUTLOOK wrapper. Change:
 ```tsx
-<span className="inline-block overflow-hidden tracking-[0.15em] sm:tracking-[0.2em] whitespace-nowrap">
+tracking-[0.15em] sm:tracking-[0.2em]
+```
+to:
+```tsx
+tracking-[0.04em] sm:tracking-[0.06em]
 ```
 
-This single class addition ensures "OUTL👓K" always stays together as one unit on all viewports, never splitting across lines.
+This keeps a subtle, elegant stretch without the over-extended look. The `whitespace-nowrap` stays to keep "OUTLOOK" as one unit.
 
