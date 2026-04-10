@@ -424,7 +424,36 @@ export const HeroSection = () => {
                   <span className="font-display font-extrabold text-xs text-flame">{activeBanner.discount_value}</span>
                 </div>
               )}
-              <p className="hidden md:block text-cream/50 text-xs font-display max-w-xs truncate">{activeBanner.description}</p>
+              {/* Scrolling pun ticker */}
+              <div className="hidden md:block overflow-hidden max-w-xs relative">
+                <div className="absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-ink-light to-transparent z-10 pointer-events-none" />
+                <div className="absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-ink-light to-transparent z-10 pointer-events-none" />
+                <div className="flex animate-[ticker_30s_linear_infinite] whitespace-nowrap gap-6">
+                  {[
+                    "Eye no dey lie — your frames speak first 👓",
+                    "Na style wey dey see road ✨",
+                    "Sharp eyes. Sharper style.",
+                    "Frames as loud as your ambition, silent as true luxury.",
+                    "Your outlook is your signature — sign boldly.",
+                    "See the future before it arrives 🔮",
+                    "Big vision. Bigger frames. Biggest energy.",
+                    "Clarity is the new flex.",
+                    "Eye no dey lie — your frames speak first 👓",
+                    "Na style wey dey see road ✨",
+                    "Sharp eyes. Sharper style.",
+                    "Frames as loud as your ambition, silent as true luxury.",
+                    "Your outlook is your signature — sign boldly.",
+                    "See the future before it arrives 🔮",
+                    "Big vision. Bigger frames. Biggest energy.",
+                    "Clarity is the new flex.",
+                  ].map((quote, i) => (
+                    <span key={i} className="text-cream/50 text-xs font-display flex-shrink-0">
+                      {quote}
+                      <span className="text-mh-gold/40 ml-6">·</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Product row */}
