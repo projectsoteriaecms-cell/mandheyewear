@@ -384,6 +384,72 @@ export const HeroSection = () => {
           </div>
         </div>
 
+        {/* === Promo Banner Card === */}
+        <Link
+          to="/eyewear"
+          className={`block mb-6 sm:mb-8 group transition-all duration-[900ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+          style={{ transitionDelay: "1400ms" }}
+        >
+          <div className="relative rounded-2xl bg-ink-light border border-cream/8 overflow-hidden hover:border-mh-gold/20 transition-colors duration-300">
+            {/* Subtle gold glow accent */}
+            <div className="absolute top-0 right-0 w-48 h-48 bg-mh-gold/5 blur-[80px] rounded-full pointer-events-none" />
+            
+            <div className="relative p-5 sm:p-8 flex flex-col sm:flex-row gap-5 sm:gap-8 items-start sm:items-center">
+              {/* Text content */}
+              <div className="flex-1 space-y-3 sm:space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 border-2 border-dashed border-mh-gold/30 rounded-lg">
+                  <span className="font-display font-bold text-[10px] sm:text-xs text-mh-gold tracking-wider uppercase">{activeBanner.date_label}</span>
+                </div>
+
+                <h2 className="font-display font-extrabold text-2xl sm:text-3xl lg:text-4xl leading-[0.95] tracking-tight text-cream uppercase">
+                  {activeBanner.title_line1}<br />
+                  <span className="text-mh-gold">{activeBanner.title_line2}</span>
+                </h2>
+
+                <p className="text-cream/60 text-sm sm:text-base leading-relaxed max-w-md">{activeBanner.description}</p>
+
+                {/* Discount pill */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-cream/[0.06] backdrop-blur-sm rounded-full border border-cream/10">
+                  <Tag weight="fill" className="w-4 h-4 text-flame" />
+                  <span className="font-display font-bold text-xs text-cream/80 uppercase tracking-wide">{activeBanner.discount_prefix}</span>
+                  <span className="font-display font-extrabold text-lg sm:text-xl text-flame">{activeBanner.discount_value}</span>
+                </div>
+
+                <p className="text-cream/30 text-[10px] sm:text-xs font-display">{activeBanner.disclaimer}</p>
+              </div>
+
+              {/* Featured product thumbnails */}
+              {(bannerFeaturedProducts || []).length > 0 && (
+                <div className="flex gap-2 sm:gap-3 flex-shrink-0">
+                  {(bannerFeaturedProducts || []).slice(0, 3).map((product, i) => (
+                    <div
+                      key={product.id}
+                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-mh-gold/15 group-hover:border-mh-gold/30 transition-all duration-300 shadow-lg"
+                      style={{ transitionDelay: `${i * 80}ms` }}
+                    >
+                      {product.image_url ? (
+                        <img
+                          src={product.image_url}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-cream/5" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Shop Now indicator */}
+            <div className="absolute bottom-4 right-5 sm:right-8 flex items-center gap-1.5 text-mh-gold/60 group-hover:text-mh-gold transition-colors">
+              <span className="font-display font-bold text-xs tracking-wider uppercase">Shop Now</span>
+              <ArrowRight weight="bold" className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Link>
+
         {/* === Flash Deals / New Arrivals Strip (always visible) === */}
         {flashDeals.length > 0 && (
           <div
