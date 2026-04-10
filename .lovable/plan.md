@@ -1,26 +1,26 @@
 
 
-## Reposition Hero Image: Below "Clarity without compromise" on Mobile, Optimized for Tablet
+## Simplify Hero Section — Static Image, Clean Frame, Standard Layout
 
-### Problem
-On mobile (390px), the hero image currently appears *above* the entire headline ("A clearer outlook on life") because of the `order-1` class. The user wants it to appear **after** the "Clarity without compromise" pill and **before** the CTA buttons. On tablet, it needs better positioning too.
+### What changes
 
-### Approach
-Instead of using CSS `order` to swap the image above everything, the image will be **inlined within the left column** on mobile/tablet, placed between the "Clarity without compromise" badge and the CTA buttons. On desktop (lg+), it stays as the right column.
+1. **Use single static hero image** — Remove the image rotation logic entirely. Use `heroEyewear` (the original hero image) as the sole image for both mobile and desktop. Remove the `heroIndex` state, the rotation `useEffect`, the `allFrames` mapping, and the `productImages` query.
 
-### Changes — `HeroSection.tsx`
+2. **Remove overlays from the hero image** — Strip the "20% OFF" discount badge and the "New Season Collection / April 2026 Drop" label overlay from both mobile and desktop image containers. The frame will show just the clean product image with a subtle gradient.
 
-1. **Remove the image from the grid's right column on mobile/tablet**: Add `hidden lg:flex` to the right-column image container so it only shows on desktop
+3. **Make the frame wider on mobile** — Increase the mobile image from `max-w-[220px]` to `w-full max-w-[320px]` so it spans closer to the viewport width (390px), giving it more visual impact.
 
-2. **Add a mobile/tablet-only image block inside the left column**, positioned between the "Clarity without compromise" pill and the CTAs:
-   - Wrap in `lg:hidden` so it disappears on desktop
-   - Mobile: `max-w-[220px]`, centered, smaller rounded image
-   - Tablet (md): `max-w-[280px]`, slightly larger, positioned nicely
+4. **Cleaner, more standard hero** — The image becomes a simple rounded container with the static hero photo, no promotional overlays, just the brand aesthetic. Keep the gradient overlay for depth but remove all text/badges on top of the image.
 
-3. **Remove the `order-1`/`order-2` swapping** since the image no longer needs to reorder — text column is always first, image is either inline (mobile/tablet) or right column (desktop)
+### Technical details
 
-### Result
-- **Mobile**: Headline → subtext → "Clarity without compromise" → hero image → CTA buttons — clean vertical flow
-- **Tablet**: Same flow but with a larger, better-proportioned image
-- **Desktop**: Unchanged two-column layout
+**File: `HeroSection.tsx`**
+
+- Remove `heroIndex` state and its rotation `useEffect` (lines 92, 195-201)
+- Remove `productImages` query (lines 161-176) and `allFrames` memo (lines 178-183) — replace with just `const heroImage = heroEyewear`
+- Replace the `allFrames.map(...)` image stack with a single `<img src={heroEyewear} />` in both mobile (line 313-319) and desktop (line 366-372) containers
+- Remove the discount badge div (lines 322-328 mobile, 377-383 desktop)
+- Remove the brand tag div (lines 329-334 mobile, 385-390 desktop)
+- Mobile image container: change from `max-w-[220px] md:max-w-[280px]` to `w-full max-w-[320px] md:max-w-[380px]` and use `aspect-[4/3]` instead of `aspect-square` for a wider, more cinematic feel
+- Keep the `GlassesOO` component using `heroEyewear` as its source
 
