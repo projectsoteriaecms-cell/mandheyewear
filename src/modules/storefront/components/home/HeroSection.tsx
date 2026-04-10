@@ -237,7 +237,7 @@ export const HeroSection = () => {
                           outl
                           <GlassesOO
                             src={ooImage}
-                            className="mx-0.5 sm:mx-1 w-[0.9em] sm:w-[1.1em] h-[0.55em] sm:h-[0.6em]"
+                            className="mx-0.5 sm:mx-1 h-[0.55em] sm:h-[0.6em]"
                           />
                           k{" "}
                         </span>
