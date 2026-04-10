@@ -86,9 +86,24 @@ interface SlideshowProduct {
   };
 }
 
+const TAGLINES = [
+  "For those who see the future\nbefore it arrives.",
+  "Frames as loud as your ambition,\nas silent as true luxury.",
+  "Sharp eyes. Sharper style.\nSharpest vision.",
+  "Na style wey dey see road.",
+];
+
 export const HeroSection = () => {
   const [loaded, setLoaded] = useState(false);
+  const [taglineIndex, setTaglineIndex] = useState(0);
   const countdown = useCountdown();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTaglineIndex((prev) => (prev + 1) % TAGLINES.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch active promo banner
   const { data: banner } = useQuery({
