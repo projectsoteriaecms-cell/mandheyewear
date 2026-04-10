@@ -265,9 +265,12 @@ export const HeroSection = () => {
               className={`max-w-md space-y-4 sm:space-y-5 transition-all duration-[800ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
               style={{ transitionDelay: "1000ms" }}
             >
-              <div className="relative pl-4 sm:pl-5 border-l-2 border-mh-gold/40">
-                <p className="font-display font-bold text-base sm:text-lg leading-snug text-cream tracking-tight">
-                  For those who see the future<br className="hidden sm:block" /> before it arrives.
+              <div className="relative pl-4 sm:pl-5 border-l-2 border-mh-gold/40 min-h-[3.2em]">
+                <p
+                  key={taglineIndex}
+                  className="font-display font-bold text-base sm:text-lg leading-snug text-cream tracking-tight animate-fade-in whitespace-pre-line"
+                >
+                  {TAGLINES[taglineIndex]}
                 </p>
               </div>
 
