@@ -10,6 +10,7 @@ import {
   TestimonialSection,
   DualCtaSection,
   TrustBadges,
+  PromoSlideshow,
 } from "@/modules/storefront/components/home";
 import { ScrollProgress } from "@/modules/storefront/components/home/ScrollProgress";
 import { useSEO } from "@/shared/hooks/useSEO";
@@ -40,6 +41,7 @@ const Index = () => {
 
       <HeroSection />
       <MarqueeTicker />
+      <PromoSlideshow />
       <EditorialGrid />
       <CategoryCards />
       <TestimonialSection />

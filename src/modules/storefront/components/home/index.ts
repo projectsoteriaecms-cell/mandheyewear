@@ -8,3 +8,4 @@ export { TrustBadges } from "./TrustBadges";
 export { QuizPromo } from "./QuizPromo";
 export { VirtualTryOn } from "./VirtualTryOn";
 export { QuickDiscovery } from "./QuickDiscovery";
+export { PromoSlideshow } from "./PromoSlideshow";
