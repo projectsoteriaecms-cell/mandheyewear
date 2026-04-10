@@ -89,6 +89,7 @@ interface SlideshowProduct {
 
 export const HeroSection = () => {
   const [loaded, setLoaded] = useState(false);
+  const [heroIndex, setHeroIndex] = useState(0);
   const countdown = useCountdown();
 
   // Fetch active promo banner
@@ -168,6 +169,15 @@ export const HeroSection = () => {
     return () => clearTimeout(t);
   }, []);
 
+  // Rotate hero image every 4.5s
+  useEffect(() => {
+    if (allFrames.length <= 1) return;
+    const timer = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % allFrames.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [allFrames.length]);
+
   const flashDeals = slideshowItems || [];
 
   return (
@@ -204,7 +214,7 @@ export const HeroSection = () => {
           <div>
             {/* Reduced headline */}
             <div className="relative mb-6 sm:mb-8">
-              <h1 className="font-display font-extrabold text-[clamp(1.8rem,5.5vw,4.5rem)] leading-[0.92] tracking-tight text-cream">
+              <h1 className="font-display font-extrabold text-[clamp(2rem,6.5vw,5.5rem)] leading-[0.92] tracking-tight text-cream">
                 {["A", "clearer"].map((word, i) => (
                   <span key={i} className="inline-block overflow-hidden">
                     <span
@@ -218,7 +228,7 @@ export const HeroSection = () => {
                     </span>
                   </span>
                 ))}
-                <br />
+                <div className="h-2 sm:h-4" />
                 {["OUTLOOK", "on", "life"].map((word, i) => (
                   <span key={`b-${i}`} className="inline-block overflow-hidden">
                     <span
@@ -294,11 +304,14 @@ export const HeroSection = () => {
             style={{ transitionDelay: "800ms" }}
           >
             <div className="relative w-full max-w-[420px] aspect-square rounded-3xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_60px_rgba(212,175,55,0.15)]">
-              <img
-                src={heroImage}
-                alt="Featured eyewear"
-                className="w-full h-full object-cover"
-              />
+              {allFrames.map((src, i) => (
+                <img
+                  key={src}
+                  src={src}
+                  alt="Featured eyewear"
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i === heroIndex ? "opacity-100" : "opacity-0"}`}
+                />
+              ))}
               {/* Gold glow overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
               {/* Discount badge on image */}
