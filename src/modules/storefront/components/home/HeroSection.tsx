@@ -242,7 +242,7 @@ export const HeroSection = () => {
         {/* === Two-column grid: text left, product image right === */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-center mb-4 sm:mb-10">
           {/* Left column — headline + subtext + CTAs */}
-          <div className="order-2 lg:order-1">
+          <div>
             {/* Reduced headline */}
             <div className="relative mb-6 sm:mb-8">
               <h1 className="font-display font-extrabold text-[clamp(2rem,6.5vw,5.5rem)] leading-[0.92] tracking-tight text-cream">
@@ -307,6 +307,34 @@ export const HeroSection = () => {
                 </span>
               </div>
 
+              {/* Mobile/Tablet hero image — between pill and CTAs */}
+              <div className="lg:hidden flex justify-center my-4">
+                <div className="relative w-full max-w-[220px] md:max-w-[280px] aspect-square rounded-2xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_40px_rgba(212,175,55,0.12)]">
+                  {allFrames.map((src, i) => (
+                    <img
+                      key={src}
+                      src={src}
+                      alt="Featured eyewear"
+                      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i === heroIndex ? "opacity-100" : "opacity-0"}`}
+                    />
+                  ))}
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
+                  {activeBanner.discount_value && (
+                    <div className="absolute top-3 right-3 px-3 py-1.5 bg-flame rounded-full shadow-lg">
+                      <span className="font-display font-extrabold text-cream text-xs uppercase tracking-wide">
+                        {activeBanner.discount_value}
+                      </span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <div className="px-3 py-2 bg-ink/80 backdrop-blur-md rounded-xl border border-cream/10">
+                      <p className="font-display font-bold text-cream text-xs">{activeBanner.title_line1} {activeBanner.title_line2}</p>
+                      <p className="text-cream/60 text-[10px] mt-0.5">{activeBanner.date_label}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
                 <Link
@@ -329,9 +357,9 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          {/* Right column — large hero product image */}
+          {/* Right column — large hero product image (desktop only) */}
           <div
-            className={`order-1 lg:order-2 relative flex items-center justify-center transition-all duration-[1000ms] ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
+            className={`hidden lg:flex relative items-center justify-center transition-all duration-[1000ms] ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
             style={{ transitionDelay: "800ms" }}
           >
             <div className="relative w-full max-w-[240px] sm:max-w-[300px] lg:max-w-[420px] aspect-square rounded-3xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_60px_rgba(212,175,55,0.15)] mx-auto">
