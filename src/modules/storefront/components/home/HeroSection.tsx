@@ -218,7 +218,7 @@ export const HeroSection = () => {
         </div>
 
         {/* === Two-column grid: text left, product image right === */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-center mb-4 sm:mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 lg:gap-12 items-center mb-4 sm:mb-10">
           {/* Left column — headline + subtext + CTAs */}
           <div>
             {/* Reduced headline */}
@@ -281,9 +281,9 @@ export const HeroSection = () => {
                 </span>
               </div>
 
-              {/* Mobile/Tablet hero image — between pill and CTAs */}
-              <div className="lg:hidden flex justify-center my-4">
-                <div className="relative w-full max-w-[320px] md:max-w-[380px] aspect-[4/3] rounded-2xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_40px_rgba(212,175,55,0.12)]">
+              {/* Mobile-only hero image — between pill and CTAs */}
+              <div className="md:hidden flex justify-center my-4">
+                <div className="relative w-full max-w-[320px] aspect-[4/3] rounded-2xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_40px_rgba(212,175,55,0.12)]">
                   <img
                     src={heroEyewear}
                     alt="Featured eyewear"
@@ -315,9 +315,9 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          {/* Right column — large hero product image (desktop only) */}
+          {/* Right column — hero product image (tablet + desktop) */}
           <div
-            className={`hidden lg:flex relative items-center justify-center transition-all duration-[1000ms] ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
+            className={`hidden md:flex relative items-center justify-center transition-all duration-[1000ms] ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
             style={{ transitionDelay: "800ms" }}
           >
             <div className="relative w-full lg:max-w-[420px] aspect-[4/3] rounded-3xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_60px_rgba(212,175,55,0.15)] mx-auto">
