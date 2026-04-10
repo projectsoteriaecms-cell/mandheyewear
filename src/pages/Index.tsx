@@ -41,6 +41,7 @@ const Index = () => {
 
       <HeroSection />
       <MarqueeTicker />
+      <PromoSlideshow />
       <EditorialGrid />
       <CategoryCards />
       <TestimonialSection />
