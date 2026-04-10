@@ -120,6 +120,32 @@ export const HeroSection = () => {
 
   const activeBanner = banner || defaultBanner;
 
+  // Fetch featured products for the promo banner card
+  const { data: bannerFeaturedProducts } = useQuery({
+    queryKey: ["banner-featured-products", activeBanner.featured_product_ids],
+    queryFn: async () => {
+      if (activeBanner.featured_product_ids.length > 0) {
+        const { data } = await supabase
+          .from("products")
+          .select("id, name, image_url, brand, price")
+          .in("id", activeBanner.featured_product_ids)
+          .limit(4);
+        return data || [];
+      }
+      // Fallback: latest 3 products with images
+      const { data } = await supabase
+        .from("products")
+        .select("id, name, image_url, brand, price")
+        .eq("is_active", true)
+        .eq("brand_line", "m_and_h_fashion")
+        .not("image_url", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(3);
+      return data || [];
+    },
+    staleTime: 60_000,
+  });
+
   // Fetch slideshow items for flash deals
   const { data: slideshowItems } = useQuery({
     queryKey: ["hero-flash-deals"],
