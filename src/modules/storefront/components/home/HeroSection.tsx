@@ -240,9 +240,9 @@ export const HeroSection = () => {
         </div>
 
         {/* === Two-column grid: text left, product image right === */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-8 sm:mb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-center mb-4 sm:mb-10">
           {/* Left column — headline + subtext + CTAs */}
-          <div>
+          <div className="order-2 lg:order-1">
             {/* Reduced headline */}
             <div className="relative mb-6 sm:mb-8">
               <h1 className="font-display font-extrabold text-[clamp(2rem,6.5vw,5.5rem)] leading-[0.92] tracking-tight text-cream">
@@ -311,7 +311,7 @@ export const HeroSection = () => {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
                 <Link
                   to="/eyewear"
-                  className={`group inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-mh-gold text-ink font-display font-bold text-sm tracking-wide uppercase hover:scale-105 hover:shadow-glow-accent transition-all duration-300 shadow-gold w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+                  className={`group inline-flex items-center justify-center gap-3 px-5 sm:px-7 py-3.5 rounded-full bg-mh-gold text-ink font-display font-bold text-sm tracking-wide uppercase whitespace-nowrap hover:scale-105 hover:shadow-glow-accent transition-all duration-300 shadow-gold w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
                   style={{ transitionDelay: "1300ms" }}
                 >
                   Shop Collection
@@ -319,7 +319,7 @@ export const HeroSection = () => {
                 </Link>
                 <Link
                   to="/booking"
-                  className={`group inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-flame text-cream font-display font-bold text-sm tracking-wide uppercase hover:scale-105 transition-all duration-300 shadow-flame w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+                  className={`group inline-flex items-center justify-center gap-3 px-5 sm:px-7 py-3.5 rounded-full bg-flame text-cream font-display font-bold text-sm tracking-wide uppercase whitespace-nowrap hover:scale-105 transition-all duration-300 shadow-flame w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
                   style={{ transitionDelay: "1450ms" }}
                 >
                   Book Eye Exam
@@ -331,10 +331,10 @@ export const HeroSection = () => {
 
           {/* Right column — large hero product image */}
           <div
-            className={`relative flex items-center justify-center transition-all duration-[1000ms] ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
+            className={`order-1 lg:order-2 relative flex items-center justify-center transition-all duration-[1000ms] ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
             style={{ transitionDelay: "800ms" }}
           >
-            <div className="relative w-full max-w-[420px] aspect-square rounded-3xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_60px_rgba(212,175,55,0.15)]">
+            <div className="relative w-full max-w-[240px] sm:max-w-[300px] lg:max-w-[420px] aspect-square rounded-3xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_60px_rgba(212,175,55,0.15)] mx-auto">
               {allFrames.map((src, i) => (
                 <img
                   key={src}
