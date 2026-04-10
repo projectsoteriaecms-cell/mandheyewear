@@ -280,7 +280,7 @@ export const HeroSection = () => {
                   </span>
                 ))}
                 <div className="h-2 sm:h-4" />
-                {["OUTLOOK", "on", "life"].map((word, i) => (
+                {["OUTLOOK", "   on", "life"].map((word, i) => (
                   <span key={`b-${i}`} className="inline-block overflow-hidden">
                     <span
                       className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
