@@ -273,29 +273,13 @@ export const HeroSection = () => {
 
               {/* Mobile/Tablet hero image — between pill and CTAs */}
               <div className="lg:hidden flex justify-center my-4">
-                <div className="relative w-full max-w-[220px] md:max-w-[280px] aspect-square rounded-2xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_40px_rgba(212,175,55,0.12)]">
-                  {allFrames.map((src, i) => (
-                    <img
-                      key={src}
-                      src={src}
-                      alt="Featured eyewear"
-                      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i === heroIndex ? "opacity-100" : "opacity-0"}`}
-                    />
-                  ))}
+                <div className="relative w-full max-w-[320px] md:max-w-[380px] aspect-[4/3] rounded-2xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_40px_rgba(212,175,55,0.12)]">
+                  <img
+                    src={heroEyewear}
+                    alt="Featured eyewear"
+                    className="w-full h-full object-cover"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
-                  {activeBanner.discount_value && (
-                    <div className="absolute top-3 right-3 px-3 py-1.5 bg-flame rounded-full shadow-lg">
-                      <span className="font-display font-extrabold text-cream text-xs uppercase tracking-wide">
-                        {activeBanner.discount_value}
-                      </span>
-                    </div>
-                  )}
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <div className="px-3 py-2 bg-ink/80 backdrop-blur-md rounded-xl border border-cream/10">
-                      <p className="font-display font-bold text-cream text-xs">{activeBanner.title_line1} {activeBanner.title_line2}</p>
-                      <p className="text-cream/60 text-[10px] mt-0.5">{activeBanner.date_label}</p>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -326,32 +310,13 @@ export const HeroSection = () => {
             className={`hidden lg:flex relative items-center justify-center transition-all duration-[1000ms] ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
             style={{ transitionDelay: "800ms" }}
           >
-            <div className="relative w-full max-w-[240px] sm:max-w-[300px] lg:max-w-[420px] aspect-square rounded-3xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_60px_rgba(212,175,55,0.15)] mx-auto">
-              {allFrames.map((src, i) => (
-                <img
-                  key={src}
-                  src={src}
-                  alt="Featured eyewear"
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i === heroIndex ? "opacity-100" : "opacity-0"}`}
-                />
-              ))}
-              {/* Gold glow overlay */}
+            <div className="relative w-full lg:max-w-[420px] aspect-[4/3] rounded-3xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_60px_rgba(212,175,55,0.15)] mx-auto">
+              <img
+                src={heroEyewear}
+                alt="Featured eyewear"
+                className="w-full h-full object-cover"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
-              {/* Discount badge on image */}
-              {activeBanner.discount_value && (
-                <div className="absolute top-4 right-4 px-4 py-2 bg-flame rounded-full shadow-lg">
-                  <span className="font-display font-extrabold text-cream text-sm uppercase tracking-wide">
-                    {activeBanner.discount_value}
-                  </span>
-                </div>
-              )}
-              {/* Brand tag */}
-              <div className="absolute bottom-4 left-4 right-4">
-                <div className="px-4 py-3 bg-ink/80 backdrop-blur-md rounded-2xl border border-cream/10">
-                  <p className="font-display font-bold text-cream text-sm">{activeBanner.title_line1} {activeBanner.title_line2}</p>
-                  <p className="text-cream/60 text-xs mt-0.5">{activeBanner.date_label}</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
