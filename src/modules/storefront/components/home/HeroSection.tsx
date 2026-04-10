@@ -5,17 +5,17 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
 
-/** Static glasses image for the "OO" in outlook */
+/** Single glasses frame with two lens holes for the "OO" in OUTLOOK */
 const GlassesOO = ({ src, className = "" }: { src: string; className?: string }) => (
-  <span className={`relative inline-flex items-center align-middle ${className}`}>
+  <span className={`relative inline-flex items-center align-middle border-[2.5px] border-mh-gold/60 rounded-[999px] px-[0.08em] py-[0.06em] bg-transparent shadow-[0_0_12px_hsl(var(--mh-gold)/0.15)] ${className}`}>
     {/* Left lens */}
-    <span className="relative w-[0.55em] h-[0.55em] rounded-full overflow-hidden border-2 border-mh-gold/50 shadow-lg">
+    <span className="relative w-[0.48em] h-[0.48em] rounded-full overflow-hidden">
       <img src={src} alt="Left lens" className="absolute inset-0 w-full h-full object-cover" />
     </span>
     {/* Bridge */}
-    <span className="w-[0.1em] h-[0.04em] bg-mh-gold/50 -mx-px" />
+    <span className="w-[0.08em] h-[0.06em] rounded-sm bg-mh-gold/50 mx-[0.02em]" />
     {/* Right lens */}
-    <span className="relative w-[0.55em] h-[0.55em] rounded-full overflow-hidden border-2 border-mh-gold/50 shadow-lg">
+    <span className="relative w-[0.48em] h-[0.48em] rounded-full overflow-hidden">
       <img src={src} alt="Right lens" className="absolute inset-0 w-full h-full object-cover" />
     </span>
   </span>
@@ -208,47 +208,46 @@ export const HeroSection = () => {
           <div>
             {/* Reduced headline */}
             <div className="relative mb-6 sm:mb-8">
-              <h1 className="font-display font-extrabold text-[clamp(2.5rem,6.5vw,5.5rem)] leading-[0.92] tracking-tight text-cream">
-                {["A", "clearer"].map((word, i) => (
-                  <span key={i} className="inline-block overflow-hidden mr-[0.25em]">
-                    <span
-                      className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
-                      style={{
-                        transitionDelay: `${400 + i * 120}ms`,
-                        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-                      }}
-                    >
-                      {word}
-                    </span>
-                  </span>
-                ))}
+              <h1 className="font-display font-extrabold text-[clamp(2.5rem,6.5vw,5.5rem)] leading-[0.95] tracking-tight text-cream">
+                {/* Line 1: A Clearer */}
+                <span className="inline-block overflow-hidden mr-[0.25em]">
+                  <span
+                    className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
+                    style={{ transitionDelay: "400ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
+                  >A</span>
+                </span>
+                <span className="inline-block overflow-hidden">
+                  <span
+                    className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
+                    style={{ transitionDelay: "520ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
+                  >Clearer</span>
+                </span>
                 <br />
-                {["OUTLOOK", "on", "life"].map((word, i) => (
-                  <span key={`b-${i}`} className="inline-block overflow-hidden mr-[0.25em]">
-                    <span
-                      className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
-                      style={{
-                        transitionDelay: `${640 + i * 120}ms`,
-                        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-                      }}
-                    >
-                      {word === "OUTLOOK" ? (
-                        <span className="text-mh-gold">
-                          outl
-                          <GlassesOO
-                            src={ooImage}
-                            className="mx-0.5 sm:mx-1 h-[0.65em] sm:h-[0.7em]"
-                          />
-                          k
-                        </span>
-                      ) : word === "life" ? (
-                        <span className="italic font-semibold text-cream/60">{word}<span className="text-mh-gold">.</span></span>
-                      ) : (
-                        <>{word}</>
-                      )}
-                    </span>
+                {/* Line 2: OUTLOOK — stretched with glasses frame OO */}
+                <span className="inline-block overflow-hidden tracking-[0.15em] sm:tracking-[0.2em]">
+                  <span
+                    className={`inline-block transition-all duration-[800ms] text-mh-gold ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
+                    style={{ transitionDelay: "640ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
+                  >
+                    OUTL<GlassesOO src={ooImage} className="mx-[0.02em] -mb-[0.06em]" />K
                   </span>
-                ))}
+                </span>
+                <br />
+                {/* Line 3: on life. */}
+                <span className="inline-block overflow-hidden mr-[0.25em]">
+                  <span
+                    className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
+                    style={{ transitionDelay: "760ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
+                  >on</span>
+                </span>
+                <span className="inline-block overflow-hidden">
+                  <span
+                    className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
+                    style={{ transitionDelay: "880ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
+                  >
+                    <span className="italic font-semibold text-cream/60">life<span className="text-mh-gold">.</span></span>
+                  </span>
+                </span>
               </h1>
             </div>
 
