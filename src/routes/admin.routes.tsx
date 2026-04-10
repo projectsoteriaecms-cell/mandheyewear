@@ -22,6 +22,7 @@ const Categories = lazy(() => import("@/pages/admin/Categories"));
 const DeliveryReport = lazy(() => import("@/pages/admin/DeliveryReport"));
 const Orders = lazy(() => import("@/pages/admin/Orders"));
 const PromoBanner = lazy(() => import("@/pages/admin/PromoBanner"));
+const SlideshowManager = lazy(() => import("@/pages/admin/SlideshowManager"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -55,4 +56,5 @@ export const adminRoutes = [
   <Route key="/admin/delivery-report" path="/admin/delivery-report" element={withSuspense(DeliveryReport)} />,
   <Route key="/admin/orders" path="/admin/orders" element={withSuspense(Orders)} />,
   <Route key="/admin/promo-banner" path="/admin/promo-banner" element={withSuspense(PromoBanner)} />,
+  <Route key="/admin/slideshow" path="/admin/slideshow" element={withSuspense(SlideshowManager)} />,
 ];
