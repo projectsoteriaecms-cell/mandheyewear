@@ -748,3 +748,14 @@ All colors MUST be HSL.
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
+.ticker-track {
+  animation: ticker 45s linear infinite;
+}
+
+.product-ticker {
+  animation: ticker 60s linear infinite;
+}
+.product-ticker:hover {
+  animation-play-state: paused;
+}
