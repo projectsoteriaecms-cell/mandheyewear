@@ -228,7 +228,7 @@ export const HeroSection = () => {
                     </span>
                   </span>
                 ))}
-                <br />
+                <div className="h-2 sm:h-4" />
                 {["OUTLOOK", "on", "life"].map((word, i) => (
                   <span key={`b-${i}`} className="inline-block overflow-hidden">
                     <span
