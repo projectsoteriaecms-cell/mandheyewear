@@ -89,7 +89,6 @@ interface SlideshowProduct {
 
 export const HeroSection = () => {
   const [loaded, setLoaded] = useState(false);
-  const [heroIndex, setHeroIndex] = useState(0);
   const countdown = useCountdown();
 
   // Fetch active promo banner
@@ -157,48 +156,13 @@ export const HeroSection = () => {
     enabled: !slideshowItems || slideshowItems.length === 0,
   });
 
-  // Fetch product images for hero
-  const { data: productImages } = useQuery({
-    queryKey: ["hero-frame-images"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("products")
-        .select("image_url")
-        .eq("is_active", true)
-        .eq("brand_line", "m_and_h_fashion")
-        .eq("item_type", "frames")
-        .not("image_url", "is", null)
-        .neq("image_url", "")
-        .limit(20);
-      return (data || []).map((p) => p.image_url).filter(Boolean) as string[];
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const allFrames = useMemo(() => {
-    const dbImages = productImages || [];
-    if (dbImages.length >= 4) return dbImages.slice(0, 20);
-    const merged = [...dbImages, ...staticFallbacks];
-    return Array.from(new Set(merged)).slice(0, 20);
-  }, [productImages]);
-
-  // Static image for OO and for right column
-  const ooImage = allFrames[0] || staticFallbacks[0];
-  const heroImage = allFrames[1] || staticFallbacks[1];
+  // Static image for OO
+  const ooImage = heroEyewear;
 
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 100);
     return () => clearTimeout(t);
   }, []);
-
-  // Rotate hero image every 4.5s
-  useEffect(() => {
-    if (allFrames.length <= 1) return;
-    const timer = setInterval(() => {
-      setHeroIndex((prev) => (prev + 1) % allFrames.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, [allFrames.length]);
 
   const filterPlaceholders = (items: any[]) =>
     items.filter((item) => {
