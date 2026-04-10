@@ -210,17 +210,11 @@ export const HeroSection = () => {
             <div className="relative mb-6 sm:mb-8">
               <h1 className="font-display font-extrabold text-[clamp(2.5rem,6.5vw,5.5rem)] leading-[0.95] tracking-tight text-cream">
                 {/* Line 1: A Clearer */}
-                <span className="inline-block overflow-hidden mr-[0.25em]">
+                <span className="inline-block overflow-hidden whitespace-nowrap">
                   <span
                     className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
                     style={{ transitionDelay: "400ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
-                  >A</span>
-                </span>
-                <span className="inline-block overflow-hidden">
-                  <span
-                    className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
-                    style={{ transitionDelay: "520ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
-                  >Clearer</span>
+                  >A Clearer</span>
                 </span>
                 <br />
                 {/* Line 2: OUTLOOK — stretched with glasses frame OO */}
