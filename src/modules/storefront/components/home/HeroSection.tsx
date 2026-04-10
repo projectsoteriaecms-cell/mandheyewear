@@ -9,13 +9,13 @@ import heroEyewear from "@/assets/hero-eyewear.jpg";
 const GlassesOO = ({ src, className = "" }: { src: string; className?: string }) => (
   <span className={`relative inline-flex items-center align-middle ${className}`}>
     {/* Left lens */}
-    <span className="relative w-[0.45em] h-[0.45em] rounded-full overflow-hidden border-2 border-mh-gold/50 shadow-lg">
+    <span className="relative w-[0.55em] h-[0.55em] rounded-full overflow-hidden border-2 border-mh-gold/50 shadow-lg">
       <img src={src} alt="Left lens" className="absolute inset-0 w-full h-full object-cover" />
     </span>
     {/* Bridge */}
-    <span className="w-[0.08em] h-[0.04em] bg-mh-gold/50 -mx-px" />
+    <span className="w-[0.1em] h-[0.04em] bg-mh-gold/50 -mx-px" />
     {/* Right lens */}
-    <span className="relative w-[0.45em] h-[0.45em] rounded-full overflow-hidden border-2 border-mh-gold/50 shadow-lg">
+    <span className="relative w-[0.55em] h-[0.55em] rounded-full overflow-hidden border-2 border-mh-gold/50 shadow-lg">
       <img src={src} alt="Right lens" className="absolute inset-0 w-full h-full object-cover" />
     </span>
   </span>
@@ -208,9 +208,9 @@ export const HeroSection = () => {
           <div>
             {/* Reduced headline */}
             <div className="relative mb-6 sm:mb-8">
-              <h1 className="font-display font-extrabold text-[clamp(2rem,6.5vw,5.5rem)] leading-[0.92] tracking-tight text-cream">
+              <h1 className="font-display font-extrabold text-[clamp(2.5rem,6.5vw,5.5rem)] leading-[0.92] tracking-tight text-cream">
                 {["A", "clearer"].map((word, i) => (
-                  <span key={i} className="inline-block overflow-hidden">
+                  <span key={i} className="inline-block overflow-hidden mr-[0.25em]">
                     <span
                       className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
                       style={{
@@ -218,13 +218,13 @@ export const HeroSection = () => {
                         transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
                       }}
                     >
-                      {word}{" "}
+                      {word}
                     </span>
                   </span>
                 ))}
-                <div className="h-2 sm:h-4" />
-                {["OUTLOOK", "   on", "life"].map((word, i) => (
-                  <span key={`b-${i}`} className="inline-block overflow-hidden">
+                <br />
+                {["OUTLOOK", "on", "life"].map((word, i) => (
+                  <span key={`b-${i}`} className="inline-block overflow-hidden mr-[0.25em]">
                     <span
                       className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
                       style={{
@@ -237,14 +237,14 @@ export const HeroSection = () => {
                           outl
                           <GlassesOO
                             src={ooImage}
-                            className="mx-0.5 sm:mx-1 h-[0.55em] sm:h-[0.6em]"
+                            className="mx-0.5 sm:mx-1 h-[0.65em] sm:h-[0.7em]"
                           />
-                          k{" "}
+                          k
                         </span>
                       ) : word === "life" ? (
                         <span className="italic font-semibold text-cream/60">{word}<span className="text-mh-gold">.</span></span>
                       ) : (
-                        <>{word} </>
+                        <>{word}</>
                       )}
                     </span>
                   </span>
