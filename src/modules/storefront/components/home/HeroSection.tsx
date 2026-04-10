@@ -320,7 +320,7 @@ export const HeroSection = () => {
             className={`hidden md:flex relative items-center justify-center transition-all duration-[1000ms] ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
             style={{ transitionDelay: "800ms" }}
           >
-            <div className="relative w-full lg:max-w-[420px] aspect-[4/3] rounded-3xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_60px_rgba(212,175,55,0.15)] mx-auto">
+            <div className="relative w-full md:max-w-[320px] lg:max-w-[420px] aspect-[4/3] rounded-3xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_60px_rgba(212,175,55,0.15)] mx-auto">
               <img
                 src={heroEyewear}
                 alt="Featured eyewear"
