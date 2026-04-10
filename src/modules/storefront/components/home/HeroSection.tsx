@@ -1,15 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ArrowDown, Tag, Lightning } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
-import frame1 from "@/assets/frame-1.jpg";
-import frame2 from "@/assets/frame-2.jpg";
-import frame3 from "@/assets/frame-3.jpg";
-import frame4 from "@/assets/frame-4.jpg";
-
-const staticFallbacks = [heroEyewear, frame1, frame2, frame3, frame4];
 
 /** Static glasses image for the "OO" in outlook */
 const GlassesOO = ({ src, className = "" }: { src: string; className?: string }) => (
