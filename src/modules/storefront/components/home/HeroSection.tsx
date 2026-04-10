@@ -424,35 +424,40 @@ export const HeroSection = () => {
                   <span className="font-display font-extrabold text-xs text-flame">{activeBanner.discount_value}</span>
                 </div>
               )}
-              {/* Scrolling pun ticker */}
-              <div className="hidden md:block overflow-hidden max-w-xs relative">
-                <div className="absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-ink-light to-transparent z-10 pointer-events-none" />
-                <div className="absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-ink-light to-transparent z-10 pointer-events-none" />
-                <div className="flex animate-[ticker_30s_linear_infinite] whitespace-nowrap gap-6">
-                  {[
-                    "Eye no dey lie — your frames speak first 👓",
-                    "Na style wey dey see road ✨",
-                    "Sharp eyes. Sharper style.",
-                    "Frames as loud as your ambition, silent as true luxury.",
-                    "Your outlook is your signature — sign boldly.",
-                    "See the future before it arrives 🔮",
-                    "Big vision. Bigger frames. Biggest energy.",
-                    "Clarity is the new flex.",
-                    "Eye no dey lie — your frames speak first 👓",
-                    "Na style wey dey see road ✨",
-                    "Sharp eyes. Sharper style.",
-                    "Frames as loud as your ambition, silent as true luxury.",
-                    "Your outlook is your signature — sign boldly.",
-                    "See the future before it arrives 🔮",
-                    "Big vision. Bigger frames. Biggest energy.",
-                    "Clarity is the new flex.",
-                  ].map((quote, i) => (
-                    <span key={i} className="text-cream/50 text-xs font-display flex-shrink-0">
-                      {quote}
-                      <span className="text-mh-gold/40 ml-6">·</span>
-                    </span>
-                  ))}
-                </div>
+            </div>
+
+            {/* Full-width scrolling pun ticker */}
+            <div className="overflow-hidden relative bg-ink-light/80 border-t border-b border-cream/5 py-2.5 sm:py-3">
+              <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-ink-light to-transparent z-10 pointer-events-none" />
+              <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-ink-light to-transparent z-10 pointer-events-none" />
+              <div className="flex animate-[ticker_35s_linear_infinite] whitespace-nowrap gap-8 sm:gap-10">
+                {[
+                  "Eye no dey lie — your frames speak first 👓",
+                  "Na style wey dey see road ✨",
+                  "Sharp eyes. Sharper style.",
+                  "Frames as loud as your ambition, silent as true luxury.",
+                  "Your outlook is your signature — sign boldly.",
+                  "See the future before it arrives 🔮",
+                  "Big vision. Bigger frames. Biggest energy.",
+                  "Clarity is the new flex.",
+                  "Soft life starts with sharp sight 🌿",
+                  "No dull moment when the frames are right.",
+                  "Eye no dey lie — your frames speak first 👓",
+                  "Na style wey dey see road ✨",
+                  "Sharp eyes. Sharper style.",
+                  "Frames as loud as your ambition, silent as true luxury.",
+                  "Your outlook is your signature — sign boldly.",
+                  "See the future before it arrives 🔮",
+                  "Big vision. Bigger frames. Biggest energy.",
+                  "Clarity is the new flex.",
+                  "Soft life starts with sharp sight 🌿",
+                  "No dull moment when the frames are right.",
+                ].map((quote, i) => (
+                  <span key={i} className="text-cream/60 text-sm sm:text-base font-display tracking-wide flex-shrink-0">
+                    {quote}
+                    <span className="text-mh-gold/30 ml-8 sm:ml-10">✦</span>
+                  </span>
+                ))}
               </div>
             </div>
 
