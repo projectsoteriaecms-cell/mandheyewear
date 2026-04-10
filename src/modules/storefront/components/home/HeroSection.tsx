@@ -200,8 +200,15 @@ export const HeroSection = () => {
     return () => clearInterval(timer);
   }, [allFrames.length]);
 
+  const filterPlaceholders = (items: any[]) =>
+    items.filter((item) => {
+      const p = item.product || item;
+      const name = (p.name || '').toLowerCase();
+      const brand = (p.brand || '').toLowerCase();
+      return !name.includes('needs_research') && !name.includes('[needs') && !brand.includes('needs_research') && !brand.includes('[needs');
+    });
   const hasCurated = (slideshowItems || []).length > 0;
-  const flashDeals = hasCurated ? slideshowItems! : (fallbackProducts || []);
+  const flashDeals = filterPlaceholders(hasCurated ? slideshowItems! : (fallbackProducts || []));
   const stripLabel = hasCurated ? "Flash Deals" : "✨ New Arrivals";
 
   return (
