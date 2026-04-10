@@ -1,9 +1,8 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ArrowDown, Tag } from "@phosphor-icons/react";
+import { ArrowRight, ArrowDown, Tag, Lightning } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useCountUp } from "@/shared/hooks/useCountUp";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
 import frame1 from "@/assets/frame-1.jpg";
 import frame2 from "@/assets/frame-2.jpg";
@@ -12,48 +11,45 @@ import frame4 from "@/assets/frame-4.jpg";
 
 const staticFallbacks = [heroEyewear, frame1, frame2, frame3, frame4];
 
-/** Inline SVG twin-lens "OO" glyph — two connected circles like spectacle lenses */
-const TwinLensSVG = ({ className = "" }: { className?: string }) => (
-  <svg
-    viewBox="0 0 52 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={`inline-block align-middle lens-shimmer ${className}`}
-    style={{ width: "1.1em", height: "0.55em" }}
-  >
-    <circle cx="13" cy="12" r="10" stroke="currentColor" strokeWidth="2.2" fill="none" />
-    <circle cx="39" cy="12" r="10" stroke="currentColor" strokeWidth="2.2" fill="none" />
-    <path d="M23 12 Q26 7 29 12" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
-  </svg>
-);
-
-/** Stable pill container with crossfading images — no container movement */
-const FrameSlot = ({
-  currentSrc,
-  nextSrc,
-  fading,
-  className,
-  alt,
-}: {
-  currentSrc: string;
-  nextSrc: string;
-  fading: boolean;
-  className?: string;
-  alt: string;
-}) => (
-  <span className={`relative inline-block align-middle overflow-hidden rounded-full border-2 border-mh-gold/20 shadow-lg ${className}`}>
+/** Static glasses image for the "OO" in outlook */
+const GlassesOO = ({ src, className = "" }: { src: string; className?: string }) => (
+  <span className={`relative inline-block align-middle overflow-hidden rounded-full border-2 border-mh-gold/30 shadow-lg ${className}`}>
     <img
-      src={currentSrc}
-      alt={alt}
-      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${fading ? "opacity-0" : "opacity-100"}`}
-    />
-    <img
-      src={nextSrc}
-      alt={alt}
-      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${fading ? "opacity-100" : "opacity-0"}`}
+      src={src}
+      alt="Glasses frame"
+      className="absolute inset-0 w-full h-full object-cover"
     />
   </span>
 );
+
+/** Countdown timer hook — counts down to end of day */
+const useCountdown = () => {
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const endOfDay = new Date(now);
+      endOfDay.setHours(23, 59, 59, 999);
+      const diff = Math.max(0, endOfDay.getTime() - now.getTime());
+      setTimeLeft({
+        hours: Math.floor(diff / 3600000),
+        minutes: Math.floor((diff % 3600000) / 60000),
+        seconds: Math.floor((diff % 60000) / 1000),
+      });
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return timeLeft;
+};
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+const formatPrice = (price: number) =>
+  new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", minimumFractionDigits: 0 }).format(price);
 
 interface PromoBanner {
   id: string;
@@ -79,9 +75,21 @@ const defaultBanner: PromoBanner = {
   featured_product_ids: [],
 };
 
+interface SlideshowProduct {
+  discount_percent: number | null;
+  discount_label: string | null;
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    image_url: string | null;
+    brand: string | null;
+  };
+}
+
 export const HeroSection = () => {
   const [loaded, setLoaded] = useState(false);
-  const statsRef = useRef<HTMLDivElement>(null);
+  const countdown = useCountdown();
 
   // Fetch active promo banner
   const { data: banner } = useQuery({
@@ -111,41 +119,22 @@ export const HeroSection = () => {
 
   const activeBanner = banner || defaultBanner;
 
-  // Fetch featured product images
-  const { data: featuredImages } = useQuery({
-    queryKey: ["promo-featured-images", activeBanner.featured_product_ids],
+  // Fetch slideshow items for flash deals
+  const { data: slideshowItems } = useQuery({
+    queryKey: ["hero-flash-deals"],
     queryFn: async () => {
-      if (!activeBanner.featured_product_ids.length) return [];
       const { data } = await supabase
-        .from("products")
-        .select("id, image_url, name")
-        .in("id", activeBanner.featured_product_ids);
-      // Preserve the order from featured_product_ids
-      const map = new Map((data || []).map((p) => [p.id, p]));
-      return activeBanner.featured_product_ids
-        .map((id) => map.get(id))
-        .filter(Boolean) as { id: string; image_url: string | null; name: string }[];
+        .from("slideshow_items")
+        .select("discount_percent, discount_label, product:products(id, name, price, image_url, brand)")
+        .eq("is_active", true)
+        .order("display_order")
+        .limit(6);
+      return (data || []).filter((d: any) => d.product) as SlideshowProduct[];
     },
-    enabled: activeBanner.featured_product_ids.length > 0,
     staleTime: 60_000,
   });
 
-  // Build featured frame images for the promo card (static, non-rotating)
-  const promoFrameImages = useMemo(() => {
-    const dbImages = (featuredImages || [])
-      .filter((p) => p.image_url)
-      .map((p) => ({ src: p.image_url!, alt: p.name }));
-    if (dbImages.length >= 3) return dbImages.slice(0, 4);
-    // Fill with static fallbacks
-    const fallbacks = [
-      { src: frame2, alt: "Frame" },
-      { src: frame3, alt: "Frame" },
-      { src: frame4, alt: "Frame" },
-    ];
-    return [...dbImages, ...fallbacks].slice(0, 3);
-  }, [featuredImages]);
-
-  // Fetch real product images for hero carousel
+  // Fetch product images for hero
   const { data: productImages } = useQuery({
     queryKey: ["hero-frame-images"],
     queryFn: async () => {
@@ -163,76 +152,23 @@ export const HeroSection = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Build the master frames array: DB images first, then static fallbacks (capped at 20)
   const allFrames = useMemo(() => {
     const dbImages = productImages || [];
     if (dbImages.length >= 4) return dbImages.slice(0, 20);
     const merged = [...dbImages, ...staticFallbacks];
-    const unique = Array.from(new Set(merged));
-    return unique.slice(0, 20);
+    return Array.from(new Set(merged)).slice(0, 20);
   }, [productImages]);
 
-  // Carousel state
-  const [img1Index, setImg1Index] = useState(0);
-  const [img2Index, setImg2Index] = useState(1);
-  const [next1Index, setNext1Index] = useState(0);
-  const [next2Index, setNext2Index] = useState(1);
-  const [fading1, setFading1] = useState(false);
-  const [fading2, setFading2] = useState(false);
-
-  const img1Ref = useRef(img1Index);
-  const img2Ref = useRef(img2Index);
-  img1Ref.current = img1Index;
-  img2Ref.current = img2Index;
-
-  const getNextIndex = useCallback(
-    (current: number, otherSlot: number) => {
-      if (allFrames.length <= 2) return (current + 1) % allFrames.length;
-      let next = (current + 1) % allFrames.length;
-      if (next === otherSlot) next = (next + 1) % allFrames.length;
-      return next;
-    },
-    [allFrames.length]
-  );
-
+  // Static image for OO and for right column
+  const ooImage = allFrames[0] || staticFallbacks[0];
+  const heroImage = allFrames[1] || staticFallbacks[1];
 
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 100);
     return () => clearTimeout(t);
   }, []);
 
-  // Slot 1 rotation
-  useEffect(() => {
-    if (!loaded || allFrames.length < 2) return;
-    const interval = setInterval(() => {
-      const nextIdx = getNextIndex(img1Ref.current, img2Ref.current);
-      setNext1Index(nextIdx);
-      setFading1(true);
-      setTimeout(() => {
-        setImg1Index(nextIdx);
-        setFading1(false);
-      }, 500);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [loaded, allFrames.length, getNextIndex]);
-
-  // Slot 2 rotation (offset by 2.5s)
-  useEffect(() => {
-    if (!loaded || allFrames.length < 2) return;
-    const timeout = setTimeout(() => {
-      const interval = setInterval(() => {
-        const nextIdx = getNextIndex(img2Ref.current, img1Ref.current);
-        setNext2Index(nextIdx);
-        setFading2(true);
-        setTimeout(() => {
-          setImg2Index(nextIdx);
-          setFading2(false);
-        }, 500);
-      }, 5000);
-      return () => clearInterval(interval);
-    }, 2500);
-    return () => clearTimeout(timeout);
-  }, [loaded, allFrames.length, getNextIndex]);
+  const flashDeals = slideshowItems || [];
 
   return (
     <section className="section-ink-grain relative overflow-hidden min-h-screen flex flex-col justify-center">
@@ -254,7 +190,7 @@ export const HeroSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pb-24 lg:pb-16 relative z-10 w-full">
         {/* Top tags */}
         <div
-          className={`flex items-center gap-4 sm:gap-6 mb-6 sm:mb-10 transition-all duration-700 ${loaded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}
+          className={`flex items-center gap-4 sm:gap-6 mb-6 sm:mb-8 transition-all duration-700 ${loaded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}
           style={{ transitionDelay: "200ms" }}
         >
           <span className="font-display font-bold text-[10px] sm:text-xs tracking-[0.3em] uppercase text-cream/30">/Eyewear</span>
@@ -262,185 +198,224 @@ export const HeroSection = () => {
           <span className="font-display font-bold text-[10px] sm:text-xs tracking-[0.3em] uppercase text-cream/30">/Eye Care</span>
         </div>
 
-        {/* Giant typographic headline */}
-        <div className="relative mb-8 sm:mb-12">
-          <h1 className="font-display font-extrabold text-[clamp(2.2rem,9vw,8rem)] leading-[0.88] tracking-tight text-cream">
-            {["A", "clearer", "IMG1"].map((word, i) => (
-              <span key={i} className="inline-block overflow-hidden">
-                <span
-                  className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
-                  style={{
-                    transitionDelay: `${400 + i * 120}ms`,
-                    transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-                  }}
-                >
-                  {word === "IMG1" ? (
-                    <FrameSlot
-                      currentSrc={allFrames[img1Index] || staticFallbacks[0]}
-                      nextSrc={allFrames[next1Index] || staticFallbacks[0]}
-                      fading={fading1}
-                      className="mx-1 sm:mx-2 w-[1.2em] sm:w-[1.6em] h-[0.6em] sm:h-[0.7em]"
-                      alt="Eyewear frame"
-                    />
-                  ) : (
-                    <>{word} </>
-                  )}
-                </span>
-              </span>
-            ))}
-            <br />
-            {["OUTLOOK", "IMG2", "on", "life"].map((word, i) => (
-              <span key={`b-${i}`} className="inline-block overflow-hidden">
-                <span
-                  className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
-                  style={{
-                    transitionDelay: `${760 + i * 120}ms`,
-                    transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-                  }}
-                >
-                  {word === "OUTLOOK" ? (
-                    <span className="text-mh-gold">
-                      outl<TwinLensSVG />k{" "}
+        {/* === Two-column grid: text left, product image right === */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-8 sm:mb-10">
+          {/* Left column — headline + subtext + CTAs */}
+          <div>
+            {/* Reduced headline */}
+            <div className="relative mb-6 sm:mb-8">
+              <h1 className="font-display font-extrabold text-[clamp(1.8rem,5.5vw,4.5rem)] leading-[0.92] tracking-tight text-cream">
+                {["A", "clearer"].map((word, i) => (
+                  <span key={i} className="inline-block overflow-hidden">
+                    <span
+                      className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
+                      style={{
+                        transitionDelay: `${400 + i * 120}ms`,
+                        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+                      }}
+                    >
+                      {word}{" "}
                     </span>
-                  ) : word === "IMG2" ? (
-                    <FrameSlot
-                      currentSrc={allFrames[img2Index] || staticFallbacks[1]}
-                      nextSrc={allFrames[next2Index] || staticFallbacks[1]}
-                      fading={fading2}
-                      className="mx-1 sm:mx-2 w-[1.0em] sm:w-[1.4em] h-[0.6em] sm:h-[0.7em]"
-                      alt="Eyewear frame"
-                    />
-                  ) : word === "life" ? (
-                    <span className="italic font-semibold text-cream/60">{word}<span className="text-mh-gold">.</span></span>
-                  ) : (
-                    <>{word} </>
-                  )}
-                </span>
-              </span>
-            ))}
-          </h1>
-        </div>
+                  </span>
+                ))}
+                <br />
+                {["OUTLOOK", "on", "life"].map((word, i) => (
+                  <span key={`b-${i}`} className="inline-block overflow-hidden">
+                    <span
+                      className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
+                      style={{
+                        transitionDelay: `${640 + i * 120}ms`,
+                        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+                      }}
+                    >
+                      {word === "OUTLOOK" ? (
+                        <span className="text-mh-gold">
+                          outl
+                          <GlassesOO
+                            src={ooImage}
+                            className="mx-0.5 sm:mx-1 w-[0.9em] sm:w-[1.1em] h-[0.55em] sm:h-[0.6em]"
+                          />
+                          k{" "}
+                        </span>
+                      ) : word === "life" ? (
+                        <span className="italic font-semibold text-cream/60">{word}<span className="text-mh-gold">.</span></span>
+                      ) : (
+                        <>{word} </>
+                      )}
+                    </span>
+                  </span>
+                ))}
+              </h1>
+            </div>
 
-        {/* Promo banner — dynamic from database */}
-        <div
-          className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-ink-light mb-8 sm:mb-12 border border-cream/5 transition-all duration-[900ms] ${loaded ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-12 scale-[0.95]"}`}
-          style={{
-            transitionDelay: "1200ms",
-            transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
-          }}
-        >
-          {/* Shimmer sweep */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute inset-0 -translate-x-full animate-shimmer-sweep bg-gradient-to-r from-transparent via-cream/5 to-transparent" style={{ animationDelay: "1.8s" }} />
+            {/* Subtext */}
+            <div
+              className={`max-w-md space-y-4 sm:space-y-5 transition-all duration-[800ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+              style={{ transitionDelay: "1000ms" }}
+            >
+              <div className="relative pl-4 sm:pl-5 border-l-2 border-mh-gold/40">
+                <p className="font-display font-bold text-base sm:text-lg leading-snug text-cream tracking-tight">
+                  For those who see the future<br className="hidden sm:block" /> before it arrives.
+                </p>
+              </div>
+
+              <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-cream/[0.06] backdrop-blur-md border border-cream/10 shadow-[0_0_20px_rgba(212,175,55,0.08)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-mh-gold animate-pulse" />
+                <span className="font-display font-semibold text-xs sm:text-sm text-cream/90 tracking-wide">
+                  Clarity without compromise
+                </span>
+              </div>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
+                <Link
+                  to="/eyewear"
+                  className={`group inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-mh-gold text-ink font-display font-bold text-sm tracking-wide uppercase hover:scale-105 hover:shadow-glow-accent transition-all duration-300 shadow-gold w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+                  style={{ transitionDelay: "1300ms" }}
+                >
+                  Shop Collection
+                  <ArrowRight weight="bold" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  to="/booking"
+                  className={`group inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-flame text-cream font-display font-bold text-sm tracking-wide uppercase hover:scale-105 transition-all duration-300 shadow-flame w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+                  style={{ transitionDelay: "1450ms" }}
+                >
+                  Book Eye Exam
+                  <ArrowRight weight="bold" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_auto] items-center min-h-[180px] lg:min-h-[240px]">
-            <div className="p-5 sm:p-8 lg:p-10 space-y-2 sm:space-y-3">
-              <h2 className="font-display font-extrabold text-2xl sm:text-3xl lg:text-5xl text-cream leading-[1.05] uppercase">
-                {activeBanner.title_line1}<br />
-                <span className="text-mh-gold">{activeBanner.title_line2}</span>
-              </h2>
-              <div className="inline-block px-3 sm:px-4 py-1 sm:py-1.5 border-2 border-dashed border-mh-gold/50 rounded-lg">
-                <span className="font-display font-bold text-xs sm:text-sm text-mh-gold tracking-wide">{activeBanner.date_label}</span>
+          {/* Right column — large hero product image */}
+          <div
+            className={`relative flex items-center justify-center transition-all duration-[1000ms] ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
+            style={{ transitionDelay: "800ms" }}
+          >
+            <div className="relative w-full max-w-[420px] aspect-square rounded-3xl overflow-hidden border-2 border-mh-gold/20 shadow-[0_0_60px_rgba(212,175,55,0.15)]">
+              <img
+                src={heroImage}
+                alt="Featured eyewear"
+                className="w-full h-full object-cover"
+              />
+              {/* Gold glow overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
+              {/* Discount badge on image */}
+              {activeBanner.discount_value && (
+                <div className="absolute top-4 right-4 px-4 py-2 bg-flame rounded-full shadow-lg">
+                  <span className="font-display font-extrabold text-cream text-sm uppercase tracking-wide">
+                    {activeBanner.discount_value}
+                  </span>
+                </div>
+              )}
+              {/* Brand tag */}
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="px-4 py-3 bg-ink/80 backdrop-blur-md rounded-2xl border border-cream/10">
+                  <p className="font-display font-bold text-cream text-sm">{activeBanner.title_line1} {activeBanner.title_line2}</p>
+                  <p className="text-cream/60 text-xs mt-0.5">{activeBanner.date_label}</p>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div className="px-5 sm:px-8 lg:px-4 pb-5 sm:pb-6 lg:pb-0 space-y-2 sm:space-y-3">
-              <p className="text-cream/70 text-base sm:text-lg font-body">{activeBanner.description}</p>
-              <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 bg-cream rounded-full">
-                <Tag weight="fill" className="w-4 h-4 sm:w-5 sm:h-5 text-flame" />
-                <span className="font-display font-extrabold text-ink text-xs sm:text-sm uppercase tracking-wider">{activeBanner.discount_prefix}</span>
-                <span className="font-display font-extrabold text-flame text-2xl sm:text-3xl">{activeBanner.discount_value}</span>
+        {/* === Flash Deals Strip (Jumia-style) === */}
+        {flashDeals.length > 0 && (
+          <div
+            className={`transition-all duration-[900ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+            style={{ transitionDelay: "1600ms" }}
+          >
+            {/* Flash deals header bar */}
+            <div className="flex items-center justify-between bg-flame rounded-t-xl px-4 sm:px-6 py-2.5 sm:py-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Lightning weight="fill" className="w-5 h-5 text-cream animate-pulse" />
+                <span className="font-display font-extrabold text-cream text-sm sm:text-base uppercase tracking-wide">Flash Deals</span>
               </div>
-              <p className="text-cream/40 text-xs">{activeBanner.disclaimer}</p>
+
+              {/* Countdown */}
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-cream/80 text-xs font-display tracking-wide hidden sm:inline">Ends in:</span>
+                {[pad(countdown.hours), pad(countdown.minutes), pad(countdown.seconds)].map((val, i) => (
+                  <span key={i} className="flex items-center gap-1">
+                    <span className="bg-ink/60 text-cream font-display font-bold text-xs sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                      {val}
+                    </span>
+                    {i < 2 && <span className="text-cream/60 font-bold text-xs">:</span>}
+                  </span>
+                ))}
+              </div>
+
+              <Link
+                to="/eyewear"
+                className="text-cream/90 font-display font-bold text-xs sm:text-sm hover:text-cream transition-colors flex items-center gap-1"
+              >
+                See All <ArrowRight weight="bold" className="w-3 h-3" />
+              </Link>
             </div>
 
-            {/* Featured frames — desktop: staggered column, mobile: horizontal row */}
-            <div className="flex lg:flex-col items-center justify-center gap-3 px-5 pb-5 lg:px-6 lg:pb-0 relative lg:h-full">
-              <div className="flex lg:flex-col items-end justify-center gap-2 lg:gap-0 lg:relative lg:w-[260px] lg:h-[220px]">
-                <div className="hidden lg:block absolute inset-0 bg-gradient-to-t from-mh-gold/20 to-transparent rounded-t-3xl" />
-                {promoFrameImages.map((img, i) => {
-                  const desktopPositions = [
-                    "lg:absolute lg:bottom-0 lg:left-0 lg:rotate-[-6deg]",
-                    "lg:absolute lg:bottom-4 lg:left-1/2 lg:-translate-x-1/2 lg:z-10",
-                    "lg:absolute lg:bottom-0 lg:right-0 lg:rotate-[6deg]",
-                    "lg:absolute lg:bottom-8 lg:left-1/2 lg:-translate-x-1/2 lg:z-20",
-                  ];
+            {/* Flash deals product row */}
+            <div className="bg-ink-light border border-cream/5 border-t-0 rounded-b-xl overflow-hidden">
+              <div className="flex overflow-x-auto gap-0 scrollbar-hide">
+                {flashDeals.map((item, i) => {
+                  const product = item.product;
+                  const hasDiscount = item.discount_percent && item.discount_percent > 0;
+                  const discountedPrice = hasDiscount
+                    ? product.price * (1 - (item.discount_percent! / 100))
+                    : product.price;
+
                   return (
-                    <img
-                      key={i}
-                      src={img.src}
-                      alt={img.alt}
-                      className={`w-16 h-16 sm:w-20 sm:h-20 lg:w-28 lg:h-28 object-cover rounded-xl shadow-lg border-2 border-mh-gold/15 ${
-                        i === 1 ? "lg:w-32 lg:h-32 lg:shadow-xl" : ""
-                      } ${desktopPositions[i] || desktopPositions[2]}`}
-                    />
+                    <Link
+                      key={product.id}
+                      to={`/eyewear/${product.id}`}
+                      className="flex-shrink-0 w-[140px] sm:w-[170px] p-3 sm:p-4 border-r border-cream/5 last:border-r-0 hover:bg-cream/[0.03] transition-colors group"
+                    >
+                      {/* Image */}
+                      <div className="relative aspect-square rounded-lg overflow-hidden bg-muted mb-2">
+                        {product.image_url ? (
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-cream/5" />
+                        )}
+                        {/* Discount badge */}
+                        {hasDiscount && (
+                          <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-flame rounded text-[10px] font-display font-bold text-cream">
+                            -{item.discount_percent}%
+                          </div>
+                        )}
+                        {/* Label badge */}
+                        {item.discount_label && (
+                          <div className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 bg-mh-gold/90 rounded text-[9px] font-display font-bold text-ink uppercase">
+                            {item.discount_label}
+                          </div>
+                        )}
+                      </div>
+                      {/* Info */}
+                      <p className="text-cream/80 text-xs font-display font-semibold truncate">{product.name}</p>
+                      {product.brand && (
+                        <p className="text-cream/40 text-[10px] font-display truncate">{product.brand}</p>
+                      )}
+                      <div className="mt-1 flex items-baseline gap-1.5 flex-wrap">
+                        <span className="font-display font-extrabold text-sm text-flame">
+                          {formatPrice(discountedPrice)}
+                        </span>
+                        {hasDiscount && (
+                          <span className="font-display text-[10px] text-cream/40 line-through">
+                            {formatPrice(product.price)}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
                   );
                 })}
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Subtext + CTAs */}
-        <div
-          className={`flex flex-col items-start gap-8 sm:gap-10 transition-all duration-[800ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
-          style={{
-            transitionDelay: "1500ms",
-            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-            transform: loaded ? "perspective(1000px) rotateX(0deg)" : "perspective(1000px) rotateX(8deg)",
-          }}
-        >
-          <div className="max-w-md space-y-5 sm:space-y-7">
-            <div className="relative pl-4 sm:pl-5 border-l-2 border-mh-gold/40">
-              <p className="font-display font-bold text-lg sm:text-xl leading-snug text-cream tracking-tight">
-                For those who see the future<br className="hidden sm:block" /> before it arrives.
-              </p>
-            </div>
-
-            <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-cream/[0.06] backdrop-blur-md border border-cream/10 shadow-[0_0_20px_rgba(212,175,55,0.08)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-mh-gold animate-pulse" />
-              <span className="font-display font-semibold text-sm sm:text-base text-cream/90 tracking-wide">
-                Clarity without compromise
-              </span>
-              <span className="text-cream/30 font-light">—</span>
-              <span className="font-body text-sm sm:text-base text-cream/60 italic">
-                your world, in HD
-              </span>
-            </div>
-
-            <p className="text-cream/50 text-sm sm:text-base leading-relaxed font-body tracking-wide max-w-sm">
-              A new <span className="font-display font-bold text-mh-gold italic">frame</span> of mind. Your outlook should be as loud as your ambition,<br className="hidden sm:block" />
-              <span className="text-cream/70 font-display font-semibold">but as silent as true luxury.</span>
-            </p>
-
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link
-                to="/eyewear"
-                className={`group inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-mh-gold text-ink font-display font-bold text-sm tracking-wide uppercase hover:scale-105 hover:shadow-glow-accent transition-all duration-300 shadow-gold w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
-                style={{
-                  transitionDelay: "1800ms",
-                  transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
-                }}
-              >
-                Shop Collection
-                <ArrowRight weight="bold" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                to="/booking"
-                className={`group inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-flame text-cream font-display font-bold text-sm tracking-wide uppercase hover:scale-105 transition-all duration-300 shadow-flame w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
-                style={{
-                  transitionDelay: "1950ms",
-                  transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
-                }}
-              >
-                Book Eye Exam
-                <ArrowRight weight="bold" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Scroll indicator */}
