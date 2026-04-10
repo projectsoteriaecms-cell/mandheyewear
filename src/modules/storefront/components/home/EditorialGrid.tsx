@@ -9,12 +9,12 @@ import heroEyeCare from "@/assets/hero-eye-care.jpg";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
 
 const blocks = [
-  { number: "01", title: "Sharp Eyes", description: "For those who see the future before it arrives. Certified optometrists. Advanced diagnostics.", image: heroEyeCare, link: "/booking", linkText: "Book Exam", span: "col-span-1 row-span-1" },
-  { number: "02", title: "Sharper Style", description: "A new frame of mind. Designer frames as loud as your ambition, as silent as true luxury.", image: frame1, link: "/eyewear", linkText: "Shop Frames", span: "col-span-1 row-span-2", large: true },
-  { number: "03", title: "Virtual Try-On", description: "See am. Believe am. AI face mapping lets you try every frame before you commit.", image: frame3, link: "/try-on", linkText: "Try Now", span: "col-span-1 row-span-1" },
-  { number: "04", title: "Style Quiz", description: "Your face. Your canvas. We match frames to your shape, vibe, and personality.", image: frame2, link: "/style-quiz", linkText: "Take Quiz", span: "col-span-1 row-span-1" },
-  { number: "05", title: "Precision Lenses", description: "Single vision to progressives — anti-glare, blue-light filter, no dull moment for your eyes.", image: frame4, link: "/eyewear?category=lenses", linkText: "Explore", span: "col-span-1 row-span-1" },
-  { number: "06", title: "The M&H Experience", description: "Where soft life meets sharp vision — na style wey dey see road.", image: heroEyewear, link: "/about", linkText: "Our Story", span: "col-span-1 row-span-1" },
+  { number: "01", title: "Sharp Eyes", description: "For those who see the future before it arrives. Certified optometrists. Advanced diagnostics.", image: heroEyeCare, link: "/booking", linkText: "Book Exam" },
+  { number: "02", title: "Sharper Style", description: "A new frame of mind. Designer frames as loud as your ambition, as silent as true luxury.", image: frame1, link: "/eyewear", linkText: "Shop Frames" },
+  { number: "03", title: "Virtual Try-On", description: "See am. Believe am. AI face mapping lets you try every frame before you commit.", image: frame3, link: "/try-on", linkText: "Try Now" },
+  { number: "04", title: "Style Quiz", description: "Your face. Your canvas. We match frames to your shape, vibe, and personality.", image: frame2, link: "/style-quiz", linkText: "Take Quiz" },
+  { number: "05", title: "Precision Lenses", description: "Single vision to progressives — anti-glare, blue-light filter, no dull moment for your eyes.", image: frame4, link: "/eyewear?category=lenses", linkText: "Explore" },
+  { number: "06", title: "The M&H Experience", description: "Where soft life meets sharp vision — na style wey dey see road.", image: heroEyewear, link: "/about", linkText: "Our Story" },
 ];
 
 export const EditorialGrid = () => {
@@ -44,7 +44,7 @@ export const EditorialGrid = () => {
             <Link
               key={block.number}
               to={block.link}
-              className={`group relative overflow-hidden rounded-2xl scan-line-hover ${block.large ? "md:row-span-2 min-h-[280px] sm:min-h-[500px]" : "min-h-[220px] sm:min-h-[260px]"} bg-ink transition-all duration-700 ${gridInView ? "opacity-100" : "opacity-0"}`}
+              className={`group relative overflow-hidden rounded-2xl scan-line-hover min-h-[220px] sm:min-h-[260px] bg-ink transition-all duration-700 ${gridInView ? "opacity-100" : "opacity-0"}`}
               style={{
                 transitionDelay: gridInView ? `${i * 100}ms` : "0ms",
                 transform: gridInView
