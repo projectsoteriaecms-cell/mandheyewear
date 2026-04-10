@@ -1,30 +1,21 @@
 
 
-## Restore Promo Banner Card Below Hero + Keep Flash Deals Strip
+## Merge Promo Banner + New Arrivals Into One Unified Section
 
 ### What's Changing
 
-The screenshot shows a large, prominent **promo banner card** ("NEW SEASON COLLECTION") sitting below the hero headline. This card was removed in favor of the Flash Deals strip. We're bringing it back as its own distinct section, while keeping the Flash Deals strip below it.
+The two separate sections below the hero headline — the **Promo Banner Card** (big marketing card with title, discount, thumbnails) and the **Flash Deals / New Arrivals Strip** (horizontal product row) — get combined into a single, cleaner block.
 
-### Changes — Single file: `HeroSection.tsx`
+### How It Will Look
 
-#### 1. Add Promo Banner Card (between the two-column grid and the Flash Deals strip)
-A full-width card matching the screenshot design:
-- Dark background card with rounded corners (`bg-ink-light` or `bg-cream/[0.04]`)
-- **Title**: `title_line1` in bold white, `title_line2` in flame/gold — large, impactful typography
-- **Date label**: Dashed border badge ("April 2026 Drop")
-- **Description**: Body text in cream/70
-- **Discount badge**: Pill-shaped, with tag icon, `discount_prefix` + `discount_value` in flame color
-- **Disclaimer**: Small muted text ("T&Cs apply • Limited time offer")
-- **Featured product thumbnails**: Fetch products by `featured_product_ids` from the banner, display 3 rounded product images in a row at the bottom
-- The entire card links to `/eyewear`
+One card with:
+- **Top area**: Banner title, date label, discount pill, and "Shop Now" link — all in a compact horizontal layout (no separate thumbnails)
+- **Bottom area**: The scrollable product row sits directly beneath, inside the same card — no visual gap between the two
 
-#### 2. Fetch Featured Products for the Banner
-Add a query that fetches products matching `activeBanner.featured_product_ids` to display the 3 thumbnail images at the bottom of the card. Falls back to latest 3 products if no IDs are set.
+### Changes — `HeroSection.tsx`
 
-#### 3. Flash Deals Strip Stays Below
-No changes to the Flash Deals / New Arrivals strip — it remains right below the promo banner card.
-
-### Result
-The hero section flows: **Headline + Right Image → Promo Banner Card → Flash Deals Strip** — giving maximum marketing impact with both a seasonal campaign card and a product deal row always visible.
+1. **Remove the standalone Promo Banner Card** (the `<Link>` block with featured thumbnails, discount pill, and "Shop Now")
+2. **Integrate banner info into the Flash Deals strip header**: The flame-colored header bar will show the banner title + discount alongside the countdown/label
+3. **Product row stays unchanged** beneath the header — same scrollable product cards
+4. **Result**: One cohesive marketing block instead of two stacked sections, moved up tighter under the hero
 
