@@ -1,24 +1,18 @@
 
 
-## Hero Section Adjustments — Bigger Headline, Rotating Right Image Frame
+## Always-Visible Flash Deals Strip with Product Fallback
 
-### What's Changing
+### Problem
+The Flash Deals horizontal bar below the hero only appears when the `slideshow_items` table has data. Since no items have been added yet, users see nothing. It should always be visible as a constant advertising/marketing strip.
 
-Three targeted tweaks to `HeroSection.tsx`:
+### Changes — Single file: `HeroSection.tsx`
 
-### 1. Slightly Bigger Headline
-Bump from `text-[clamp(1.8rem,5.5vw,4.5rem)]` to `text-[clamp(2rem,6.5vw,5.5rem)]` — noticeably larger and more distinct, but not as oversized as the original.
+1. **Add a fallback query**: When `slideshowItems` is empty, fetch the 6 most recent active products from the `products` table (same fallback pattern used in `PromoSlideshow.tsx`) and map them into the same `SlideshowProduct` shape with `discount_percent: null` and `discount_label: null`.
 
-### 2. More Space Between "clearer" and "OUTLOOK on life"
-Add vertical spacing after the `<br />` between the two lines. Use a spacer div or margin to create a clear visual gap between "A clearer" and "OUTLOOK on life".
+2. **Remove the `flashDeals.length > 0` conditional**: The strip always renders. If there are admin-curated slideshow items, use those. If not, show the latest products as "New Arrivals" — the header label changes from "Flash Deals" to "New Arrivals" when using fallback data.
 
-### 3. Right Column Image Rotates Through Product Frames
-Currently the right-side hero image is static (`heroImage`). Add back rotation logic:
-- `useState` for `heroIndex` cycling through `allFrames`
-- `useEffect` with `setInterval` every 4–5 seconds
-- Crossfade transition (opacity swap between current and next image) for smooth animated rotation
-- The "OO" in OUTLOOK stays static (no change there)
+3. **Adjust the empty state**: If somehow even the fallback returns zero products, show nothing (edge case safety net).
 
-### Files Modified
-- **`HeroSection.tsx`** only — all changes contained here
+### Result
+The horizontal marketing strip is **always visible** beneath the hero, showing either admin-curated deals or the newest products from the catalog.
 
