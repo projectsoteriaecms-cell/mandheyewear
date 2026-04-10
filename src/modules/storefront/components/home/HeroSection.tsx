@@ -135,6 +135,29 @@ export const HeroSection = () => {
     staleTime: 60_000,
   });
 
+  // Fallback: fetch newest products when no curated slideshow items exist
+  const { data: fallbackProducts } = useQuery({
+    queryKey: ["hero-flash-deals-fallback"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("id, name, price, image_url, brand")
+        .eq("is_active", true)
+        .eq("brand_line", "m_and_h_fashion")
+        .not("image_url", "is", null)
+        .gt("price", 0)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      return (data || []).map((p) => ({
+        discount_percent: null,
+        discount_label: "NEW",
+        product: p,
+      })) as SlideshowProduct[];
+    },
+    staleTime: 60_000,
+    enabled: !slideshowItems || slideshowItems.length === 0,
+  });
+
   // Fetch product images for hero
   const { data: productImages } = useQuery({
     queryKey: ["hero-frame-images"],
