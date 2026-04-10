@@ -1,15 +1,25 @@
 
 
-## Fix Editorial Grid — Remove Empty White Space
+## Rotating Narrative Tagline in Hero Section
 
-### Problem
-Block 02 ("Sharper Style") uses `row-span-2`, making it twice the height. In a 3-column grid with 6 items, this creates an uneven layout with empty cells in the last row.
+### What
+Replace the static tagline "For those who see the future before it arrives." with a rotating text animation that cycles through multiple narrative lines, telling a cohesive brand story.
 
-### Solution — `EditorialGrid.tsx`
+### Narrative Lines (aligned with the 3 brand pillars)
+1. **"For those who see the future before it arrives."** — The Visionary
+2. **"Frames as loud as your ambition, as silent as true luxury."** — Shakara
+3. **"Sharp eyes. Sharper style. Sharpest vision."** — Clinical + Style
+4. **"Na style wey dey see road."** — Cultural punch
 
-1. **Remove `large` property and `row-span-2`** from block 02 — make all 6 cards the same size
-2. **Remove the `span` property** from all blocks (unused except for the `large` flag logic)
-3. **Remove the `large` conditional** in the card rendering (line 47) so all cards get the same `min-h-[220px] sm:min-h-[260px]`
+### How — `HeroSection.tsx`
 
-Result: a clean **3×2 grid on desktop**, **2×3 on tablet**, **6×1 on mobile** — no empty white space anywhere.
+1. **Add state**: `useState` for `taglineIndex` starting at 0, cycling through the array
+2. **Add interval**: `useEffect` with `setInterval` every ~4 seconds to increment the index
+3. **Add fade transition**: Wrap the `<p>` text in a keyed container with a CSS fade-in/fade-out animation (using the existing `animate-fade-in` keyframes + a custom `animate-fade-out` approach, or a simple opacity transition with a brief exit before entering the next line)
+4. **Keep the gold left-border container** — only the text inside rotates
+5. The pill badge below ("Clarity without compromise") stays static as the anchor
+
+### Animation approach
+- Use a `key={taglineIndex}` on the `<p>` to trigger re-mount with `animate-fade-in`
+- Brief opacity transition: text fades out over 300ms, swaps, fades in over 300ms
 
