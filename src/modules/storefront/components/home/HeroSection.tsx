@@ -201,7 +201,9 @@ export const HeroSection = () => {
     return () => clearInterval(timer);
   }, [allFrames.length]);
 
-  const flashDeals = slideshowItems || [];
+  const hasCurated = (slideshowItems || []).length > 0;
+  const flashDeals = hasCurated ? slideshowItems! : (fallbackProducts || []);
+  const stripLabel = hasCurated ? "Flash Deals" : "✨ New Arrivals";
 
   return (
     <section className="section-ink-grain relative overflow-hidden min-h-screen flex flex-col justify-center">
