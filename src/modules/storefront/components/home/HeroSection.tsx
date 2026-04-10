@@ -358,31 +358,32 @@ export const HeroSection = () => {
           </div>
         </div>
 
-        {/* === Flash Deals Strip (Jumia-style) === */}
+        {/* === Flash Deals / New Arrivals Strip (always visible) === */}
         {flashDeals.length > 0 && (
           <div
             className={`transition-all duration-[900ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
             style={{ transitionDelay: "1600ms" }}
           >
-            {/* Flash deals header bar */}
+            {/* Header bar */}
             <div className="flex items-center justify-between bg-flame rounded-t-xl px-4 sm:px-6 py-2.5 sm:py-3">
               <div className="flex items-center gap-2 sm:gap-3">
                 <Lightning weight="fill" className="w-5 h-5 text-cream animate-pulse" />
-                <span className="font-display font-extrabold text-cream text-sm sm:text-base uppercase tracking-wide">Flash Deals</span>
+                <span className="font-display font-extrabold text-cream text-sm sm:text-base uppercase tracking-wide">{stripLabel}</span>
               </div>
 
-              {/* Countdown */}
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="text-cream/80 text-xs font-display tracking-wide hidden sm:inline">Ends in:</span>
-                {[pad(countdown.hours), pad(countdown.minutes), pad(countdown.seconds)].map((val, i) => (
-                  <span key={i} className="flex items-center gap-1">
-                    <span className="bg-ink/60 text-cream font-display font-bold text-xs sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
-                      {val}
+              {hasCurated && (
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-cream/80 text-xs font-display tracking-wide hidden sm:inline">Ends in:</span>
+                  {[pad(countdown.hours), pad(countdown.minutes), pad(countdown.seconds)].map((val, i) => (
+                    <span key={i} className="flex items-center gap-1">
+                      <span className="bg-ink/60 text-cream font-display font-bold text-xs sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                        {val}
+                      </span>
+                      {i < 2 && <span className="text-cream/60 font-bold text-xs">:</span>}
                     </span>
-                    {i < 2 && <span className="text-cream/60 font-bold text-xs">:</span>}
-                  </span>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
 
               <Link
                 to="/eyewear"
@@ -392,10 +393,10 @@ export const HeroSection = () => {
               </Link>
             </div>
 
-            {/* Flash deals product row */}
+            {/* Product row */}
             <div className="bg-ink-light border border-cream/5 border-t-0 rounded-b-xl overflow-hidden">
               <div className="flex overflow-x-auto gap-0 scrollbar-hide">
-                {flashDeals.map((item, i) => {
+                {flashDeals.map((item) => {
                   const product = item.product;
                   const hasDiscount = item.discount_percent && item.discount_percent > 0;
                   const discountedPrice = hasDiscount
@@ -408,7 +409,6 @@ export const HeroSection = () => {
                       to={`/eyewear/${product.id}`}
                       className="flex-shrink-0 w-[140px] sm:w-[170px] p-3 sm:p-4 border-r border-cream/5 last:border-r-0 hover:bg-cream/[0.03] transition-colors group"
                     >
-                      {/* Image */}
                       <div className="relative aspect-square rounded-lg overflow-hidden bg-muted mb-2">
                         {product.image_url ? (
                           <img
@@ -419,20 +419,17 @@ export const HeroSection = () => {
                         ) : (
                           <div className="w-full h-full bg-cream/5" />
                         )}
-                        {/* Discount badge */}
                         {hasDiscount && (
                           <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-flame rounded text-[10px] font-display font-bold text-cream">
                             -{item.discount_percent}%
                           </div>
                         )}
-                        {/* Label badge */}
                         {item.discount_label && (
                           <div className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 bg-mh-gold/90 rounded text-[9px] font-display font-bold text-ink uppercase">
                             {item.discount_label}
                           </div>
                         )}
                       </div>
-                      {/* Info */}
                       <p className="text-cream/80 text-xs font-display font-semibold truncate">{product.name}</p>
                       {product.brand && (
                         <p className="text-cream/40 text-[10px] font-display truncate">{product.brand}</p>
