@@ -1,18 +1,30 @@
 
 
-## Always-Visible Flash Deals Strip with Product Fallback
+## Restore Promo Banner Card Below Hero + Keep Flash Deals Strip
 
-### Problem
-The Flash Deals horizontal bar below the hero only appears when the `slideshow_items` table has data. Since no items have been added yet, users see nothing. It should always be visible as a constant advertising/marketing strip.
+### What's Changing
+
+The screenshot shows a large, prominent **promo banner card** ("NEW SEASON COLLECTION") sitting below the hero headline. This card was removed in favor of the Flash Deals strip. We're bringing it back as its own distinct section, while keeping the Flash Deals strip below it.
 
 ### Changes — Single file: `HeroSection.tsx`
 
-1. **Add a fallback query**: When `slideshowItems` is empty, fetch the 6 most recent active products from the `products` table (same fallback pattern used in `PromoSlideshow.tsx`) and map them into the same `SlideshowProduct` shape with `discount_percent: null` and `discount_label: null`.
+#### 1. Add Promo Banner Card (between the two-column grid and the Flash Deals strip)
+A full-width card matching the screenshot design:
+- Dark background card with rounded corners (`bg-ink-light` or `bg-cream/[0.04]`)
+- **Title**: `title_line1` in bold white, `title_line2` in flame/gold — large, impactful typography
+- **Date label**: Dashed border badge ("April 2026 Drop")
+- **Description**: Body text in cream/70
+- **Discount badge**: Pill-shaped, with tag icon, `discount_prefix` + `discount_value` in flame color
+- **Disclaimer**: Small muted text ("T&Cs apply • Limited time offer")
+- **Featured product thumbnails**: Fetch products by `featured_product_ids` from the banner, display 3 rounded product images in a row at the bottom
+- The entire card links to `/eyewear`
 
-2. **Remove the `flashDeals.length > 0` conditional**: The strip always renders. If there are admin-curated slideshow items, use those. If not, show the latest products as "New Arrivals" — the header label changes from "Flash Deals" to "New Arrivals" when using fallback data.
+#### 2. Fetch Featured Products for the Banner
+Add a query that fetches products matching `activeBanner.featured_product_ids` to display the 3 thumbnail images at the bottom of the card. Falls back to latest 3 products if no IDs are set.
 
-3. **Adjust the empty state**: If somehow even the fallback returns zero products, show nothing (edge case safety net).
+#### 3. Flash Deals Strip Stays Below
+No changes to the Flash Deals / New Arrivals strip — it remains right below the promo banner card.
 
 ### Result
-The horizontal marketing strip is **always visible** beneath the hero, showing either admin-curated deals or the newest products from the catalog.
+The hero section flows: **Headline + Right Image → Promo Banner Card → Flash Deals Strip** — giving maximum marketing impact with both a seasonal campaign card and a product deal row always visible.
 
