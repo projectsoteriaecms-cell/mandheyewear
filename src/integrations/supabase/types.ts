@@ -1202,6 +1202,44 @@ export type Database = {
         }
         Relationships: []
       }
+      slideshow_items: {
+        Row: {
+          created_at: string
+          discount_label: string | null
+          discount_percent: number | null
+          display_order: number
+          id: string
+          is_active: boolean
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          discount_label?: string | null
+          discount_percent?: number | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          discount_label?: string | null
+          discount_percent?: number | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slideshow_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_adjustments: {
         Row: {
           adjustment_type: Database["public"]["Enums"]["adjustment_type"]

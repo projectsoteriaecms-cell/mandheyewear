@@ -2,24 +2,54 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Lightning,
-  ArrowRight,
-  Fire,
-  Tag,
-} from "@phosphor-icons/react";
+import { ArrowRight, Fire, Tag, Lightning } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+
+interface SlideshowProduct {
+  id: string;
+  name: string;
+  brand: string | null;
+  price: number;
+  image_url: string | null;
+  style: string | null;
+  price_tier: string | null;
+  discount_percent: number | null;
+  discount_label: string | null;
+}
 
 export const PromoSlideshow = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [direction, setDirection] = useState<"next" | "prev">("next");
 
-  // Fetch products with images for the slideshow
-  const { data: products } = useQuery({
+  // Fetch from slideshow_items joined with products
+  const { data: slideshowData } = useQuery({
     queryKey: ["promo-slideshow-products"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Try admin-curated items first
+      const { data: curated, error } = await supabase
+        .from("slideshow_items")
+        .select("discount_percent, discount_label, product:products(id, name, brand, price, image_url, style, price_tier)")
+        .eq("is_active", true)
+        .order("display_order");
+
+      if (!error && curated && curated.length > 0) {
+        return curated
+          .filter((item: any) => item.product)
+          .map((item: any) => ({
+            id: item.product.id,
+            name: item.product.name,
+            brand: item.product.brand,
+            price: item.product.price,
+            image_url: item.product.image_url,
+            style: item.product.style,
+            price_tier: item.product.price_tier,
+            discount_percent: item.discount_percent,
+            discount_label: item.discount_label,
+          })) as SlideshowProduct[];
+      }
+
+      // Fallback: latest frames
+      const { data: fallback } = await supabase
         .from("products")
         .select("id, name, brand, price, image_url, price_tier, style")
         .eq("is_active", true)
@@ -29,17 +59,19 @@ export const PromoSlideshow = () => {
         .order("created_at", { ascending: false })
         .limit(6);
 
-      if (error) throw error;
-      return data;
+      return (fallback || []).map((p) => ({
+        ...p,
+        discount_percent: null,
+        discount_label: null,
+      })) as SlideshowProduct[];
     },
   });
 
-  const items = products || [];
+  const items = slideshowData || [];
   const totalSlides = items.length;
 
   const goToNext = useCallback(() => {
     if (isTransitioning || totalSlides === 0) return;
-    setDirection("next");
     setIsTransitioning(true);
     setTimeout(() => {
       setActiveIndex((prev) => (prev + 1) % totalSlides);
@@ -47,7 +79,6 @@ export const PromoSlideshow = () => {
     }, 400);
   }, [isTransitioning, totalSlides]);
 
-  // Auto-rotate every 3.5s
   useEffect(() => {
     if (totalSlides < 2) return;
     const timer = setInterval(goToNext, 3500);
@@ -60,7 +91,11 @@ export const PromoSlideshow = () => {
   const nextIndex = (activeIndex + 1) % totalSlides;
   const prevIndex = (activeIndex - 1 + totalSlides) % totalSlides;
 
-  // Accent colors per slide for variety
+  const hasDiscount = !!currentItem?.discount_percent;
+  const discountedPrice = hasDiscount
+    ? Math.round(currentItem.price * (1 - (currentItem.discount_percent! / 100)))
+    : currentItem?.price;
+
   const accentStyles = [
     "from-flame/20 via-flame/5",
     "from-mh-gold/20 via-mh-gold/5",
@@ -69,6 +104,15 @@ export const PromoSlideshow = () => {
     "from-flame/20 via-flame/5",
     "from-mh-gold/20 via-mh-gold/5",
   ];
+
+  const goToSlide = (index: number) => {
+    if (index === activeIndex || isTransitioning) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setActiveIndex(index);
+      setIsTransitioning(false);
+    }, 400);
+  };
 
   return (
     <section className="py-6 lg:py-10 bg-background overflow-hidden">
@@ -92,24 +136,44 @@ export const PromoSlideshow = () => {
 
         {/* Main slideshow card */}
         <div className="relative rounded-2xl overflow-hidden bg-ink min-h-[340px] sm:min-h-[380px]">
-          {/* Dynamic gradient background */}
           <div
             className={cn(
               "absolute inset-0 bg-gradient-to-br to-transparent transition-all duration-500",
               accentStyles[activeIndex % accentStyles.length]
             )}
           />
-
-          {/* Decorative elements */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mh-gold/30 to-transparent" />
           <div className="absolute -top-20 -right-20 w-60 h-60 bg-mh-gold/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-flame/10 rounded-full blur-3xl" />
 
-          {/* Content */}
           <div className="relative z-10 flex flex-col h-full min-h-[340px] sm:min-h-[380px]">
-            {/* Product image area — large and bold */}
+            {/* Discount label badge */}
+            {currentItem?.discount_label && (
+              <div
+                className={cn(
+                  "absolute top-3 left-3 z-20 px-3 py-1 rounded-full bg-flame text-cream font-display font-bold text-xs uppercase tracking-wider shadow-lg transition-all duration-400",
+                  isTransitioning ? "opacity-0 scale-75" : "opacity-100 scale-100"
+                )}
+              >
+                <Lightning weight="fill" className="w-3 h-3 inline mr-1" />
+                {currentItem.discount_label}
+              </div>
+            )}
+
+            {/* Discount percent badge */}
+            {hasDiscount && (
+              <div
+                className={cn(
+                  "absolute top-3 right-3 z-20 px-3 py-1 rounded-full bg-mh-gold text-ink font-display font-extrabold text-xs shadow-lg transition-all duration-400",
+                  isTransitioning ? "opacity-0 scale-75" : "opacity-100 scale-100"
+                )}
+              >
+                {currentItem.discount_percent}% OFF
+              </div>
+            )}
+
+            {/* Product image area */}
             <div className="flex-1 flex items-center justify-center pt-6 pb-2 px-4 relative">
-              {/* Peek previous */}
               {totalSlides > 2 && (
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-16 sm:w-24 opacity-30 blur-[1px] pointer-events-none">
                   <img
@@ -120,7 +184,6 @@ export const PromoSlideshow = () => {
                 </div>
               )}
 
-              {/* Main product image */}
               <div
                 className={cn(
                   "relative transition-all duration-400 ease-out",
@@ -129,25 +192,33 @@ export const PromoSlideshow = () => {
                     : "opacity-100 scale-100 translate-y-0"
                 )}
               >
-                {/* Glow behind product */}
                 <div className="absolute inset-0 bg-mh-gold/15 rounded-full blur-3xl scale-110" />
-
                 <img
                   src={currentItem?.image_url || "/placeholder.svg"}
                   alt={currentItem?.name || "Product"}
                   className="relative w-48 h-48 sm:w-60 sm:h-60 object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
                 />
 
-                {/* Price tag badge */}
+                {/* Price tag */}
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-4 py-2 bg-flame rounded-full shadow-lg shadow-flame/30">
                   <Tag weight="fill" className="w-3.5 h-3.5 text-cream" />
-                  <span className="font-display font-extrabold text-cream text-base sm:text-lg">
-                    ₦{currentItem?.price?.toLocaleString()}
-                  </span>
+                  {hasDiscount ? (
+                    <div className="flex items-center gap-2">
+                      <span className="font-display text-cream/60 text-xs line-through">
+                        ₦{currentItem?.price?.toLocaleString()}
+                      </span>
+                      <span className="font-display font-extrabold text-cream text-base sm:text-lg">
+                        ₦{discountedPrice?.toLocaleString()}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="font-display font-extrabold text-cream text-base sm:text-lg">
+                      ₦{currentItem?.price?.toLocaleString()}
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* Peek next */}
               {totalSlides > 2 && (
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-16 sm:w-24 opacity-30 blur-[1px] pointer-events-none">
                   <img
@@ -164,9 +235,7 @@ export const PromoSlideshow = () => {
               <p
                 className={cn(
                   "font-display font-bold text-lg sm:text-xl text-cream transition-all duration-400",
-                  isTransitioning
-                    ? "opacity-0 translate-y-3"
-                    : "opacity-100 translate-y-0"
+                  isTransitioning ? "opacity-0 translate-y-3" : "opacity-100 translate-y-0"
                 )}
                 style={{ transitionDelay: isTransitioning ? "0ms" : "100ms" }}
               >
@@ -175,9 +244,7 @@ export const PromoSlideshow = () => {
               <p
                 className={cn(
                   "text-sm text-cream/50 font-body transition-all duration-400",
-                  isTransitioning
-                    ? "opacity-0 translate-y-3"
-                    : "opacity-100 translate-y-0"
+                  isTransitioning ? "opacity-0 translate-y-3" : "opacity-100 translate-y-0"
                 )}
                 style={{ transitionDelay: isTransitioning ? "0ms" : "150ms" }}
               >
@@ -185,15 +252,13 @@ export const PromoSlideshow = () => {
               </p>
             </div>
 
-            {/* CTA Button */}
+            {/* CTA */}
             <div className="px-5 pb-4 flex justify-center">
               <Link
                 to={`/eyewear/${currentItem?.id}`}
                 className={cn(
                   "inline-flex items-center gap-2 px-6 py-3 rounded-full bg-mh-gold text-ink font-display font-bold text-sm uppercase tracking-wider hover:scale-105 transition-all duration-300 shadow-lg shadow-mh-gold/20 group",
-                  isTransitioning
-                    ? "opacity-0 scale-90"
-                    : "opacity-100 scale-100"
+                  isTransitioning ? "opacity-0 scale-90" : "opacity-100 scale-100"
                 )}
                 style={{ transitionDelay: isTransitioning ? "0ms" : "200ms" }}
               >
@@ -210,15 +275,7 @@ export const PromoSlideshow = () => {
               {items.map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => {
-                    if (index === activeIndex || isTransitioning) return;
-                    setDirection(index > activeIndex ? "next" : "prev");
-                    setIsTransitioning(true);
-                    setTimeout(() => {
-                      setActiveIndex(index);
-                      setIsTransitioning(false);
-                    }, 400);
-                  }}
+                  onClick={() => goToSlide(index)}
                   className={cn(
                     "h-1.5 rounded-full transition-all duration-300",
                     activeIndex === index
@@ -231,26 +288,17 @@ export const PromoSlideshow = () => {
             </div>
           </div>
 
-          {/* Bottom accent line */}
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mh-gold/30 to-transparent" />
         </div>
 
-        {/* Quick thumbnails row below */}
+        {/* Thumbnails */}
         <div className="flex gap-2.5 mt-4 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
           {items.map((item, i) => (
             <button
               key={item.id}
-              onClick={() => {
-                if (i === activeIndex || isTransitioning) return;
-                setDirection(i > activeIndex ? "next" : "prev");
-                setIsTransitioning(true);
-                setTimeout(() => {
-                  setActiveIndex(i);
-                  setIsTransitioning(false);
-                }, 400);
-              }}
+              onClick={() => goToSlide(i)}
               className={cn(
-                "flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-300",
+                "flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-300 relative",
                 activeIndex === i
                   ? "border-mh-gold shadow-lg shadow-mh-gold/20 scale-105"
                   : "border-cream/10 opacity-50 hover:opacity-80"
@@ -261,6 +309,11 @@ export const PromoSlideshow = () => {
                 alt={item.name}
                 className="w-full h-full object-cover"
               />
+              {item.discount_percent && (
+                <div className="absolute bottom-0 left-0 right-0 bg-flame/90 text-cream text-[8px] font-bold text-center py-0.5">
+                  {item.discount_percent}% OFF
+                </div>
+              )}
             </button>
           ))}
         </div>

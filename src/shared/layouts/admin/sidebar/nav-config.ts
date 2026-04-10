@@ -14,6 +14,7 @@ import {
   FileText,
   Receipt,
   Megaphone,
+  Slideshow,
 } from "@phosphor-icons/react";
 
 export interface NavItem {
@@ -99,6 +100,12 @@ export const navItems: NavItem[] = [
     title: "Promo Banner",
     href: "/admin/promo-banner",
     icon: Megaphone,
+    requiresAdmin: true,
+  },
+  {
+    title: "Hot Picks Slideshow",
+    href: "/admin/slideshow",
+    icon: Slideshow,
     requiresAdmin: true,
   },
   {
