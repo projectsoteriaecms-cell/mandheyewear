@@ -7,12 +7,17 @@ import heroEyewear from "@/assets/hero-eyewear.jpg";
 
 /** Static glasses image for the "OO" in outlook */
 const GlassesOO = ({ src, className = "" }: { src: string; className?: string }) => (
-  <span className={`relative inline-block align-middle overflow-hidden rounded-full border-2 border-mh-gold/30 shadow-lg ${className}`}>
-    <img
-      src={src}
-      alt="Glasses frame"
-      className="absolute inset-0 w-full h-full object-cover"
-    />
+  <span className={`relative inline-flex items-center align-middle ${className}`}>
+    {/* Left lens */}
+    <span className="relative w-[0.45em] h-[0.45em] rounded-full overflow-hidden border-2 border-mh-gold/50 shadow-lg">
+      <img src={src} alt="Left lens" className="absolute inset-0 w-full h-full object-cover" />
+    </span>
+    {/* Bridge */}
+    <span className="w-[0.08em] h-[0.04em] bg-mh-gold/50 -mx-px" />
+    {/* Right lens */}
+    <span className="relative w-[0.45em] h-[0.45em] rounded-full overflow-hidden border-2 border-mh-gold/50 shadow-lg">
+      <img src={src} alt="Right lens" className="absolute inset-0 w-full h-full object-cover" />
+    </span>
   </span>
 );
 
@@ -232,7 +237,7 @@ export const HeroSection = () => {
                           outl
                           <GlassesOO
                             src={ooImage}
-                            className="mx-0.5 sm:mx-1 w-[0.9em] sm:w-[1.1em] h-[0.55em] sm:h-[0.6em]"
+                            className="mx-0.5 sm:mx-1 h-[0.55em] sm:h-[0.6em]"
                           />
                           k{" "}
                         </span>
