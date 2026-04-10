@@ -224,7 +224,7 @@ export const HeroSection = () => {
                 </span>
                 <br />
                 {/* Line 2: OUTLOOK — stretched with glasses frame OO */}
-                <span className="inline-block overflow-hidden tracking-[0.15em] sm:tracking-[0.2em] whitespace-nowrap">
+                <span className="inline-block overflow-hidden tracking-[0.04em] sm:tracking-[0.06em] whitespace-nowrap">
                   <span
                     className={`inline-block transition-all duration-[800ms] text-mh-gold ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
                     style={{ transitionDelay: "640ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
