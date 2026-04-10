@@ -428,9 +428,9 @@ export const HeroSection = () => {
 
             {/* Full-width scrolling pun ticker */}
             <div className="overflow-hidden relative bg-ink-light/80 border-t border-b border-cream/5 py-2.5 sm:py-3">
-              <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-ink-light to-transparent z-10 pointer-events-none" />
-              <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-ink-light to-transparent z-10 pointer-events-none" />
-              <div className="flex animate-[ticker_35s_linear_infinite] whitespace-nowrap gap-8 sm:gap-10">
+              <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-ink-light to-transparent z-10 pointer-events-none" />
+              <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-ink-light to-transparent z-10 pointer-events-none" />
+              <div className="flex ticker-track whitespace-nowrap gap-8 sm:gap-10">
                 {[
                   "Eye no dey lie — your frames speak first 👓",
                   "Na style wey dey see road ✨",
@@ -442,6 +442,22 @@ export const HeroSection = () => {
                   "Clarity is the new flex.",
                   "Soft life starts with sharp sight 🌿",
                   "No dull moment when the frames are right.",
+                  "Who dey see pass you? Nobody. 💎",
+                  "Glass na crown — wear am like king.",
+                  "Them go adjust when clarity enter room.",
+                  "Style no be noise, na frequency.",
+                  "One frame, many compliments — that's the soft life.",
+                  "Better vision, better decisions.",
+                  "E no be every eye wey fit see levels.",
+                  "Your face, your billboard — advertise well. 🏆",
+                  "When you see clear, fear no fit hold you.",
+                  "Na who dey look sharp dey collect sharp things.",
+                  "Luxury wey your eyes deserve.",
+                  "Outlook dey different when the lens dey right.",
+                  "No be swag — na standard. 🔥",
+                  "If your vision no clear, your moves go blur.",
+                  "Wear your confidence — literally.",
+                  "Good frames don't ask for attention, they command it.",
                   "Eye no dey lie — your frames speak first 👓",
                   "Na style wey dey see road ✨",
                   "Sharp eyes. Sharper style.",
@@ -452,6 +468,22 @@ export const HeroSection = () => {
                   "Clarity is the new flex.",
                   "Soft life starts with sharp sight 🌿",
                   "No dull moment when the frames are right.",
+                  "Who dey see pass you? Nobody. 💎",
+                  "Glass na crown — wear am like king.",
+                  "Them go adjust when clarity enter room.",
+                  "Style no be noise, na frequency.",
+                  "One frame, many compliments — that's the soft life.",
+                  "Better vision, better decisions.",
+                  "E no be every eye wey fit see levels.",
+                  "Your face, your billboard — advertise well. 🏆",
+                  "When you see clear, fear no fit hold you.",
+                  "Na who dey look sharp dey collect sharp things.",
+                  "Luxury wey your eyes deserve.",
+                  "Outlook dey different when the lens dey right.",
+                  "No be swag — na standard. 🔥",
+                  "If your vision no clear, your moves go blur.",
+                  "Wear your confidence — literally.",
+                  "Good frames don't ask for attention, they command it.",
                 ].map((quote, i) => (
                   <span key={i} className="text-cream/60 text-sm sm:text-base font-display tracking-wide flex-shrink-0">
                     {quote}
@@ -461,10 +493,12 @@ export const HeroSection = () => {
               </div>
             </div>
 
-            {/* Product row */}
-            <div className="bg-ink-light border border-cream/5 border-t-0 rounded-b-xl overflow-hidden">
-              <div className="flex overflow-x-auto gap-0 scrollbar-hide">
-                {flashDeals.map((item) => {
+            {/* Endless product row */}
+            <div className="bg-ink-light border border-cream/5 border-t-0 rounded-b-xl overflow-hidden relative">
+              <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-ink-light to-transparent z-10 pointer-events-none" />
+              <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-ink-light to-transparent z-10 pointer-events-none" />
+              <div className="flex product-ticker gap-0">
+                {[...flashDeals, ...flashDeals].map((item, idx) => {
                   const product = item.product;
                   const hasDiscount = item.discount_percent && item.discount_percent > 0;
                   const discountedPrice = hasDiscount
@@ -473,7 +507,7 @@ export const HeroSection = () => {
 
                   return (
                     <Link
-                      key={product.id}
+                      key={`${product.id}-${idx}`}
                       to={`/eyewear/${product.id}`}
                       className="flex-shrink-0 w-[140px] sm:w-[170px] p-3 sm:p-4 border-r border-cream/5 last:border-r-0 hover:bg-cream/[0.03] transition-colors group"
                     >
