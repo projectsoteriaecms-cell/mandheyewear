@@ -1,26 +1,38 @@
 
 
-## Simplify Hero Section — Static Image, Clean Frame, Standard Layout
+## Optimize GlassesOO — Double Lens Frames, No Temples
 
-### What changes
+### What's changing
 
-1. **Use single static hero image** — Remove the image rotation logic entirely. Use `heroEyewear` (the original hero image) as the sole image for both mobile and desktop. Remove the `heroIndex` state, the rotation `useEffect`, the `allFrames` mapping, and the `productImages` query.
+The current `GlassesOO` component renders a single rounded rectangle with the hero image inside it. The user wants it to look like **two side-by-side glasses lenses** (like actual spectacle frames without temples) — each lens showing the hero image.
 
-2. **Remove overlays from the hero image** — Strip the "20% OFF" discount badge and the "New Season Collection / April 2026 Drop" label overlay from both mobile and desktop image containers. The frame will show just the clean product image with a subtle gradient.
+### Changes — `HeroSection.tsx`
 
-3. **Make the frame wider on mobile** — Increase the mobile image from `max-w-[220px]` to `w-full max-w-[320px]` so it spans closer to the viewport width (390px), giving it more visual impact.
+**Replace the `GlassesOO` component** (lines 9-17) with a new design:
 
-4. **Cleaner, more standard hero** — The image becomes a simple rounded container with the static hero photo, no promotional overlays, just the brand aesthetic. Keep the gradient overlay for depth but remove all text/badges on top of the image.
+1. **Two circular/oval lenses side by side** — Two `<span>` elements styled as circles (or slight ovals), each containing the hero image via `object-cover`, connected by a small bridge bar in the middle
+2. **No temples** — Just the front frame: left lens + bridge + right lens
+3. **Styling**: Each lens gets a `rounded-full` border (gold accent), the bridge is a thin horizontal bar connecting them, and each lens clips the hero image independently
+4. **Responsive sizing**: The overall width stays proportional to the font size using `em` units so it scales with the headline text on all viewports
 
-### Technical details
+### Rough structure
+```tsx
+const GlassesOO = ({ src, className }) => (
+  <span className={`relative inline-flex items-center align-middle ${className}`}>
+    {/* Left lens */}
+    <span className="relative w-[0.45em] h-[0.45em] rounded-full overflow-hidden border-2 border-mh-gold/50">
+      <img src={src} className="absolute inset-0 w-full h-full object-cover" />
+    </span>
+    {/* Bridge */}
+    <span className="w-[0.08em] h-[0.06em] bg-mh-gold/50 -mx-[1px]" />
+    {/* Right lens */}
+    <span className="relative w-[0.45em] h-[0.45em] rounded-full overflow-hidden border-2 border-mh-gold/50">
+      <img src={src} className="absolute inset-0 w-full h-full object-cover" />
+    </span>
+  </span>
+);
+```
 
-**File: `HeroSection.tsx`**
-
-- Remove `heroIndex` state and its rotation `useEffect` (lines 92, 195-201)
-- Remove `productImages` query (lines 161-176) and `allFrames` memo (lines 178-183) — replace with just `const heroImage = heroEyewear`
-- Replace the `allFrames.map(...)` image stack with a single `<img src={heroEyewear} />` in both mobile (line 313-319) and desktop (line 366-372) containers
-- Remove the discount badge div (lines 322-328 mobile, 377-383 desktop)
-- Remove the brand tag div (lines 329-334 mobile, 385-390 desktop)
-- Mobile image container: change from `max-w-[220px] md:max-w-[280px]` to `w-full max-w-[320px] md:max-w-[380px]` and use `aspect-[4/3]` instead of `aspect-square` for a wider, more cinematic feel
-- Keep the `GlassesOO` component using `heroEyewear` as its source
+- Update the `GlassesOO` usage at line 233-236 to adjust the wrapper sizing (`w-[1.1em]` → wider to accommodate two lenses)
+- Fine-tune border thickness and lens proportions for both mobile (390px) and desktop viewports
 
