@@ -60,7 +60,7 @@ export const TestimonialSection = () => {
 
         {/* Featured quote */}
         <div className="relative min-h-[180px] sm:min-h-[200px] flex flex-col items-center justify-center">
-          <span className="absolute -top-2 sm:-top-4 left-1/2 -translate-x-1/2 text-[80px] sm:text-[120px] font-display font-bold text-mh-gold/8 leading-none select-none animate-float-gentle">"</span>
+          <span className="absolute -top-8 sm:-top-14 left-1/2 -translate-x-1/2 text-[80px] sm:text-[120px] font-display font-bold text-mh-gold/8 leading-none select-none pointer-events-none animate-float-gentle">"</span>
 
           <blockquote
             className={`text-ink/80 text-lg sm:text-2xl leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8 relative z-10 transition-all duration-400 ${fading ? "opacity-0 blur-sm scale-[0.98]" : "opacity-100 blur-0 scale-100"}`}
