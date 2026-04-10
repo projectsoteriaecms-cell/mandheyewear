@@ -1,49 +1,18 @@
 
 
-## Fix Scrolling Ticker + Add Endless Product Scroll + More Quotes
+## Mobile Hero Section Optimization
 
-### Issues Found
-1. **Ticker not visibly scrolling** — The CSS `@keyframes ticker` animation exists but the `animate-[ticker_35s_linear_infinite]` Tailwind arbitrary value may not be linking properly. Will switch to a proper CSS class.
-2. **Product row doesn't scroll endlessly** — Currently a finite `overflow-x-auto` row. Needs to become an infinite marquee-style auto-scroll like the ticker.
-3. **Only ~10 unique quotes** — User wants many more brand-aligned quotes.
+### Problems
+1. **Hero image stacks below CTAs on mobile** — The single-column grid puts the large product image underneath "Book Eye Exam," making it look disorganized
+2. **Button text wraps** — "Shop Collection" and "Book Eye Exam" break onto multiple lines on small screens
 
-### Changes — `HeroSection.tsx` + `index.css`
+### Changes — `HeroSection.tsx`
 
-#### 1. Fix the quote ticker scroll
-- Replace the Tailwind arbitrary `animate-[ticker_35s_linear_infinite]` with a proper CSS class (e.g., `.ticker-track`) defined in `index.css` that uses the existing `@keyframes ticker`.
-- Ensure the quotes array is duplicated (2x) so `translateX(-50%)` creates a seamless loop.
+1. **Reorder mobile layout**: Move the hero image *above* the headline on mobile using CSS `order` classes — `order-first lg:order-last` on the image column, so on mobile it appears at the top as a visual hero, not awkwardly below CTAs
 
-#### 2. Make the product row scroll endlessly
-- Duplicate the `flashDeals` array (2x) inside the product row container.
-- Apply the same marquee-style CSS animation (new class `.product-ticker`) with a slower speed (~45s).
-- Add `pause-on-hover` so users can interact with products.
-- Wrap in the same gradient-mask container for polished edges.
+2. **Shrink hero image on mobile**: Reduce the image container size on small screens — `max-w-[240px] sm:max-w-[300px] lg:max-w-[420px]` with a smaller aspect ratio and centered alignment, so it doesn't dominate the mobile viewport
 
-#### 3. Expand quotes to 25+
-Add brand puns across all three pillars (Visionary, Shakara, Soft Life):
+3. **Fix button text wrapping**: Add `whitespace-nowrap` to both CTA buttons and slightly reduce padding on mobile (`px-5 sm:px-7`) so "Shop Collection" and "Book Eye Exam" each stay on one line
 
-- "Who dey see pass you? Nobody." 
-- "Glass na crown — wear am like king."
-- "Them go adjust when clarity enter room."
-- "Style no be noise, na frequency."
-- "One frame, many compliments — that's the soft life."
-- "Better vision, better decisions."
-- "E no be every eye wey fit see levels."
-- "Your face, your billboard — advertise well."
-- "When you see clear, fear no fit hold you."
-- "Na who dey look sharp dey collect sharp things."
-- "Luxury wey your eyes deserve."
-- "Outlook dey different when the lens dey right."
-- "No be swag — na standard."
-- "For those who see the future before it arrives."
-- "If your vision no clear, your moves go blur."
-- Plus the existing 10 quotes.
-
-#### 4. CSS additions (`index.css`)
-- Add `.ticker-track` class using `@keyframes ticker` at 35s.
-- Add `.product-ticker` class using same keyframes at 45s.
-- Add `hover:pause` rule: `animation-play-state: paused` on hover for product row.
-
-### Result
-Both the brand quotes and the product frames scroll infinitely and seamlessly, with ~25 unique quotes rotating through the ticker.
+4. **Tighten mobile spacing**: Reduce vertical gaps (`gap-4 lg:gap-12`, `mb-4 sm:mb-10`) between image and text on mobile for a compact, app-like feel
 
