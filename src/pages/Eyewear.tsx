@@ -9,6 +9,7 @@ import { ShopCategoryBar } from "@/modules/storefront/components/eyewear/ShopCat
 import { ShopSidebar } from "@/modules/storefront/components/eyewear/ShopSidebar";
 import { MobileFilterDrawer } from "@/modules/storefront/components/eyewear/MobileFilterDrawer";
 import { VirtualTryOnBanner } from "@/modules/storefront/components/eyewear/VirtualTryOnBanner";
+import { RecentlyViewed } from "@/components/shop/RecentlyViewed";
 import { useProducts, useProductCategoryCounts } from "@/modules/products/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, Pagination, ProductQuickView } from "@/modules/storefront/components/shared";
@@ -334,6 +335,9 @@ const Eyewear = () => {
           </div>
 
           <VirtualTryOnBanner />
+
+          {/* Recently Viewed */}
+          <RecentlyViewed />
         </div>
       </div>
 

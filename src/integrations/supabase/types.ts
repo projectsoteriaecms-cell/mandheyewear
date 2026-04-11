@@ -1594,6 +1594,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_activity: {
+        Row: {
+          activity_type: string
+          category: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          product_id: string | null
+          search_query: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          search_query?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          search_query?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_activity_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_invitations: {
         Row: {
           accepted_at: string | null

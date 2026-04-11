@@ -19,6 +19,7 @@ import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
+import { useTrackActivity } from "@/shared/hooks/useTrackActivity";
 import { ArrowLeft, Star, ShoppingBag, Sparkles } from "lucide-react";
 
 const ProductDetail = () => {
@@ -37,6 +38,7 @@ const ProductDetail = () => {
   const { trackViewContent } = useMetaPixel();
   const navigate = useNavigate();
   const { modalOpen, targetProductId, savedPhotoUrl, triggerTryOn, setModalOpen } = useInlineTryOn();
+  const { track } = useTrackActivity();
 
   // Track ViewContent event when product loads
   useEffect(() => {
@@ -48,8 +50,15 @@ const ProductDetail = () => {
         value: product.price,
         currency: "NGN",
       });
+      // Track browsing activity
+      track({
+        activityType: "product_view",
+        productId: product.id,
+        category: product.style || undefined,
+        metadata: { brand: product.brand, price_tier: product.price_tier },
+      });
     }
-  }, [product, isLoading, trackViewContent]);
+  }, [product, isLoading, trackViewContent, track]);
 
   // Filter out current product from related
   const filteredRelated = relatedProducts
