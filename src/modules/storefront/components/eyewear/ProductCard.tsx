@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, ShoppingCart } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -94,26 +95,34 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <div className="hidden sm:flex absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex-col gap-2">
             <WishlistButton productId={product.id} />
             {product.item_type === "frames" && (
-              <Button 
-                size="icon" 
-                variant="secondary" 
-                className="shadow-lg touch-target"
-                onClick={handleTryOn}
-                title="Virtual Try-On"
-              >
-                <Sparkles className="h-4 w-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    size="icon" 
+                    variant="secondary" 
+                    className="shadow-lg touch-target"
+                    onClick={handleTryOn}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left"><p>Virtual Try-On</p></TooltipContent>
+              </Tooltip>
             )}
             {!isOutOfStock && (
-              <Button
-                size="icon"
-                variant="gold"
-                className="shadow-lg touch-target"
-                onClick={handleAddToCart}
-                title="Add to Cart"
-              >
-                <ShoppingCart className="h-4 w-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="gold"
+                    className="shadow-lg touch-target"
+                    onClick={handleAddToCart}
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left"><p>Add to Cart</p></TooltipContent>
+              </Tooltip>
             )}
           </div>
 

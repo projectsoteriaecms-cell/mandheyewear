@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, ShoppingCart } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -115,24 +116,32 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
                 ₦{product.price.toLocaleString()}
               </p>
               <div className="flex gap-2">
-                <Button 
-                  size="icon" 
-                  variant="secondary" 
-                  className="h-9 w-9"
-                  onClick={handleTryOn}
-                  title="Virtual Try-On"
-                >
-                  <Sparkles className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="gold"
-                  className="h-9 w-9"
-                  onClick={handleAddToCart}
-                  title="Add to Cart"
-                >
-                  <ShoppingCart className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      size="icon" 
+                      variant="secondary" 
+                      className="h-9 w-9"
+                      onClick={handleTryOn}
+                    >
+                      <Sparkles className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Virtual Try-On</p></TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="gold"
+                      className="h-9 w-9"
+                      onClick={handleAddToCart}
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Add to Cart</p></TooltipContent>
+                </Tooltip>
                 <Button variant="outline" size="sm">
                   View Details
                 </Button>
