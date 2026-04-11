@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { List, X, Heart, Bag, Moon, Sun, Info, Sparkle, Camera, Gear, SignOut, Eyeglasses, SunDim, Watch } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
@@ -185,9 +186,14 @@ export const MobileTopBar = () => {
           </Sheet>
 
           {/* Theme Toggle Icon - Visible on top bar */}
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-foreground/70 hover:text-foreground">
-            {isDark ? <Sun weight="light" className="h-5 w-5" /> : <Moon weight="light" className="h-5 w-5" />}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-foreground/70 hover:text-foreground">
+                {isDark ? <Sun weight="light" className="h-5 w-5" /> : <Moon weight="light" className="h-5 w-5" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>{isDark ? "Light mode" : "Dark mode"}</p></TooltipContent>
+          </Tooltip>
         </div>
 
         {/* Logo - Centered */}
@@ -197,19 +203,29 @@ export const MobileTopBar = () => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" asChild className="text-foreground/70 hover:text-foreground">
-            <Link to="/dashboard?tab=wishlist">
-              <Heart weight="light" className="h-5 w-5" />
-            </Link>
-          </Button>
-          <Button variant="ghost" size="icon" asChild className="text-foreground/70 hover:text-foreground relative">
-            <Link to="/checkout">
-              <Bag weight="light" className="h-5 w-5" />
-              {cartCount > 0 && <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-accent text-[10px] font-medium flex items-center justify-center text-accent-foreground">
-                  {cartCount}
-                </span>}
-            </Link>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" asChild className="text-foreground/70 hover:text-foreground">
+                <Link to="/dashboard?tab=wishlist">
+                  <Heart weight="light" className="h-5 w-5" />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Wishlist</p></TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" asChild className="text-foreground/70 hover:text-foreground relative">
+                <Link to="/checkout">
+                  <Bag weight="light" className="h-5 w-5" />
+                  {cartCount > 0 && <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-accent text-[10px] font-medium flex items-center justify-center text-accent-foreground">
+                      {cartCount}
+                    </span>}
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Cart</p></TooltipContent>
+          </Tooltip>
         </div>
       </div>
     </div>;

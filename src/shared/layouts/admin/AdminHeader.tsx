@@ -1,5 +1,6 @@
 import { Bell, SignOut, User, Gear, Check, Trash, Package, ShoppingCart, ArrowsLeftRight, Calendar, Warning, Info, CheckCircle, XCircle, Storefront } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -102,13 +103,18 @@ export const AdminHeader = () => {
       <div className="flex items-center gap-3">
         <AdminMobileNav />
         
-        <Link 
-          to="/" 
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Storefront className="h-5 w-5" weight="light" />
-          <span className="hidden sm:inline text-sm">Store</span>
-        </Link>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link 
+              to="/" 
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Storefront className="h-5 w-5" weight="light" />
+              <span className="hidden sm:inline text-sm">Store</span>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent><p>Go to Store</p></TooltipContent>
+        </Tooltip>
         
         <span className="hidden sm:block text-border">|</span>
         
@@ -117,16 +123,21 @@ export const AdminHeader = () => {
 
       <div className="flex items-center gap-4">
         <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" weight="light" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </Button>
-          </PopoverTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" weight="light" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent><p>Notifications</p></TooltipContent>
+          </Tooltip>
           <PopoverContent align="end" className="w-96 p-0">
             <div className="p-4 border-b flex items-center justify-between">
               <div>

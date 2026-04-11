@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { MapPin, Calendar, Moon, Sun } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useState, useEffect } from "react";
 import { SyncStatusIndicator } from "@/components/pwa/SyncStatusIndicator";
 import soteriaLogo from "@/assets/soteria-logo.png";
@@ -45,9 +46,14 @@ export const TopBar = () => {
             <SyncStatusIndicator />
 
             {/* Theme Toggle */}
-            <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-7 w-7 text-cream/70 hover:text-cream hover:bg-cream/10" aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}>
-              {isDark ? <Sun weight="light" className="h-4 w-4" /> : <Moon weight="light" className="h-4 w-4" />}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-7 w-7 text-cream/70 hover:text-cream hover:bg-cream/10" aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}>
+                  {isDark ? <Sun weight="light" className="h-4 w-4" /> : <Moon weight="light" className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>{isDark ? "Switch to light mode" : "Switch to dark mode"}</p></TooltipContent>
+            </Tooltip>
 
             {/* Book Eye Exam */}
             <Button variant="secondary" size="sm" asChild className="h-7 text-xs font-medium bg-flame text-white hover:bg-flame/90 border-0">

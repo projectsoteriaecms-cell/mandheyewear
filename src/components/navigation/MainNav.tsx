@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { MagnifyingGlass, Heart, User, SignOut, Gear, Sparkle, Camera } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -130,16 +131,26 @@ export const MainNav = () => {
           {/* Icon Actions */}
           <div className="flex items-center gap-1">
             {/* Search */}
-            <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted" onClick={() => setSearchOpen(true)}>
-              <MagnifyingGlass weight="light" className="h-5 w-5" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted" onClick={() => setSearchOpen(true)}>
+                  <MagnifyingGlass weight="light" className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Search</p></TooltipContent>
+            </Tooltip>
 
             {/* Wishlist */}
-            <Button variant="ghost" size="icon" asChild className="text-foreground/70 hover:text-foreground hover:bg-muted">
-              <Link to="/dashboard?tab=wishlist">
-                <Heart weight="light" className="h-5 w-5" />
-              </Link>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" asChild className="text-foreground/70 hover:text-foreground hover:bg-muted">
+                  <Link to="/dashboard?tab=wishlist">
+                    <Heart weight="light" className="h-5 w-5" />
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Wishlist</p></TooltipContent>
+            </Tooltip>
 
             {/* Cart */}
             <CartDrawer />
@@ -148,9 +159,14 @@ export const MainNav = () => {
             {!loading && (isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
-                    <User weight="light" className="h-5 w-5" />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
+                        <User weight="light" className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>My Account</p></TooltipContent>
+                  </Tooltip>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 z-50 bg-popover">
                   <DropdownMenuItem asChild>
