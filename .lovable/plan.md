@@ -1,61 +1,17 @@
 
 
-## Add Tooltips to All Icon-Only Buttons
+## Re-apply Logo Background Removal
 
-### Problem
-Icon-only buttons (dark/light mode toggle, search, wishlist, cart, notifications, etc.) have no visible labels, making them hard to identify for users unfamiliar with the icons.
+### What Happened
+When the logo was resized, the `mh-logo.png` file or its import path was modified for cache-busting, but the background-removal processing was lost — the current PNG still has its white/off-white background visible.
 
-### Solution
-Wrap every icon-only `<Button size="icon">` across the storefront and admin layouts with the existing `<Tooltip>` component from `@/components/ui/tooltip`, providing descriptive labels on hover.
+### Fix
+Re-run the Python background removal script on `src/assets/mh-logo.png` to strip white/light pixels and restore full transparency. The same approach used before:
 
-### Files to Update
+1. Open `src/assets/mh-logo.png` with PIL
+2. Convert to RGBA, identify white/near-white pixels (R, G, B > 200)
+3. Set those pixels' alpha to 0 (transparent)
+4. Save back to the same path
 
-**1. `src/components/navigation/TopBar.tsx`** — Desktop top bar
-- Theme toggle button: tooltip "Switch to dark/light mode"
-
-**2. `src/components/navigation/MainNav.tsx`** — Desktop main nav
-- Search button: "Search"
-- Wishlist button: "Wishlist"
-- Account button: "My Account"
-
-**3. `src/components/navigation/MobileTopBar.tsx`** — Mobile top bar
-- Menu button: "Menu"
-- Theme toggle: "Toggle theme"
-- Wishlist button: "Wishlist"
-- Cart/bag button: "Cart"
-
-**4. `src/components/cart/CartDrawer.tsx`** — Cart trigger
-- Cart bag icon: "Cart"
-
-**5. `src/shared/layouts/admin/AdminHeader.tsx`** — Admin header
-- Notifications bell: "Notifications"
-- Store link icon: "Go to Store"
-
-**6. `src/modules/storefront/components/eyewear/ProductCard.tsx`** — Product card hover actions
-- Virtual Try-On button: "Virtual Try-On"
-- Add to Cart button: "Add to Cart"
-
-**7. `src/modules/storefront/components/eyewear/ProductListCard.tsx`** — Product list card actions
-- Same tooltips as ProductCard
-
-### Implementation Pattern
-Each icon button gets wrapped like this:
-```tsx
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-
-<TooltipProvider>
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Button variant="ghost" size="icon" ...>
-        <Icon />
-      </Button>
-    </TooltipTrigger>
-    <TooltipContent>
-      <p>Label text</p>
-    </TooltipContent>
-  </Tooltip>
-</TooltipProvider>
-```
-
-A single `<TooltipProvider>` will wrap groups of icon buttons where multiple appear together, to avoid nesting multiple providers.
+No code changes needed — just re-processing the image asset.
 
