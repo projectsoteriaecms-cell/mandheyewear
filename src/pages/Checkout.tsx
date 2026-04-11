@@ -588,16 +588,16 @@ const Checkout = () => {
             </Card>
 
             {/* Payment Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+            <Card className="overflow-hidden">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-2xl">
+                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold shrink-0">
                     3
                   </span>
                   Payment
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
                 <div className="flex items-center gap-3 p-4 bg-secondary/50 rounded-lg">
                   <CreditCard className="h-8 w-8 text-primary" />
                   <div>
