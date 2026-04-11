@@ -32,12 +32,11 @@ import {
 } from "@/shared/lib/shippingZones";
 import { useToast } from "@/shared/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, Clock } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, Clock, Phone, Mail } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const PAYSTACK_PUBLIC_KEY = "pk_test_b65019a2e28f286dd4906d6aaa80bff38f035460";
 
-// Load Paystack inline script
 const loadPaystackScript = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (typeof window !== "undefined" && window.PaystackPop) {
@@ -52,6 +51,13 @@ const loadPaystackScript = (): Promise<void> => {
   });
 };
 
+// Phone validation
+const isValidPhone = (phone: string): boolean => {
+  const cleaned = phone.replace(/[\s\-()]/g, "");
+  // Nigerian: +234..., 0..., or international: +XX...
+  return /^(\+234\d{10}|0\d{10}|\+\d{7,15})$/.test(cleaned);
+};
+
 const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -63,6 +69,11 @@ const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasTrackedCheckout, setHasTrackedCheckout] = useState(false);
 
+  // Contact info (editable, pre-filled from profile)
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+
   // Shipping form state
   const [country, setCountry] = useState("Nigeria");
   const [address, setAddress] = useState("");
@@ -72,16 +83,20 @@ const Checkout = () => {
   const [postalCode, setPostalCode] = useState("");
   const [region, setRegion] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
-  const [addressConfirmed, setAddressConfirmed] = useState(false);
 
   const isNigeria = country === "Nigeria";
-
-  // Pre-fill user details
-  const fullName = profile?.full_name || "";
-  const email = profile?.email || user?.email || "";
-  const phone = profile?.phone_number || "";
-
   const userCanPurchase = canPurchase(role ?? null);
+
+  // Pre-fill from profile once loaded
+  useEffect(() => {
+    if (profile) {
+      setFullName(prev => prev || profile.full_name || "");
+      setEmail(prev => prev || profile.email || user?.email || "");
+      setPhone(prev => prev || profile.phone_number || "");
+    } else if (user) {
+      setEmail(prev => prev || user.email || "");
+    }
+  }, [profile, user]);
 
   // Compute shipping zone dynamically
   const shippingZoneKey = useMemo(() => {
@@ -98,12 +113,10 @@ const Checkout = () => {
   const deliveryEstimate = useMemo(() => getDeliveryEstimate(shippingZoneKey), [shippingZoneKey]);
   const orderTotal = cartTotal + shippingFee;
 
-  // Load Paystack script on mount
   useEffect(() => {
     loadPaystackScript().catch(console.error);
   }, []);
 
-  // Track InitiateCheckout event
   useEffect(() => {
     if (!hasTrackedCheckout && cartItems.length > 0 && !cartLoading && isAuthenticated) {
       trackInitiateCheckout({
@@ -116,50 +129,51 @@ const Checkout = () => {
     }
   }, [cartItems, cartTotal, cartLoading, isAuthenticated, hasTrackedCheckout, trackInitiateCheckout]);
 
-  const handleConfirmAddress = () => {
+  const validateForm = (): boolean => {
+    if (!fullName.trim() || fullName.length < 2) {
+      toast({ title: "Please enter your full name", variant: "destructive" });
+      return false;
+    }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast({ title: "Please enter a valid email address", variant: "destructive" });
+      return false;
+    }
+    if (!phone.trim() || !isValidPhone(phone)) {
+      toast({
+        title: "Invalid Phone Number",
+        description: "Enter a valid phone number (e.g. +234 801 234 5678 or 0801 234 5678)",
+        variant: "destructive",
+      });
+      return false;
+    }
     if (!address.trim() || address.length < 5) {
       toast({ title: "Please enter a valid delivery address", variant: "destructive" });
-      return;
+      return false;
     }
     if (!city.trim() || city.length < 2) {
       toast({ title: "Please enter your city", variant: "destructive" });
-      return;
+      return false;
     }
     if (isNigeria) {
       if (!state) {
         toast({ title: "Please select your state", variant: "destructive" });
-        return;
+        return false;
       }
       if (!landmark.trim() || landmark.length < 3) {
         toast({ title: "Please enter a nearby landmark for delivery", variant: "destructive" });
-        return;
+        return false;
       }
     } else {
       if (!postalCode.trim()) {
         toast({ title: "Please enter your postal/zip code", variant: "destructive" });
-        return;
+        return false;
       }
     }
-    if (!phone.trim() || phone.length < 10) {
-      toast({
-        title: "Phone Number Required",
-        description: "Please update your phone number in your profile before checking out.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setAddressConfirmed(true);
+    return true;
   };
 
   const handlePayment = async () => {
-    if (!addressConfirmed) {
-      toast({
-        title: "Missing Information",
-        description: "Please confirm your delivery address first.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsProcessing(true);
 
@@ -174,6 +188,7 @@ const Checkout = () => {
         country,
         full_name: fullName,
         phone,
+        email,
       };
 
       if (isNigeria) {
@@ -383,28 +398,59 @@ const Checkout = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {/* Logged In User Card */}
-            <Card className="border-primary/20 bg-primary/5">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12 border-2 border-primary/20">
-                    <AvatarImage src={profile?.avatar_url || ""} />
-                    <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm font-medium text-green-600">Logged in as</span>
-                    </div>
-                    <p className="font-semibold text-foreground">{fullName || "Customer"}</p>
-                    <p className="text-sm text-muted-foreground">{email}</p>
-                    {phone && <p className="text-sm text-muted-foreground">{phone}</p>}
+
+            {/* Contact Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                    1
+                  </span>
+                  Contact Information
+                </CardTitle>
+                <CardDescription>
+                  How can we reach you about this order?
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name *</Label>
+                  <Input
+                    id="fullName"
+                    placeholder="John Doe"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="flex items-center gap-1.5">
+                      <Mail className="h-3.5 w-3.5" /> Email Address *
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="john@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/dashboard">Edit Profile</Link>
-                  </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5" /> Phone Number *
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+234 801 234 5678"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      For delivery coordination & order updates
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -414,7 +460,7 @@ const Checkout = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                    1
+                    2
                   </span>
                   Delivery Address
                 </CardTitle>
@@ -423,172 +469,130 @@ const Checkout = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {!addressConfirmed ? (
-                  <>
-                    {/* Country */}
+                {/* Country */}
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country *</Label>
+                  <Select value={country} onValueChange={(val) => { setCountry(val); setState(""); }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRY_LIST.map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Address */}
+                <div className="space-y-2">
+                  <Label htmlFor="address">Street Address *</Label>
+                  <Textarea
+                    id="address"
+                    placeholder="Enter your full address including street, house number..."
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="resize-none"
+                  />
+                </div>
+
+                {/* Address Line 2 / Landmark */}
+                <div className="space-y-2">
+                  <Label htmlFor="landmark">
+                    {isNigeria ? "Nearest Landmark *" : "Address Line 2 / Landmark"}
+                  </Label>
+                  <Input
+                    id="landmark"
+                    placeholder={isNigeria
+                      ? "e.g. Nearest bus stop, popular building, or junction"
+                      : "Apartment, suite, or nearest landmark (optional)"
+                    }
+                    value={landmark}
+                    onChange={(e) => setLandmark(e.target.value)}
+                  />
+                  {isNigeria && (
+                    <p className="text-xs text-muted-foreground">
+                      This helps our delivery riders find you faster
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City *</Label>
+                    <Input
+                      id="city"
+                      placeholder={isNigeria ? "e.g. Ikeja, Lekki, Surulere" : "e.g. London, New York"}
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                    />
+                  </div>
+
+                  {isNigeria ? (
                     <div className="space-y-2">
-                      <Label htmlFor="country">Country *</Label>
-                      <Select value={country} onValueChange={(val) => { setCountry(val); setState(""); }}>
+                      <Label htmlFor="state">State *</Label>
+                      <Select value={state} onValueChange={setState}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select country" />
+                          <SelectValue placeholder="Select state" />
                         </SelectTrigger>
                         <SelectContent>
-                          {COUNTRY_LIST.map((c) => (
-                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          {NIGERIAN_STATES.map((s) => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-
-                    {/* Address */}
+                  ) : (
                     <div className="space-y-2">
-                      <Label htmlFor="address">Street Address *</Label>
-                      <Textarea
-                        id="address"
-                        placeholder="Enter your full address including street, house number..."
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        className="resize-none"
+                      <Label htmlFor="region">State / Province / Region</Label>
+                      <Input
+                        id="region"
+                        placeholder="e.g. California, Ontario, Bavaria"
+                        value={region}
+                        onChange={(e) => setRegion(e.target.value)}
                       />
                     </div>
+                  )}
+                </div>
 
-                    {/* Landmark (Nigeria only) */}
-                    {isNigeria && (
-                      <div className="space-y-2">
-                        <Label htmlFor="landmark">Nearest Landmark *</Label>
-                        <Input
-                          id="landmark"
-                          placeholder="e.g. Nearest bus stop, popular building, or junction"
-                          value={landmark}
-                          onChange={(e) => setLandmark(e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          This helps our delivery riders find you faster
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="city">City *</Label>
-                        <Input
-                          id="city"
-                          placeholder={isNigeria ? "e.g. Ikeja, Lekki, Surulere" : "e.g. London, New York"}
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                        />
-                      </div>
-
-                      {isNigeria ? (
-                        <div className="space-y-2">
-                          <Label htmlFor="state">State *</Label>
-                          <Select value={state} onValueChange={setState}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select state" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {NIGERIAN_STATES.map((s) => (
-                                <SelectItem key={s} value={s}>{s}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <Label htmlFor="region">State / Province / Region</Label>
-                          <Input
-                            id="region"
-                            placeholder="e.g. California, Ontario, Bavaria"
-                            value={region}
-                            onChange={(e) => setRegion(e.target.value)}
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Postal code for international */}
-                    {!isNigeria && (
-                      <div className="space-y-2">
-                        <Label htmlFor="postalCode">Postal / Zip Code *</Label>
-                        <Input
-                          id="postalCode"
-                          placeholder="e.g. 10001, SW1A 1AA"
-                          value={postalCode}
-                          onChange={(e) => setPostalCode(e.target.value)}
-                        />
-                      </div>
-                    )}
-
-                    {/* Additional info */}
-                    <div className="space-y-2">
-                      <Label htmlFor="additionalInfo">Delivery Instructions (Optional)</Label>
-                      <Textarea
-                        id="additionalInfo"
-                        placeholder="Any special delivery instructions..."
-                        value={additionalInfo}
-                        onChange={(e) => setAdditionalInfo(e.target.value)}
-                        className="resize-none"
-                      />
-                    </div>
-
-                    {/* Live shipping zone indicator */}
-                    {(isNigeria ? !!state : !!country) && (
-                      <ShippingZoneIndicator zoneKey={shippingZoneKey} subtotal={cartTotal} />
-                    )}
-
-                    <Button onClick={handleConfirmAddress} className="w-full md:w-auto">
-                      Confirm Address
-                    </Button>
-                  </>
-                ) : (
-                  <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-900">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="font-medium text-green-700 dark:text-green-400">
-                          Delivery address confirmed
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {address}, {city}{isNigeria ? `, ${state}` : ""}, {country}
-                        </p>
-                        {isNigeria && landmark && (
-                          <p className="text-sm text-muted-foreground">
-                            📍 Landmark: {landmark}
-                          </p>
-                        )}
-                        {!isNigeria && postalCode && (
-                          <p className="text-sm text-muted-foreground">
-                            Postal Code: {postalCode}
-                          </p>
-                        )}
-                        {additionalInfo && (
-                          <p className="text-sm text-muted-foreground italic">
-                            Note: {additionalInfo}
-                          </p>
-                        )}
-                        <div className="mt-2">
-                          <ShippingZoneIndicator zoneKey={shippingZoneKey} subtotal={cartTotal} />
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setAddressConfirmed(false)}
-                      >
-                        Edit
-                      </Button>
-                    </div>
+                {/* Postal code for international */}
+                {!isNigeria && (
+                  <div className="space-y-2">
+                    <Label htmlFor="postalCode">Postal / Zip Code *</Label>
+                    <Input
+                      id="postalCode"
+                      placeholder="e.g. 10001, SW1A 1AA"
+                      value={postalCode}
+                      onChange={(e) => setPostalCode(e.target.value)}
+                    />
                   </div>
+                )}
+
+                {/* Additional info */}
+                <div className="space-y-2">
+                  <Label htmlFor="additionalInfo">Delivery Instructions (Optional)</Label>
+                  <Textarea
+                    id="additionalInfo"
+                    placeholder="Any special delivery instructions..."
+                    value={additionalInfo}
+                    onChange={(e) => setAdditionalInfo(e.target.value)}
+                    className="resize-none"
+                  />
+                </div>
+
+                {/* Live shipping zone indicator */}
+                {(isNigeria ? !!state : !!country) && (
+                  <ShippingZoneIndicator zoneKey={shippingZoneKey} subtotal={cartTotal} />
                 )}
               </CardContent>
             </Card>
 
             {/* Payment Section */}
-            <Card className={!addressConfirmed ? "opacity-50 pointer-events-none" : ""}>
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                    2
+                    3
                   </span>
                   Payment
                 </CardTitle>
@@ -609,7 +613,7 @@ const Checkout = () => {
                   size="lg"
                   className="w-full"
                   onClick={handlePayment}
-                  disabled={isProcessing || !addressConfirmed}
+                  disabled={isProcessing}
                 >
                   {isProcessing ? (
                     <>

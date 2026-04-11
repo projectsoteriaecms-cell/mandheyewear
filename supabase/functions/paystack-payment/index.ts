@@ -140,7 +140,7 @@ async function handleVerify(
   // Read cart items from the database
   const { data: dbCartItems, error: cartError } = await supabase
     .from("cart_items")
-    .select("product_id, quantity, product:products(price)")
+    .select("product_id, quantity, product:products(price, name)")
     .eq("user_id", userId);
 
   if (cartError) {
@@ -151,6 +151,7 @@ async function handleVerify(
     product_id: ci.product_id,
     quantity: ci.quantity,
     price: ci.product?.price || 0,
+    name: ci.product?.name || "Product",
   }));
 
   console.log(`Verify: userId=${userId}, cartItems=${cartItems.length}, totalAmount=${totalAmount}, zone=${shippingZone}`);
@@ -216,6 +217,43 @@ async function handleVerify(
 
   // Clear user's cart
   await supabase.from("cart_items").delete().eq("user_id", userId);
+
+  // Send order notification email (non-blocking)
+  try {
+    const notificationPayload = {
+      order_id: order.id,
+      order_number: order.order_number,
+      customer_name: shippingAddress.full_name || shippingAddress.fullName || "Customer",
+      customer_email: shippingAddress.email || paymentData.customer?.email || "",
+      customer_phone: shippingAddress.phone || "",
+      shipping_address: shippingAddress,
+      shipping_zone: shippingZone,
+      shipping_fee: shippingFee,
+      total_amount: totalAmount,
+      payment_reference: reference,
+      currency: "NGN",
+      items: cartItems.map((item: any) => ({
+        product_name: item.name || "Product",
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      notify_customer: true,
+    };
+
+    // Fire-and-forget: invoke the notification edge function
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    fetch(`${supabaseUrl}/functions/v1/send-order-notification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify(notificationPayload),
+    }).catch((err) => console.warn("Order notification email failed (non-blocking):", err));
+  } catch (notifErr) {
+    console.warn("Failed to trigger order notification:", notifErr);
+  }
 
   return new Response(
     JSON.stringify({

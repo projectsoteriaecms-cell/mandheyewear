@@ -518,6 +518,42 @@ export type Database = {
           },
         ]
       }
+      logistics_partners: {
+        Row: {
+          api_endpoint: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          coverage_zones: string[] | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          api_endpoint?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          coverage_zones?: string[] | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          api_endpoint?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          coverage_zones?: string[] | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           email: string
@@ -627,51 +663,69 @@ export type Database = {
         Row: {
           created_at: string
           currency: string | null
+          delivered_at: string | null
+          estimated_delivery_date: string | null
           fulfillment_branch_id: string | null
           id: string
+          logistics_notes: string | null
+          logistics_partner: string | null
           notes: string | null
           order_number: string
           order_status: Database["public"]["Enums"]["order_status"]
           payment_reference: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
+          shipped_at: string | null
           shipping_address: Json | null
           shipping_fee: number | null
           shipping_zone: string | null
           total_amount: number
+          tracking_number: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           currency?: string | null
+          delivered_at?: string | null
+          estimated_delivery_date?: string | null
           fulfillment_branch_id?: string | null
           id?: string
+          logistics_notes?: string | null
+          logistics_partner?: string | null
           notes?: string | null
           order_number: string
           order_status?: Database["public"]["Enums"]["order_status"]
           payment_reference?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          shipped_at?: string | null
           shipping_address?: Json | null
           shipping_fee?: number | null
           shipping_zone?: string | null
           total_amount: number
+          tracking_number?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           currency?: string | null
+          delivered_at?: string | null
+          estimated_delivery_date?: string | null
           fulfillment_branch_id?: string | null
           id?: string
+          logistics_notes?: string | null
+          logistics_partner?: string | null
           notes?: string | null
           order_number?: string
           order_status?: Database["public"]["Enums"]["order_status"]
           payment_reference?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          shipped_at?: string | null
           shipping_address?: Json | null
           shipping_fee?: number | null
           shipping_zone?: string | null
           total_amount?: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string
         }
