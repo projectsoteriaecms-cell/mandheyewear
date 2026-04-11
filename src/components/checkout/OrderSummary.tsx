@@ -17,11 +17,21 @@ const getPlaceholderImage = (productId: string) => {
 interface OrderSummaryProps {
   cartItems: CartItem[];
   subtotal: number;
+  shippingFee?: number;
+  shippingZoneLabel?: string;
+  deliveryEstimate?: string;
 }
 
-export const OrderSummary = ({ cartItems, subtotal }: OrderSummaryProps) => {
-  const shippingFee = subtotal > 50000 ? 0 : 3500; // Free shipping over ₦50,000
-  const total = subtotal + shippingFee;
+export const OrderSummary = ({
+  cartItems,
+  subtotal,
+  shippingFee,
+  shippingZoneLabel,
+  deliveryEstimate,
+}: OrderSummaryProps) => {
+  // Fallback to flat rate if no zone provided
+  const fee = shippingFee ?? (subtotal > 50000 ? 0 : 3500);
+  const total = subtotal + fee;
 
   return (
     <div className="bg-secondary/30 rounded-lg p-6 space-y-4">
@@ -58,18 +68,20 @@ export const OrderSummary = ({ cartItems, subtotal }: OrderSummaryProps) => {
           <span>₦{subtotal.toLocaleString()}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Shipping</span>
+          <span className="text-muted-foreground">
+            Shipping{shippingZoneLabel ? ` (${shippingZoneLabel})` : ""}
+          </span>
           <span>
-            {shippingFee === 0 ? (
+            {fee === 0 ? (
               <span className="text-green-600 font-medium">FREE</span>
             ) : (
-              `₦${shippingFee.toLocaleString()}`
+              `₦${fee.toLocaleString()}`
             )}
           </span>
         </div>
-        {subtotal > 0 && subtotal <= 50000 && (
+        {deliveryEstimate && (
           <p className="text-xs text-muted-foreground">
-            Add ₦{(50000 - subtotal).toLocaleString()} more for free shipping
+            Estimated delivery: {deliveryEstimate}
           </p>
         )}
       </div>

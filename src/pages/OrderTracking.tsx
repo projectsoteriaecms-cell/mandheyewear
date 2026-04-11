@@ -18,9 +18,17 @@ import {
   Clock,
   ShoppingBag,
   Loader2,
+  PackageCheck,
+  Globe,
+  ShieldCheck,
+  Home,
 } from "lucide-react";
 
-type OrderStatus = "pending" | "confirmed" | "processing" | "ready_for_pickup" | "shipped" | "delivered" | "cancelled";
+type OrderStatus =
+  | "pending" | "confirmed" | "processing" | "packed"
+  | "ready_for_pickup" | "shipped" | "shipped_local" | "shipped_interstate"
+  | "shipped_international" | "in_transit_hub" | "customs_clearance"
+  | "in_transit_country" | "out_for_delivery" | "delivered" | "cancelled";
 
 interface OrderData {
   id: string;
@@ -30,10 +38,15 @@ interface OrderData {
   total_amount: number;
   created_at: string;
   updated_at: string;
+  shipping_zone: string | null;
+  shipping_fee: number | null;
   shipping_address: {
+    full_name?: string;
     fullName?: string;
     city?: string;
     state?: string;
+    country?: string;
+    landmark?: string;
   } | null;
   order_items: Array<{
     id: string;
@@ -46,33 +59,93 @@ interface OrderData {
   }>;
 }
 
-const statusSteps: { key: OrderStatus; label: string; icon: typeof CheckCircle }[] = [
-  { key: "confirmed", label: "Confirmed", icon: CheckCircle },
-  { key: "processing", label: "Processing", icon: Package },
-  { key: "shipped", label: "Shipped", icon: Truck },
-  { key: "delivered", label: "Delivered", icon: MapPin },
+// All possible statuses in fulfillment order
+const ALL_STATUSES: OrderStatus[] = [
+  "confirmed", "processing", "packed",
+  "shipped_local", "shipped_interstate", "shipped_international",
+  "in_transit_hub", "customs_clearance", "in_transit_country",
+  "out_for_delivery", "delivered",
 ];
+
+// Determine which steps to show based on shipping zone
+function getStepsForOrder(status: OrderStatus, zone: string | null): { key: OrderStatus; label: string; icon: typeof CheckCircle }[] {
+  const isInternational = zone === "international" || zone === "africa_other" || zone === "west_africa";
+  const isInterstate = zone && !["lagos_island", "lagos_mainland"].includes(zone) && !isInternational;
+
+  const base = [
+    { key: "confirmed" as OrderStatus, label: "Confirmed", icon: CheckCircle },
+    { key: "processing" as OrderStatus, label: "Processing", icon: Package },
+    { key: "packed" as OrderStatus, label: "Packed", icon: PackageCheck },
+  ];
+
+  if (isInternational) {
+    return [
+      ...base,
+      { key: "shipped_international" as OrderStatus, label: "Shipped", icon: Globe },
+      { key: "customs_clearance" as OrderStatus, label: "Customs", icon: ShieldCheck },
+      { key: "in_transit_country" as OrderStatus, label: "In Transit", icon: Truck },
+      { key: "delivered" as OrderStatus, label: "Delivered", icon: Home },
+    ];
+  }
+
+  if (isInterstate) {
+    return [
+      ...base,
+      { key: "shipped_interstate" as OrderStatus, label: "Shipped", icon: Truck },
+      { key: "in_transit_hub" as OrderStatus, label: "Transit Hub", icon: MapPin },
+      { key: "out_for_delivery" as OrderStatus, label: "Out for Delivery", icon: Truck },
+      { key: "delivered" as OrderStatus, label: "Delivered", icon: Home },
+    ];
+  }
+
+  // Lagos / local
+  return [
+    ...base,
+    { key: "shipped_local" as OrderStatus, label: "Shipped", icon: Truck },
+    { key: "out_for_delivery" as OrderStatus, label: "Out for Delivery", icon: Truck },
+    { key: "delivered" as OrderStatus, label: "Delivered", icon: Home },
+  ];
+}
+
+// Map generic "shipped" to the specific shipped status for comparison
+function normalizeStatus(status: OrderStatus): OrderStatus {
+  if (status === "shipped") return "shipped_local";
+  if (status === "ready_for_pickup") return "packed";
+  return status;
+}
+
+function getStatusIndex(status: OrderStatus, steps: { key: OrderStatus }[]): number {
+  const normalized = normalizeStatus(status);
+  const idx = steps.findIndex(s => s.key === normalized);
+  if (idx >= 0) return idx;
+  // Find closest match in ALL_STATUSES
+  const allIdx = ALL_STATUSES.indexOf(normalized);
+  for (let i = steps.length - 1; i >= 0; i--) {
+    if (ALL_STATUSES.indexOf(steps[i].key) <= allIdx) return i;
+  }
+  return -1;
+}
 
 const getStatusColor = (status: OrderStatus) => {
   switch (status) {
     case "delivered":
       return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
-    case "shipped":
+    case "shipped": case "shipped_local": case "shipped_interstate": case "shipped_international":
+    case "in_transit_hub": case "in_transit_country": case "out_for_delivery":
       return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
-    case "processing":
-    case "confirmed":
+    case "customs_clearance":
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
+    case "processing": case "confirmed": case "packed":
       return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
     case "cancelled":
       return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
     default:
-      return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+      return "bg-muted text-muted-foreground";
   }
 };
 
-const getStatusIndex = (status: OrderStatus): number => {
-  const statusOrder: OrderStatus[] = ["pending", "confirmed", "processing", "ready_for_pickup", "shipped", "delivered"];
-  return statusOrder.indexOf(status);
-};
+const formatStatus = (status: string) =>
+  status.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 
 const OrderTracking = () => {
   const [searchParams] = useSearchParams();
@@ -100,6 +173,8 @@ const OrderTracking = () => {
         total_amount,
         created_at,
         updated_at,
+        shipping_zone,
+        shipping_fee,
         shipping_address,
         order_items (
           id,
@@ -128,7 +203,8 @@ const OrderTracking = () => {
     setOrder(data as unknown as OrderData);
   };
 
-  const currentStatusIndex = order ? getStatusIndex(order.order_status) : -1;
+  const steps = order ? getStepsForOrder(order.order_status, order.shipping_zone) : [];
+  const currentStatusIndex = order ? getStatusIndex(order.order_status, steps) : -1;
 
   return (
     <div className="min-h-screen bg-background">
@@ -198,7 +274,7 @@ const OrderTracking = () => {
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">{order.order_number}</CardTitle>
                     <Badge className={getStatusColor(order.order_status)}>
-                      {order.order_status.replace("_", " ")}
+                      {formatStatus(order.order_status)}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -208,7 +284,7 @@ const OrderTracking = () => {
                 </CardHeader>
                 <CardContent>
                   {/* Status Timeline */}
-                  {order.order_status !== "cancelled" && (
+                  {order.order_status !== "cancelled" && steps.length > 0 && (
                     <div className="mb-6">
                       <div className="flex items-center justify-between relative">
                         {/* Progress Line */}
@@ -216,14 +292,15 @@ const OrderTracking = () => {
                           <div
                             className="h-full bg-accent transition-all duration-500"
                             style={{
-                              width: `${Math.min(100, (currentStatusIndex / (statusSteps.length - 1)) * 100)}%`,
+                              width: `${Math.min(100, Math.max(0, (currentStatusIndex / (steps.length - 1)) * 100))}%`,
                             }}
                           />
                         </div>
 
-                        {statusSteps.map((step, index) => {
-                          const isCompleted = currentStatusIndex >= statusSteps.findIndex(s => s.key === step.key);
-                          const isCurrent = order.order_status === step.key;
+                        {steps.map((step) => {
+                          const stepIdx = steps.findIndex(s => s.key === step.key);
+                          const isCompleted = currentStatusIndex >= stepIdx;
+                          const isCurrent = stepIdx === currentStatusIndex;
                           const Icon = step.icon;
 
                           return (
@@ -241,7 +318,7 @@ const OrderTracking = () => {
                                 <Icon className="h-5 w-5" />
                               </div>
                               <span
-                                className={`text-xs mt-2 text-center ${
+                                className={`text-xs mt-2 text-center max-w-[70px] ${
                                   isCompleted ? "text-foreground font-medium" : "text-muted-foreground"
                                 }`}
                               >
@@ -254,13 +331,31 @@ const OrderTracking = () => {
                     </div>
                   )}
 
+                  {/* Cancelled banner */}
+                  {order.order_status === "cancelled" && (
+                    <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-900 text-center">
+                      <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                        This order has been cancelled
+                      </p>
+                    </div>
+                  )}
+
                   {/* Shipping Address */}
                   {order.shipping_address && (
                     <div className="mb-4 p-3 bg-muted/50 rounded-lg">
                       <p className="text-sm font-medium mb-1">Shipping To:</p>
                       <p className="text-sm text-muted-foreground">
-                        {order.shipping_address.fullName} — {order.shipping_address.city}, {order.shipping_address.state}
+                        {order.shipping_address.full_name || order.shipping_address.fullName}
+                        {" — "}
+                        {order.shipping_address.city}
+                        {order.shipping_address.state && `, ${order.shipping_address.state}`}
+                        {order.shipping_address.country && order.shipping_address.country !== "Nigeria" && `, ${order.shipping_address.country}`}
                       </p>
+                      {order.shipping_address.landmark && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          📍 {order.shipping_address.landmark}
+                        </p>
+                      )}
                     </div>
                   )}
 
@@ -296,11 +391,20 @@ const OrderTracking = () => {
                     ))}
                   </div>
 
-                  <div className="border-t mt-4 pt-4 flex justify-between text-lg font-bold">
-                    <span>Total</span>
-                    <span className="text-accent">
-                      ₦{order.total_amount.toLocaleString()}
-                    </span>
+                  {/* Totals */}
+                  <div className="border-t mt-4 pt-4 space-y-1">
+                    {order.shipping_fee != null && order.shipping_fee > 0 && (
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Shipping</span>
+                        <span>₦{order.shipping_fee.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>Total</span>
+                      <span className="text-accent">
+                        ₦{order.total_amount.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
