@@ -384,20 +384,20 @@ const Checkout = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-8 pb-24 sm:pb-8">
         <Button
           variant="ghost"
-          className="mb-6"
+          className="mb-4 sm:mb-6"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
 
-        <h1 className="text-3xl font-display font-semibold mb-8">Checkout</h1>
+        <h1 className="text-2xl sm:text-3xl font-display font-semibold mb-4 sm:mb-8">Checkout</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
 
             {/* Contact Information */}
             <Card>
