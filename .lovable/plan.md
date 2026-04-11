@@ -1,81 +1,86 @@
 
 
-## Comprehensive Shipping Zones and Logistics System
+## Enhanced Checkout, Order Notifications, and Logistics Operations System
 
-### Current State
-- Flat shipping: free above ₦50,000, else ₦3,500 — no zone awareness
-- Address form: only Nigerian states, no country field, no phone validation, no landmark field
-- No shipping zone calculation, no international support
-- No order lifecycle tracking beyond basic status
+### What This Covers
+The user wants five things:
+1. **Simpler, universal address form** — easy to fill regardless of country, with phone + email always visible
+2. **Order confirmation emails** sent to the operations team at `operations_businessmanger@soteriaeyeclinic.com`
+3. **Logistics vendor integration flow** — a structured system for handing off orders to shipping partners
+4. **Better order tracking** tied to logistics partner updates
+5. **Operations fulfillment workflow** — admin-side order management
 
-### What Will Be Built
+---
 
-#### 1. Shipping Zones Database Table
-A new `shipping_zones` table with zone-based fee tiers:
+### 1. Simplified Address Form (Checkout.tsx)
 
-| Zone | Description | Example | Estimated Fee | Est. Delivery |
-|------|-------------|---------|---------------|---------------|
-| lagos_mainland | Lagos Mainland | Ikeja, Surulere | ₦2,500 | 1-2 days |
-| lagos_island | Lagos Island | VI, Lekki, Ikoyi | ₦2,000 | 1-2 days |
-| southwest | SW Nigeria | Ogun, Oyo, Osun | ₦4,500 | 2-4 days |
-| southeast | SE Nigeria | Enugu, Imo, Anambra | ₦5,500 | 3-5 days |
-| southsouth | SS Nigeria | Rivers, Delta, Edo | ₦5,000 | 3-5 days |
-| northcentral | NC Nigeria | FCT, Kwara, Plateau | ₦5,500 | 3-5 days |
-| northeast | NE Nigeria | Borno, Adamawa | ₦6,500 | 4-7 days |
-| northwest | NW Nigeria | Kano, Kaduna | ₦6,000 | 4-7 days |
-| west_africa | West Africa | Ghana, Cameroon | ₦15,000 | 7-14 days |
-| africa_other | Rest of Africa | Kenya, South Africa | ₦25,000 | 10-21 days |
-| international | Diaspora/Global | USA, UK, EU | ₦35,000 | 14-30 days |
+**Current problem**: Too many conditional fields, phone comes from profile (users can't edit it inline), no inline email field.
 
-Free shipping threshold still applies for Lagos zones above ₦50,000.
+**Changes**:
+- Add **phone number** and **email** as editable input fields directly on the checkout form (pre-filled from profile but editable)
+- Simplify address: always show Address Line 1, City, State/Region (text input for international, dropdown for Nigeria), Country, Postal/Zip Code (optional for Nigeria, required for international)
+- Keep **Landmark** field for Nigeria but make it a single combined "Address Line 2 / Landmark" field for all countries
+- Remove the separate "confirm address" step — validate inline and let users proceed to payment directly
+- Add proper phone validation: accept `+234...`, `0...` for Nigeria, and any `+XX...` for international
 
-#### 2. Enhanced Checkout Address Form
-- **Phone number**: required, validated format (Nigerian +234 or international)
-- **Country selector**: Nigeria (default) + West African countries + international (popular diaspora destinations: USA, UK, Canada, Germany, etc.)
-- **Conditional fields**: When Nigeria selected, show state dropdown. When international, show country + region/province text field + postal/zip code
-- **Landmark field**: required for Nigerian addresses ("Nearest bus stop, landmark, or popular building")
-- **Local Government Area (LGA)**: optional field for Nigerian addresses for more precise delivery
-- **Address validation**: minimum length, required landmark for Nigerian orders
+### 2. Order Confirmation Email to Operations
 
-#### 3. Dynamic Shipping Fee Calculation
-- A helper function `calculateShippingZone(country, state, city)` that maps the address to a zone
-- Shipping fee updates live in the Order Summary as the user fills the address
-- For Lagos: detect mainland vs island from city/area name
-- Free shipping threshold: only for Lagos zones
-- International orders: shipping fee always applies
+**What**: After successful payment verification, automatically send an email to `operations_businessmanger@soteriaeyeclinic.com` with full order details.
 
-#### 4. Enhanced Order Flow / Status Pipeline
-Expand `order_status` enum to support the full fulfillment lifecycle:
+**How**:
+- Create a new edge function `send-order-notification` that sends an email via Resend (already configured with `RESEND_API_KEY` and domain `notify.mandheyewear.com`)
+- The email includes: order number, customer name, phone, email, full shipping address, shipping zone, items ordered, quantities, total amount, payment reference
+- Call this function from `paystack-payment/index.ts` after successful order creation (non-blocking, like the Zoho sync)
+- Use the existing Resend setup — sender: `Soteria Eye Clinic <noreply@notify.mandheyewear.com>`
 
-```
-confirmed → processing → packed → shipped_local → out_for_delivery → delivered
-                                → shipped_interstate → in_transit_hub → out_for_delivery → delivered
-                                → shipped_international → customs_clearance → in_transit_country → delivered
-```
+### 3. Logistics Handoff System
 
-This maps to the Jumia/TEMU-style tracking experience. The existing `order_status` enum will be extended with new values.
+**Database changes**:
+- Add columns to `orders` table: `logistics_partner` (text), `tracking_number` (text), `logistics_notes` (text), `estimated_delivery_date` (date), `shipped_at` (timestamptz), `delivered_at` (timestamptz)
+- Create `logistics_partners` table: id, name, contact_email, contact_phone, coverage_zones (text[]), api_endpoint (text, nullable for future integration), is_active (boolean)
+- Seed with placeholder partners (e.g., "Lagos Local Dispatch", "Interstate Courier", "International Shipping Partner")
 
-#### 5. Order Tracking Enhancement
-Update the `/track-order` page to show a step-by-step progress bar reflecting the expanded statuses, with estimated delivery dates based on zone.
+**Admin functionality**:
+- On the admin order detail page, add a "Assign Logistics" section where staff can:
+  - Select a logistics partner from the dropdown
+  - Enter a tracking number
+  - Update order status through the fulfillment pipeline
+  - Add logistics notes
+- When a logistics partner is assigned and tracking number entered, update order status to the appropriate "shipped" variant
 
-#### 6. Checkout UX Changes
-- Step 1: Address (enhanced with all new fields) — shows calculated shipping zone + fee in real-time
-- Step 2: Review (shows delivery estimate based on zone)
-- Step 3: Payment (total includes zone-based shipping)
+### 4. Enhanced Order Tracking
 
-### Database Changes (Migration)
-1. Create `shipping_zones` table (zone_key, label, base_fee, free_shipping_threshold, min_days, max_days, is_active)
-2. Seed zone data
-3. Add `shipping_zone` and `shipping_fee` columns to `orders` table
-4. Extend `order_status` enum with new statuses
-5. Add `country`, `landmark`, `postal_code` to the shipping_address JSON schema (no table change needed — it's already JSONB)
+- Show tracking number on the customer-facing order tracking page when available
+- Show logistics partner name
+- Show estimated delivery date based on zone
+- Add a "Contact Support" section with operations email for shipping inquiries
 
-### Files to Create/Modify
-- **New**: `src/shared/lib/shippingZones.ts` — zone mapping logic and fee calculator
-- **New**: `src/components/checkout/ShippingZoneIndicator.tsx` — shows zone, fee, and delivery estimate
-- **Modify**: `src/pages/Checkout.tsx` — enhanced address form with country, landmark, phone validation, dynamic fee
-- **Modify**: `src/components/checkout/OrderSummary.tsx` — accept zone-based shipping fee instead of flat rate
-- **Modify**: `src/pages/OrderTracking.tsx` — expanded status timeline
-- **Modify**: `supabase/functions/paystack-payment/index.ts` — store shipping_zone and shipping_fee on the order
-- **Migration**: new table + enum extension + order columns
+### 5. Operations Email on Status Changes
+
+- When admin updates order status (e.g., shipped, delivered), send a notification email to the customer AND to operations
+- Customer email: "Your order has been shipped! Tracking number: XXX"
+- Operations email: status change log for record-keeping
+
+---
+
+### Files to Create
+- `supabase/functions/send-order-notification/index.ts` — order notification email to operations + customer
+- Admin logistics assignment UI component (in existing admin orders page)
+
+### Files to Modify
+- `src/pages/Checkout.tsx` — simplified address form with inline phone/email
+- `src/pages/OrderTracking.tsx` — show tracking number, logistics partner, estimated delivery
+- `supabase/functions/paystack-payment/index.ts` — trigger order notification email after order creation
+- Admin order management page — add logistics assignment section
+
+### Database Migration
+- Add logistics columns to `orders` table
+- Create `logistics_partners` table with seed data
+- RLS policies for logistics_partners (read: authenticated, write: admin only)
+
+### Technical Notes
+- Email sending uses existing Resend integration (secret already configured)
+- Operations email: `operations_businessmanger@soteriaeyeclinic.com`
+- Sender domain: `notify.mandheyewear.com` (already verified)
+- All new edge function calls are non-blocking (fire-and-forget pattern like Zoho sync)
 
