@@ -49,13 +49,6 @@ const Index = () => {
       <DualCtaSection />
       <TrustBadges />
 
-      {/* Chat Assistant Launcher */}
-      <button 
-        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 p-4 rounded-full bg-flame text-cream shadow-flame hover:shadow-xl hover:scale-110 transition-all z-40 animate-float-slow"
-        aria-label="Open chat assistant"
-      >
-        <Sparkle weight="duotone" className="h-6 w-6" />
-      </button>
 
       <Footer />
     </div>

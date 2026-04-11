@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { ShoppingBag, Minus, Plus, Camera, Loader2, Heart, LogIn } from "lucide-react";
+import { ShoppingBag, Minus, Plus, Camera, Loader2, LogIn } from "lucide-react";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StockBadge } from "@/modules/storefront/components/eyewear/StockBadge";
@@ -124,9 +125,7 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
             <Camera className="mr-2 h-4 w-4" />
             Virtual Try-On
           </Button>
-          <Button variant="outline" size="icon">
-            <Heart className="h-5 w-5" />
-          </Button>
+          <WishlistButton productId={product.id} />
         </div>
 
         {savedPhotoUrl && (
