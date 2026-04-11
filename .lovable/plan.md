@@ -1,25 +1,30 @@
 
 
-## Rotating Narrative Tagline in Hero Section
+## Non-Working Buttons — Analysis and Fix Plan
 
-### What
-Replace the static tagline "For those who see the future before it arrives." with a rotating text animation that cycles through multiple narrative lines, telling a cohesive brand story.
+### Issues Found
 
-### Narrative Lines (aligned with the 3 brand pillars)
-1. **"For those who see the future before it arrives."** — The Visionary
-2. **"Frames as loud as your ambition, as silent as true luxury."** — Shakara
-3. **"Sharp eyes. Sharper style. Sharpest vision."** — Clinical + Style
-4. **"Na style wey dey see road."** — Cultural punch
+1. **Chat Assistant button (Index.tsx, line 53-58)** — The floating Sparkle button at the bottom-right has **no `onClick` handler**. It does nothing when clicked.
 
-### How — `HeroSection.tsx`
+2. **Heart/Wishlist button on Product Detail page (AddToCartSection.tsx, line 127-129)** — The outline Heart button next to "Virtual Try-On" has **no `onClick` handler** and doesn't use the `WishlistButton` component. It's a dead button.
 
-1. **Add state**: `useState` for `taglineIndex` starting at 0, cycling through the array
-2. **Add interval**: `useEffect` with `setInterval` every ~4 seconds to increment the index
-3. **Add fade transition**: Wrap the `<p>` text in a keyed container with a CSS fade-in/fade-out animation (using the existing `animate-fade-in` keyframes + a custom `animate-fade-out` approach, or a simple opacity transition with a brief exit before entering the next line)
-4. **Keep the gold left-border container** — only the text inside rotates
-5. The pill badge below ("Clarity without compromise") stays static as the anchor
+3. **Flash Deal product links (HeroSection.tsx, line 485)** — Products in the hero strip link to `/eyewear/${product.id}`, but the actual product route is `/product/:productId`. These links lead to a 404 page.
 
-### Animation approach
-- Use a `key={taglineIndex}` on the `<p>` to trigger re-mount with `animate-fade-in`
-- Brief opacity transition: text fades out over 300ms, swaps, fades in over 300ms
+4. **Product links in ProductCard (ProductCard.tsx, line 79)** — Same issue: links to `/product/${product.id}` — this one is correct. But the hero section uses the wrong path.
+
+### Plan
+
+**File: `src/components/product/AddToCartSection.tsx`**
+- Replace the dead `<Button variant="outline" size="icon"><Heart /></Button>` with `<WishlistButton productId={product.id} />` so the heart button actually toggles wishlist.
+
+**File: `src/modules/storefront/components/home/HeroSection.tsx`**
+- Change `/eyewear/${product.id}` to `/product/${product.id}` on line 485 so flash deal cards navigate to the correct product page.
+
+**File: `src/pages/Index.tsx`**
+- Either wire the chat assistant button to open a chat dialog/route, or remove it entirely if there's no chat feature implemented yet. Will check if a chat feature exists; if not, remove the dead button to avoid confusing users.
+
+### Technical Details
+- `WishlistButton` already exists at `src/components/wishlist/WishlistButton.tsx` and handles auth checks + toggle logic
+- The correct product detail route is `/product/:productId` (defined in `public.routes.tsx` line 60)
+- All editorial grid links (`/booking`, `/eyewear`, `/try-on`, `/style-quiz`, `/about`) have valid routes
 
