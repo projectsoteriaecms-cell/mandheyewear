@@ -14,8 +14,13 @@ import {
 import { ScrollProgress } from "@/modules/storefront/components/home/ScrollProgress";
 import { useSEO } from "@/shared/hooks/useSEO";
 import { JsonLd } from "@/components/seo";
+import { RecentlyViewed } from "@/components/shop/RecentlyViewed";
+import { BrowsingRecommendations } from "@/components/shop/BrowsingRecommendations";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 
 const Index = () => {
+  const { isAuthenticated } = useAuth();
+
   useSEO({
     title: "M&H Eyewear – Premium Eye Care & Designer Frames in Nigeria",
     description: "See Better. Look Better. Book eye exams, shop designer frames, and try on glasses with AI. Premium eye care and eyewear across Nigeria.",
@@ -43,6 +48,15 @@ const Index = () => {
       
       <EditorialGrid />
       <CategoryCards />
+      
+      {/* Personalized sections for logged-in users */}
+      {isAuthenticated && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <RecentlyViewed />
+          <BrowsingRecommendations />
+        </div>
+      )}
+      
       <TestimonialSection />
       <FeaturedFrames />
       <DualCtaSection />
