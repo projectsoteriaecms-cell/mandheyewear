@@ -22,14 +22,14 @@ export const useTrackActivity = () => {
       // Fire-and-forget — no await, no blocking
       supabase
         .from("user_activity")
-        .insert({
+        .insert([{
           user_id: user.id,
           activity_type: options.activityType,
           product_id: options.productId || null,
           category: options.category || null,
           search_query: options.searchQuery || null,
-          metadata: options.metadata || {},
-        })
+          metadata: (options.metadata || {}) as Record<string, unknown>,
+        }])
         .then(({ error }) => {
           if (error) console.warn("Activity tracking failed:", error.message);
         });
