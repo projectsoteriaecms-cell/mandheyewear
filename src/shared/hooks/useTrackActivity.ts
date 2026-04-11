@@ -28,7 +28,7 @@ export const useTrackActivity = () => {
           product_id: options.productId || null,
           category: options.category || null,
           search_query: options.searchQuery || null,
-          metadata: (options.metadata || {}) as Record<string, unknown>,
+          metadata: (options.metadata || {}) as unknown as Record<string, string>,
         }])
         .then(({ error }) => {
           if (error) console.warn("Activity tracking failed:", error.message);
