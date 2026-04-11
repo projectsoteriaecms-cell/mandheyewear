@@ -1,30 +1,61 @@
 
 
-## Non-Working Buttons — Analysis and Fix Plan
+## Add Tooltips to All Icon-Only Buttons
 
-### Issues Found
+### Problem
+Icon-only buttons (dark/light mode toggle, search, wishlist, cart, notifications, etc.) have no visible labels, making them hard to identify for users unfamiliar with the icons.
 
-1. **Chat Assistant button (Index.tsx, line 53-58)** — The floating Sparkle button at the bottom-right has **no `onClick` handler**. It does nothing when clicked.
+### Solution
+Wrap every icon-only `<Button size="icon">` across the storefront and admin layouts with the existing `<Tooltip>` component from `@/components/ui/tooltip`, providing descriptive labels on hover.
 
-2. **Heart/Wishlist button on Product Detail page (AddToCartSection.tsx, line 127-129)** — The outline Heart button next to "Virtual Try-On" has **no `onClick` handler** and doesn't use the `WishlistButton` component. It's a dead button.
+### Files to Update
 
-3. **Flash Deal product links (HeroSection.tsx, line 485)** — Products in the hero strip link to `/eyewear/${product.id}`, but the actual product route is `/product/:productId`. These links lead to a 404 page.
+**1. `src/components/navigation/TopBar.tsx`** — Desktop top bar
+- Theme toggle button: tooltip "Switch to dark/light mode"
 
-4. **Product links in ProductCard (ProductCard.tsx, line 79)** — Same issue: links to `/product/${product.id}` — this one is correct. But the hero section uses the wrong path.
+**2. `src/components/navigation/MainNav.tsx`** — Desktop main nav
+- Search button: "Search"
+- Wishlist button: "Wishlist"
+- Account button: "My Account"
 
-### Plan
+**3. `src/components/navigation/MobileTopBar.tsx`** — Mobile top bar
+- Menu button: "Menu"
+- Theme toggle: "Toggle theme"
+- Wishlist button: "Wishlist"
+- Cart/bag button: "Cart"
 
-**File: `src/components/product/AddToCartSection.tsx`**
-- Replace the dead `<Button variant="outline" size="icon"><Heart /></Button>` with `<WishlistButton productId={product.id} />` so the heart button actually toggles wishlist.
+**4. `src/components/cart/CartDrawer.tsx`** — Cart trigger
+- Cart bag icon: "Cart"
 
-**File: `src/modules/storefront/components/home/HeroSection.tsx`**
-- Change `/eyewear/${product.id}` to `/product/${product.id}` on line 485 so flash deal cards navigate to the correct product page.
+**5. `src/shared/layouts/admin/AdminHeader.tsx`** — Admin header
+- Notifications bell: "Notifications"
+- Store link icon: "Go to Store"
 
-**File: `src/pages/Index.tsx`**
-- Either wire the chat assistant button to open a chat dialog/route, or remove it entirely if there's no chat feature implemented yet. Will check if a chat feature exists; if not, remove the dead button to avoid confusing users.
+**6. `src/modules/storefront/components/eyewear/ProductCard.tsx`** — Product card hover actions
+- Virtual Try-On button: "Virtual Try-On"
+- Add to Cart button: "Add to Cart"
 
-### Technical Details
-- `WishlistButton` already exists at `src/components/wishlist/WishlistButton.tsx` and handles auth checks + toggle logic
-- The correct product detail route is `/product/:productId` (defined in `public.routes.tsx` line 60)
-- All editorial grid links (`/booking`, `/eyewear`, `/try-on`, `/style-quiz`, `/about`) have valid routes
+**7. `src/modules/storefront/components/eyewear/ProductListCard.tsx`** — Product list card actions
+- Same tooltips as ProductCard
+
+### Implementation Pattern
+Each icon button gets wrapped like this:
+```tsx
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+
+<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button variant="ghost" size="icon" ...>
+        <Icon />
+      </Button>
+    </TooltipTrigger>
+    <TooltipContent>
+      <p>Label text</p>
+    </TooltipContent>
+  </Tooltip>
+</TooltipProvider>
+```
+
+A single `<TooltipProvider>` will wrap groups of icon buttons where multiple appear together, to avoid nesting multiple providers.
 
