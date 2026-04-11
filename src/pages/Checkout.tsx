@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -15,26 +15,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
+import { ShippingZoneIndicator } from "@/components/checkout/ShippingZoneIndicator";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useProfile } from "@/modules/personalization/hooks/useProfile";
 import { useUserRole } from "@/modules/auth/hooks/useUserRole";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { canPurchase } from "@/shared/lib/permissions";
+import {
+  detectShippingZone,
+  getZoneInfo,
+  calculateShippingFee,
+  getDeliveryEstimate,
+  COUNTRY_LIST,
+  NIGERIAN_STATES,
+} from "@/shared/lib/shippingZones";
 import { useToast } from "@/shared/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, Clock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const PAYSTACK_PUBLIC_KEY = "pk_test_b65019a2e28f286dd4906d6aaa80bff38f035460";
-
-const NIGERIAN_STATES = [
-  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
-  "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT",
-  "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi",
-  "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo",
-  "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
-];
 
 // Load Paystack inline script
 const loadPaystackScript = (): Promise<void> => {
@@ -61,13 +62,19 @@ const Checkout = () => {
   const { trackInitiateCheckout } = useMetaPixel();
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasTrackedCheckout, setHasTrackedCheckout] = useState(false);
-  
+
   // Shipping form state
+  const [country, setCountry] = useState("Nigeria");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
+  const [landmark, setLandmark] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [region, setRegion] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [addressConfirmed, setAddressConfirmed] = useState(false);
+
+  const isNigeria = country === "Nigeria";
 
   // Pre-fill user details
   const fullName = profile?.full_name || "";
@@ -75,6 +82,21 @@ const Checkout = () => {
   const phone = profile?.phone_number || "";
 
   const userCanPurchase = canPurchase(role ?? null);
+
+  // Compute shipping zone dynamically
+  const shippingZoneKey = useMemo(() => {
+    if (!country) return "lagos_mainland";
+    return detectShippingZone(country, isNigeria ? state : "", city);
+  }, [country, state, city, isNigeria]);
+
+  const shippingFee = useMemo(
+    () => calculateShippingFee(shippingZoneKey, cartTotal),
+    [shippingZoneKey, cartTotal]
+  );
+
+  const zoneInfo = useMemo(() => getZoneInfo(shippingZoneKey), [shippingZoneKey]);
+  const deliveryEstimate = useMemo(() => getDeliveryEstimate(shippingZoneKey), [shippingZoneKey]);
+  const orderTotal = cartTotal + shippingFee;
 
   // Load Paystack script on mount
   useEffect(() => {
@@ -103,8 +125,27 @@ const Checkout = () => {
       toast({ title: "Please enter your city", variant: "destructive" });
       return;
     }
-    if (!state) {
-      toast({ title: "Please select your state", variant: "destructive" });
+    if (isNigeria) {
+      if (!state) {
+        toast({ title: "Please select your state", variant: "destructive" });
+        return;
+      }
+      if (!landmark.trim() || landmark.length < 3) {
+        toast({ title: "Please enter a nearby landmark for delivery", variant: "destructive" });
+        return;
+      }
+    } else {
+      if (!postalCode.trim()) {
+        toast({ title: "Please enter your postal/zip code", variant: "destructive" });
+        return;
+      }
+    }
+    if (!phone.trim() || phone.length < 10) {
+      toast({
+        title: "Phone Number Required",
+        description: "Please update your phone number in your profile before checking out.",
+        variant: "destructive",
+      });
       return;
     }
     setAddressConfirmed(true);
@@ -123,14 +164,26 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
-      // Ensure Paystack script is loaded
       await loadPaystackScript();
 
-      const shippingFee = cartTotal > 50000 ? 0 : 3500;
-      const orderTotal = cartTotal + shippingFee;
       const amountInKobo = Math.round(orderTotal * 100);
 
-      // Initialize transaction via backend
+      const shippingAddress: Record<string, string> = {
+        address,
+        city,
+        country,
+        full_name: fullName,
+        phone,
+      };
+
+      if (isNigeria) {
+        shippingAddress.state = state;
+        shippingAddress.landmark = landmark;
+      } else {
+        shippingAddress.region = region;
+        shippingAddress.postal_code = postalCode;
+      }
+
       const { data: initData, error: initError } = await supabase.functions.invoke(
         "paystack-payment",
         {
@@ -144,15 +197,10 @@ const Checkout = () => {
                 quantity: item.quantity,
                 price: item.product?.price || 0,
               })),
-              shipping_address: {
-                address,
-                city,
-                state,
-                full_name: fullName,
-                phone,
-              },
+              shipping_address: shippingAddress,
               delivery_instructions: additionalInfo || undefined,
               shipping_fee: shippingFee,
+              shipping_zone: shippingZoneKey,
             },
           },
         }
@@ -162,16 +210,14 @@ const Checkout = () => {
         throw new Error(initData?.error || initError?.message || "Failed to initialize payment");
       }
 
-      // Open Paystack popup
       const handler = PaystackPop.setup({
         key: PAYSTACK_PUBLIC_KEY,
         email,
         amount: amountInKobo,
         currency: "NGN",
         access_code: initData.access_code,
-        callback: (response) => {
+        callback: (response: { reference: string }) => {
           (async () => {
-            // Verify payment via backend
             try {
               const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
                 "paystack-payment",
@@ -192,12 +238,10 @@ const Checkout = () => {
                 description: `Order ${verifyData.order_number} has been placed.`,
               });
 
-              // Fire-and-forget: push order to Zoho Books
               supabase.functions.invoke("zoho-sync", {
                 body: { action: "push_order", order_id: verifyData.order_id },
-              }).catch((err) => console.warn("Zoho order push failed (non-blocking):", err));
+              }).catch((err: unknown) => console.warn("Zoho order push failed (non-blocking):", err));
 
-              // Navigate to order confirmation
               navigate(`/order/${verifyData.order_id}`);
             } catch (err: unknown) {
               const message = err instanceof Error ? err.message : "Payment verification failed";
@@ -319,8 +363,6 @@ const Checkout = () => {
     );
   }
 
-  const shippingFee = cartTotal > 50000 ? 0 : 3500;
-  const orderTotal = cartTotal + shippingFee;
   const initials = fullName ? fullName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "U";
 
   return (
@@ -383,44 +425,101 @@ const Checkout = () => {
               <CardContent className="space-y-4">
                 {!addressConfirmed ? (
                   <>
+                    {/* Country */}
+                    <div className="space-y-2">
+                      <Label htmlFor="country">Country *</Label>
+                      <Select value={country} onValueChange={(val) => { setCountry(val); setState(""); }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COUNTRY_LIST.map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Address */}
                     <div className="space-y-2">
                       <Label htmlFor="address">Street Address *</Label>
                       <Textarea
                         id="address"
-                        placeholder="Enter your full address including street, house number, landmark..."
+                        placeholder="Enter your full address including street, house number..."
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         className="resize-none"
                       />
                     </div>
 
+                    {/* Landmark (Nigeria only) */}
+                    {isNigeria && (
+                      <div className="space-y-2">
+                        <Label htmlFor="landmark">Nearest Landmark *</Label>
+                        <Input
+                          id="landmark"
+                          placeholder="e.g. Nearest bus stop, popular building, or junction"
+                          value={landmark}
+                          onChange={(e) => setLandmark(e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          This helps our delivery riders find you faster
+                        </p>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="city">City *</Label>
                         <Input
                           id="city"
-                          placeholder="e.g. Lagos"
+                          placeholder={isNigeria ? "e.g. Ikeja, Lekki, Surulere" : "e.g. London, New York"}
                           value={city}
                           onChange={(e) => setCity(e.target.value)}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="state">State *</Label>
-                        <Select value={state} onValueChange={setState}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select state" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {NIGERIAN_STATES.map((s) => (
-                              <SelectItem key={s} value={s}>
-                                {s}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+
+                      {isNigeria ? (
+                        <div className="space-y-2">
+                          <Label htmlFor="state">State *</Label>
+                          <Select value={state} onValueChange={setState}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select state" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {NIGERIAN_STATES.map((s) => (
+                                <SelectItem key={s} value={s}>{s}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Label htmlFor="region">State / Province / Region</Label>
+                          <Input
+                            id="region"
+                            placeholder="e.g. California, Ontario, Bavaria"
+                            value={region}
+                            onChange={(e) => setRegion(e.target.value)}
+                          />
+                        </div>
+                      )}
                     </div>
 
+                    {/* Postal code for international */}
+                    {!isNigeria && (
+                      <div className="space-y-2">
+                        <Label htmlFor="postalCode">Postal / Zip Code *</Label>
+                        <Input
+                          id="postalCode"
+                          placeholder="e.g. 10001, SW1A 1AA"
+                          value={postalCode}
+                          onChange={(e) => setPostalCode(e.target.value)}
+                        />
+                      </div>
+                    )}
+
+                    {/* Additional info */}
                     <div className="space-y-2">
                       <Label htmlFor="additionalInfo">Delivery Instructions (Optional)</Label>
                       <Textarea
@@ -431,6 +530,11 @@ const Checkout = () => {
                         className="resize-none"
                       />
                     </div>
+
+                    {/* Live shipping zone indicator */}
+                    {(isNigeria ? !!state : !!country) && (
+                      <ShippingZoneIndicator zoneKey={shippingZoneKey} subtotal={cartTotal} />
+                    )}
 
                     <Button onClick={handleConfirmAddress} className="w-full md:w-auto">
                       Confirm Address
@@ -445,13 +549,26 @@ const Checkout = () => {
                           Delivery address confirmed
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
-                          {address}, {city}, {state}
+                          {address}, {city}{isNigeria ? `, ${state}` : ""}, {country}
                         </p>
+                        {isNigeria && landmark && (
+                          <p className="text-sm text-muted-foreground">
+                            📍 Landmark: {landmark}
+                          </p>
+                        )}
+                        {!isNigeria && postalCode && (
+                          <p className="text-sm text-muted-foreground">
+                            Postal Code: {postalCode}
+                          </p>
+                        )}
                         {additionalInfo && (
                           <p className="text-sm text-muted-foreground italic">
                             Note: {additionalInfo}
                           </p>
                         )}
+                        <div className="mt-2">
+                          <ShippingZoneIndicator zoneKey={shippingZoneKey} subtotal={cartTotal} />
+                        </div>
                       </div>
                       <Button
                         variant="ghost"
@@ -515,7 +632,13 @@ const Checkout = () => {
           {/* Right Column - Order Summary */}
           <div className="lg:col-span-1">
             <div className="sticky top-24">
-              <OrderSummary cartItems={cartItems} subtotal={cartTotal} />
+              <OrderSummary
+                cartItems={cartItems}
+                subtotal={cartTotal}
+                shippingFee={shippingFee}
+                shippingZoneLabel={zoneInfo.label}
+                deliveryEstimate={deliveryEstimate}
+              />
             </div>
           </div>
         </div>
