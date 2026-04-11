@@ -1,4 +1,3 @@
-import { Sparkle } from "@phosphor-icons/react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { FeaturedFrames } from "@/modules/storefront/components/shared";
