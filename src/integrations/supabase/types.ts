@@ -635,6 +635,8 @@ export type Database = {
           payment_reference: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
           shipping_address: Json | null
+          shipping_fee: number | null
+          shipping_zone: string | null
           total_amount: number
           updated_at: string
           user_id: string
@@ -650,6 +652,8 @@ export type Database = {
           payment_reference?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           shipping_address?: Json | null
+          shipping_fee?: number | null
+          shipping_zone?: string | null
           total_amount: number
           updated_at?: string
           user_id: string
@@ -665,6 +669,8 @@ export type Database = {
           payment_reference?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           shipping_address?: Json | null
+          shipping_fee?: number | null
+          shipping_zone?: string | null
           total_amount?: number
           updated_at?: string
           user_id?: string
@@ -1199,6 +1205,45 @@ export type Database = {
           requires_appointment?: boolean | null
           service_type?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      shipping_zones: {
+        Row: {
+          base_fee: number
+          created_at: string
+          description: string | null
+          free_shipping_threshold: number | null
+          id: string
+          is_active: boolean
+          label: string
+          max_delivery_days: number
+          min_delivery_days: number
+          zone_key: string
+        }
+        Insert: {
+          base_fee?: number
+          created_at?: string
+          description?: string | null
+          free_shipping_threshold?: number | null
+          id?: string
+          is_active?: boolean
+          label: string
+          max_delivery_days?: number
+          min_delivery_days?: number
+          zone_key: string
+        }
+        Update: {
+          base_fee?: number
+          created_at?: string
+          description?: string | null
+          free_shipping_threshold?: number | null
+          id?: string
+          is_active?: boolean
+          label?: string
+          max_delivery_days?: number
+          min_delivery_days?: number
+          zone_key?: string
         }
         Relationships: []
       }
@@ -1845,6 +1890,14 @@ export type Database = {
         | "shipped"
         | "delivered"
         | "cancelled"
+        | "packed"
+        | "shipped_local"
+        | "shipped_interstate"
+        | "shipped_international"
+        | "in_transit_hub"
+        | "customs_clearance"
+        | "in_transit_country"
+        | "out_for_delivery"
       payment_status: "pending" | "paid" | "failed" | "refunded"
       price_tier: "budget" | "standard" | "premium" | "luxury"
       purchase_order_status:
@@ -2049,6 +2102,14 @@ export const Constants = {
         "shipped",
         "delivered",
         "cancelled",
+        "packed",
+        "shipped_local",
+        "shipped_interstate",
+        "shipped_international",
+        "in_transit_hub",
+        "customs_clearance",
+        "in_transit_country",
+        "out_for_delivery",
       ],
       payment_status: ["pending", "paid", "failed", "refunded"],
       price_tier: ["budget", "standard", "premium", "luxury"],
