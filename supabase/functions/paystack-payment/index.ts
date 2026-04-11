@@ -15,7 +15,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Authenticate user
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -78,7 +77,7 @@ async function handleInitialize(
     },
     body: JSON.stringify({
       email,
-      amount, // already in kobo
+      amount,
       metadata: { ...metadata, user_id: userId },
       currency: "NGN",
     }),
@@ -113,7 +112,6 @@ async function handleVerify(
 ) {
   const { reference } = body;
 
-  // Verify with Paystack
   const res = await fetch(`${PAYSTACK_BASE}/transaction/verify/${reference}`, {
     headers: {
       Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
@@ -135,9 +133,11 @@ async function handleVerify(
   const paymentData = data.data;
   const metadata = paymentData.metadata || {};
   const shippingAddress = metadata.shipping_address || {};
-  const totalAmount = paymentData.amount / 100; // Convert kobo to naira
+  const totalAmount = paymentData.amount / 100;
+  const shippingZone = metadata.shipping_zone || null;
+  const shippingFee = typeof metadata.shipping_fee === "number" ? metadata.shipping_fee : 0;
 
-  // Read cart items from the database (not from Paystack metadata — metadata has size limits)
+  // Read cart items from the database
   const { data: dbCartItems, error: cartError } = await supabase
     .from("cart_items")
     .select("product_id, quantity, product:products(price)")
@@ -153,16 +153,15 @@ async function handleVerify(
     price: ci.product?.price || 0,
   }));
 
-  console.log(`Verify: userId=${userId}, cartItems=${cartItems.length}, totalAmount=${totalAmount}`);
+  console.log(`Verify: userId=${userId}, cartItems=${cartItems.length}, totalAmount=${totalAmount}, zone=${shippingZone}`);
 
   if (cartItems.length === 0) {
-    // Fallback: try Paystack metadata (for backward compatibility)
     const metaCartItems = metadata.cart_items || [];
     console.log(`No DB cart items, falling back to metadata: ${metaCartItems.length} items`);
     cartItems.push(...metaCartItems);
   }
 
-  // Create order
+  // Create order with shipping zone and fee
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
@@ -172,6 +171,8 @@ async function handleVerify(
       order_status: "confirmed",
       payment_reference: reference,
       shipping_address: shippingAddress,
+      shipping_zone: shippingZone,
+      shipping_fee: shippingFee,
       currency: "NGN",
       notes: metadata.delivery_instructions || null,
     })
