@@ -77,8 +77,8 @@ export const MainNav = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src={mhLogo} alt="M&H Eyewear" className="h-14 w-auto dark:hidden" />
-            <img src={mhLogoGold} alt="M&H Eyewear" className="h-14 w-auto hidden dark:block" />
+            <img src={mhLogo} alt="M&H Eyewear" className="h-20 w-auto dark:hidden" />
+            <img src={mhLogoGold} alt="M&H Eyewear" className="h-20 w-auto hidden dark:block" />
           </Link>
 
           {/* Desktop Navigation Links */}
