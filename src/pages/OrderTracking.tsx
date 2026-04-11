@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { useToast } from "@/shared/hooks/use-toast";
+import { getDeliveryEstimate } from "@/shared/lib/shippingZones";
 import {
   Package,
   Search,
@@ -22,6 +23,8 @@ import {
   Globe,
   ShieldCheck,
   Home,
+  Mail,
+  Phone,
 } from "lucide-react";
 
 type OrderStatus =
@@ -40,6 +43,9 @@ interface OrderData {
   updated_at: string;
   shipping_zone: string | null;
   shipping_fee: number | null;
+  tracking_number: string | null;
+  logistics_partner: string | null;
+  estimated_delivery_date: string | null;
   shipping_address: {
     full_name?: string;
     fullName?: string;
@@ -47,6 +53,8 @@ interface OrderData {
     state?: string;
     country?: string;
     landmark?: string;
+    phone?: string;
+    email?: string;
   } | null;
   order_items: Array<{
     id: string;
@@ -59,7 +67,6 @@ interface OrderData {
   }>;
 }
 
-// All possible statuses in fulfillment order
 const ALL_STATUSES: OrderStatus[] = [
   "confirmed", "processing", "packed",
   "shipped_local", "shipped_interstate", "shipped_international",
@@ -67,7 +74,6 @@ const ALL_STATUSES: OrderStatus[] = [
   "out_for_delivery", "delivered",
 ];
 
-// Determine which steps to show based on shipping zone
 function getStepsForOrder(status: OrderStatus, zone: string | null): { key: OrderStatus; label: string; icon: typeof CheckCircle }[] {
   const isInternational = zone === "international" || zone === "africa_other" || zone === "west_africa";
   const isInterstate = zone && !["lagos_island", "lagos_mainland"].includes(zone) && !isInternational;
@@ -98,7 +104,6 @@ function getStepsForOrder(status: OrderStatus, zone: string | null): { key: Orde
     ];
   }
 
-  // Lagos / local
   return [
     ...base,
     { key: "shipped_local" as OrderStatus, label: "Shipped", icon: Truck },
@@ -107,7 +112,6 @@ function getStepsForOrder(status: OrderStatus, zone: string | null): { key: Orde
   ];
 }
 
-// Map generic "shipped" to the specific shipped status for comparison
 function normalizeStatus(status: OrderStatus): OrderStatus {
   if (status === "shipped") return "shipped_local";
   if (status === "ready_for_pickup") return "packed";
@@ -118,7 +122,6 @@ function getStatusIndex(status: OrderStatus, steps: { key: OrderStatus }[]): num
   const normalized = normalizeStatus(status);
   const idx = steps.findIndex(s => s.key === normalized);
   if (idx >= 0) return idx;
-  // Find closest match in ALL_STATUSES
   const allIdx = ALL_STATUSES.indexOf(normalized);
   for (let i = steps.length - 1; i >= 0; i--) {
     if (ALL_STATUSES.indexOf(steps[i].key) <= allIdx) return i;
@@ -146,6 +149,8 @@ const getStatusColor = (status: OrderStatus) => {
 
 const formatStatus = (status: string) =>
   status.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+const OPERATIONS_EMAIL = "operations_businessmanger@soteriaeyeclinic.com";
 
 const OrderTracking = () => {
   const [searchParams] = useSearchParams();
@@ -176,6 +181,9 @@ const OrderTracking = () => {
         shipping_zone,
         shipping_fee,
         shipping_address,
+        tracking_number,
+        logistics_partner,
+        estimated_delivery_date,
         order_items (
           id,
           quantity,
@@ -205,6 +213,7 @@ const OrderTracking = () => {
 
   const steps = order ? getStepsForOrder(order.order_status, order.shipping_zone) : [];
   const currentStatusIndex = order ? getStatusIndex(order.order_status, steps) : -1;
+  const deliveryEstimate = order?.shipping_zone ? getDeliveryEstimate(order.shipping_zone) : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -287,7 +296,6 @@ const OrderTracking = () => {
                   {order.order_status !== "cancelled" && steps.length > 0 && (
                     <div className="mb-6">
                       <div className="flex items-center justify-between relative">
-                        {/* Progress Line */}
                         <div className="absolute top-5 left-0 right-0 h-1 bg-muted">
                           <div
                             className="h-full bg-accent transition-all duration-500"
@@ -328,6 +336,39 @@ const OrderTracking = () => {
                           );
                         })}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Tracking Info */}
+                  {(order.tracking_number || order.logistics_partner || order.estimated_delivery_date) && (
+                    <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
+                      <h3 className="text-sm font-semibold mb-2 text-blue-800 dark:text-blue-300">📦 Shipment Details</h3>
+                      <div className="space-y-1 text-sm">
+                        {order.logistics_partner && (
+                          <p className="text-muted-foreground">
+                            <span className="font-medium text-foreground">Carrier:</span> {order.logistics_partner}
+                          </p>
+                        )}
+                        {order.tracking_number && (
+                          <p className="text-muted-foreground">
+                            <span className="font-medium text-foreground">Tracking #:</span>{" "}
+                            <span className="font-mono">{order.tracking_number}</span>
+                          </p>
+                        )}
+                        {order.estimated_delivery_date && (
+                          <p className="text-muted-foreground">
+                            <span className="font-medium text-foreground">Est. Delivery:</span>{" "}
+                            {format(new Date(order.estimated_delivery_date), "PPP")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Delivery Estimate from zone */}
+                  {!order.estimated_delivery_date && deliveryEstimate && order.order_status !== "delivered" && order.order_status !== "cancelled" && (
+                    <div className="mb-4 p-3 bg-muted/30 rounded-lg text-sm text-muted-foreground">
+                      🕐 Estimated delivery: {deliveryEstimate}
                     </div>
                   )}
 
@@ -405,6 +446,34 @@ const OrderTracking = () => {
                         ₦{order.total_amount.toLocaleString()}
                       </span>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Contact Support */}
+              <Card className="border-primary/20">
+                <CardContent className="p-5">
+                  <h3 className="font-semibold mb-2">Need Help With Your Order?</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Contact our operations team for shipping inquiries, delivery updates, or any order-related questions.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <a
+                      href={`mailto:${OPERATIONS_EMAIL}?subject=Order Inquiry — ${order.order_number}`}
+                      className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                    >
+                      <Mail className="h-4 w-4" />
+                      {OPERATIONS_EMAIL}
+                    </a>
+                    {order.shipping_address?.phone && (
+                      <a
+                        href={`tel:${order.shipping_address.phone}`}
+                        className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                      >
+                        <Phone className="h-4 w-4" />
+                        Call Support
+                      </a>
+                    )}
                   </div>
                 </CardContent>
               </Card>
