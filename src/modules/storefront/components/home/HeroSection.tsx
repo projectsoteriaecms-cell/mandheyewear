@@ -482,7 +482,7 @@ export const HeroSection = () => {
                   return (
                     <Link
                       key={`${product.id}-${idx}`}
-                      to={`/eyewear/${product.id}`}
+                      to={`/product/${product.id}`}
                       className="flex-shrink-0 w-[140px] sm:w-[170px] p-3 sm:p-4 border-r border-cream/5 last:border-r-0 hover:bg-cream/[0.03] transition-colors group"
                     >
                       <div className="relative aspect-square rounded-lg overflow-hidden bg-muted mb-2">
