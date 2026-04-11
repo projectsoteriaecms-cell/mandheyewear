@@ -384,35 +384,35 @@ const Checkout = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-8 pb-24 sm:pb-8">
         <Button
           variant="ghost"
-          className="mb-6"
+          className="mb-4 sm:mb-6"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
 
-        <h1 className="text-3xl font-display font-semibold mb-8">Checkout</h1>
+        <h1 className="text-2xl sm:text-3xl font-display font-semibold mb-4 sm:mb-8">Checkout</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
 
             {/* Contact Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+            <Card className="overflow-hidden">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-2xl">
+                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold shrink-0">
                     1
                   </span>
                   Contact Information
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   How can we reach you about this order?
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name *</Label>
                   <Input
@@ -456,19 +456,19 @@ const Checkout = () => {
             </Card>
 
             {/* Delivery Address */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+            <Card className="overflow-hidden">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-2xl">
+                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold shrink-0">
                     2
                   </span>
                   Delivery Address
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   Where should we deliver your order?
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
                 {/* Country */}
                 <div className="space-y-2">
                   <Label htmlFor="country">Country *</Label>
@@ -588,16 +588,16 @@ const Checkout = () => {
             </Card>
 
             {/* Payment Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+            <Card className="overflow-hidden">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-2xl">
+                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold shrink-0">
                     3
                   </span>
                   Payment
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
                 <div className="flex items-center gap-3 p-4 bg-secondary/50 rounded-lg">
                   <CreditCard className="h-8 w-8 text-primary" />
                   <div>
