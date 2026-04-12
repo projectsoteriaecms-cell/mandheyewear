@@ -190,7 +190,7 @@ export const HeroSection = () => {
   const stripLabel = hasCurated ? "Flash Deals" : "✨ New Arrivals";
 
   return (
-    <section className="section-ink-grain relative overflow-hidden min-h-screen flex flex-col justify-center">
+    <section className="section-ink-grain relative overflow-hidden min-h-0 flex flex-col justify-center">
       {/* Background breathing glows */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
@@ -206,7 +206,7 @@ export const HeroSection = () => {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pb-24 lg:pb-16 relative z-10 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-10 pb-20 lg:pb-10 relative z-10 w-full">
         {/* Top tags */}
         <div
           className={`flex items-center gap-4 sm:gap-6 mb-6 sm:mb-8 transition-all duration-700 ${loaded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}
