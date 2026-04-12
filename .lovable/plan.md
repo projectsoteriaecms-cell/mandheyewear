@@ -1,68 +1,76 @@
 
 
-## Bulk Product Data Update + Zoho Sync for M&H Cleaned Data
+## Product Nomenclature Cleanup for All Remaining Products
 
-### What You Need
+### The Problem
 
-You've cleaned up the M&H product nomenclature and want to:
-1. Upload the corrected data from `InventoryReport_15.xls` to replace flawed product records
-2. Insert any new products that don't already exist
-3. Push all corrections to Zoho Books automatically
+The screenshot shows a product named "Frame : CARTIER 2,600,000 FRAME BC6K01AH CT0344O 003 Rimless" — this is ugly and confusing for customers. After analyzing the database:
 
-### Current State
-
-- 837 M&H Fashion products in the database, most with `[NEEDS_RESEARCH]` brand tags and messy names like `"ACCESSORIES :  10K BEIAGE MARBLE ROPE"`
-- Products are matched by `external_id` (the ProductId from ECMS)
-- Most M&H products lack `zoho_item_id` (not yet linked to Zoho), while ~10,156 Zoho-synced products exist elsewhere
-- Existing ECMS import system handles new product insertion but not bulk updates of existing products
-- Zoho sync edge function exists for pulling items in but lacks an outbound "push updates" action
+- **10,659 soteria_medical products** still have messy names
+- **5,595** have prices embedded in the name (e.g., "120K", "15K", "2,600,000")
+- **352** have category prefixes like "Frame :", "Drugs :", "ACCESSORIES :"
+- **10,302** have no brand extracted (null or `[NEEDS_RESEARCH]`)
+- Remaining ~212 M&H products not in the Excel also have the same issues
 
 ### What Will Be Built
 
-#### 1. Bulk Product Update Edge Function
+#### 1. Name Cleanup Edge Function (`clean-product-names`)
 
-Create a new edge function `bulk-product-update` that:
-- Accepts a JSON payload of product rows (parsed client-side from the Excel file)
-- Matches existing products by `external_id` first, then by SKU as fallback
-- For matched products: **updates all fields** (name, price, brand, item_type, description, etc.) preserving only `image_url` and `additional_images` (since those were manually curated)
-- For unmatched products: inserts them as new with `brand_line = 'm_and_h_fashion'`
-- Returns a summary of updated/inserted/failed counts
+A server-side function that applies systematic regex-based transformations to all product names:
 
-#### 2. Zoho Outbound Push
+**Rules derived from the cleaned Excel data pattern:**
+- Strip category prefixes: `Frame :`, `ACCESSORIES :`, `Contact Lens :`, `Drugs :`, `Contact Lens Solution :`
+- Strip embedded prices: remove patterns like `15K`, `120K`, `2,600,000`, `N105,000` from names
+- Strip redundant words: remove "FRAME" when `item_type` is already `frames`
+- Clean up extra whitespace and normalize casing to Title Case
+- Extract brand name from the cleaned name (first word/known brand match)
+- Store original name in `description_raw` for audit trail
 
-Add a new action `push_updates` to the existing `zoho-sync` edge function that:
-- Takes a list of product IDs
-- For products WITH `zoho_item_id`: calls Zoho Books API `PUT /items/{item_id}` to update name, SKU, rate, description
-- For products WITHOUT `zoho_item_id`: calls Zoho Books API `POST /items` to create them, then saves the returned `zoho_item_id` back to the database
-- Processes in batches of 25 (Zoho rate limits)
-- Logs results to `zoho_sync_log`
+**Example transformations:**
+```text
+"Frame : CARTIER 2,600,000 FRAME BC6K01AH CT0344O 003 Rimless"
+  → "Cartier BC6K01AH CT0344O 003 Rimless"
 
-#### 3. Admin UI: Data Cleanup Upload Page
+"Frame :  15K FRAME CA1202 57 17-145 C3"
+  → "CA1202 57-17-145 C3"
 
-Add a "Data Update" option to the existing Products toolbar that:
-- Opens a dialog to upload the cleaned Excel file
-- Parses it client-side (same ExcelJS approach as ECMS import)
-- Shows a preview: "X products will be updated, Y new products will be inserted"
-- Highlights the specific fields that will change (old value → new value)
-- On confirm: calls the `bulk-product-update` edge function
-- After DB update succeeds: optionally triggers Zoho push for all affected products
+"ACCESSORIES :  10K BEIAGE MARBLE ROPE"
+  → "Beige Marble Rope"
+
+"Emporio Armani 120K Ea 3038 5063"
+  → "Emporio Armani EA 3038 5063"
+```
+
+#### 2. Brand Extraction
+
+Using a known-brands list (Cartier, Gucci, Ray-Ban, Oakley, Vogue, Polaroid, Emporio Armani, Prada, etc.), automatically populate the `brand` column from the cleaned name.
+
+#### 3. Admin UI: Cleanup Preview + Confirm
+
+Add a "Clean Names" action in the admin Products toolbar that:
+- Shows a before/after preview table of affected products
+- Lets admin filter by brand_line (soteria_medical, m_and_h_fashion, or all)
+- Confirm button triggers the edge function
+- Option to push cleaned names to Zoho after
+
+#### 4. Zoho Sync for Cleaned Names
+
+After DB cleanup, trigger the existing `push_updates` action on the zoho-sync function to update product names in Zoho Books for all products that have a `zoho_item_id`.
 
 ### Files to Create
-- `supabase/functions/bulk-product-update/index.ts` — handles bulk upsert logic with external_id matching
-- `src/modules/products/components/DataCleanupDialog.tsx` — upload + preview + confirm UI
+- `supabase/functions/clean-product-names/index.ts` — regex-based name cleanup + brand extraction
+- `src/modules/products/components/NameCleanupDialog.tsx` — preview + confirm UI
 
 ### Files to Modify
-- `supabase/functions/zoho-sync/index.ts` — add `push_updates` action to push corrected data outbound to Zoho
-- `src/pages/admin/products/ProductsToolbar.tsx` (or equivalent toolbar component) — add "Update Product Data" button
-- `src/modules/integrations/hooks/useZohoSync.ts` — add `pushUpdates` method
+- `src/pages/admin/products/ProductsToolbar.tsx` — add "Clean Names" button
+- `src/pages/admin/Products.tsx` — wire up the dialog
 
-### Database Migration
-- None needed — existing `products` table schema already supports all fields
+### Database Changes
+- None — uses existing `name`, `brand`, `description_raw` columns
 
-### Technical Details
-- Excel parsing uses ExcelJS (already in the project)
-- Matching priority: `external_id` → `sku` → skip
-- Protected fields during update: `image_url`, `additional_images`, `zoho_item_id` (preserved unless the Zoho push creates a new link)
-- Zoho push uses the existing OAuth token refresh flow
-- Batch size: 50 products per DB upsert call, 25 per Zoho API call
+### Processing Approach
+- Process in batches of 100 server-side
+- Preserve `image_url`, `additional_images`, `price`, `sku` — only touch `name`, `brand`, `description_raw`
+- Log results to `import_history` with `import_type = 'name_cleanup'`
+- Fire-and-forget Zoho push after completion
 
