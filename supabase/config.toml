@@ -23,3 +23,5 @@ project_id = "ispizamxlrukxmysgyjv"
     verify_jwt = false
   [functions.enrich-frame-measurements]
     verify_jwt = false
+  [functions.bulk-product-update]
+    verify_jwt = false
