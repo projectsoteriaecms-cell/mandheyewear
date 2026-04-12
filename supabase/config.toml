@@ -25,3 +25,5 @@ project_id = "ispizamxlrukxmysgyjv"
     verify_jwt = false
   [functions.bulk-product-update]
     verify_jwt = false
+  [functions.clean-product-names]
+    verify_jwt = false
