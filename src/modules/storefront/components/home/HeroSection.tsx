@@ -206,10 +206,10 @@ export const HeroSection = () => {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-10 pb-20 lg:pb-10 relative z-10 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4 lg:py-6 pb-16 lg:pb-6 relative z-10 w-full">
         {/* Top tags */}
         <div
-          className={`flex items-center gap-4 sm:gap-6 mb-6 sm:mb-8 transition-all duration-700 ${loaded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}
+          className={`flex items-center gap-4 sm:gap-6 mb-3 sm:mb-5 transition-all duration-700 ${loaded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}
           style={{ transitionDelay: "200ms" }}
         >
           <span className="font-display font-bold text-[10px] sm:text-xs tracking-[0.3em] uppercase text-cream/30">/Eyewear</span>
@@ -218,12 +218,12 @@ export const HeroSection = () => {
         </div>
 
         {/* === Two-column grid: text left, product image right === */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 lg:gap-12 items-center mb-4 sm:mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 lg:gap-10 items-center mb-3 sm:mb-6">
           {/* Left column — headline + subtext + CTAs */}
           <div>
             {/* Reduced headline */}
-            <div className="relative mb-6 sm:mb-8">
-              <h1 className="font-display font-extrabold text-[clamp(2.5rem,6.5vw,5.5rem)] leading-[0.95] tracking-tight text-cream">
+            <div className="relative mb-3 sm:mb-5">
+              <h1 className="font-display font-extrabold text-[clamp(2.5rem,5.5vw,4.5rem)] leading-[0.92] tracking-tight text-cream">
                 {/* Line 1: rotating prefix */}
                 <span className="inline-block overflow-hidden whitespace-nowrap">
                   <span
@@ -258,7 +258,7 @@ export const HeroSection = () => {
 
             {/* Subtext */}
             <div
-              className={`max-w-md space-y-4 sm:space-y-5 transition-all duration-[800ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+              className={`max-w-md space-y-2.5 sm:space-y-4 transition-all duration-[800ms] ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
               style={{ transitionDelay: "1000ms" }}
             >
               <div className="relative pl-4 sm:pl-5 border-l-2 border-mh-gold/40 min-h-[3.2em]">
@@ -290,7 +290,7 @@ export const HeroSection = () => {
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
+              <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 pt-1">
                 <Link
                   to="/eyewear"
                   className={`group inline-flex items-center justify-center gap-3 px-5 sm:px-7 py-3.5 rounded-full bg-mh-gold text-ink font-display font-bold text-sm tracking-wide uppercase whitespace-nowrap hover:scale-105 hover:shadow-glow-accent transition-all duration-300 shadow-gold w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
