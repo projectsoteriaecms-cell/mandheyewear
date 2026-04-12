@@ -2,27 +2,42 @@ import { lazy, Suspense } from "react";
 import { Route } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
+// Retry wrapper for lazy imports to handle stale chunk errors after deployments
+function lazyRetry(importFn: () => Promise<any>) {
+  return lazy(() =>
+    importFn().catch(() => {
+      // Force reload on stale chunk errors (only once per session)
+      const key = "chunk-retry";
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+      }
+      return importFn();
+    })
+  );
+}
+
 // Lazy load admin pages
-const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
-const Inventory = lazy(() => import("@/pages/admin/Inventory"));
-const PurchaseOrders = lazy(() => import("@/pages/admin/PurchaseOrders"));
-const StockTransfers = lazy(() => import("@/pages/admin/StockTransfers"));
-const StockAdjustments = lazy(() => import("@/pages/admin/StockAdjustments"));
-const InventoryTransactions = lazy(() => import("@/pages/admin/InventoryTransactions"));
-const Suppliers = lazy(() => import("@/pages/admin/Suppliers"));
-const Products = lazy(() => import("@/pages/admin/Products"));
-const ProductImages = lazy(() => import("@/pages/admin/ProductImages"));
-const Services = lazy(() => import("@/pages/admin/Services"));
-const AdminBranches = lazy(() => import("@/pages/admin/AdminBranches"));
-const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
-const AdminAppointments = lazy(() => import("@/pages/admin/Appointments"));
-const Reports = lazy(() => import("@/pages/admin/Reports"));
-const Settings = lazy(() => import("@/pages/admin/Settings"));
-const Categories = lazy(() => import("@/pages/admin/Categories"));
-const DeliveryReport = lazy(() => import("@/pages/admin/DeliveryReport"));
-const Orders = lazy(() => import("@/pages/admin/Orders"));
-const PromoBanner = lazy(() => import("@/pages/admin/PromoBanner"));
-const SlideshowManager = lazy(() => import("@/pages/admin/SlideshowManager"));
+const AdminDashboard = lazyRetry(() => import("@/pages/admin/Dashboard"));
+const Inventory = lazyRetry(() => import("@/pages/admin/Inventory"));
+const PurchaseOrders = lazyRetry(() => import("@/pages/admin/PurchaseOrders"));
+const StockTransfers = lazyRetry(() => import("@/pages/admin/StockTransfers"));
+const StockAdjustments = lazyRetry(() => import("@/pages/admin/StockAdjustments"));
+const InventoryTransactions = lazyRetry(() => import("@/pages/admin/InventoryTransactions"));
+const Suppliers = lazyRetry(() => import("@/pages/admin/Suppliers"));
+const Products = lazyRetry(() => import("@/pages/admin/Products"));
+const ProductImages = lazyRetry(() => import("@/pages/admin/ProductImages"));
+const Services = lazyRetry(() => import("@/pages/admin/Services"));
+const AdminBranches = lazyRetry(() => import("@/pages/admin/AdminBranches"));
+const AdminUsers = lazyRetry(() => import("@/pages/admin/AdminUsers"));
+const AdminAppointments = lazyRetry(() => import("@/pages/admin/Appointments"));
+const Reports = lazyRetry(() => import("@/pages/admin/Reports"));
+const Settings = lazyRetry(() => import("@/pages/admin/Settings"));
+const Categories = lazyRetry(() => import("@/pages/admin/Categories"));
+const DeliveryReport = lazyRetry(() => import("@/pages/admin/DeliveryReport"));
+const Orders = lazyRetry(() => import("@/pages/admin/Orders"));
+const PromoBanner = lazyRetry(() => import("@/pages/admin/PromoBanner"));
+const SlideshowManager = lazyRetry(() => import("@/pages/admin/SlideshowManager"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -30,7 +45,7 @@ const PageLoader = () => (
   </div>
 );
 
-const withSuspense = (Component: React.LazyExoticComponent<() => JSX.Element>) => (
+const withSuspense = (Component: React.LazyExoticComponent<React.ComponentType<any>>) => (
   <Suspense fallback={<PageLoader />}>
     <Component />
   </Suspense>
