@@ -411,13 +411,13 @@ serve(async (req) => {
     }
 
     if (!generated) {
-      return json(
-        {
-          success: false,
-          error: lastErr?.error || "Unable to generate try-on image. Please try again.",
-        },
-        lastErr?.status || 500
-      );
+      // Always return 200 so supabase.functions.invoke doesn't throw;
+      // the client checks `success` field instead.
+      return json({
+        success: false,
+        error: lastErr?.error || "Unable to generate try-on image. Please try again.",
+        fallback: true,
+      });
     }
 
     console.log("Virtual try-on generated successfully", { 
