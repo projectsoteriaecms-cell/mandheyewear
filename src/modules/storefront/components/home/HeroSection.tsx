@@ -224,15 +224,16 @@ export const HeroSection = () => {
             {/* Reduced headline */}
             <div className="relative mb-6 sm:mb-8">
               <h1 className="font-display font-extrabold text-[clamp(2.5rem,6.5vw,5.5rem)] leading-[0.95] tracking-tight text-cream">
-                {/* Line 1: A Clearer */}
+                {/* Line 1: rotating prefix */}
                 <span className="inline-block overflow-hidden whitespace-nowrap">
                   <span
+                    key={`l1-${beatIndex}`}
                     className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
-                    style={{ transitionDelay: "400ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
-                  >A Clearer</span>
+                    style={{ transitionDelay: "400ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)", animation: loaded ? "fade-in 0.6s ease-out" : "none" }}
+                  >{HERO_BEATS[beatIndex].line1}</span>
                 </span>
                 <br />
-                {/* Line 2: OUTLOOK — stretched with glasses frame OO */}
+                {/* Line 2: OUTLOOK — fixed anchor */}
                 <span className="inline-block overflow-hidden tracking-[0.04em] sm:tracking-[0.06em] whitespace-nowrap">
                   <span
                     className={`inline-block transition-all duration-[800ms] text-mh-gold ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
@@ -242,19 +243,14 @@ export const HeroSection = () => {
                   </span>
                 </span>
                 <br />
-                {/* Line 3: on life. */}
-                <span className="inline-block overflow-hidden mr-[0.25em]">
-                  <span
-                    className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
-                    style={{ transitionDelay: "760ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
-                  >on</span>
-                </span>
+                {/* Line 3: rotating suffix */}
                 <span className="inline-block overflow-hidden">
                   <span
+                    key={`l3-${beatIndex}`}
                     className={`inline-block transition-all duration-[800ms] ${loaded ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
-                    style={{ transitionDelay: "880ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
+                    style={{ transitionDelay: "760ms", transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)", animation: loaded ? "fade-in 0.6s ease-out" : "none" }}
                   >
-                    <span className="italic font-semibold text-cream/60">life<span className="text-mh-gold">.</span></span>
+                    <span className="italic font-semibold text-cream/60">{HERO_BEATS[beatIndex].line3.replace('.', '')}<span className="text-mh-gold">.</span></span>
                   </span>
                 </span>
               </h1>
@@ -267,17 +263,17 @@ export const HeroSection = () => {
             >
               <div className="relative pl-4 sm:pl-5 border-l-2 border-mh-gold/40 min-h-[3.2em]">
                 <p
-                  key={taglineIndex}
+                  key={beatIndex}
                   className="font-display font-bold text-base sm:text-lg leading-snug text-cream tracking-tight animate-fade-in whitespace-pre-line"
                 >
-                  {TAGLINES[taglineIndex]}
+                  {HERO_BEATS[beatIndex].tagline}
                 </p>
               </div>
 
               <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-cream/[0.06] backdrop-blur-md border border-cream/10 shadow-[0_0_20px_rgba(212,175,55,0.08)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-mh-gold animate-pulse" />
-                <span className="font-display font-semibold text-xs sm:text-sm text-cream/90 tracking-wide">
-                  Clarity without compromise
+                <span key={`pill-${beatIndex}`} className="font-display font-semibold text-xs sm:text-sm text-cream/90 tracking-wide animate-fade-in">
+                  {HERO_BEATS[beatIndex].pill}
                 </span>
               </div>
 
