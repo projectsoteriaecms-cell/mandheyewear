@@ -13,6 +13,7 @@ import { ImportHistoryPanel } from "@/modules/products/components/ImportHistoryP
 import { ZohoSyncHistoryPanel } from "@/modules/products/components/ZohoSyncHistoryPanel";
 import { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
 import { LinkToZohoDialog } from "@/modules/products/components/LinkToZohoDialog";
+import { DataCleanupDialog } from "@/modules/products/components/DataCleanupDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +47,7 @@ const Products = () => {
   const [isBulkImageUploadOpen, setIsBulkImageUploadOpen] = useState(false);
   const [isECMSImportOpen, setIsECMSImportOpen] = useState(false);
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const [isDataCleanupOpen, setIsDataCleanupOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [quickUploadProduct, setQuickUploadProduct] = useState<Product | null>(null);
@@ -94,6 +96,7 @@ const Products = () => {
             onOpenBulkUpload={() => setIsBulkUploadOpen(true)}
             onOpenECMSImport={() => setIsECMSImportOpen(true)}
             onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
+            onOpenDataCleanup={() => setIsDataCleanupOpen(true)}
           />
 
           <ProductsFilterBar
@@ -127,6 +130,7 @@ const Products = () => {
         <QuickImageUploadModal product={quickUploadProduct} open={!!quickUploadProduct} onOpenChange={(open) => !open && setQuickUploadProduct(null)} />
         <ECMSImportDialog open={isECMSImportOpen} onOpenChange={setIsECMSImportOpen} />
         <LinkToZohoDialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen} />
+        <DataCleanupDialog open={isDataCleanupOpen} onOpenChange={setIsDataCleanupOpen} />
 
         <AlertDialog open={!!deleteProductId} onOpenChange={() => setDeleteProductId(null)}>
           <AlertDialogContent>
