@@ -324,7 +324,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const body = await req.json();
-    const { action = "preview", brand_line = "all", limit = 50, offset = 0, push_to_zoho = false } = body;
+    const { action = "preview", brand_line = "all", limit = 50, offset = 0, push_to_zoho = false, max_records = 500 } = body;
 
     // Build query for products that need cleanup
     let query = supabase
