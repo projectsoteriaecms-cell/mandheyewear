@@ -86,22 +86,22 @@ interface SlideshowProduct {
   };
 }
 
-const TAGLINES = [
-  "For those who see the future\nbefore it arrives.",
-  "Frames as loud as your ambition,\nas silent as true luxury.",
-  "Sharp eyes. Sharper style.\nSharpest vision.",
-  "Na style wey dey see road.",
+const HERO_BEATS = [
+  { line1: "A Clearer", line3: "on life.", tagline: "Because seeing well\nchanges everything.", pill: "See better" },
+  { line1: "A Bolder", line3: "on you.", tagline: "Frames that speak\nbefore you do.", pill: "Look better" },
+  { line1: "The Only", line3: "that fits.", tagline: "Na style wey\ndey see road.", pill: "Be better" },
+  { line1: "A Better", line3: "starts now.", tagline: "Sharp eyes.\nSharper confidence.", pill: "Start today" },
 ];
 
 export const HeroSection = () => {
   const [loaded, setLoaded] = useState(false);
-  const [taglineIndex, setTaglineIndex] = useState(0);
+  const [beatIndex, setBeatIndex] = useState(0);
   const countdown = useCountdown();
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTaglineIndex((prev) => (prev + 1) % TAGLINES.length);
-    }, 4000);
+      setBeatIndex((prev) => (prev + 1) % HERO_BEATS.length);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
