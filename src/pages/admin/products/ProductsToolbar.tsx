@@ -7,6 +7,7 @@ import {
   ArrowsClockwise,
   CloudArrowDown,
   Sparkle,
+  Database,
 } from "@phosphor-icons/react";
 import { BulkPackagingFixButton } from "@/modules/products/components/BulkPackagingFixButton";
 
@@ -24,6 +25,7 @@ interface ProductsToolbarProps {
   onOpenBulkUpload: () => void;
   onOpenECMSImport: () => void;
   onOpenCreateDialog: () => void;
+  onOpenDataCleanup?: () => void;
 }
 
 export const ProductsToolbar = ({
