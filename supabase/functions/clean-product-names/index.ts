@@ -257,13 +257,16 @@ function cleanProductName(name: string, itemType: string | null): { cleaned: str
   // Standalone large numbers without commas (e.g. "105000", "2600000")
   cleaned = cleaned.replace(/\b\d{5,}\b/g, "");
 
-  // 3. Strip redundant "FRAME" / "FRAMES" when item_type is frames
+  // 3. Normalize whitespace early so dedup works
+  cleaned = cleaned.replace(/\s{2,}/g, " ").trim();
+
+  // 4. Strip redundant "FRAME" / "FRAMES" when item_type is frames
   if (itemType === "frames") {
     cleaned = cleaned.replace(/\bFRAMES?\b/gi, "");
+    cleaned = cleaned.replace(/\s{2,}/g, " ").trim();
   }
 
-  // 4. Deduplicate repeated substrings before brand extraction
-  cleaned = cleaned.replace(/\s{2,}/g, " ").trim();
+  // 5. Deduplicate repeated substrings
   cleaned = deduplicateName(cleaned);
 
   // 5. Extract brand
