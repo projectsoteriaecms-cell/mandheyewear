@@ -7,12 +7,9 @@ const corsHeaders = {
 };
 
 const KNOWN_BRANDS: Record<string, string> = {
+  // Luxury
   "cartier": "Cartier",
   "gucci": "Gucci",
-  "ray-ban": "Ray-Ban",
-  "rayban": "Ray-Ban",
-  "ray ban": "Ray-Ban",
-  "oakley": "Oakley",
   "prada": "Prada",
   "versace": "Versace",
   "burberry": "Burberry",
@@ -23,35 +20,15 @@ const KNOWN_BRANDS: Record<string, string> = {
   "tomford": "Tom Ford",
   "dolce": "Dolce & Gabbana",
   "d&g": "Dolce & Gabbana",
+  "dolce & gabbana": "Dolce & Gabbana",
+  "dolce and gabbana": "Dolce & Gabbana",
   "armani": "Emporio Armani",
   "emporio armani": "Emporio Armani",
   "emporio": "Emporio Armani",
   "giorgio armani": "Giorgio Armani",
-  "vogue": "Vogue",
-  "polaroid": "Polaroid",
-  "coach": "Coach",
-  "michael kors": "Michael Kors",
-  "nike": "Nike",
-  "silhouette": "Silhouette",
   "bvlgari": "Bvlgari",
   "bulgari": "Bvlgari",
   "tiffany": "Tiffany & Co.",
-  "swarovski": "Swarovski",
-  "jimmy choo": "Jimmy Choo",
-  "mont blanc": "Mont Blanc",
-  "montblanc": "Mont Blanc",
-  "boss": "Hugo Boss",
-  "hugo boss": "Hugo Boss",
-  "calvin klein": "Calvin Klein",
-  "ck": "Calvin Klein",
-  "persol": "Persol",
-  "maui jim": "Maui Jim",
-  "carrera": "Carrera",
-  "fossil": "Fossil",
-  "lacoste": "Lacoste",
-  "kate spade": "Kate Spade",
-  "ralph lauren": "Ralph Lauren",
-  "polo": "Ralph Lauren",
   "chopard": "Chopard",
   "balmain": "Balmain",
   "cazal": "Cazal",
@@ -59,6 +36,7 @@ const KNOWN_BRANDS: Record<string, string> = {
   "saint laurent": "Saint Laurent",
   "ysl": "Saint Laurent",
   "bottega": "Bottega Veneta",
+  "bottega veneta": "Bottega Veneta",
   "miu miu": "Miu Miu",
   "salvatore ferragamo": "Salvatore Ferragamo",
   "ferragamo": "Salvatore Ferragamo",
@@ -70,28 +48,56 @@ const KNOWN_BRANDS: Record<string, string> = {
   "valentino": "Valentino",
   "roberto cavalli": "Roberto Cavalli",
   "cavalli": "Roberto Cavalli",
+  "fred": "Fred",
+  "maybach": "Maybach",
+  "jacques marie mage": "Jacques Marie Mage",
+  "chrome hearts": "Chrome Hearts",
+  "hublot": "Hublot",
+
+  // Premium
+  "ray-ban": "Ray-Ban",
+  "rayban": "Ray-Ban",
+  "ray ban": "Ray-Ban",
+  "oakley": "Oakley",
+  "coach": "Coach",
+  "michael kors": "Michael Kors",
+  "jimmy choo": "Jimmy Choo",
+  "mont blanc": "Mont Blanc",
+  "montblanc": "Mont Blanc",
+  "boss": "Hugo Boss",
+  "hugo boss": "Hugo Boss",
+  "calvin klein": "Calvin Klein",
+  "ck": "Calvin Klein",
+  "persol": "Persol",
+  "maui jim": "Maui Jim",
+  "carrera": "Carrera",
+  "kate spade": "Kate Spade",
+  "ralph lauren": "Ralph Lauren",
+  "polo": "Ralph Lauren",
   "marc jacobs": "Marc Jacobs",
   "tommy hilfiger": "Tommy Hilfiger",
   "tommy": "Tommy Hilfiger",
+  "gentle monster": "Gentle Monster",
+  "porsche design": "Porsche Design",
+  "porsche": "Porsche Design",
+  "longchamp": "Longchamp",
+  "carolina herrera": "Carolina Herrera",
+  "herrera": "Carolina Herrera",
+  "swarovski": "Swarovski",
+  "oliver peoples": "Oliver Peoples",
+  "barton perreira": "Barton Perreira",
+  "garrett leight": "Garrett Leight",
   "ic berlin": "IC Berlin",
   "lindberg": "Lindberg",
   "mykita": "Mykita",
   "moscot": "Moscot",
-  "barton perreira": "Barton Perreira",
-  "oliver peoples": "Oliver Peoples",
-  "garrett leight": "Garrett Leight",
-  "jacques marie mage": "Jacques Marie Mage",
-  "chrome hearts": "Chrome Hearts",
-  "gentle monster": "Gentle Monster",
-  "porsche design": "Porsche Design",
-  "porsche": "Porsche Design",
-  "fred": "Fred",
-  "maybach": "Maybach",
-  "bolon": "Bolon",
-  "longchamp": "Longchamp",
-  "carolina herrera": "Carolina Herrera",
-  "herrera": "Carolina Herrera",
-  "pierre cardin": "Pierre Cardin",
+
+  // Mid-range & Sport
+  "vogue": "Vogue",
+  "polaroid": "Polaroid",
+  "nike": "Nike",
+  "fossil": "Fossil",
+  "lacoste": "Lacoste",
   "guess": "Guess",
   "police": "Police",
   "arnette": "Arnette",
@@ -100,13 +106,83 @@ const KNOWN_BRANDS: Record<string, string> = {
   "under armour": "Under Armour",
   "adidas": "Adidas",
   "puma": "Puma",
-  "hublot": "Hublot",
-  "titanium": "Titanium",
-  "flexi": "Flexi",
+  "pierre cardin": "Pierre Cardin",
+  "bolon": "Bolon",
+
+  // Clinical / Soteria common brands
+  "silhouette": "Silhouette",
   "stepper": "Stepper",
   "safilo": "Safilo",
   "rodenstock": "Rodenstock",
+  "flexi": "Flexi",
+  "titanium": "Titanium",
   "eye": "Eye",
+  "john richmond": "John Richmond",
+  "richmond": "John Richmond",
+  "alex barkey": "Alex Barkey",
+  "barkey": "Alex Barkey",
+  "oga": "OGA",
+  "morel": "Morel",
+  "lightec": "Lightec",
+  "koali": "Koali",
+  "nomad": "Nomad",
+  "oxibis": "Oxibis",
+  "philippe charriol": "Philippe Charriol",
+  "charriol": "Philippe Charriol",
+  "zeiss": "Zeiss",
+  "hoya": "Hoya",
+  "essilor": "Essilor",
+  "crizal": "Crizal",
+  "transitions": "Transitions",
+  "varilux": "Varilux",
+  "nikon": "Nikon",
+  "seiko": "Seiko",
+  "acuvue": "Acuvue",
+  "alcon": "Alcon",
+  "bausch": "Bausch + Lomb",
+  "bausch & lomb": "Bausch + Lomb",
+  "bausch and lomb": "Bausch + Lomb",
+  "cooper vision": "CooperVision",
+  "coopervision": "CooperVision",
+  "soflens": "SofLens",
+  "freshlook": "FreshLook",
+  "air optix": "Air Optix",
+  "dailies": "Dailies",
+  "proclear": "Proclear",
+  "biofinity": "Biofinity",
+  "avaira": "Avaira",
+  "biotrue": "Biotrue",
+  "renu": "ReNu",
+  "opti-free": "Opti-Free",
+  "optifree": "Opti-Free",
+  "complete": "Complete",
+  "solo care": "Solo Care",
+  "boston": "Boston",
+  "systane": "Systane",
+  "refresh": "Refresh",
+  "genteal": "GenTeal",
+  "visine": "Visine",
+  "allergan": "Allergan",
+  "restasis": "Restasis",
+  "lumigan": "Lumigan",
+  "xalatan": "Xalatan",
+  "travatan": "Travatan",
+  "timolol": "Timolol",
+  "dorzolamide": "Dorzolamide",
+  "brimonidine": "Brimonidine",
+  "vigamox": "Vigamox",
+  "ocuflox": "Ocuflox",
+  "tobradex": "Tobradex",
+  "maxitrol": "Maxitrol",
+  "pred forte": "Pred Forte",
+  "fml": "FML",
+  "lotemax": "Lotemax",
+  "ilevro": "Ilevro",
+  "nevanac": "Nevanac",
+  "catridge": "Catridge",
+  "specsavers": "Specsavers",
+  "warby parker": "Warby Parker",
+  "zenni": "Zenni",
 };
 
 // Sort brand keys by length descending so longer matches win
@@ -115,11 +191,10 @@ const BRAND_KEYS = Object.keys(KNOWN_BRANDS).sort((a, b) => b.length - a.length)
 function extractBrand(name: string): string | null {
   const lower = name.toLowerCase();
   for (const key of BRAND_KEYS) {
-    // Match at word boundary
     const idx = lower.indexOf(key);
     if (idx !== -1) {
-      const before = idx === 0 || /[\s,\-:]/.test(lower[idx - 1]);
-      const after = idx + key.length >= lower.length || /[\s,\-:]/.test(lower[idx + key.length]);
+      const before = idx === 0 || /[\s,\-:(/]/.test(lower[idx - 1]);
+      const after = idx + key.length >= lower.length || /[\s,\-:)/]/.test(lower[idx + key.length]);
       if (before && after) {
         return KNOWN_BRANDS[key];
       }
@@ -127,6 +202,39 @@ function extractBrand(name: string): string | null {
   }
   return null;
 }
+
+// Detect and collapse repeated substrings
+function deduplicateName(name: string): string {
+  const words = name.split(/\s+/);
+  if (words.length < 4) return name;
+
+  // Try half-length substring dedup
+  for (let halfLen = Math.floor(words.length / 2); halfLen >= 2; halfLen--) {
+    const firstHalf = words.slice(0, halfLen).join(" ");
+    const secondHalf = words.slice(halfLen, halfLen * 2).join(" ");
+    if (firstHalf.toLowerCase() === secondHalf.toLowerCase()) {
+      // Keep first half + any remainder after the duplicate
+      const remainder = words.slice(halfLen * 2).join(" ");
+      return remainder ? `${firstHalf} ${remainder}` : firstHalf;
+    }
+  }
+
+  // Word-level consecutive dedup: "Kids Kids" → "Kids"
+  const deduped: string[] = [words[0]];
+  for (let i = 1; i < words.length; i++) {
+    if (words[i].toLowerCase() !== words[i - 1].toLowerCase()) {
+      deduped.push(words[i]);
+    }
+  }
+  return deduped.join(" ");
+}
+
+const GENERIC_WORDS = new Set([
+  "frame", "frames", "lens", "lenses", "sunglass", "sunglasses",
+  "eyeglass", "eyeglasses", "optical", "optics", "reading",
+  "glasses", "spectacles", "specs", "kids", "men", "women",
+  "unisex", "adult", "child", "children",
+]);
 
 function cleanProductName(name: string, itemType: string | null): { cleaned: string; brand: string | null } {
   let cleaned = name;
@@ -137,47 +245,69 @@ function cleanProductName(name: string, itemType: string | null): { cleaned: str
   // 2. Strip embedded prices - various patterns
   // "2,600,000" or "105,000" or "1,200,000"
   cleaned = cleaned.replace(/\b\d{1,3}(,\d{3}){1,3}\b/g, "");
-  // "N105,000" or "₦2,600,000"  
+  // "N105,000" or "₦2,600,000"
   cleaned = cleaned.replace(/[N₦]\s*\d{1,3}(,\d{3}){0,3}/gi, "");
-  // "15K" "120K" "1.2M" patterns (standalone, not part of model numbers)
+  // "NGN 105000" patterns
+  cleaned = cleaned.replace(/\bNGN\s*\d+/gi, "");
+  // "15K" "120K" "1.2M" patterns - strip if >= 5
   cleaned = cleaned.replace(/\b(\d{1,4}(\.\d)?)\s*[Kk]\b/g, (match, num) => {
     const val = parseFloat(num);
-    // Only strip if it looks like a price (>= 5K)
     return val >= 5 ? "" : match;
   });
+  // Standalone large numbers without commas (e.g. "105000", "2600000")
+  cleaned = cleaned.replace(/\b\d{5,}\b/g, "");
 
-  // 3. Strip redundant "FRAME" / "FRAMES" when item_type is frames
-  if (itemType === "frames") {
-    cleaned = cleaned.replace(/\bFRAMES?\b/gi, "");
+  // 3. Normalize whitespace early so dedup works
+  cleaned = cleaned.replace(/\s{2,}/g, " ").trim();
+
+  // 4. Strip redundant "FRAME" / "FRAMES" when item_type is frames or when it appears as noise
+  if (itemType === "frames" || /\bframes?\b/i.test(cleaned)) {
+    // Only strip if there's other meaningful content besides "frame(s)"
+    const withoutFrames = cleaned.replace(/\bFRAMES?\b/gi, "").replace(/\s{2,}/g, " ").trim();
+    if (withoutFrames.length >= 2) {
+      cleaned = withoutFrames;
+    }
   }
 
-  // 4. Extract brand before further processing
+  // 5. Deduplicate repeated substrings
+  cleaned = deduplicateName(cleaned);
+
+  // 5. Extract brand
   const brand = extractBrand(cleaned);
 
-  // 5. Clean up extra whitespace
+  // 6. Clean up extra whitespace
   cleaned = cleaned.replace(/\s{2,}/g, " ").trim();
-  // Remove leading/trailing dashes, colons, commas
-  cleaned = cleaned.replace(/^[\s\-:,]+|[\s\-:,]+$/g, "").trim();
+  // Remove leading/trailing dashes, colons, commas, parens
+  cleaned = cleaned.replace(/^[\s\-:,()]+|[\s\-:,()]+$/g, "").trim();
 
-  // 6. Title Case - but preserve model codes (uppercase sequences with numbers)
+  // 7. Title Case - but preserve model codes
   cleaned = cleaned
     .split(" ")
     .map((word) => {
-      // If it looks like a model code (has digits mixed with letters, or all caps short), keep as-is
       if (/\d/.test(word) || (word.length <= 4 && word === word.toUpperCase())) {
         return word;
       }
-      // Title case
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     })
     .join(" ");
 
-  // 7. Final cleanup
+  // 8. Final cleanup
   cleaned = cleaned.replace(/\s{2,}/g, " ").trim();
 
-  // If cleaned name is empty or too short, keep a sanitized version of original
-  if (cleaned.length < 3) {
-    cleaned = name.replace(/^[^:]*:\s*/, "").trim();
+  // 9. If cleaned name is empty, too short, or only generic words, fall back
+  const cleanedWords = cleaned.split(/\s+/).filter(w => w.length > 0);
+  const allGeneric = cleanedWords.every(w => GENERIC_WORDS.has(w.toLowerCase()));
+  if (cleaned.length < 3 || allGeneric) {
+    // Try to salvage from original minus prefix
+    let fallback = name.replace(/^[^:]*:\s*/, "").trim();
+    // Also strip prices from fallback
+    fallback = fallback.replace(/\b\d{1,3}(,\d{3}){1,3}\b/g, "").trim();
+    fallback = fallback.replace(/\b(\d{1,4}(\.\d)?)\s*[Kk]\b/g, (match, num) => {
+      return parseFloat(num) >= 5 ? "" : match;
+    }).trim();
+    if (fallback.length >= 3) {
+      cleaned = fallback;
+    }
   }
 
   return { cleaned, brand };
@@ -194,7 +324,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const body = await req.json();
-    const { action = "preview", brand_line = "all", limit = 50, offset = 0, push_to_zoho = false } = body;
+    const { action = "preview", brand_line = "all", limit = 50, offset = 0, push_to_zoho = false, max_records = 500 } = body;
 
     // Build query for products that need cleanup
     let query = supabase
@@ -206,20 +336,17 @@ Deno.serve(async (req) => {
       query = query.eq("brand_line", brand_line);
     }
 
-    // Filter for products that likely need cleanup
-    // Has category prefix OR embedded price OR no brand
     query = query.or(
       "name.ilike.Frame :%,name.ilike.ACCESSORIES :%,name.ilike.Contact Lens :%,name.ilike.Drugs :%,name.ilike.Contact Lens Solution:%,brand.is.null,brand.eq.[NEEDS_RESEARCH]"
     );
 
     if (action === "preview") {
-      const { data: products, error, count } = await query
+      const { data: products, error } = await query
         .range(offset, offset + limit - 1)
         .order("name");
 
       if (error) throw error;
 
-      // Get total count
       let countQuery = supabase
         .from("products")
         .select("id", { count: "exact", head: true })
@@ -254,8 +381,8 @@ Deno.serve(async (req) => {
     }
 
     if (action === "execute") {
-      // Process ALL matching products in batches
       const BATCH_SIZE = 100;
+      const MAX_RECORDS = Math.min(max_records, 2000); // Cap at 2000 per call
       let totalUpdated = 0;
       let totalFailed = 0;
       let totalProcessed = 0;
@@ -295,11 +422,9 @@ Deno.serve(async (req) => {
 
             const updateData: Record<string, unknown> = {
               name: cleaned,
-              // Store original name for audit trail (only if not already stored)
               description_raw: product.description_raw || product.name,
             };
 
-            // Only set brand if we extracted one and current is null/NEEDS_RESEARCH
             if (brand && (!product.brand || product.brand === "[NEEDS_RESEARCH]")) {
               updateData.brand = brand;
             }
@@ -321,9 +446,13 @@ Deno.serve(async (req) => {
             errors.push({ id: product.id, error: e.message });
           }
           totalProcessed++;
+          if (totalProcessed >= MAX_RECORDS) {
+            hasMore = false;
+            break;
+          }
         }
 
-        if (batch.length < BATCH_SIZE) {
+        if (!hasMore || batch.length < BATCH_SIZE) {
           hasMore = false;
         } else {
           currentOffset += BATCH_SIZE;
@@ -334,19 +463,13 @@ Deno.serve(async (req) => {
       let zohoResult = null;
       if (push_to_zoho && updatedProductIds.length > 0) {
         try {
-          const zohoProductIds = [];
-          // Only push products that have zoho_item_id
           const { data: zohoProducts } = await supabase
             .from("products")
             .select("id")
-            .in("id", updatedProductIds)
+            .in("id", updatedProductIds.slice(0, 500))
             .not("zoho_item_id", "is", null);
 
           if (zohoProducts && zohoProducts.length > 0) {
-            zohoProductIds.push(...zohoProducts.map((p) => p.id));
-          }
-
-          if (zohoProductIds.length > 0) {
             const zohoResp = await fetch(
               `${supabaseUrl}/functions/v1/zoho-sync`,
               {
@@ -357,7 +480,7 @@ Deno.serve(async (req) => {
                 },
                 body: JSON.stringify({
                   action: "push_updates",
-                  product_ids: zohoProductIds,
+                  product_ids: zohoProducts.map((p) => p.id),
                 }),
               }
             );
