@@ -115,7 +115,7 @@ export const QuickDiscovery = () => {
               {products.map((product) => (
                 <Link
                   key={product.id}
-                  to={`/eyewear/${product.id}`}
+                  to={`/product/${product.id}`}
                   className="flex-shrink-0 w-32 snap-start group"
                 >
                   <div className="relative w-32 h-32 rounded-xl bg-white border border-border overflow-hidden transition-all duration-300 group-hover:border-mh-gold group-hover:shadow-lg group-hover:shadow-mh-gold/10">
