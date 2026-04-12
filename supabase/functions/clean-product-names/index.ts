@@ -382,6 +382,7 @@ Deno.serve(async (req) => {
 
     if (action === "execute") {
       const BATCH_SIZE = 100;
+      const MAX_RECORDS = Math.min(max_records, 2000); // Cap at 2000 per call
       let totalUpdated = 0;
       let totalFailed = 0;
       let totalProcessed = 0;
