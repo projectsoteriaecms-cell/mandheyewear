@@ -8,6 +8,7 @@ import {
   CloudArrowDown,
   Sparkle,
   Database,
+  TextAa,
 } from "@phosphor-icons/react";
 import { BulkPackagingFixButton } from "@/modules/products/components/BulkPackagingFixButton";
 
@@ -26,6 +27,7 @@ interface ProductsToolbarProps {
   onOpenECMSImport: () => void;
   onOpenCreateDialog: () => void;
   onOpenDataCleanup?: () => void;
+  onOpenNameCleanup?: () => void;
 }
 
 export const ProductsToolbar = ({
@@ -43,6 +45,7 @@ export const ProductsToolbar = ({
   onOpenECMSImport,
   onOpenCreateDialog,
   onOpenDataCleanup,
+  onOpenNameCleanup,
 }: ProductsToolbarProps) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -108,6 +111,12 @@ export const ProductsToolbar = ({
           <Button variant="outline" onClick={onOpenDataCleanup}>
             <Database className="mr-2 h-4 w-4" weight="light" />
             Data Update
+          </Button>
+        )}
+        {isAdmin && onOpenNameCleanup && (
+          <Button variant="outline" onClick={onOpenNameCleanup}>
+            <TextAa className="mr-2 h-4 w-4" weight="light" />
+            Clean Names
           </Button>
         )}
         <Button onClick={onOpenCreateDialog}>
