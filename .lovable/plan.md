@@ -1,76 +1,38 @@
 
 
-## Product Nomenclature Cleanup for All Remaining Products
+## Fix Cleanup Logic + Execute Preview + Generate Reference Sheet
 
-### The Problem
+### Issues Found in Preview
 
-The screenshot shows a product named "Frame : CARTIER 2,600,000 FRAME BC6K01AH CT0344O 003 Rimless" — this is ugly and confusing for customers. After analyzing the database:
+The current regex cleanup has gaps:
+1. Names like `"15K Frame"` become just `"15K Frame"` instead of being emptied (edge case where entire name is a price+generic word)
+2. Duplicate text patterns like `"15K Kids Frames 15K Kids Frames"` produce `"Kids Kids"`
+3. Brand extraction is too conservative — only 5-10% of products get a brand match
 
-- **10,659 soteria_medical products** still have messy names
-- **5,595** have prices embedded in the name (e.g., "120K", "15K", "2,600,000")
-- **352** have category prefixes like "Frame :", "Drugs :", "ACCESSORIES :"
-- **10,302** have no brand extracted (null or `[NEEDS_RESEARCH]`)
-- Remaining ~212 M&H products not in the Excel also have the same issues
+### Plan
 
-### What Will Be Built
+#### 1. Fix the `clean-product-names` edge function
+- Improve price stripping: handle `15K` at start of name followed by generic words
+- Add deduplication logic: detect repeated substrings and collapse them
+- Expand brand matching: add more brands common in the Soteria catalog (Alex Barkey, John Richmond, etc.) and improve fuzzy matching
+- Handle edge case where cleaned name becomes empty or just "Frame" — fall back to SKU or original
 
-#### 1. Name Cleanup Edge Function (`clean-product-names`)
+#### 2. Execute the cleanup (DB only, no Zoho push)
+- Run with `action: "execute"`, `push_to_zoho: false`
+- This updates `name`, `brand`, and saves originals to `description_raw`
 
-A server-side function that applies systematic regex-based transformations to all product names:
-
-**Rules derived from the cleaned Excel data pattern:**
-- Strip category prefixes: `Frame :`, `ACCESSORIES :`, `Contact Lens :`, `Drugs :`, `Contact Lens Solution :`
-- Strip embedded prices: remove patterns like `15K`, `120K`, `2,600,000`, `N105,000` from names
-- Strip redundant words: remove "FRAME" when `item_type` is already `frames`
-- Clean up extra whitespace and normalize casing to Title Case
-- Extract brand name from the cleaned name (first word/known brand match)
-- Store original name in `description_raw` for audit trail
-
-**Example transformations:**
-```text
-"Frame : CARTIER 2,600,000 FRAME BC6K01AH CT0344O 003 Rimless"
-  → "Cartier BC6K01AH CT0344O 003 Rimless"
-
-"Frame :  15K FRAME CA1202 57 17-145 C3"
-  → "CA1202 57-17-145 C3"
-
-"ACCESSORIES :  10K BEIAGE MARBLE ROPE"
-  → "Beige Marble Rope"
-
-"Emporio Armani 120K Ea 3038 5063"
-  → "Emporio Armani EA 3038 5063"
-```
-
-#### 2. Brand Extraction
-
-Using a known-brands list (Cartier, Gucci, Ray-Ban, Oakley, Vogue, Polaroid, Emporio Armani, Prada, etc.), automatically populate the `brand` column from the cleaned name.
-
-#### 3. Admin UI: Cleanup Preview + Confirm
-
-Add a "Clean Names" action in the admin Products toolbar that:
-- Shows a before/after preview table of affected products
-- Lets admin filter by brand_line (soteria_medical, m_and_h_fashion, or all)
-- Confirm button triggers the edge function
-- Option to push cleaned names to Zoho after
-
-#### 4. Zoho Sync for Cleaned Names
-
-After DB cleanup, trigger the existing `push_updates` action on the zoho-sync function to update product names in Zoho Books for all products that have a `zoho_item_id`.
-
-### Files to Create
-- `supabase/functions/clean-product-names/index.ts` — regex-based name cleanup + brand extraction
-- `src/modules/products/components/NameCleanupDialog.tsx` — preview + confirm UI
+#### 3. Generate Before/After Reference Sheet
+- Query the database for all products where `description_raw IS NOT NULL` (meaning they were cleaned)
+- Create an Excel file with columns: SKU, Original Name, New Name, Brand, Price, Item Type
+- Sort by brand line, then brand, then name
+- Save to `/mnt/documents/` for download
+- This sheet can be shared with Zoho/inventory staff so they know the new naming convention
 
 ### Files to Modify
-- `src/pages/admin/products/ProductsToolbar.tsx` — add "Clean Names" button
-- `src/pages/admin/Products.tsx` — wire up the dialog
+- `supabase/functions/clean-product-names/index.ts` — fix regex gaps, expand brand list, add dedup logic
 
-### Database Changes
-- None — uses existing `name`, `brand`, `description_raw` columns
+### Files to Create
+- None (reference sheet generated via script)
 
-### Processing Approach
-- Process in batches of 100 server-side
-- Preserve `image_url`, `additional_images`, `price`, `sku` — only touch `name`, `brand`, `description_raw`
-- Log results to `import_history` with `import_type = 'name_cleanup'`
-- Fire-and-forget Zoho push after completion
+### No Zoho push in this step — that comes after you review the reference sheet.
 
