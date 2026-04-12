@@ -1,90 +1,68 @@
 
 
-## Personalized Customer Experience: Simplified Quiz + Behavioral Tracking + Email Marketing
+## Bulk Product Data Update + Zoho Sync for M&H Cleaned Data
 
-### What You're Describing
+### What You Need
 
-You want a Jumia/TEMU-style experience where:
-1. The style quiz is shorter and fully optional (no budget gate)
-2. The system silently tracks what products users browse, search, and interact with
-3. That behavioral data drives personalized "recommended for you" sections
-4. Users who sign up get email campaigns based on their browsing interests
-5. The more they browse, the smarter the recommendations get
+You've cleaned up the M&H product nomenclature and want to:
+1. Upload the corrected data from `InventoryReport_15.xls` to replace flawed product records
+2. Insert any new products that don't already exist
+3. Push all corrections to Zoho Books automatically
+
+### Current State
+
+- 837 M&H Fashion products in the database, most with `[NEEDS_RESEARCH]` brand tags and messy names like `"ACCESSORIES :  10K BEIAGE MARBLE ROPE"`
+- Products are matched by `external_id` (the ProductId from ECMS)
+- Most M&H products lack `zoho_item_id` (not yet linked to Zoho), while ~10,156 Zoho-synced products exist elsewhere
+- Existing ECMS import system handles new product insertion but not bulk updates of existing products
+- Zoho sync edge function exists for pulling items in but lacks an outbound "push updates" action
 
 ### What Will Be Built
 
-#### 1. Simplified Style Quiz (Both Onboarding + Standalone)
+#### 1. Bulk Product Update Edge Function
 
-**Current**: 3 steps in onboarding (Gender → Frame Shape → Budget), 7 steps on standalone page.
+Create a new edge function `bulk-product-update` that:
+- Accepts a JSON payload of product rows (parsed client-side from the Excel file)
+- Matches existing products by `external_id` first, then by SKU as fallback
+- For matched products: **updates all fields** (name, price, brand, item_type, description, etc.) preserving only `image_url` and `additional_images` (since those were manually curated)
+- For unmatched products: inserts them as new with `brand_line = 'm_and_h_fashion'`
+- Returns a summary of updated/inserted/failed counts
 
-**New**: Reduce to a single-page "quick pick" format:
-- Show Gender + Frame Shape on one screen (no separate steps)
-- Remove Budget as a required step entirely — make it an optional toggle
-- All fields optional — user can skip any/all and still proceed
-- Remove the step-by-step wizard feel; make it feel like a casual "tell us what you like" card
-- Standalone `/style-quiz` page: reduce from 7 steps to 3 max (Gender + Frame Shape → Face Shape + Material → Results)
+#### 2. Zoho Outbound Push
 
-#### 2. Behavioral Tracking System (Browsing History)
+Add a new action `push_updates` to the existing `zoho-sync` edge function that:
+- Takes a list of product IDs
+- For products WITH `zoho_item_id`: calls Zoho Books API `PUT /items/{item_id}` to update name, SKU, rate, description
+- For products WITHOUT `zoho_item_id`: calls Zoho Books API `POST /items` to create them, then saves the returned `zoho_item_id` back to the database
+- Processes in batches of 25 (Zoho rate limits)
+- Logs results to `zoho_sync_log`
 
-**New database table**: `user_activity` to track product views, searches, category visits, and cart actions.
+#### 3. Admin UI: Data Cleanup Upload Page
 
-| Column | Type | Description |
-|--------|------|-------------|
-| user_id | uuid | Authenticated user |
-| activity_type | text | `product_view`, `category_view`, `search`, `add_to_cart`, `wishlist_add` |
-| product_id | uuid (nullable) | Which product was viewed |
-| category | text (nullable) | Category browsed |
-| search_query | text (nullable) | What they searched |
-| metadata | jsonb | Extra context (time spent, referrer, etc.) |
-| created_at | timestamptz | When it happened |
-
-**Tracking hooks**: A `useTrackActivity` hook that silently logs events from:
-- `ProductDetail.tsx` — log `product_view` when a product page loads
-- Category/shop page — log `category_view` when filtering
-- Search — log `search` queries
-- Cart — log `add_to_cart` events
-
-#### 3. "Recently Viewed" + "You Might Like" Sections
-
-- Add a "Recently Viewed" carousel to the homepage and shop page using the `user_activity` table
-- Add a "Based on Your Browsing" section that recommends products similar to what they've viewed (same brand, style, material, price range)
-- These work even without the quiz — purely behavioral
-
-#### 4. Email Marketing Data Collection
-
-- On signup, the user's email is already stored in profiles — ensure it also goes into `newsletter_subscribers` automatically (opt-in by default with unsubscribe option)
-- Create an edge function `send-marketing-email` that can be triggered to send personalized product recommendations based on browsing history
-- Build a "browsing digest" email template: "You recently looked at these frames — here are similar picks"
-- Operations team can trigger campaigns or they can be scheduled
-
-#### 5. Recommendation Engine Enhancement
-
-- Update `usePersonalizedProducts` to factor in browsing history (products viewed = higher weight for similar products)
-- Products in the same style/brand/price range as frequently viewed items get boosted
-- No limit on recommendations — show all scored products, sorted by relevance
-
-### Database Changes
-1. Create `user_activity` table with RLS (users can insert own, admins can read all)
-2. Auto-insert into `newsletter_subscribers` on signup (update the `handle_new_user` trigger)
-3. Enable realtime on `user_activity` for admin analytics dashboard (optional)
+Add a "Data Update" option to the existing Products toolbar that:
+- Opens a dialog to upload the cleaned Excel file
+- Parses it client-side (same ExcelJS approach as ECMS import)
+- Shows a preview: "X products will be updated, Y new products will be inserted"
+- Highlights the specific fields that will change (old value → new value)
+- On confirm: calls the `bulk-product-update` edge function
+- After DB update succeeds: optionally triggers Zoho push for all affected products
 
 ### Files to Create
-- `src/shared/hooks/useTrackActivity.ts` — silent activity tracker hook
-- `src/components/shop/RecentlyViewed.tsx` — recently viewed carousel
-- `src/components/shop/BrowsingRecommendations.tsx` — "you might like" section
-- `supabase/functions/send-marketing-email/index.ts` — personalized email campaigns
+- `supabase/functions/bulk-product-update/index.ts` — handles bulk upsert logic with external_id matching
+- `src/modules/products/components/DataCleanupDialog.tsx` — upload + preview + confirm UI
 
 ### Files to Modify
-- `src/components/onboarding/StyleQuizStep.tsx` — collapse to single-screen, all optional
-- `src/pages/StyleQuiz.tsx` — reduce to 3 steps max, remove mandatory fields
-- `src/pages/ProductDetail.tsx` — add activity tracking on view
-- `src/pages/Eyewear.tsx` — add Recently Viewed + Browsing Recommendations sections
-- `src/modules/personalization/hooks/usePersonalizedProducts.ts` — incorporate browsing data into scoring
-- `src/pages/Index.tsx` — add Recently Viewed section for logged-in users
+- `supabase/functions/zoho-sync/index.ts` — add `push_updates` action to push corrected data outbound to Zoho
+- `src/pages/admin/products/ProductsToolbar.tsx` (or equivalent toolbar component) — add "Update Product Data" button
+- `src/modules/integrations/hooks/useZohoSync.ts` — add `pushUpdates` method
 
-### Technical Notes
-- Activity tracking is fire-and-forget (non-blocking inserts)
-- Email marketing uses existing Resend integration via `notify.mandheyewear.com`
-- Newsletter auto-subscribe respects existing `newsletter_subscribers` table
-- All browsing data is tied to authenticated users only (anonymous browsing not tracked)
+### Database Migration
+- None needed — existing `products` table schema already supports all fields
+
+### Technical Details
+- Excel parsing uses ExcelJS (already in the project)
+- Matching priority: `external_id` → `sku` → skip
+- Protected fields during update: `image_url`, `additional_images`, `zoho_item_id` (preserved unless the Zoho push creates a new link)
+- Zoho push uses the existing OAuth token refresh flow
+- Batch size: 50 products per DB upsert call, 25 per Zoho API call
 
