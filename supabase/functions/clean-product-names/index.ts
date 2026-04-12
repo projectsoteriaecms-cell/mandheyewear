@@ -260,10 +260,13 @@ function cleanProductName(name: string, itemType: string | null): { cleaned: str
   // 3. Normalize whitespace early so dedup works
   cleaned = cleaned.replace(/\s{2,}/g, " ").trim();
 
-  // 4. Strip redundant "FRAME" / "FRAMES" when item_type is frames
-  if (itemType === "frames") {
-    cleaned = cleaned.replace(/\bFRAMES?\b/gi, "");
-    cleaned = cleaned.replace(/\s{2,}/g, " ").trim();
+  // 4. Strip redundant "FRAME" / "FRAMES" when item_type is frames or when it appears as noise
+  if (itemType === "frames" || /\bframes?\b/i.test(cleaned)) {
+    // Only strip if there's other meaningful content besides "frame(s)"
+    const withoutFrames = cleaned.replace(/\bFRAMES?\b/gi, "").replace(/\s{2,}/g, " ").trim();
+    if (withoutFrames.length >= 2) {
+      cleaned = withoutFrames;
+    }
   }
 
   // 5. Deduplicate repeated substrings
