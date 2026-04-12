@@ -101,7 +101,7 @@ export const HeroSection = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setBeatIndex((prev) => (prev + 1) % HERO_BEATS.length);
-    }, 5000);
+    }, 2500);
     return () => clearInterval(interval);
   }, []);
 
