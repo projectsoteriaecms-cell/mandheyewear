@@ -500,7 +500,7 @@ All colors MUST be HSL.
 
   /* Marquee ticker animation */
   .marquee-track {
-    animation: marquee-scroll 25s linear infinite;
+    animation: marquee-scroll 15s linear infinite;
   }
   .marquee-track:hover {
     animation-play-state: paused;
@@ -508,7 +508,7 @@ All colors MUST be HSL.
 
   /* Marquee reverse direction */
   .marquee-reverse {
-    animation: marquee-scroll-reverse 35s linear infinite;
+    animation: marquee-scroll-reverse 22s linear infinite;
   }
   .marquee-reverse:hover {
     animation-play-state: paused;
@@ -516,7 +516,7 @@ All colors MUST be HSL.
 
   /* Marquee third row — fastest, subliminal */
   .marquee-ghost {
-    animation: marquee-scroll 18s linear infinite;
+    animation: marquee-scroll 12s linear infinite;
   }
   .marquee-ghost:hover {
     animation-play-state: paused;
@@ -760,11 +760,11 @@ All colors MUST be HSL.
 }
 
 .ticker-track {
-  animation: ticker 45s linear infinite;
+  animation: ticker 25s linear infinite;
 }
 
 .product-ticker {
-  animation: ticker 60s linear infinite;
+  animation: ticker 35s linear infinite;
 }
 .product-ticker:hover {
   animation-play-state: paused;
