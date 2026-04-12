@@ -446,9 +446,13 @@ Deno.serve(async (req) => {
             errors.push({ id: product.id, error: e.message });
           }
           totalProcessed++;
+          if (totalProcessed >= MAX_RECORDS) {
+            hasMore = false;
+            break;
+          }
         }
 
-        if (batch.length < BATCH_SIZE) {
+        if (!hasMore || batch.length < BATCH_SIZE) {
           hasMore = false;
         } else {
           currentOffset += BATCH_SIZE;
