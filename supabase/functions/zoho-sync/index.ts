@@ -1166,6 +1166,142 @@ serve(async (req) => {
     }
   }
 
+  // ── Push product updates to Zoho Books ──
+  if (action === "push_updates") {
+    const { product_ids } = body as { product_ids: string[] };
+    if (!Array.isArray(product_ids) || product_ids.length === 0) {
+      return new Response(JSON.stringify({ error: "product_ids array required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: syncLog } = await supabase
+      .from("zoho_sync_log")
+      .insert({ sync_type: "push_updates", direction: "outbound", status: "pending", performed_by: userId })
+      .select()
+      .single();
+    const syncId = syncLog?.id;
+
+    try {
+      const accessToken = await getAccessToken();
+
+      // Load products in batches
+      let pushed = 0;
+      let created = 0;
+      let pushFailed = 0;
+      const pushErrors: { id: string; error: string }[] = [];
+      const PUSH_BATCH = 25;
+
+      for (let i = 0; i < product_ids.length; i += PUSH_BATCH) {
+        const batchIds = product_ids.slice(i, i + PUSH_BATCH);
+        const { data: batchProducts } = await supabase
+          .from("products")
+          .select("id, name, sku, price, description, zoho_item_id")
+          .in("id", batchIds);
+
+        if (!batchProducts) continue;
+
+        for (const product of batchProducts) {
+          try {
+            const zohoPayload = {
+              name: product.name,
+              sku: product.sku,
+              rate: product.price,
+              description: product.description || "",
+            };
+
+            if (product.zoho_item_id) {
+              // Update existing Zoho item
+              const res = await fetch(
+                `${ZOHO_BOOKS_API}/items/${product.zoho_item_id}?organization_id=${orgId}`,
+                {
+                  method: "PUT",
+                  headers: {
+                    Authorization: `Zoho-oauthtoken ${accessToken}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(zohoPayload),
+                },
+              );
+              const data = await res.json();
+              if (data.code !== 0) {
+                pushErrors.push({ id: product.id, error: data.message || "Zoho API error" });
+                pushFailed++;
+              } else {
+                pushed++;
+              }
+            } else {
+              // Create new Zoho item
+              const res = await fetch(
+                `${ZOHO_BOOKS_API}/items?organization_id=${orgId}`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Zoho-oauthtoken ${accessToken}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(zohoPayload),
+                },
+              );
+              const data = await res.json();
+              if (data.code !== 0) {
+                pushErrors.push({ id: product.id, error: data.message || "Zoho API error" });
+                pushFailed++;
+              } else {
+                // Save zoho_item_id back
+                const newZohoId = data.item?.item_id;
+                if (newZohoId) {
+                  await supabase
+                    .from("products")
+                    .update({ zoho_item_id: String(newZohoId) })
+                    .eq("id", product.id);
+                }
+                created++;
+              }
+            }
+
+            // Rate limit: small delay between Zoho calls
+            await new Promise((r) => setTimeout(r, 200));
+          } catch (err) {
+            pushErrors.push({ id: product.id, error: err instanceof Error ? err.message : "Unknown" });
+            pushFailed++;
+          }
+        }
+      }
+
+      if (syncId) {
+        await supabase
+          .from("zoho_sync_log")
+          .update({
+            status: pushFailed > 0 && pushed + created === 0 ? "error" : "success",
+            records_processed: pushed + created,
+            records_failed: pushFailed,
+            metadata: { pushed, created, errors: pushErrors.slice(0, 20) },
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", syncId);
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, action, pushed, created, failed: pushFailed, errors: pushErrors.slice(0, 10) }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      if (syncId) {
+        await supabase
+          .from("zoho_sync_log")
+          .update({ status: "error", error_details: { message }, completed_at: new Date().toISOString() })
+          .eq("id", syncId);
+      }
+      return new Response(JSON.stringify({ error: message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  }
+
   return new Response(JSON.stringify({ error: `Unknown action: ${action}` }), {
     status: 400,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
