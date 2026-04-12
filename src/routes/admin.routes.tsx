@@ -2,8 +2,23 @@ import { lazy, Suspense } from "react";
 import { Route } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
+// Retry wrapper for lazy imports to handle stale chunk errors after deployments
+function lazyRetry(importFn: () => Promise<any>) {
+  return lazy(() =>
+    importFn().catch(() => {
+      // Force reload on stale chunk errors (only once per session)
+      const key = "chunk-retry";
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+      }
+      return importFn();
+    })
+  );
+}
+
 // Lazy load admin pages
-const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
+const AdminDashboard = lazyRetry(() => import("@/pages/admin/Dashboard"));
 const Inventory = lazy(() => import("@/pages/admin/Inventory"));
 const PurchaseOrders = lazy(() => import("@/pages/admin/PurchaseOrders"));
 const StockTransfers = lazy(() => import("@/pages/admin/StockTransfers"));
