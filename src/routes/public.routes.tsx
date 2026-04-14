@@ -5,12 +5,12 @@ import { CircleNotch } from "@phosphor-icons/react";
 // Lazy load public pages
 const Index = lazy(() => import("@/pages/Index"));
 const Booking = lazy(() => import("@/pages/Booking"));
-const Eyewear = lazy(() => import("@/pages/Eyewear"));
+const Shop = lazy(() => import("@/pages/Shop"));
 const Branches = lazy(() => import("@/pages/Branches"));
 const About = lazy(() => import("@/pages/About"));
 const Partners = lazy(() => import("@/pages/Partners"));
 const Contact = lazy(() => import("@/pages/Contact"));
-const EyeCare = lazy(() => import("@/pages/EyeCare"));
+const ShopRedirect = lazy(() => import("@/pages/ShopRedirect"));
 const FAQ = lazy(() => import("@/pages/FAQ"));
 const TryOn = lazy(() => import("@/pages/TryOn"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
@@ -43,8 +43,9 @@ const withSuspense = (Component: React.LazyExoticComponent<React.ComponentType<u
 export const publicRoutes = [
   <Route key="/" path="/" element={withSuspense(Index)} />,
   <Route key="/booking" path="/booking" element={withSuspense(Booking)} />,
-  <Route key="/eyewear" path="/eyewear" element={withSuspense(Eyewear)} />,
-  <Route key="/eye-care" path="/eye-care" element={withSuspense(EyeCare)} />,
+  <Route key="/shop" path="/shop" element={withSuspense(Shop)} />,
+  <Route key="/eyewear" path="/eyewear" element={withSuspense(ShopRedirect)} />,
+  <Route key="/eye-care" path="/eye-care" element={withSuspense(ShopRedirect)} />,
   <Route key="/branches" path="/branches" element={withSuspense(Branches)} />,
   <Route key="/about" path="/about" element={withSuspense(About)} />,
   <Route key="/partners" path="/partners" element={withSuspense(Partners)} />,
