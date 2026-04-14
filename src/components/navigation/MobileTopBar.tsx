@@ -29,17 +29,17 @@ const menuItems = [{
   description: "See frames on your face"
 }, {
   name: "Eyeglasses",
-  path: "/eyewear?category=eyeglasses",
+  path: "/shop?category=eyeglasses",
   icon: Eyeglasses,
   description: "Prescription frames"
 }, {
   name: "Sunglasses",
-  path: "/eyewear?category=sunglasses",
+  path: "/shop?category=sunglasses",
   icon: SunDim,
   description: "UV protection & style"
 }, {
   name: "Accessories",
-  path: "/eyewear?category=accessories",
+  path: "/shop?category=accessories",
   icon: Watch,
   description: "Cases, cleaners & more"
 }, {
