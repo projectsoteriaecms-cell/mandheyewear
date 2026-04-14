@@ -160,7 +160,7 @@ const ProductDetail = () => {
             <Button variant="ghost" size="sm" asChild className="touch-target -ml-2">
               <Link to="/shop">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Back to Eyewear</span>
+                <span className="hidden sm:inline">Back to Shop</span>
                 <span className="sm:hidden">Back</span>
               </Link>
             </Button>
