@@ -41,7 +41,7 @@ const Index = () => {
       }} />
       
       {/* Spacer for fixed navigation */}
-      <div className="h-16 lg:h-[104px]" />
+      <div className="h-28 lg:h-[160px]" />
 
       <HeroSection />
       <MarqueeTicker />
