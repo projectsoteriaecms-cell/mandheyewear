@@ -87,7 +87,7 @@ export const CartDrawer = () => {
                 Discover our premium eyewear collection and find your perfect frames
               </p>
               <Button variant="hero" asChild>
-                <Link to="/eyewear">Shop Eyewear</Link>
+                <Link to="/shop">Shop Eyewear</Link>
               </Button>
             </div>
           ) : (
@@ -190,7 +190,7 @@ export const CartDrawer = () => {
               <Link to="/checkout">Proceed to Checkout</Link>
             </Button>
             <Button variant="outline" className="w-full" asChild>
-              <Link to="/eyewear">Continue Shopping</Link>
+              <Link to="/shop">Continue Shopping</Link>
             </Button>
           </div>
         )}

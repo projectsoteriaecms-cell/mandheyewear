@@ -56,7 +56,7 @@ export const WishlistSection = () => {
               Your wishlist is empty
             </p>
             <Button variant="hero" asChild>
-              <Link to="/eyewear">Browse Eyewear</Link>
+              <Link to="/shop">Browse Eyewear</Link>
             </Button>
           </div>
         ) : (

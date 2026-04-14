@@ -16,10 +16,10 @@ import mhLogoGold from "@/assets/mh-logo-gold.png";
 const navLinks = [
   { name: "Style Quiz", path: "/style-quiz", highlight: true, description: "Find your perfect frames", icon: Sparkle },
   { name: "Virtual Try-On", path: "/try-on", highlight: true, description: "See frames on your face", icon: Camera },
-  { name: "Eyeglasses", path: "/eyewear?category=eyeglasses", description: "Prescription frames" },
-  { name: "Sunglasses", path: "/eyewear?category=sunglasses", description: "UV protection & style" },
+  { name: "Eyeglasses", path: "/shop?category=eyeglasses", description: "Prescription frames" },
+  { name: "Sunglasses", path: "/shop?category=sunglasses", description: "UV protection & style" },
   { name: "Eye Exams", path: "/booking", description: "Book an appointment", icon: Calendar },
-  { name: "Accessories", path: "/eyewear?category=accessories", description: "Cases, cleaners & more" },
+  { name: "Accessories", path: "/shop?category=accessories", description: "Cases, cleaners & more" },
   { name: "Find a Store", path: "/branches", description: "Visit us in person", icon: MapPin },
 ];
 
