@@ -192,7 +192,7 @@ const Eyewear = () => {
                 {categoryFilter !== "all" ? (
                   <>
                     <BreadcrumbLink asChild>
-                      <Link to="/eyewear" className="flex items-center gap-1">Shop</Link>
+                      <Link to="/shop" className="flex items-center gap-1">Shop</Link>
                     </BreadcrumbLink>
                   </>
                 ) : (
