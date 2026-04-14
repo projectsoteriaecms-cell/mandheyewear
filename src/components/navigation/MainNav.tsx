@@ -84,27 +84,51 @@ export const MainNav = () => {
               );
             })}
 
-            {/* Category Links */}
-            {categoryLinks.map((link) => {
-              const isActive = location.pathname + location.search === link.path ||
-                (link.path.includes("?") && location.search.includes(link.path.split("?")[1]));
-              return (
-                <Link
-                  key={link.name}
-                  to={link.path}
+            {/* Shop Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
                   className={cn(
-                    "text-sm font-medium transition-smooth relative py-2",
+                    "text-sm font-medium transition-smooth relative py-2 flex items-center gap-1",
                     "text-foreground/70 hover:text-foreground",
-                    isActive && "text-foreground"
+                    location.pathname === "/shop" && "text-foreground"
                   )}
                 >
-                  {link.name}
-                  {isActive && (
+                  <Storefront weight="light" className="h-4 w-4" />
+                  Shop
+                  <CaretDown className="h-3 w-3" />
+                  {location.pathname === "/shop" && (
                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
                   )}
-                </Link>
-              );
-            })}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-44">
+                <DropdownMenuItem asChild>
+                  <Link to="/shop" className="cursor-pointer">All Products</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {shopCategories.map((cat) => (
+                  <DropdownMenuItem key={cat.name} asChild>
+                    <Link to={cat.path} className="cursor-pointer">{cat.name}</Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Eye Exams */}
+            <Link
+              to="/booking"
+              className={cn(
+                "text-sm font-medium transition-smooth relative py-2",
+                "text-foreground/70 hover:text-foreground",
+                location.pathname === "/booking" && "text-foreground"
+              )}
+            >
+              Eye Exams
+              {location.pathname === "/booking" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+              )}
+            </Link>
           </nav>
 
           {/* Icon Actions */}
