@@ -309,15 +309,13 @@ const Eyewear = () => {
                   {viewMode === "grid" ? (
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {paginatedProducts.map((product) => (
-                        <div key={product.id} onDoubleClick={() => handleQuickView(product.id)}>
-                          <ProductCard product={product} />
-                        </div>
+                        <ProductCard key={product.id} product={product} onQuickView={handleQuickView} />
                       ))}
                     </div>
                   ) : (
                     <div className="flex flex-col gap-4">
                       {paginatedProducts.map((product) => (
-                        <div key={product.id} onDoubleClick={() => handleQuickView(product.id)}>
+                        <div key={product.id} onClick={() => handleQuickView(product.id)}>
                           <ProductListCard product={product} />
                         </div>
                       ))}

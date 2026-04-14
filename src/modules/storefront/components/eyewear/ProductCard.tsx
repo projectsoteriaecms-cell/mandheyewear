@@ -1,7 +1,6 @@
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, ShoppingCart } from "lucide-react";
+import { Sparkles, ShoppingCart, Eye } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
@@ -16,8 +15,10 @@ import type { StockStatus } from "./StockBadge";
 import { getHeroImage } from "@/modules/products/lib/image-utils";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { InlineTryOnModal } from "@/components/try-on";
+
 interface ProductCardProps {
   product: Product;
+  onQuickView?: (productId: string) => void;
 }
 
 const getCategoryLabel = (product: Product): string => {
@@ -35,7 +36,7 @@ const getCategoryLabel = (product: Product): string => {
   return styleMap[product.style] || product.style.charAt(0).toUpperCase() + product.style.slice(1);
 };
 
-export const ProductCard = ({ product }: ProductCardProps) => {
+export const ProductCard = ({ product, onQuickView }: ProductCardProps) => {
   const imageUrl = getHeroImage(product) || "/placeholder.svg";
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -70,10 +71,28 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     triggerTryOn(product.id, e);
   };
 
+  const handleCardClick = () => {
+    if (onQuickView) {
+      onQuickView(product.id);
+    } else {
+      navigate(`/product/${product.id}`);
+    }
+  };
+
+  const handleQuickViewClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onQuickView) {
+      onQuickView(product.id);
+    } else {
+      navigate(`/product/${product.id}`);
+    }
+  };
+
   const isOutOfStock = stockStatus === "out_of_stock";
 
   return (
-    <Link to={`/product/${product.id}`} className="block touch-feedback">
+    <div className="block touch-feedback" onClick={handleCardClick} role="button" tabIndex={0}>
       <Card className="group overflow-hidden hover:shadow-gold transition-all cursor-pointer mobile-card">
         <div className="relative h-48 sm:h-64 overflow-hidden bg-secondary">
           <img
@@ -146,9 +165,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               variant="outline" 
               size="sm" 
               className="flex-1 text-xs sm:text-sm h-9 sm:h-10 touch-target"
+              onClick={handleQuickViewClick}
             >
-              <span className="sm:hidden">View</span>
-              <span className="hidden sm:inline">Details</span>
+              <Eye className="h-3.5 w-3.5 mr-1" />
+              <span className="sm:hidden">Preview</span>
+              <span className="hidden sm:inline">Quick View</span>
             </Button>
             {isOutOfStock ? (
               <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
@@ -176,6 +197,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           onOpenChange={setModalOpen}
         />
       )}
-    </Link>
+    </div>
   );
 };
