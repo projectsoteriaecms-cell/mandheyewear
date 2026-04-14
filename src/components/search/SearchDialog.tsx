@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { MagnifyingGlass, X, ArrowsDownUp, Clock, TrendingUp } from "@phosphor-icons/react";
+import { MagnifyingGlass, X, ArrowsDownUp, Clock, TrendUp } from "@phosphor-icons/react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
 import { cn } from "@/lib/utils";
@@ -243,7 +243,7 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
               )}
               <div>
                 <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground mb-2">
-                  <TrendingUp className="h-3.5 w-3.5" />
+                  <TrendUp className="h-3.5 w-3.5" />
                   Popular
                 </div>
                 <div className="flex flex-wrap gap-1.5">
