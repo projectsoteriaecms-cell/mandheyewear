@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Heart, User, SignOut, Gear, Sparkle, Camera, MagnifyingGlass, CaretDown } from "@phosphor-icons/react";
+import { Heart, User, SignOut, Gear, Sparkle, Camera } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { 
@@ -16,7 +15,6 @@ import { useUserRole } from "@/modules/auth/hooks/useUserRole";
 import { hasAdminAccess } from "@/shared/lib/permissions";
 import { useToast } from "@/shared/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { SearchDialog } from "@/components/search/SearchDialog";
 import mhLogo from "@/assets/mh-logo.png";
 import mhLogoGold from "@/assets/mh-logo-gold.png";
 
@@ -34,21 +32,12 @@ const categoryLinks = [
   { name: "Eye Exams", path: "/booking" },
 ];
 
-const searchCategories = [
-  { key: "all", label: "All" },
-  { key: "eyeglasses", label: "Eyeglasses" },
-  { key: "sunglasses", label: "Sunglasses" },
-  { key: "accessories", label: "Accessories" },
-];
-
 export const MainNav = () => {
   const location = useLocation();
-  const { user, loading, signOut, isAuthenticated } = useAuth();
+  const { loading, signOut, isAuthenticated } = useAuth();
   const { data: role } = useUserRole();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchCategory, setSearchCategory] = useState("all");
   
   const isStaff = hasAdminAccess(role ?? null);
 
@@ -71,54 +60,6 @@ export const MainNav = () => {
             <img src={mhLogo} alt="M&H Eyewear" className="h-20 w-auto dark:hidden" />
             <img src={mhLogoGold} alt="M&H Eyewear" className="h-20 w-auto hidden dark:block" />
           </Link>
-
-          {/* Inline Search Bar — Desktop only */}
-          <div className="hidden lg:flex items-center flex-1 max-w-xl mx-4">
-            <div
-              className="flex items-center w-full h-10 rounded-full border border-border bg-muted/50 hover:border-primary/40 transition-colors cursor-text"
-              onClick={() => setSearchOpen(true)}
-            >
-              {/* Category dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 px-3 h-full text-xs font-medium text-muted-foreground hover:text-foreground border-r border-border rounded-l-full bg-muted/80 whitespace-nowrap">
-                    {searchCategories.find((c) => c.key === searchCategory)?.label}
-                    <CaretDown className="h-3 w-3" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-36">
-                  {searchCategories.map((cat) => (
-                    <DropdownMenuItem
-                      key={cat.key}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSearchCategory(cat.key);
-                      }}
-                      className={cn(cat.key === searchCategory && "bg-accent")}
-                    >
-                      {cat.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Search text area */}
-              <div
-                className="flex-1 flex items-center px-3 h-full text-sm text-muted-foreground"
-                onClick={() => setSearchOpen(true)}
-              >
-                Search eyewear, brands, styles...
-              </div>
-
-              {/* Search icon button */}
-              <button
-                className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground mr-1 hover:bg-primary/90 transition-colors"
-                onClick={() => setSearchOpen(true)}
-              >
-                <MagnifyingGlass weight="bold" className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-5 flex-shrink-0">
@@ -169,16 +110,6 @@ export const MainNav = () => {
 
           {/* Icon Actions */}
           <div className="flex items-center gap-1 flex-shrink-0">
-            {/* Mobile search icon */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden text-foreground/70 hover:text-foreground hover:bg-muted" onClick={() => setSearchOpen(true)}>
-                  <MagnifyingGlass weight="light" className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent><p>Search</p></TooltipContent>
-            </Tooltip>
-
             {/* Wishlist */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -237,7 +168,6 @@ export const MainNav = () => {
           </div>
         </div>
       </div>
-      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   );
 };

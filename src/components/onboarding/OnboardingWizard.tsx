@@ -80,7 +80,7 @@ export const OnboardingWizard = () => {
       </div>
 
       {/* Step content */}
-      <div className="pt-20 pb-12 px-4">
+      <div className="pt-28 pb-12 px-4">
         <div className="max-w-2xl mx-auto">
           {currentStep === "welcome" && (
             <WelcomeStep onNext={goNext} userName={profile?.full_name} />

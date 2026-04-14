@@ -96,7 +96,7 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="pt-20 sm:pt-24 pb-24 lg:pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="pt-28 sm:pt-36 pb-24 lg:pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12">
               <Skeleton className="aspect-square rounded-lg" />
@@ -118,7 +118,7 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="pt-20 sm:pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="pt-28 sm:pt-36 pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto text-center py-12 sm:py-16">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-4">
               Product Not Found
@@ -153,7 +153,7 @@ const ProductDetail = () => {
       <Navigation />
       {productJsonLd && <JsonLd data={productJsonLd} />}
 
-      <div className="pt-20 sm:pt-24 pb-28 lg:pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-28 sm:pt-36 pb-28 lg:pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
           <div className="mb-4 sm:mb-8">
