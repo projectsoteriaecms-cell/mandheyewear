@@ -24,12 +24,11 @@ const highlightedLinks = [
   { name: "Virtual Try-On", path: "/try-on", icon: Camera },
 ];
 
-// Category links
-const categoryLinks = [
+// Shop category dropdown items
+const shopCategories = [
   { name: "Eyeglasses", path: "/shop?category=eyeglasses" },
   { name: "Sunglasses", path: "/shop?category=sunglasses" },
   { name: "Accessories", path: "/shop?category=accessories" },
-  { name: "Eye Exams", path: "/booking" },
 ];
 
 export const MainNav = () => {
