@@ -292,7 +292,7 @@ export const HeroSection = () => {
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 pt-1">
                 <Link
-                  to="/eyewear"
+                  to="/shop"
                   className={`group inline-flex items-center justify-center gap-3 px-5 sm:px-7 py-3.5 rounded-full bg-mh-gold text-ink font-display font-bold text-sm tracking-wide uppercase whitespace-nowrap hover:scale-105 hover:shadow-glow-accent transition-all duration-300 shadow-gold w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
                   style={{ transitionDelay: "1300ms" }}
                 >
@@ -369,7 +369,7 @@ export const HeroSection = () => {
                   </div>
                 )}
                 <Link
-                  to="/eyewear"
+                  to="/shop"
                   className="text-cream/90 font-display font-bold text-xs sm:text-sm hover:text-cream transition-colors flex items-center gap-1"
                 >
                   See All <ArrowRight weight="bold" className="w-3 h-3" />

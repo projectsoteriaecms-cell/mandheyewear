@@ -345,7 +345,7 @@ const Checkout = () => {
             </p>
             <div className="space-y-3">
               <Button variant="outline" className="w-full" asChild>
-                <Link to="/eyewear">Continue Browsing</Link>
+                <Link to="/shop">Continue Browsing</Link>
               </Button>
               <Button variant="ghost" className="w-full" asChild>
                 <Link to="/dashboard">View Dashboard</Link>
@@ -370,7 +370,7 @@ const Checkout = () => {
             Add some items to your cart before checking out.
           </p>
           <Button variant="hero" asChild>
-            <Link to="/eyewear">Shop Eyewear</Link>
+            <Link to="/shop">Shop Eyewear</Link>
           </Button>
         </div>
         <Footer />

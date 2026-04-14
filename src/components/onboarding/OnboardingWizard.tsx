@@ -46,7 +46,7 @@ export const OnboardingWizard = () => {
       title: "🎉 Profile Complete!",
       description: "Your personalized recommendations are ready.",
     });
-    navigate("/eyewear?from=onboarding");
+    navigate("/shop?from=onboarding");
   };
 
   if (authLoading) {

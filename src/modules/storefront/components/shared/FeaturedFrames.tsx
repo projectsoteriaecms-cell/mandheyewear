@@ -83,7 +83,7 @@ export const FeaturedFrames = () => {
             </h2>
           </div>
           <Button variant="outline" asChild className="group border-2 border-mh-gold/30 text-mh-gold rounded-full px-6 hover:bg-mh-gold/10 animate-fade-in-up stagger-delay-2 hover:scale-105 transition-all">
-            <Link to="/eyewear" className="flex items-center gap-2">
+            <Link to="/shop" className="flex items-center gap-2">
               View All
               <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>

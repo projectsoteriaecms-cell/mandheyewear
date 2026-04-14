@@ -93,7 +93,7 @@ const StyleQuiz = () => {
   const savePreferences = async () => {
     if (!user) {
       toast({ title: "Sign in to save", description: "Create an account to save your style preferences." });
-      navigate("/eyewear");
+      navigate("/shop");
       return;
     }
 
@@ -115,7 +115,7 @@ const StyleQuiz = () => {
       console.error("Error saving preferences:", error);
     } finally {
       setIsSubmitting(false);
-      navigate("/eyewear?from=quiz");
+      navigate("/shop?from=quiz");
     }
   };
 

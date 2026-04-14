@@ -484,7 +484,7 @@ const OrderTracking = () => {
                   <Link to="/contact">Need Help?</Link>
                 </Button>
                 <Button variant="hero" className="flex-1" asChild>
-                  <Link to="/eyewear">Continue Shopping</Link>
+                  <Link to="/shop">Continue Shopping</Link>
                 </Button>
               </div>
             </div>

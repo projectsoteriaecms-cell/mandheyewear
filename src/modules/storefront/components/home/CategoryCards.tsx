@@ -6,9 +6,9 @@ import frame2 from "@/assets/frame-2.jpg";
 import heroEyeCare from "@/assets/hero-eye-care.jpg";
 
 const categories = [
-  { name: "Eyeglasses", description: "Prescription frames for every style", path: "/eyewear?category=eyeglasses", image: frame1, count: "2,800+" },
-  { name: "Sunglasses", description: "UV protection meets fashion", path: "/eyewear?category=sunglasses", image: frame2, count: "80+" },
-  { name: "Accessories", description: "Lenses, contacts & care", path: "/eyewear?category=accessories", image: heroEyeCare, count: "400+" },
+  { name: "Eyeglasses", description: "Prescription frames for every style", path: "/shop?category=eyeglasses", image: frame1, count: "2,800+" },
+  { name: "Sunglasses", description: "UV protection meets fashion", path: "/shop?category=sunglasses", image: frame2, count: "80+" },
+  { name: "Accessories", description: "Lenses, contacts & care", path: "/shop?category=accessories", image: heroEyeCare, count: "400+" },
 ];
 
 export const CategoryCards = () => {

@@ -127,7 +127,7 @@ const ProductDetail = () => {
               The product you're looking for doesn't exist or has been removed.
             </p>
             <Button variant="hero" asChild className="touch-target">
-              <Link to="/eyewear">Browse Eyewear</Link>
+              <Link to="/shop">Browse Eyewear</Link>
             </Button>
           </div>
         </div>
@@ -158,7 +158,7 @@ const ProductDetail = () => {
           {/* Breadcrumb */}
           <div className="mb-4 sm:mb-8">
             <Button variant="ghost" size="sm" asChild className="touch-target -ml-2">
-              <Link to="/eyewear">
+              <Link to="/shop">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">Back to Eyewear</span>
                 <span className="sm:hidden">Back</span>

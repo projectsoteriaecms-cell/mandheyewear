@@ -5,7 +5,7 @@ import heroEyewear from "@/assets/hero-eyewear.jpg";
 import heroEyeCare from "@/assets/hero-eye-care.jpg";
 
 const panels = [
-  { tag: "/EYEWEAR", title: "Sharper Style", subtitle: "A new frame of mind. Frames as loud as your ambition, as silent as true luxury.", image: heroEyewear, link: "/eyewear", cta: "Shop Collection" },
+  { tag: "/EYEWEAR", title: "Sharper Style", subtitle: "A new frame of mind. Frames as loud as your ambition, as silent as true luxury.", image: heroEyewear, link: "/shop", cta: "Shop Collection" },
   { tag: "/EYE CARE", title: "Sharp Eyes", subtitle: "For those who see the future before it arrives. Stay sharp, in every sense.", image: heroEyeCare, link: "/booking", cta: "Book Eye Exam" },
 ];
 

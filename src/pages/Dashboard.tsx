@@ -174,7 +174,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button variant="hero" className="w-full" asChild>
-                  <Link to="/eyewear">Browse Eyewear Collection</Link>
+                  <Link to="/shop">Browse Eyewear Collection</Link>
                 </Button>
                 <Button variant="outline" className="w-full" asChild>
                   <Link to="/branches">Find Our Locations</Link>

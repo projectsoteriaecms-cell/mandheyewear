@@ -10,10 +10,10 @@ import heroEyewear from "@/assets/hero-eyewear.jpg";
 
 const blocks = [
   { number: "01", title: "Sharp Eyes", description: "For those who see the future before it arrives. Certified optometrists. Advanced diagnostics.", image: heroEyeCare, link: "/booking", linkText: "Book Exam" },
-  { number: "02", title: "Sharper Style", description: "A new frame of mind. Designer frames as loud as your ambition, as silent as true luxury.", image: frame1, link: "/eyewear", linkText: "Shop Frames" },
+  { number: "02", title: "Sharper Style", description: "A new frame of mind. Designer frames as loud as your ambition, as silent as true luxury.", image: frame1, link: "/shop", linkText: "Shop Frames" },
   { number: "03", title: "Virtual Try-On", description: "See am. Believe am. AI face mapping lets you try every frame before you commit.", image: frame3, link: "/try-on", linkText: "Try Now" },
   { number: "04", title: "Style Quiz", description: "Your face. Your canvas. We match frames to your shape, vibe, and personality.", image: frame2, link: "/style-quiz", linkText: "Take Quiz" },
-  { number: "05", title: "Precision Lenses", description: "Single vision to progressives — anti-glare, blue-light filter, no dull moment for your eyes.", image: frame4, link: "/eyewear?category=lenses", linkText: "Explore" },
+  { number: "05", title: "Precision Lenses", description: "Single vision to progressives — anti-glare, blue-light filter, no dull moment for your eyes.", image: frame4, link: "/shop?category=lenses", linkText: "Explore" },
   { number: "06", title: "The M&H Experience", description: "Where soft life meets sharp vision — na style wey dey see road.", image: heroEyewear, link: "/about", linkText: "Our Story" },
 ];
 

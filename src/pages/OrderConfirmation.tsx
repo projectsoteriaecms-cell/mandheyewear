@@ -276,7 +276,7 @@ const OrderConfirmation = () => {
               </Link>
             </Button>
             <Button variant="outline" className="flex-1" asChild>
-              <Link to="/eyewear">Continue Shopping</Link>
+              <Link to="/shop">Continue Shopping</Link>
             </Button>
           </div>
         </div>
