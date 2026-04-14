@@ -152,14 +152,9 @@ export const MainNav = () => {
             {!loading && (isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
-                        <User weight="light" className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>My Account</p></TooltipContent>
-                  </Tooltip>
+                  <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted" aria-label="My Account">
+                    <User weight="light" className="h-5 w-5" />
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 z-50 bg-popover">
                   <DropdownMenuItem asChild>
