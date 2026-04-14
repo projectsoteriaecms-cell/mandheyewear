@@ -10,8 +10,8 @@ const BASE_URL = "https://soteriaeyeclinic.lovable.app";
 
 const STATIC_PAGES = [
   { path: "/", priority: "1.0", changefreq: "daily" },
-  { path: "/eyewear", priority: "0.9", changefreq: "daily" },
-  { path: "/eye-care", priority: "0.8", changefreq: "weekly" },
+  { path: "/shop", priority: "0.9", changefreq: "daily" },
+  { path: "/shop?category=services", priority: "0.8", changefreq: "weekly" },
   { path: "/booking", priority: "0.8", changefreq: "weekly" },
   { path: "/try-on", priority: "0.8", changefreq: "weekly" },
   { path: "/style-quiz", priority: "0.7", changefreq: "monthly" },
