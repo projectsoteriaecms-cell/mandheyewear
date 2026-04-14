@@ -2,6 +2,7 @@ import { TopBar } from "./navigation/TopBar";
 import { MainNav } from "./navigation/MainNav";
 import { MobileTopBar } from "./navigation/MobileTopBar";
 import { MobileBottomNav } from "./navigation/MobileBottomNav";
+import { SearchStrip } from "./navigation/SearchStrip";
 
 export const Navigation = () => {
   return (
@@ -16,6 +17,9 @@ export const Navigation = () => {
         
         {/* Mobile Top Bar */}
         <MobileTopBar />
+
+        {/* Search Strip — visible on all sizes */}
+        <SearchStrip />
       </header>
 
       {/* Mobile Bottom Navigation */}

@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Heart, User, SignOut, Gear, Sparkle, Camera, MagnifyingGlass, CaretDown } from "@phosphor-icons/react";
+import { Heart, User, SignOut, Gear, Sparkle, Camera } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { 
@@ -16,7 +15,6 @@ import { useUserRole } from "@/modules/auth/hooks/useUserRole";
 import { hasAdminAccess } from "@/shared/lib/permissions";
 import { useToast } from "@/shared/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { SearchDialog } from "@/components/search/SearchDialog";
 import mhLogo from "@/assets/mh-logo.png";
 import mhLogoGold from "@/assets/mh-logo-gold.png";
 
