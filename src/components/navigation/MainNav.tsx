@@ -32,21 +32,14 @@ const categoryLinks = [
   { name: "Eye Exams", path: "/booking" },
 ];
 
-const searchCategories = [
-  { key: "all", label: "All" },
-  { key: "eyeglasses", label: "Eyeglasses" },
-  { key: "sunglasses", label: "Sunglasses" },
-  { key: "accessories", label: "Accessories" },
-];
-
 export const MainNav = () => {
   const location = useLocation();
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const { data: role } = useUserRole();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchCategory, setSearchCategory] = useState("all");
+  
+  const isStaff = hasAdminAccess(role ?? null);
   
   const isStaff = hasAdminAccess(role ?? null);
 
