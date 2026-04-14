@@ -80,7 +80,7 @@ const OrderConfirmation = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
               <Skeleton className="h-20 w-20 rounded-full mx-auto mb-4" />
@@ -105,7 +105,7 @@ const OrderConfirmation = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="pt-24 pb-16 px-4 text-center">
+        <div className="pt-36 pb-16 px-4 text-center">
           <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h1 className="text-2xl font-bold mb-4">Order Not Found</h1>
           <p className="text-muted-foreground mb-6">
@@ -131,7 +131,7 @@ const OrderConfirmation = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
           {/* Success Header */}
           <div className="text-center mb-8">

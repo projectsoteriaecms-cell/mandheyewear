@@ -143,7 +143,7 @@ const Booking = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="pt-24 pb-16 px-4 flex items-center justify-center">
+        <div className="pt-36 pb-16 px-4 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
         <Footer />
@@ -156,7 +156,7 @@ const Booking = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-md mx-auto text-center">
             <LogIn className="h-16 w-16 mx-auto text-primary mb-4" />
             <h1 className="text-2xl font-bold mb-4">Sign In Required</h1>
@@ -178,7 +178,7 @@ const Booking = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-md mx-auto text-center">
             <div className="p-8 rounded-2xl bg-card border border-amber-200 dark:border-amber-900 shadow-float">
               <Clock className="h-16 w-16 mx-auto text-amber-500 mb-4" />
@@ -206,7 +206,7 @@ const Booking = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-display font-bold text-foreground mb-4">
