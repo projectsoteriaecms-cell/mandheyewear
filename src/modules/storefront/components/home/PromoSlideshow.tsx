@@ -136,7 +136,7 @@ export const PromoSlideshow = () => {
             </h2>
           </div>
           <Link
-            to="/eyewear"
+            to="/shop"
             className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium"
           >
             See All

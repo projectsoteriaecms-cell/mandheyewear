@@ -171,9 +171,9 @@ const TryOn = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <Button variant="ghost" size="sm" asChild className="-ml-2">
-                <a href="/eyewear">
+                <a href="/shop">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Eyewear
+                  Back to Shop
                 </a>
               </Button>
               <TryOnTour />

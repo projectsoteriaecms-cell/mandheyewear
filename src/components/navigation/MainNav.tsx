@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { MagnifyingGlass, Heart, User, SignOut, Gear, Sparkle, Camera } from "@phosphor-icons/react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Heart, User, SignOut, Gear, Sparkle, Camera, MagnifyingGlass, CaretDown } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { 
@@ -15,7 +15,6 @@ import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useUserRole } from "@/modules/auth/hooks/useUserRole";
 import { hasAdminAccess } from "@/shared/lib/permissions";
 import { useToast } from "@/shared/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { SearchDialog } from "@/components/search/SearchDialog";
 import mhLogo from "@/assets/mh-logo.png";
@@ -23,24 +22,23 @@ import mhLogoGold from "@/assets/mh-logo-gold.png";
 
 // Highlighted feature links
 const highlightedLinks = [
-  {
-    name: "Style Quiz",
-    path: "/style-quiz",
-    icon: Sparkle,
-  },
-  {
-    name: "Virtual Try-On",
-    path: "/try-on",
-    icon: Camera,
-  },
+  { name: "Style Quiz", path: "/style-quiz", icon: Sparkle },
+  { name: "Virtual Try-On", path: "/try-on", icon: Camera },
 ];
 
-// Direct category links (Warby Parker style)
+// Category links
 const categoryLinks = [
-  { name: "Eyeglasses", path: "/eyewear?category=eyeglasses" },
-  { name: "Sunglasses", path: "/eyewear?category=sunglasses" },
-  { name: "Accessories", path: "/eyewear?category=accessories" },
+  { name: "Eyeglasses", path: "/shop?category=eyeglasses" },
+  { name: "Sunglasses", path: "/shop?category=sunglasses" },
+  { name: "Accessories", path: "/shop?category=accessories" },
   { name: "Eye Exams", path: "/booking" },
+];
+
+const searchCategories = [
+  { key: "all", label: "All" },
+  { key: "eyeglasses", label: "Eyeglasses" },
+  { key: "sunglasses", label: "Sunglasses" },
+  { key: "accessories", label: "Accessories" },
 ];
 
 export const MainNav = () => {
@@ -50,39 +48,80 @@ export const MainNav = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchCategory, setSearchCategory] = useState("all");
   
   const isStaff = hasAdminAccess(role ?? null);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign out.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to sign out.", variant: "destructive" });
     } else {
-      toast({
-        title: "Signed Out",
-        description: "You have been signed out.",
-      });
+      toast({ title: "Signed Out", description: "You have been signed out." });
       navigate("/");
     }
   };
 
-
   return (
     <div className="bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16 gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center flex-shrink-0">
             <img src={mhLogo} alt="M&H Eyewear" className="h-20 w-auto dark:hidden" />
             <img src={mhLogoGold} alt="M&H Eyewear" className="h-20 w-auto hidden dark:block" />
           </Link>
 
+          {/* Inline Search Bar — Desktop only */}
+          <div className="hidden lg:flex items-center flex-1 max-w-xl mx-4">
+            <div
+              className="flex items-center w-full h-10 rounded-full border border-border bg-muted/50 hover:border-primary/40 transition-colors cursor-text"
+              onClick={() => setSearchOpen(true)}
+            >
+              {/* Category dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 px-3 h-full text-xs font-medium text-muted-foreground hover:text-foreground border-r border-border rounded-l-full bg-muted/80 whitespace-nowrap">
+                    {searchCategories.find((c) => c.key === searchCategory)?.label}
+                    <CaretDown className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-36">
+                  {searchCategories.map((cat) => (
+                    <DropdownMenuItem
+                      key={cat.key}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSearchCategory(cat.key);
+                      }}
+                      className={cn(cat.key === searchCategory && "bg-accent")}
+                    >
+                      {cat.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Search text area */}
+              <div
+                className="flex-1 flex items-center px-3 h-full text-sm text-muted-foreground"
+                onClick={() => setSearchOpen(true)}
+              >
+                Search eyewear, brands, styles...
+              </div>
+
+              {/* Search icon button */}
+              <button
+                className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground mr-1 hover:bg-primary/90 transition-colors"
+                onClick={() => setSearchOpen(true)}
+              >
+                <MagnifyingGlass weight="bold" className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-5 flex-shrink-0">
             {/* Highlighted Feature Links */}
             {highlightedLinks.map((link) => {
               const Icon = link.icon;
@@ -129,11 +168,11 @@ export const MainNav = () => {
           </nav>
 
           {/* Icon Actions */}
-          <div className="flex items-center gap-1">
-            {/* Search */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {/* Mobile search icon */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted" onClick={() => setSearchOpen(true)}>
+                <Button variant="ghost" size="icon" className="lg:hidden text-foreground/70 hover:text-foreground hover:bg-muted" onClick={() => setSearchOpen(true)}>
                   <MagnifyingGlass weight="light" className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>

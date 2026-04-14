@@ -89,7 +89,7 @@ export const QuickDiscovery = () => {
               Trending Frames
             </h2>
             <Link 
-              to="/eyewear?filter=trending"
+              to="/shop?filter=trending"
               className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
             >
               View All
@@ -178,7 +178,7 @@ export const QuickDiscovery = () => {
                   asChild
                   className="bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-6 text-base font-medium shadow-lg shadow-accent/30 w-fit group transition-all duration-300 hover:shadow-xl hover:shadow-accent/40"
                 >
-                  <Link to="/eyewear?filter=new-arrivals">
+                  <Link to="/shop?filter=new-arrivals">
                     Explore Collection
                     <ArrowRight weight="bold" className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>
@@ -263,7 +263,7 @@ export const QuickDiscovery = () => {
               return (
                 <Link
                   key={filter.filter}
-                  to={`/eyewear?filter=${filter.filter}`}
+                  to={`/shop?filter=${filter.filter}`}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-background border-2 border-mh-gold/20 text-sm font-medium text-foreground hover:border-mh-gold hover:bg-mh-gold/5 whitespace-nowrap transition-all duration-200 hover:shadow-sm"
                 >
                   <IconComponent weight="duotone" className="w-4 h-4 text-mh-gold" />

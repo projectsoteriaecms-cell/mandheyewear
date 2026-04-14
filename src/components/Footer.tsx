@@ -113,11 +113,11 @@ const NewsletterBanner = () => {
 
 // Footer link columns configuration
 const shopLinks = [
-  { name: "Eyeglasses", path: "/eyewear?category=eyeglasses" },
-  { name: "Sunglasses", path: "/eyewear?category=sunglasses" },
-  { name: "Accessories", path: "/eyewear?category=accessories" },
+  { name: "Eyeglasses", path: "/shop?category=eyeglasses" },
+  { name: "Sunglasses", path: "/shop?category=sunglasses" },
+  { name: "Accessories", path: "/shop?category=accessories" },
   { name: "Eye Exams", path: "/booking" },
-  { name: "New Arrivals", path: "/eyewear?sort=newest" },
+  { name: "New Arrivals", path: "/shop?sort=newest" },
 ];
 
 const supportLinks = [

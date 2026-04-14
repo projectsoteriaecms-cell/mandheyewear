@@ -89,7 +89,7 @@ export const OrderHistorySection = ({ userId }: OrderHistorySectionProps) => {
             title="No orders yet"
             description="Your order history will appear here once you make a purchase. Ready to find your perfect frames?"
             actionLabel="Start Shopping"
-            actionHref="/eyewear"
+            actionHref="/shop"
           />
         ) : (
           <div className="space-y-4">
