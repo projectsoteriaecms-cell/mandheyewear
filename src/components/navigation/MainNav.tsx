@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Heart, User, SignOut, Gear, Sparkle, Camera } from "@phosphor-icons/react";
+import { Heart, User, SignOut, Gear, Sparkle, Camera, CaretDown, Storefront } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { 
