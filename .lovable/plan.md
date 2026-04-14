@@ -1,55 +1,64 @@
 
 
-# Transform into a Unified E-Commerce Experience
+# Move Search Bar Below the Nav — Standalone, Responsive Search Strip
 
 ## What We're Doing
-Consolidating the split `/eyewear` and `/eye-care` pages into a single, unified shop experience at `/shop` with an always-visible search bar in the navigation — making the platform feel like a proper e-commerce store (think Amazon/Jumia) rather than a clinical website.
+Pull the search bar **out** of the cramped menu bar and place it as its own distinct row below the navigation header. This gives it room to breathe and makes it a prominent, always-visible feature — like Jumia, Amazon, or Noon — across all screen sizes.
+
+## Layout (Before → After)
+
+```text
+BEFORE (Desktop):
+┌─────────────────────────────────────────────┐
+│ Logo  [===Search Bar===]  Links  Icons      │  ← everything crammed in one row
+└─────────────────────────────────────────────┘
+
+AFTER (Desktop):
+┌─────────────────────────────────────────────┐
+│ Logo       Nav Links          Icons          │  ← clean nav row
+├─────────────────────────────────────────────┤
+│   [Category ▾] [  Search eyewear...  ] [🔍] │  ← dedicated search strip
+└─────────────────────────────────────────────┘
+
+AFTER (Mobile):
+┌─────────────────────────────────────────────┐
+│ ☰  🌙     M&H Logo           ♡  🛒        │  ← top bar (unchanged)
+├─────────────────────────────────────────────┤
+│   [🔍  Search eyewear, brands, styles... ]  │  ← new search strip (tappable)
+└─────────────────────────────────────────────┘
+```
 
 ## Key Changes
 
-### 1. Prominent Search Bar in Navigation
-Replace the small search icon with an **inline search bar** visible in the desktop nav (like Amazon's search bar). It will support:
-- **Text search** — product name, brand, color
-- **Category dropdown** — filter by Eyeglasses, Sunglasses, Lenses, Accessories, Eye Care Services
-- **Alphabetical sorting** option in results
-- On mobile, the bottom nav "Search" tab opens the existing full-screen search dialog (enhanced)
+### 1. New `SearchStrip` Component
+A standalone, responsive search bar component rendered as its own row:
+- **Desktop (lg+)**: Full-width bar with category dropdown on the left, text input area in the middle, and search icon button on the right — all in a rounded-full container with a subtle border/background
+- **Tablet (md)**: Same layout, slightly more compact padding
+- **Mobile (<md)**: Simplified single bar — tapping it opens the existing `SearchDialog`. No category dropdown on mobile (the dialog has its own category chips)
 
-### 2. Rename `/eyewear` → `/shop` (Unified Store)
-- Rename the route from `/eyewear` to `/shop`
-- Merge eye care services as a browsable category within the shop (services show as cards alongside products)
-- Keep `/eye-care` as a redirect to `/shop?category=services` for SEO
-- Update all internal links (nav, mobile menu, bottom nav, homepage CTAs)
+### 2. Update `Navigation.tsx`
+Add the `SearchStrip` below the header, still inside the fixed header area so it stays visible on scroll. Adjust top padding offset accordingly.
 
-### 3. Enhanced Search Dialog
-Upgrade the existing `SearchDialog` to support:
-- **Category filter chips** at the top (All, Eyeglasses, Sunglasses, Accessories, Services)
-- **Alphabetical sort toggle** (A-Z / Z-A)
-- **Recent searches** stored in localStorage
-- **Popular/trending** suggestions when the search bar is empty
+### 3. Clean Up `MainNav.tsx`
+- Remove the inline search bar (lines 75-121) — no longer needed in the nav row
+- Remove the mobile search icon button — mobile gets the strip instead
+- Remove `searchCategory` state and the `searchCategories` constant
+- The nav row becomes cleaner: just Logo, Links, and Icon actions
 
-### 4. Navigation Updates
-- **Desktop MainNav**: Replace search icon with an inline search input + category dropdown
-- **Mobile BottomNav**: "Shop" link points to `/shop`, "Search" opens enhanced search dialog
-- **Mobile TopBar menu**: Update all category links to use `/shop?category=...`
-- **Category links**: Eyeglasses, Sunglasses, Accessories, Services (replaces "Eye Exams")
+### 4. Update `MobileTopBar.tsx`
+No changes needed — search strip renders separately below it.
 
-### 5. Homepage Updates
-- Update `CategoryCards` and `DualCtaSection` links to point to `/shop`
-- Hero CTA buttons link to `/shop`
+### 5. Adjust Page Content Offset
+Since we're adding a second fixed row (~48px), update the content top padding (likely in the layout wrapper) so pages don't hide behind the navigation.
 
 ## Files to Modify
-- `src/components/navigation/MainNav.tsx` — inline search bar
-- `src/components/navigation/MobileBottomNav.tsx` — update paths
-- `src/components/navigation/MobileTopBar.tsx` — update menu items
-- `src/components/search/SearchDialog.tsx` — add category filter, alphabetical sort, recent searches
-- `src/pages/Eyewear.tsx` — rename component, update route to `/shop`
-- `src/routes/public.routes.tsx` — rename route, add redirect
-- Multiple homepage components — update internal links
+- **Create** `src/components/navigation/SearchStrip.tsx` — the new standalone search bar
+- **Edit** `src/components/Navigation.tsx` — add SearchStrip below header
+- **Edit** `src/components/navigation/MainNav.tsx` — remove inline search bar, simplify
+- **Edit** layout/page wrappers — adjust top padding for extra nav height
 
 ## What Stays the Same
-- Product detail pages (`/product/:id`)
-- Booking page (`/booking`)
-- Admin panel
-- Cart, checkout, and all auth flows
-- The existing filter sidebar on the shop page
+- `SearchDialog` — fully reused as-is (opened by clicking the strip)
+- `MobileBottomNav` — keeps the Search tab as an alternative entry point
+- All routes, product pages, cart, auth flows
 
