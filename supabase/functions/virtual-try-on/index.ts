@@ -394,19 +394,17 @@ serve(async (req) => {
       return json({ success: false, error: "AI service not configured. Please contact support." }, 500);
     }
 
-    const primary = await callGoogleGemini({
+    const primary = await withRetry(() => callGoogleGemini({
       apiKey: GEMINI_API_KEY,
       userImageBase64,
       frameImageBase64: frameImage?.base64,
       frameImageMimeType: frameImage?.mimeType,
       prompt,
-    });
+    }));
 
     if (primary.ok) {
       generated = primary.data;
     } else {
-      // Return 200 so supabase.functions.invoke() doesn't throw;
-      // the client checks the `success` field instead.
       const isTransient = primary.status === 429 || primary.status >= 500;
       return json({
         success: false,
