@@ -1,47 +1,36 @@
 
 
-# Fix Unclickable Account Icon in Desktop Navigation
+# Disable Lovable AI Fallback for Virtual Try-On
 
-## Problem
-The User/Account icon in the desktop navigation bar (`MainNav.tsx`, lines 152-162) nests a `Tooltip > TooltipTrigger > Button` inside a `DropdownMenuTrigger`. Both Radix primitives (`Tooltip` and `DropdownMenu`) compete for pointer events on the same element, causing the click to be swallowed — the dropdown never opens.
+## What Changes
+One file: `supabase/functions/virtual-try-on/index.ts`
 
-This means authenticated users on desktop cannot:
-- Access the Admin Panel link
-- Sign out
-- Navigate to their account
+Remove the Lovable AI fallback block (lines 400–411). When the Gemini Pro key fails with a non-transient error or is rate-limited, the function will return the error directly instead of falling through to Lovable AI.
 
-## Fix
-Remove the `Tooltip` wrapper from around the dropdown trigger button. The dropdown itself makes it clear what the icon does once clicked — the tooltip is unnecessary here.
+### Specifically
+- **Remove** lines 400–411 (the `callLovableAIGateway` fallback block)
+- If `GEMINI_API_KEY` is missing, return an error immediately instead of silently falling to Lovable AI
+- Keep the `callLovableAIGateway` function definition in the file (dormant) so it can be re-enabled later with a single-line change
 
-### File: `src/components/navigation/MainNav.tsx`
-
-**Before** (lines 153-163):
-```tsx
-<DropdownMenuTrigger asChild>
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Button variant="ghost" size="icon" className="...">
-        <User weight="light" className="h-5 w-5" />
-      </Button>
-    </TooltipTrigger>
-    <TooltipContent><p>My Account</p></TooltipContent>
-  </Tooltip>
-</DropdownMenuTrigger>
+### Before (lines 376–411)
+```
+if (GEMINI_API_KEY) { ... try Gemini ... }
+if (!generated) { ... try Lovable AI fallback ... }
 ```
 
-**After**:
-```tsx
-<DropdownMenuTrigger asChild>
-  <Button variant="ghost" size="icon" className="..." aria-label="My Account">
-    <User weight="light" className="h-5 w-5" />
-  </Button>
-</DropdownMenuTrigger>
+### After
 ```
-
-That's it — one file, one change, removes the conflicting Tooltip wrapper and restores click functionality.
+if (!GEMINI_API_KEY) {
+  return json({ success: false, error: "AI service not configured" }, 500);
+}
+// Try Gemini only
+const primary = await callGoogleGemini({ ... });
+if (primary.ok) { generated = primary.data; }
+else { return json({ success: false, error: primary.error }, primary.status); }
+```
 
 ## What Stays the Same
-- All dropdown menu items (My Account, Admin Panel, Sign Out)
-- Mobile navigation (no tooltip nesting issue there)
-- All auth logic, role checking, and routing
+- All prompts, image fetching, multi-angle logic
+- The `callLovableAIGateway` function remains in code (unused) for future reactivation
+- Frontend hook and modal components unchanged
 
