@@ -309,6 +309,23 @@ const callLovableAIGateway = async (opts: {
   };
 };
 
+const withRetry = async <T>(
+  fn: () => Promise<{ ok: true; data: T } | { ok: false; status: number; error: string; raw?: string }>,
+  maxAttempts = 3,
+  baseDelayMs = 2000
+) => {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const result = await fn();
+    if (result.ok || result.status !== 429 || attempt === maxAttempts) {
+      return result;
+    }
+    const delay = baseDelayMs * Math.pow(2, attempt - 1);
+    console.log(`Rate limited (429). Retry ${attempt}/${maxAttempts} after ${delay}ms...`);
+    await new Promise(r => setTimeout(r, delay));
+  }
+  return fn();
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -377,19 +394,17 @@ serve(async (req) => {
       return json({ success: false, error: "AI service not configured. Please contact support." }, 500);
     }
 
-    const primary = await callGoogleGemini({
+    const primary = await withRetry(() => callGoogleGemini({
       apiKey: GEMINI_API_KEY,
       userImageBase64,
       frameImageBase64: frameImage?.base64,
       frameImageMimeType: frameImage?.mimeType,
       prompt,
-    });
+    }));
 
     if (primary.ok) {
       generated = primary.data;
     } else {
-      // Return 200 so supabase.functions.invoke() doesn't throw;
-      // the client checks the `success` field instead.
       const isTransient = primary.status === 429 || primary.status >= 500;
       return json({
         success: false,
