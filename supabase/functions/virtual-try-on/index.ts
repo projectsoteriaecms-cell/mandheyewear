@@ -388,10 +388,14 @@ serve(async (req) => {
     if (primary.ok) {
       generated = primary.data;
     } else {
+      // Return 200 so supabase.functions.invoke() doesn't throw;
+      // the client checks the `success` field instead.
+      const isTransient = primary.status === 429 || primary.status >= 500;
       return json({
         success: false,
         error: primary.error,
-      }, primary.status);
+        fallback: isTransient,
+      }, isTransient ? 200 : primary.status);
     }
 
     console.log("Virtual try-on generated successfully", { 
