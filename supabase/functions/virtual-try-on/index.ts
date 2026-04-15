@@ -373,51 +373,25 @@ serve(async (req) => {
     let generated: GeneratedTryOn | null = null;
     let lastErr: { status: number; error: string } | null = null;
 
-    if (GEMINI_API_KEY) {
-      const primary = await callGoogleGemini({
-        apiKey: GEMINI_API_KEY,
-        userImageBase64,
-        frameImageBase64: frameImage?.base64,
-        frameImageMimeType: frameImage?.mimeType,
-        prompt,
-      });
-
-      if (primary.ok) {
-        generated = primary.data;
-      } else {
-        lastErr = { status: primary.status, error: primary.error };
-        // Only fall back for rate limiting / transient server errors.
-        if (primary.status !== 429 && (primary.status < 500 || primary.status >= 600)) {
-          // Non-transient errors (e.g., 400/422) should be returned to user as-is.
-          return json({ success: false, error: primary.error }, primary.status);
-        }
-        console.warn("Primary try-on provider failed, attempting fallback:", {
-          status: primary.status,
-        });
-      }
+    if (!GEMINI_API_KEY) {
+      return json({ success: false, error: "AI service not configured. Please contact support." }, 500);
     }
 
-    if (!generated) {
-      const fallback = await callLovableAIGateway({ 
-        userImageDataUrl, 
-        frameImageDataUrl,
-        prompt 
-      });
-      if (fallback.ok) {
-        generated = fallback.data;
-      } else {
-        lastErr = { status: fallback.status, error: fallback.error };
-      }
-    }
+    const primary = await callGoogleGemini({
+      apiKey: GEMINI_API_KEY,
+      userImageBase64,
+      frameImageBase64: frameImage?.base64,
+      frameImageMimeType: frameImage?.mimeType,
+      prompt,
+    });
 
-    if (!generated) {
-      // Always return 200 so supabase.functions.invoke doesn't throw;
-      // the client checks `success` field instead.
+    if (primary.ok) {
+      generated = primary.data;
+    } else {
       return json({
         success: false,
-        error: lastErr?.error || "Unable to generate try-on image. Please try again.",
-        fallback: true,
-      });
+        error: primary.error,
+      }, primary.status);
     }
 
     console.log("Virtual try-on generated successfully", { 
