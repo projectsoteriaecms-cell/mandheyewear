@@ -24,12 +24,36 @@ import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { useTrackActivity } from "@/shared/hooks/useTrackActivity";
 import { ArrowLeft, Star, ShoppingBag } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
+
+function ReviewStarsSummary({ productId }: { productId: string }) {
+  const stats = useReviewStats(productId);
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex">
+        {[1, 2, 3, 4, 5].map((s) => (
+          <Star
+            key={s}
+            className={cn(
+              "h-4 w-4",
+              s <= Math.round(stats.average) ? "fill-accent text-accent" : "text-muted-foreground/30"
+            )}
+          />
+        ))}
+      </div>
+      <span className="text-xs text-muted-foreground">
+        {stats.total > 0 ? `${stats.average.toFixed(1)} (${stats.total} review${stats.total !== 1 ? "s" : ""})` : "No reviews yet"}
+      </span>
+    </div>
+  );
+}
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
