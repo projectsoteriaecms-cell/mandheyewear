@@ -107,6 +107,8 @@ export const EditProductDialog = ({
   const [primaryImage, setPrimaryImage] = useState<string | null>(null);
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
+  const [descriptionHtml, setDescriptionHtml] = useState<string | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
