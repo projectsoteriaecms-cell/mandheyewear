@@ -186,7 +186,7 @@ const ProductDetail = () => {
       <Navigation />
       {productJsonLd && <JsonLd data={productJsonLd} />}
 
-      <div className="pt-20 sm:pt-24 pb-28 lg:pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-28 sm:pt-32 pb-28 lg:pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
           <div className="mb-2 lg:mb-3">
