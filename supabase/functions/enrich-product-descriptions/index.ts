@@ -154,42 +154,54 @@ serve(async (req) => {
           has_clip_on: frame?.has_clip_on,
         };
 
-        // Call Gemini API directly (gemini-2.5-flash for best speed/quality balance)
-        const aiResponse = await withRetry(async () => {
-          const resp = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                systemInstruction: { parts: [{ text: DESCRIPTION_TEMPLATE }] },
-                contents: [
-                  {
-                    role: "user",
-                    parts: [
+        // Call Gemini API with model fallback chain
+        const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"];
+        let aiResponse: any = null;
+
+        for (const model of MODELS) {
+          try {
+            aiResponse = await withRetry(async () => {
+              const resp = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    systemInstruction: { parts: [{ text: DESCRIPTION_TEMPLATE }] },
+                    contents: [
                       {
-                        text: `Generate a rich HTML product description for this eyewear product:\n\n${JSON.stringify(productContext, null, 2)}\n\nReturn ONLY the HTML, no explanation or wrapping.`,
+                        role: "user",
+                        parts: [
+                          {
+                            text: `Generate a rich HTML product description for this eyewear product:\n\n${JSON.stringify(productContext, null, 2)}\n\nReturn ONLY the HTML, no explanation or wrapping.`,
+                          },
+                        ],
                       },
                     ],
-                  },
-                ],
-                generationConfig: {
-                  temperature: 0.7,
-                  maxOutputTokens: 2048,
-                },
-              }),
-            }
-          );
+                    generationConfig: {
+                      temperature: 0.7,
+                      maxOutputTokens: 2048,
+                    },
+                  }),
+                }
+              );
 
-          if (!resp.ok) {
-            const errText = await resp.text();
-            const err: any = new Error(`Gemini API error: ${resp.status} ${errText}`);
-            err.status = resp.status;
-            throw err;
+              if (!resp.ok) {
+                const errText = await resp.text();
+                const err: any = new Error(`Gemini API error (${model}): ${resp.status} ${errText}`);
+                err.status = resp.status;
+                throw err;
+              }
+
+              return resp.json();
+            });
+            console.log(`Successfully used model: ${model}`);
+            break; // Success, stop trying models
+          } catch (err: any) {
+            console.warn(`Model ${model} failed: ${err.message}`);
+            if (model === MODELS[MODELS.length - 1]) throw err; // Last model, propagate
           }
-
-          return resp.json();
-        });
+        }
 
         const descriptionHtml =
           aiResponse.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
