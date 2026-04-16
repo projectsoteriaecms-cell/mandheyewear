@@ -78,7 +78,7 @@ export const ProductImageCarousel = ({
   }
 
   const isPdp = variant === "pdp";
-  const aspectClass = isPdp ? "aspect-square max-h-[45vh] md:max-h-none md:aspect-[4/3]" : "aspect-square";
+  const aspectClass = isPdp ? "aspect-square md:max-h-none md:aspect-[4/3]" : "aspect-square";
 
   return (
     <>
@@ -87,9 +87,9 @@ export const ProductImageCarousel = ({
         <div
           ref={imageRef}
           className={cn(
-            "relative overflow-hidden bg-secondary group rounded-lg",
+            "relative overflow-hidden bg-secondary group rounded-lg w-full",
             aspectClass,
-            // Desktop: viewport-constrained; mobile: no max-h for full-bleed
+            // Desktop: viewport-constrained
             isPdp && "md:max-h-[calc(100vh-180px)]"
           )}
           onMouseEnter={() => setIsZoomed(true)}
