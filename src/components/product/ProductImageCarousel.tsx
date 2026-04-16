@@ -109,14 +109,14 @@ export const ProductImageCarousel = ({
                     alt={`${productName} - View ${i + 1}`}
                     className={cn(
                       "w-full h-full object-cover transition-transform duration-300",
-                      isZoomed && selectedIndex === i && "hidden lg:block"
+                      isZoomed && selectedIndex === i && "hidden md:block"
                     )}
                     draggable={false}
                   />
                   {/* Desktop zoom lens */}
                   {isZoomed && selectedIndex === i && (
                     <div
-                      className="hidden lg:block w-full h-full bg-no-repeat"
+                      className="hidden md:block w-full h-full bg-no-repeat"
                       style={{
                         backgroundImage: `url(${src})`,
                         backgroundSize: "200%",
@@ -134,14 +134,14 @@ export const ProductImageCarousel = ({
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); emblaApi?.scrollPrev(); }}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition hidden lg:flex items-center justify-center"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition hidden md:flex items-center justify-center"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); emblaApi?.scrollNext(); }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition hidden lg:flex items-center justify-center"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition hidden md:flex items-center justify-center"
                 aria-label="Next image"
               >
                 <ChevronRight className="h-5 w-5" />
@@ -151,7 +151,7 @@ export const ProductImageCarousel = ({
 
           {/* Dot indicators — mobile */}
           {images.length > 1 && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 lg:hidden">
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 md:hidden">
               {images.map((_, i) => (
                 <button
                   key={i}
