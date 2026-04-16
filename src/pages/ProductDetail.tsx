@@ -200,7 +200,7 @@ const ProductDetail = () => {
           </div>
 
           {/* Product Hero Grid — Amazon-style above-the-fold */}
-          <div className="grid lg:grid-cols-2 gap-5 lg:gap-8 mb-10 lg:mb-16">
+          <div className="grid md:grid-cols-2 gap-5 md:gap-6 lg:gap-8 mb-10 lg:mb-16">
             {/* Left: Image Carousel */}
             <ProductImageGallery
               mainImage={product.image_url}
@@ -211,7 +211,7 @@ const ProductDetail = () => {
             />
 
             {/* Right: Product Info — sticky on desktop */}
-            <div className="lg:sticky lg:top-24 lg:self-start space-y-2">
+            <div className="md:sticky md:top-24 md:self-start space-y-2">
               {/* Badges */}
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary" className="text-xs">

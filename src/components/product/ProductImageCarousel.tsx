@@ -78,7 +78,7 @@ export const ProductImageCarousel = ({
   }
 
   const isPdp = variant === "pdp";
-  const aspectClass = isPdp ? "aspect-[3/4] lg:aspect-[4/3]" : "aspect-square";
+  const aspectClass = isPdp ? "aspect-[3/4] md:aspect-[4/3]" : "aspect-square";
 
   return (
     <>
@@ -90,7 +90,7 @@ export const ProductImageCarousel = ({
             "relative rounded-lg overflow-hidden bg-secondary group",
             aspectClass,
             // Mobile: compact hero; Desktop: viewport-constrained
-            isPdp && "max-h-[45vh] lg:max-h-[calc(100vh-180px)]"
+            isPdp && "max-h-[45vh] md:max-h-[calc(100vh-180px)]"
           )}
           onMouseEnter={() => setIsZoomed(true)}
           onMouseLeave={() => setIsZoomed(false)}
