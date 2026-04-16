@@ -13,7 +13,6 @@ import { ProductDescription } from "@/components/product/ProductDescription";
 import { AddToCartSection } from "@/components/product/AddToCartSection";
 import { SocialProofBadge } from "@/components/product/SocialProofBadge";
 import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
-import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { MobileActionBar } from "@/components/mobile";
 import { InlineTryOnModal } from "@/components/try-on";
 import { useProduct, useProducts } from "@/modules/products/hooks/useProducts";
@@ -22,7 +21,13 @@ import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { useTrackActivity } from "@/shared/hooks/useTrackActivity";
-import { ArrowLeft, Star, ShoppingBag, Sparkles } from "lucide-react";
+import { ArrowLeft, Star, ShoppingBag } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -42,7 +47,6 @@ const ProductDetail = () => {
   const { modalOpen, targetProductId, savedPhotoUrl, triggerTryOn, setModalOpen } = useInlineTryOn();
   const { track } = useTrackActivity();
 
-  // Track ViewContent event when product loads
   useEffect(() => {
     if (product && !isLoading) {
       trackViewContent({
@@ -52,7 +56,6 @@ const ProductDetail = () => {
         value: product.price,
         currency: "NGN",
       });
-      // Track browsing activity
       track({
         activityType: "product_view",
         productId: product.id,
@@ -62,7 +65,6 @@ const ProductDetail = () => {
     }
   }, [product, isLoading, trackViewContent, track]);
 
-  // Filter out current product from related
   const filteredRelated = relatedProducts
     ?.filter((p) => p.id !== productId)
     .slice(0, 4);
@@ -74,6 +76,16 @@ const ProductDetail = () => {
     }
     if (product) {
       addToCart.mutate({ productId: product.id, quantity: 1 });
+    }
+  };
+
+  const handleMobileBuyNow = () => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+    if (product) {
+      navigate(`/checkout?buyNow=${product.id}&qty=1`);
     }
   };
 
@@ -100,13 +112,13 @@ const ProductDetail = () => {
         <Navigation />
         <div className="pt-28 sm:pt-36 pb-24 lg:pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12">
-              <Skeleton className="aspect-square rounded-lg" />
-              <div className="space-y-4 sm:space-y-6">
-                <Skeleton className="h-6 sm:h-8 w-3/4" />
-                <Skeleton className="h-5 sm:h-6 w-1/4" />
-                <Skeleton className="h-20 sm:h-24 w-full" />
-                <Skeleton className="h-10 sm:h-12 w-full" />
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-10">
+              <Skeleton className="aspect-[4/5] rounded-lg" />
+              <div className="space-y-4">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-6 w-1/4" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-12 w-full" />
               </div>
             </div>
           </div>
@@ -121,14 +133,10 @@ const ProductDetail = () => {
       <div className="min-h-screen bg-background">
         <Navigation />
         <div className="pt-28 sm:pt-36 pb-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center py-12 sm:py-16">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-4">
-              Product Not Found
-            </h1>
-            <p className="text-muted-foreground mb-6 text-sm sm:text-base">
-              The product you're looking for doesn't exist or has been removed.
-            </p>
-            <Button variant="hero" asChild className="touch-target">
+          <div className="max-w-7xl mx-auto text-center py-16">
+            <h1 className="text-2xl font-bold text-foreground mb-4">Product Not Found</h1>
+            <p className="text-muted-foreground mb-6">The product you're looking for doesn't exist or has been removed.</p>
+            <Button variant="hero" asChild>
               <Link to="/shop">Browse Eyewear</Link>
             </Button>
           </div>
@@ -141,11 +149,8 @@ const ProductDetail = () => {
   const getCategoryLabel = (style: string | null): string => {
     if (!style) return "Eyewear";
     const styleMap: Record<string, string> = {
-      round: "Classic Round",
-      rectangular: "Rectangular",
-      "cat-eye": "Cat-Eye",
-      aviator: "Aviator",
-      wayfarer: "Wayfarer",
+      round: "Classic Round", rectangular: "Rectangular", "cat-eye": "Cat-Eye",
+      aviator: "Aviator", wayfarer: "Wayfarer",
     };
     return styleMap[style] || style.charAt(0).toUpperCase() + style.slice(1);
   };
@@ -155,10 +160,10 @@ const ProductDetail = () => {
       <Navigation />
       {productJsonLd && <JsonLd data={productJsonLd} />}
 
-      <div className="pt-28 sm:pt-36 pb-28 lg:pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-28 sm:pt-32 pb-28 lg:pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
-          <div className="mb-4 sm:mb-8">
+          <div className="mb-3 lg:mb-6">
             <Button variant="ghost" size="sm" asChild className="touch-target -ml-2">
               <Link to="/shop">
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -168,124 +173,82 @@ const ProductDetail = () => {
             </Button>
           </div>
 
-          {/* Product Grid */}
-          <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 mb-12 lg:mb-16">
-            {/* Image Gallery */}
+          {/* Product Hero Grid — Amazon-style above-the-fold */}
+          <div className="grid lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6 lg:gap-10 mb-10 lg:mb-16">
+            {/* Left: Image Carousel */}
             <ProductImageGallery
               mainImage={product.image_url}
               additionalImages={product.additional_images}
               productName={product.name}
               productId={product.id}
+              variant="pdp"
             />
 
-            {/* Product Info */}
-            <div className="space-y-4 sm:space-y-6">
-              {/* Category & Brand */}
+            {/* Right: Product Info — sticky on desktop */}
+            <div className="lg:sticky lg:top-28 lg:self-start space-y-3">
+              {/* Badges */}
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary" className="text-xs">
                   {getCategoryLabel(product.style)}
                 </Badge>
                 <Badge variant="outline" className="text-xs">
-                  {product.brand_line === "m_and_h_fashion"
-                    ? "M&H Lifestyle"
-                    : "M&H Medical"}
+                  {product.brand_line === "m_and_h_fashion" ? "M&H Lifestyle" : "M&H Medical"}
                 </Badge>
               </div>
 
               {/* Title */}
-              <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-foreground">
-                  {product.name}
-                </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  SKU: {product.sku}
-                </p>
-              </div>
-
-              {/* Price - Prominent on mobile */}
-              <p className="text-2xl sm:text-3xl font-bold text-accent lg:hidden">
-                ₦{product.price.toLocaleString()}
-              </p>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-foreground leading-tight">
+                {product.name}
+              </h1>
 
               {/* Rating */}
               <div className="flex items-center gap-2">
                 <div className="flex">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className="h-4 w-4 sm:h-5 sm:w-5 fill-accent text-accent"
-                    />
+                    <Star key={star} className="h-4 w-4 fill-accent text-accent" />
                   ))}
                 </div>
-                <span className="text-xs sm:text-sm text-muted-foreground">
-                  (12 reviews)
-                </span>
+                <span className="text-xs text-muted-foreground">(12 reviews)</span>
               </div>
 
               {/* Social Proof */}
               <SocialProofBadge productId={product.id} />
 
-              {/* Description */}
-              {product.description && (
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  {product.description}
-                </p>
-              )}
+              {/* Add to Cart Section (contains price, qty, Buy Now, Add to Cart, Try-On, Wishlist, trust badges) */}
+              <AddToCartSection product={product} />
 
-              {/* Gender Tag */}
-              {product.gender && (
-                <p className="text-sm">
-                  <span className="text-muted-foreground">For: </span>
-                  <span className="font-medium capitalize">{product.gender}</span>
-                </p>
-              )}
-
-              {/* Desktop: Add to Cart & Wishlist */}
-              <div className="hidden lg:block space-y-4">
-                <AddToCartSection product={product} />
-                <div className="flex gap-3">
-                  <WishlistButton productId={product.id} variant="full" className="flex-1" />
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => triggerTryOn(product.id)}
-                  >
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Try On
-                  </Button>
-                </div>
-              </div>
-
-              {/* Mobile: Wishlist and Try-On (Cart is in sticky bar) */}
-              <div className="lg:hidden space-y-3">
-                <WishlistButton productId={product.id} variant="full" className="w-full" />
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => triggerTryOn(product.id)}
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Virtual Try-On
-                </Button>
-              </div>
+              {/* Collapsible Details */}
+              <Accordion type="multiple" className="w-full">
+                {product.description && (
+                  <AccordionItem value="description">
+                    <AccordionTrigger className="text-sm font-semibold">Description</AccordionTrigger>
+                    <AccordionContent>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {product.description}
+                      </p>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+                <AccordionItem value="specs">
+                  <AccordionTrigger className="text-sm font-semibold">Specifications</AccordionTrigger>
+                  <AccordionContent>
+                    <ProductSpecifications product={product} compact />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           </div>
 
-          {/* Rich Description */}
-          <div className="mb-8 lg:mb-12">
-            <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground mb-4">
-              Product Details
-            </h2>
-            <ProductDescription
-              descriptionHtml={(product as any).description_html}
-              description={product.description}
-            />
-          </div>
-
-          {/* Specifications */}
-          <div className="mb-12 lg:mb-16">
-            <ProductSpecifications product={product} />
-          </div>
+          {/* Rich Description (HTML) — below the fold */}
+          {(product as any).description_html && (
+            <div className="mb-8 lg:mb-12">
+              <h2 className="text-xl font-display font-bold text-foreground mb-4">Product Details</h2>
+              <ProductDescription
+                descriptionHtml={(product as any).description_html}
+                description={product.description}
+              />
+            </div>
+          )}
 
           {/* Related Products */}
           {filteredRelated && filteredRelated.length > 0 && (
@@ -293,7 +256,7 @@ const ProductDetail = () => {
               <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground mb-4 sm:mb-6">
                 You May Also Like
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                 {filteredRelated.map((relatedProduct) => (
                   <ProductCard key={relatedProduct.id} product={relatedProduct} />
                 ))}
@@ -303,11 +266,12 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Mobile Sticky Action Bar */}
+      {/* Mobile Sticky Action Bar — Buy Now + Add to Cart */}
       <MobileActionBar
         price={product.price}
         onPrimaryAction={handleMobileAddToCart}
-        primaryLabel="Add to Cart"
+        onBuyNow={handleMobileBuyNow}
+        primaryLabel="Cart"
         primaryIcon={<ShoppingBag className="h-4 w-4" />}
         isLoading={addToCart.isPending}
       />
