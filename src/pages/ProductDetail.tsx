@@ -11,6 +11,7 @@ import { ProductImageGallery } from "@/components/product/ProductImageGallery";
 import { ProductSpecifications } from "@/components/product/ProductSpecifications";
 import { ProductDescription } from "@/components/product/ProductDescription";
 import { AddToCartSection } from "@/components/product/AddToCartSection";
+import { SocialProofBadge } from "@/components/product/SocialProofBadge";
 import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { MobileActionBar } from "@/components/mobile";
@@ -220,6 +221,9 @@ const ProductDetail = () => {
                   (12 reviews)
                 </span>
               </div>
+
+              {/* Social Proof */}
+              <SocialProofBadge productId={product.id} />
 
               {/* Description */}
               {product.description && (
