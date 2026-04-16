@@ -192,7 +192,7 @@ serve(async (req) => {
         });
 
         const descriptionHtml =
-          aiResponse.choices?.[0]?.message?.content?.trim() || "";
+          aiResponse.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
 
         if (!descriptionHtml) {
           results.push({ id, success: false, error: "Empty AI response" });
