@@ -87,7 +87,7 @@ export const ProductImageCarousel = ({
         <div
           ref={imageRef}
           className={cn(
-            "relative overflow-hidden bg-secondary group md:rounded-lg",
+            "relative overflow-hidden bg-secondary group rounded-lg",
             aspectClass,
             // Desktop: viewport-constrained; mobile: no max-h for full-bleed
             isPdp && "md:max-h-[calc(100vh-180px)]"
