@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { ShoppingBag, Minus, Plus, Camera, Loader2, LogIn } from "lucide-react";
+import { ShoppingBag, Minus, Plus, Camera, Loader2, LogIn, Zap } from "lucide-react";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,11 +48,19 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
     addToCart.mutate({ productId: product.id, quantity });
   };
 
+  const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: window.location.pathname } });
+      return;
+    }
+    navigate(`/checkout?buyNow=${product.id}&qty=${quantity}`);
+  };
+
   const incrementQuantity = () => setQuantity((q) => q + 1);
   const decrementQuantity = () => setQuantity((q) => Math.max(1, q - 1));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Price + Stock */}
       <div>
         <p className="text-3xl font-bold text-accent">
@@ -70,59 +78,60 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
 
       {/* Quantity Selector */}
       {!isOutOfStock && (
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Quantity</label>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={decrementQuantity}
-              disabled={quantity <= 1}
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <span className="w-12 text-center font-semibold">{quantity}</span>
-            <Button variant="outline" size="icon" onClick={incrementQuantity}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="flex items-center gap-3">
+          <label className="text-sm font-medium">Qty</label>
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={decrementQuantity} disabled={quantity <= 1}>
+            <Minus className="h-4 w-4" />
+          </Button>
+          <span className="w-10 text-center font-semibold">{quantity}</span>
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={incrementQuantity}>
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
       )}
 
-      {/* Action Buttons */}
-      <div className="flex flex-col gap-3">
+      {/* Primary Action Buttons */}
+      <div className="flex flex-col gap-2">
         {isOutOfStock ? (
           <RequestItemDialog productId={product.id} productName={product.name} />
         ) : (
-          <Button
-            variant="hero"
-            size="lg"
-            className="w-full"
-            onClick={handleAddToCart}
-            disabled={addToCart.isPending}
-          >
-            {addToCart.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Adding...
-              </>
-            ) : !isAuthenticated ? (
-              <>
-                <LogIn className="mr-2 h-5 w-5" />
-                Sign In to Add to Cart
-              </>
-            ) : (
-              <>
-                <ShoppingBag className="mr-2 h-5 w-5" />
-                Add to Cart
-              </>
-            )}
-          </Button>
+          <>
+            {/* Buy Now — hero CTA */}
+            <Button
+              variant="hero"
+              size="lg"
+              className="w-full gap-2"
+              onClick={handleBuyNow}
+              disabled={addToCart.isPending}
+            >
+              {!isAuthenticated ? (
+                <><LogIn className="h-5 w-5" /> Sign In to Buy</>
+              ) : (
+                <><Zap className="h-5 w-5" /> Buy Now</>
+              )}
+            </Button>
+
+            {/* Add to Cart — secondary */}
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full gap-2"
+              onClick={handleAddToCart}
+              disabled={addToCart.isPending}
+            >
+              {addToCart.isPending ? (
+                <><Loader2 className="h-5 w-5 animate-spin" /> Adding...</>
+              ) : (
+                <><ShoppingBag className="h-5 w-5" /> Add to Cart</>
+              )}
+            </Button>
+          </>
         )}
 
-        <div className="flex gap-3">
-          <Button variant="gold" className="flex-1" onClick={() => triggerTryOn(product.id)}>
-            <Camera className="mr-2 h-4 w-4" />
+        {/* Secondary actions row */}
+        <div className="flex gap-2">
+          <Button variant="gold" size="sm" className="flex-1" onClick={() => triggerTryOn(product.id)}>
+            <Camera className="mr-1.5 h-4 w-4" />
             Virtual Try-On
           </Button>
           <WishlistButton productId={product.id} />
@@ -139,14 +148,14 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
       </div>
 
       {/* Trust Badges */}
-      <div className="grid grid-cols-2 gap-3 pt-4 border-t">
-        <div className="text-center p-3 bg-muted rounded-lg">
-          <p className="font-semibold text-sm">Free Shipping</p>
-          <p className="text-xs text-muted-foreground">Orders over ₦100,000</p>
+      <div className="grid grid-cols-2 gap-3 pt-3 border-t">
+        <div className="text-center p-2.5 bg-muted rounded-lg">
+          <p className="font-semibold text-xs">Free Shipping</p>
+          <p className="text-[10px] text-muted-foreground">Orders over ₦100,000</p>
         </div>
-        <div className="text-center p-3 bg-muted rounded-lg">
-          <p className="font-semibold text-sm">30-Day Returns</p>
-          <p className="text-xs text-muted-foreground">Easy returns</p>
+        <div className="text-center p-2.5 bg-muted rounded-lg">
+          <p className="font-semibold text-xs">30-Day Returns</p>
+          <p className="text-[10px] text-muted-foreground">Easy returns</p>
         </div>
       </div>
     </div>

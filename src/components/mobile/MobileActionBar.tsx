@@ -1,11 +1,12 @@
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MobileActionBarProps {
   price?: number;
   onPrimaryAction?: () => void;
+  onBuyNow?: () => void;
   primaryLabel?: string;
   primaryIcon?: React.ReactNode;
   secondaryAction?: React.ReactNode;
@@ -19,6 +20,7 @@ export const MobileActionBar = forwardRef<HTMLDivElement, MobileActionBarProps>(
     {
       price,
       onPrimaryAction,
+      onBuyNow,
       primaryLabel = "Add to Cart",
       primaryIcon = <ShoppingBag className="h-4 w-4" />,
       secondaryAction,
@@ -38,26 +40,37 @@ export const MobileActionBar = forwardRef<HTMLDivElement, MobileActionBarProps>(
           className
         )}
       >
-        <div className="flex items-center gap-3">
-          {/* Price display */}
+        <div className="flex items-center gap-2">
+          {/* Price */}
           {price !== undefined && (
-            <div className="flex-shrink-0">
-              <p className="text-xs text-muted-foreground">Price</p>
-              <p className="text-lg font-bold text-accent">
+            <div className="flex-shrink-0 min-w-0">
+              <p className="text-lg font-bold text-accent leading-tight">
                 ₦{price.toLocaleString()}
               </p>
             </div>
           )}
-          
+
           {/* Actions */}
           <div className="flex-1 flex items-center gap-2 justify-end">
             {secondaryAction}
+            {onBuyNow && (
+              <Button
+                variant="hero"
+                size="sm"
+                onClick={onBuyNow}
+                disabled={disabled || isLoading}
+                className="gap-1.5 flex-1 max-w-[140px]"
+              >
+                <Zap className="h-4 w-4" />
+                Buy Now
+              </Button>
+            )}
             <Button
-              variant="hero"
-              size="lg"
+              variant={onBuyNow ? "outline" : "hero"}
+              size="sm"
               onClick={onPrimaryAction}
               disabled={disabled || isLoading}
-              className="flex-1 max-w-[200px] gap-2 touch-target"
+              className="gap-1.5 flex-1 max-w-[140px]"
             >
               {primaryIcon}
               {primaryLabel}
