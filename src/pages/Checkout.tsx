@@ -648,6 +648,22 @@ const Checkout = () => {
       </main>
 
       <Footer />
+
+      {showRetryPrompt && paymentError && (
+        <PaymentRetryPrompt
+          errorMessage={paymentError}
+          onRetry={() => {
+            setShowRetryPrompt(false);
+            setPaymentError(null);
+            handlePayment();
+          }}
+          onDismiss={() => {
+            setShowRetryPrompt(false);
+            setPaymentError(null);
+          }}
+          isRetrying={isProcessing}
+        />
+      )}
     </div>
   );
 };
