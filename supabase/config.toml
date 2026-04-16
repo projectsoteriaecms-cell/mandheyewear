@@ -31,3 +31,5 @@ project_id = "ispizamxlrukxmysgyjv"
     verify_jwt = false
   [functions.browse-abandonment-nudge]
     verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
