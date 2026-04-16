@@ -769,3 +769,33 @@ All colors MUST be HSL.
 .product-ticker:hover {
   animation-play-state: paused;
 }
+
+/* Rich product description styles */
+.product-description table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.product-description table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+.product-description table td:first-child {
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  width: 40%;
+}
+.product-description h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.product-description ul {
+  list-style: none;
+  padding: 0;
+}
+.product-description ul li {
+  padding: 0.25rem 0;
+}
+.product-description ul li strong {
+  color: hsl(var(--foreground));
+}

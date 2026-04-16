@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -33,8 +33,10 @@ import { useSuppliers } from "@/modules/suppliers";
 import { ProductImageUpload } from "./ProductImageUpload";
 import { FrameAttributesForm } from "./FrameAttributesForm";
 import { LensAttributesForm } from "./LensAttributesForm";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -105,6 +107,8 @@ export const EditProductDialog = ({
   const [primaryImage, setPrimaryImage] = useState<string | null>(null);
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
+  const [descriptionHtml, setDescriptionHtml] = useState<string | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -154,6 +158,37 @@ export const EditProductDialog = ({
       });
       setPrimaryImage(product.image_url);
       setAdditionalImages(product.additional_images || []);
+      setDescriptionHtml((product as any).description_html || null);
+    }
+  }, [product, form]);
+
+  const handleGenerateDescription = useCallback(async () => {
+    if (!product) return;
+    setIsGeneratingDesc(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("enrich-product-descriptions", {
+        body: { productId: product.id },
+      });
+      if (error) throw error;
+      if (data?.results?.[0]?.success) {
+        toast.success("Rich description generated successfully!");
+        // Fetch updated description
+        const { data: updated } = await supabase
+          .from("products")
+          .select("description_html, description")
+          .eq("id", product.id)
+          .single();
+        if (updated) {
+          setDescriptionHtml((updated as any).description_html);
+          form.setValue("description", (updated as any).description || "");
+        }
+      } else {
+        toast.error(data?.results?.[0]?.error || "Failed to generate description");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate description");
+    } finally {
+      setIsGeneratingDesc(false);
     }
   }, [product, form]);
 
@@ -232,8 +267,9 @@ export const EditProductDialog = ({
         </DialogHeader>
 
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="description">Description</TabsTrigger>
             <TabsTrigger value="images">Images</TabsTrigger>
             <TabsTrigger value="frames" disabled={form.watch("item_type") !== "frames"}>
               Frame Specs
@@ -633,6 +669,48 @@ export const EditProductDialog = ({
                   </div>
                 </form>
               </Form>
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="description">
+            <ScrollArea className="max-h-[60vh] pr-4">
+              <div className="py-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    AI-generated rich product description for the storefront.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateDescription}
+                    disabled={isGeneratingDesc}
+                  >
+                    {isGeneratingDesc ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="mr-2 h-4 w-4" />
+                    )}
+                    {isGeneratingDesc ? "Generating…" : "Generate Description"}
+                  </Button>
+                </div>
+
+                {descriptionHtml ? (
+                  <div className="border rounded-lg p-4 bg-muted/30">
+                    <h4 className="text-sm font-medium mb-2">Preview</h4>
+                    <div
+                      className="prose prose-sm dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+                    />
+                  </div>
+                ) : (
+                  <div className="border rounded-lg p-8 text-center text-muted-foreground bg-muted/20">
+                    <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">No rich description yet.</p>
+                    <p className="text-xs mt-1">Click "Generate Description" to create one using AI.</p>
+                  </div>
+                )}
+              </div>
             </ScrollArea>
           </TabsContent>
 

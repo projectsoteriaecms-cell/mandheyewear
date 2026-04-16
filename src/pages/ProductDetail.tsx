@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProductImageGallery } from "@/components/product/ProductImageGallery";
 import { ProductSpecifications } from "@/components/product/ProductSpecifications";
+import { ProductDescription } from "@/components/product/ProductDescription";
 import { AddToCartSection } from "@/components/product/AddToCartSection";
 import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
@@ -264,6 +265,17 @@ const ProductDetail = () => {
                 </Button>
               </div>
             </div>
+          </div>
+
+          {/* Rich Description */}
+          <div className="mb-8 lg:mb-12">
+            <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground mb-4">
+              Product Details
+            </h2>
+            <ProductDescription
+              descriptionHtml={(product as any).description_html}
+              description={product.description}
+            />
           </div>
 
           {/* Specifications */}
