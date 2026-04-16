@@ -201,14 +201,16 @@ const ProductDetail = () => {
 
           {/* Product Hero Grid — Amazon-style above-the-fold */}
           <div className="grid md:grid-cols-2 gap-5 md:gap-6 lg:gap-8 mb-10 lg:mb-16">
-            {/* Left: Image Carousel */}
-            <ProductImageGallery
-              mainImage={product.image_url}
-              additionalImages={product.additional_images}
-              productName={product.name}
-              productId={product.id}
-              variant="pdp"
-            />
+            {/* Left: Image Carousel — near full-bleed on mobile */}
+            <div className="-mx-4 sm:mx-0">
+              <ProductImageGallery
+                mainImage={product.image_url}
+                additionalImages={product.additional_images}
+                productName={product.name}
+                productId={product.id}
+                variant="pdp"
+              />
+            </div>
 
             {/* Right: Product Info — sticky on desktop */}
             <div className="md:sticky md:top-24 md:self-start space-y-2">
