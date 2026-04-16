@@ -174,7 +174,7 @@ export const ProductImageCarousel = ({
 
         {/* Thumbnail strip — desktop only (PDP) */}
         {isPdp && images.length > 1 && (
-          <div className="hidden lg:flex gap-2 overflow-x-auto pb-1">
+          <div className="hidden md:flex gap-2 overflow-x-auto pb-1">
             {images.map((src, i) => (
               <button
                 key={i}
@@ -199,7 +199,7 @@ export const ProductImageCarousel = ({
 
       {/* Fullscreen overlay — mobile tap-to-zoom */}
       {fullscreenOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center lg:hidden">
+        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center md:hidden">
           <button
             onClick={() => setFullscreenOpen(false)}
             className="absolute top-4 right-4 z-10 bg-white/20 rounded-full p-2"
