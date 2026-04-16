@@ -1,28 +1,36 @@
 
 
-# Switch Face PD Analysis from Lovable AI to Direct Google Gemini API
+# Google Cloud AI Cost Analysis for Stakeholders
 
-## Overview
-Migrate the `analyze-face` edge function from the Lovable AI Gateway to calling the Google Gemini API directly using the existing `GEMINI_API_KEY` secret. This makes the face measurement system fully independent of Lovable infrastructure.
+## What I'll Create
+A clean, professional **PDF document** summarizing the AI cost structure for the M&H Eyewear platform. This is designed to be shared with non-technical stakeholders so they understand exactly what they're paying for, how much it costs, and why no subscription is needed.
 
-## Change
+## Key Data Points in the Report
 
-### `supabase/functions/analyze-face/index.ts`
-Replace the Lovable AI Gateway call with a direct Google Gemini API call:
+### Three AI Features & Their Costs
+| Feature | Model | Cost Per Use | Monthly Volume |
+|---------|-------|-------------|----------------|
+| Product Image Generation (6-shot gallery) | Gemini 2.5 Flash (image) | ~$0.10/image | 2,000 total (one-time bulk) |
+| Virtual Try-On (3-angle) | Gemini 2.5 Flash (image) | ~$0.08/try-on | ~500/month |
+| Face PD Measurement | Gemini 2.5 Flash (text) | ~$0.002/scan | ~200/month |
 
-- **Remove**: `LOVABLE_API_KEY` usage and `ai.gateway.lovable.dev` endpoint
-- **Add**: `GEMINI_API_KEY` usage with Google's `generativelanguage.googleapis.com` endpoint
-- **Model**: `gemini-2.5-flash` (already available on the existing Google Cloud billing account)
-- **API format**: Switch from OpenAI-compatible format to Gemini's native `generateContent` format, which uses `inlineData` for images instead of `image_url`
+### Budget Breakdown
+- **One-time bulk**: 2,000 product images × $0.10 = ~$200
+- **Monthly ongoing**: 500 VTO × $0.08 + 200 PD × $0.002 = ~$40.40/month
+- **6-month runway on $500**: Covers the bulk generation + ~7 months of ongoing usage
+- **12-month runway on $1,000**: Covers bulk + ~19 months of ongoing usage
 
-The prompt, validation logic, auth checks, and response parsing all remain identical — only the HTTP call changes.
+### Report Sections
+1. **Executive Summary** — What we're using AI for and why
+2. **How It Works** — Simple explanation of pay-as-you-go (no subscription, no commitment)
+3. **Cost Per Feature** — Breakdown table with per-unit costs
+4. **Budget Scenarios** — $500 vs $1,000 prepaid, how long each lasts
+5. **Monitoring** — How spend is tracked (Google Cloud Console dashboard)
+6. **Recommendation** — Start with $500, monitor for 3 months, top up as needed
 
-| Detail | Before | After |
-|--------|--------|-------|
-| Secret | `LOVABLE_API_KEY` | `GEMINI_API_KEY` |
-| Endpoint | `ai.gateway.lovable.dev/v1/chat/completions` | `generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent` |
-| Auth | Bearer token | `?key=` query param |
-| Payload | OpenAI messages format | Gemini `contents` format |
+## Output
+A single branded PDF at `/mnt/documents/mh-google-ai-cost-analysis.pdf` with M&H visual identity (Ink/Cream palette, clean typography).
 
-No frontend changes required — the edge function response shape stays the same.
+## Technical Approach
+Python script using `reportlab` to generate a polished PDF with tables, charts, and branded styling. No Lovable references — purely framed as Google Cloud AI platform costs.
 
