@@ -1,65 +1,44 @@
 
 
-# Combined AR Platform Cost Analysis — Google MediaPipe + Snap Lens Studio
+# Updated AR Platform Cost Analysis v3 — Expanded Competitive Comparison
 
-## What I'll Create
+## What Changed
 
-An updated stakeholder-ready PDF at `/mnt/documents/mh-platform-cost-analysis-v2.pdf` that presents the Google + Snap "Power Couple" AR strategy with full cost breakdown.
+The existing v2 PDF only compared Google+Snap vs Banuba. The two uploaded research documents contain detailed evaluations of **9 additional AR/SaaS platforms** that need to be incorporated into an expanded comparison matrix. Also, references to "Google AI Ultra plan" in the DCH research brief should be ignored — the correct framing is the **Google Gemini paid API** (pay-as-you-go), which is already how v2 presents it.
 
-## Report Structure
+## Platforms to Include in Expanded Comparison
 
-### Section 1: Executive Summary
-- Two free, world-class SDKs (Google MediaPipe + Snap Camera Kit) combined into one clinical-grade AR platform
-- No subscriptions, no per-use SDK fees — only development, maintenance, and pay-as-you-go AI
+From the research documents, the following platforms will be added alongside the existing Google+Snap and Banuba entries:
 
-### Section 2: The "Power Couple" — Why This Combination Wins
-- **Google MediaPipe** = Performance engine (478-point face mesh, on-device ML, battery-efficient tracking, clinical-grade PD measurement)
-- **Snap Lens Studio + Camera Kit** = Creative engine (3D assets, AR effects, interactive filters, GenAI features, massive pre-built library)
-- **Google Gemini API** = AI brain (image generation, eye screening, facial analysis)
-- Simple diagram showing how they connect
+| Platform | Type | Monthly Cost | Key Strength |
+|----------|------|-------------|--------------|
+| **Fittingbox** | SaaS + Plugin | $59–$199/mo | 195K pre-digitised frames, frame removal, easiest integration |
+| **GlamAR** | SaaS + SDK | Flexible/tiered | Best value — AR + PD + AI model generation in one |
+| **Perfect Corp (YouCam)** | Enterprise SaaS | Enterprise pricing | Best photo try-on quality, used by Essilor/Safilo |
+| **OculFit** | SaaS + API | €70–€200/mo | Clinical-grade (<1mm PD), seg height, vertex distance |
+| **Zakeke** | SaaS + Plugin | $29.90–$149.90/mo | Affordable, hyper-realistic WebAR, 3D configurator |
+| **VARAi** | SaaS + Toolkit | ~$129+/mo | AI Content Studio, auto-3D models |
+| **DeepAR** | SDK | Free–$99/mo | AR effects only, no PD — not recommended |
+| **MirrAR** | Enterprise | Custom pricing | Multi-category (jewellery/watches), retail-only |
+| **Snap Lens Studio** | Free SDK | $0 licensing | Highest capability, highest build cost |
 
-### Section 3: Competitive Advantage vs Banuba
-- Side-by-side comparison table (Google+Snap vs Banuba)
-- Cost: Free SDKs vs paid commercial license
-- Customization: Deep clinical integration vs plug-and-play
-- Quality: Combined strengths vs single-vendor limitations
-- Why this combination is superior for M&H's specific clinical + fashion use case
+## PDF Structure (v3)
 
-### Section 4: Platform Capabilities Delivered
-- Live AR Virtual Try-On with 3D frame overlays
-- Clinical-grade PD & facial measurement
-- AI-powered product image generation (2,000 images)
-- Eye condition screening module
-- Real-time face tracking with creative AR effects
+The new PDF (`/mnt/documents/mh-platform-cost-analysis-v3.pdf`) will retain all v2 content and add:
 
-### Section 5: Complete Cost Breakdown
+### New Section: "Comprehensive AR SDK & SaaS Market Comparison" (after current Section 3)
+- **Full comparison matrix** — all 11 platforms evaluated across: Live AR Try-On, PD Measurement, Facial Diagnostics, Photo Try-On, Integration Complexity, Pricing, and Platform Assessment
+- **Pricing comparison chart** — visual bar chart showing annual cost of each platform vs M&H's Google+Snap approach (₦0 SDK + dev fee)
+- **3-Year TCO table** — Total Cost of Ownership comparing M&H approach vs subscribing to Banuba, Fittingbox, OculFit, etc.
+- **DCH Recommendation** framing the phased approach from the research: Phase 1 (GlamAR for retail), Phase 1 Clinical (Banuba for PD), Phase 2 (Snap Lens Studio for SaaS scale)
 
-| Item | Type | Amount |
-|------|------|--------|
-| Platform Development | One-off | ₦950,000 |
-| Google Cloud AI (initial load) | One-off | $500–$1,000 |
-| Quarterly Maintenance & Support | Recurring | ₦350,000/quarter |
-| Google MediaPipe SDK | — | ₦0 (Free, Apache 2.0) |
-| Snap Lens Studio + Camera Kit | — | ₦0 (Free for developers) |
-| Monthly subscriptions | — | ₦0 (None required) |
+### Updated Section: Competitive Advantage
+- Expand beyond just Banuba — show how Google+Snap beats all subscription-based alternatives on cost
+- Emphasize: "Google AI Ultra" is NOT what powers this — it is the **Gemini paid API** (pay-as-you-go, no subscription)
 
-### Section 6: Google Cloud AI Usage Detail
-- Product images: 2,000 × ~$0.10 = ~$200
-- VTO: 500/month × ~$0.08 = ~$40/month
-- PD + Eye screening: ~$0.002–$0.01/scan (negligible)
-- Budget runway projections ($500 vs $1,000)
-
-### Section 7: Year 1 Total Projection
-- Development: ₦950,000
-- AI Usage: ~$500 (~₦800,000 at ₦1,600/$)
-- Maintenance (4 quarters): ₦1,400,000
-- **Year 1 Total: ~₦3,150,000** — no hidden costs, no subscriptions, no licensing fees
-
-### Section 8: Recommendation
-- Start with $500 Google Cloud deposit
-- Monitor spend via Google Cloud Console
-- Scale AI usage as customer adoption grows
+### All Existing Sections Retained
+- Executive Summary, Power Couple architecture, cost breakdown, budget runway, maintenance, Year 1 projection, recommendation — all carried forward from v2
 
 ## Technical Approach
-Python + ReportLab branded PDF with M&H Ink/Cream palette, comparison tables, cost charts, and architecture diagram. No mention of Lovable anywhere. Framed entirely as a Google + Snap technical strategy.
+Python + ReportLab branded PDF with M&H Ink/Cream palette. Same styling as v2. Approximately 12–14 pages. No mention of Lovable. All "Google AI Ultra" references from the research docs will be reframed as "Google Gemini API (pay-as-you-go)."
 
