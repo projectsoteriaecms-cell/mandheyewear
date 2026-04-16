@@ -1,40 +1,41 @@
 
 
-# Extend Mobile Image Width to Match Title Text
+# Enhanced Product Search — Style Categories & Multi-Parameter Matching
 
 ## Problem
-On mobile (390px viewport), the `max-h-[45vh]` cap limits the image height to ~240px. Because the image uses `aspect-square`, this also constrains its **width** to ~240px — much narrower than the ~358px container width. The product title text fills the full container width, so the image appears noticeably narrower than the text below it.
+The search currently only queries 3 fields (`name`, `brand`, `color`). When users click "Cat Eye", "Aviator", etc., or type specific parameters like SKU, material, or frame shape, no results are returned because those fields aren't included in the search query.
 
-## Root Cause
-`aspect-square` + `max-h-[45vh]` = height drives width. At 535px viewport height, 45vh = ~240px, so the square image becomes 240×240px instead of filling the available ~358px width.
+## Changes
 
-## Fix
-
-### ProductImageCarousel.tsx (line 81)
-Remove the mobile `max-h-[45vh]` and only apply the max-height cap at `md` breakpoint where it's needed for desktop layout.
+### 1. Expand search query fields (SearchDialog.tsx)
+Add `style`, `sku`, `material`, `description` to the `.or()` filter so users can find products by any relevant attribute:
 
 ```
-// Before
-"aspect-square max-h-[45vh] md:max-h-none md:aspect-[4/3]"
-
-// After
-"aspect-square md:max-h-none md:aspect-[4/3]"
+.or(`name.ilike.%${term}%,brand.ilike.%${term}%,color.ilike.%${term}%,style.ilike.%${term}%,sku.ilike.%${term}%,material.ilike.%${term}%,description.ilike.%${term}%`)
 ```
 
-Additionally, add `w-full` to the container (line 90) to ensure it stretches to full width:
+### 2. Add style-based category chips (SearchDialog.tsx)
+Expand the category filter chips to include popular frame shapes alongside the existing product-type categories:
 
 ```
-// Before
-"relative overflow-hidden bg-secondary group rounded-lg"
-
-// After
-"relative overflow-hidden bg-secondary group rounded-lg w-full"
+Categories row: All | Eyeglasses | Sunglasses | Accessories
+Styles row:     Cat Eye | Aviator | Round | Rectangle | Wayfarer | Oval
 ```
 
-## Result
-On 390px mobile: the image fills the full container width (~358px) as a square (358×358px), perfectly aligned with the title text width. Desktop layout remains unchanged.
+When a style chip is selected, filter by `style.ilike.%{style}%` in addition to any category filter. This replaces the current static "Popular" section with functional, filterable style chips.
 
+### 3. Update Popular suggestions
+Replace the static Popular terms with more diverse searchable terms that now actually work (since we're expanding the query fields):
+- Frame styles: Aviator, Cat Eye, Round, Rectangle, Wayfarer
+- Materials: Titanium, Acetate
+- Brands pulled from common inventory
+
+### 4. Align mobile search strip padding
+Ensure the mobile SearchStrip bar has balanced left/right padding matching the page content.
+
+## Files to modify
 | File | Change |
 |------|--------|
-| `src/components/product/ProductImageCarousel.tsx` | Remove `max-h-[45vh]`, add `w-full` |
+| `src/components/search/SearchDialog.tsx` | Expand `.or()` fields, add style filter chips row, update Popular terms |
+| `src/components/navigation/SearchStrip.tsx` | Minor padding alignment if needed |
 
