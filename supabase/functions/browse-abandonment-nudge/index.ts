@@ -83,12 +83,17 @@ Deno.serve(async (req) => {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     // Find users who viewed the same product 3+ times in the last 2 hours
-    const { data: frequentViews, error: viewErr } = await supabase
-      .rpc("get_browse_abandonment_candidates", {
-        since_time: twoHoursAgo,
-        min_views: 3,
-      })
-      .catch(() => ({ data: null, error: "rpc not found" }));
+    let frequentViews = null;
+    try {
+      const rpcResult = await supabase
+        .rpc("get_browse_abandonment_candidates", {
+          since_time: twoHoursAgo,
+          min_views: 3,
+        });
+      frequentViews = rpcResult.data;
+    } catch (_) {
+      // RPC doesn't exist, use fallback
+    }
 
     // Fallback: manual query if RPC doesn't exist
     let candidates: { user_id: string; product_id: string; view_count: number }[] = [];
