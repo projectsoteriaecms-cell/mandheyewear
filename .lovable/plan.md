@@ -1,41 +1,28 @@
 
 
-# Enhanced Product Search — Style Categories & Multi-Parameter Matching
+# Switch Face PD Analysis from Lovable AI to Direct Google Gemini API
 
-## Problem
-The search currently only queries 3 fields (`name`, `brand`, `color`). When users click "Cat Eye", "Aviator", etc., or type specific parameters like SKU, material, or frame shape, no results are returned because those fields aren't included in the search query.
+## Overview
+Migrate the `analyze-face` edge function from the Lovable AI Gateway to calling the Google Gemini API directly using the existing `GEMINI_API_KEY` secret. This makes the face measurement system fully independent of Lovable infrastructure.
 
-## Changes
+## Change
 
-### 1. Expand search query fields (SearchDialog.tsx)
-Add `style`, `sku`, `material`, `description` to the `.or()` filter so users can find products by any relevant attribute:
+### `supabase/functions/analyze-face/index.ts`
+Replace the Lovable AI Gateway call with a direct Google Gemini API call:
 
-```
-.or(`name.ilike.%${term}%,brand.ilike.%${term}%,color.ilike.%${term}%,style.ilike.%${term}%,sku.ilike.%${term}%,material.ilike.%${term}%,description.ilike.%${term}%`)
-```
+- **Remove**: `LOVABLE_API_KEY` usage and `ai.gateway.lovable.dev` endpoint
+- **Add**: `GEMINI_API_KEY` usage with Google's `generativelanguage.googleapis.com` endpoint
+- **Model**: `gemini-2.5-flash` (already available on the existing Google Cloud billing account)
+- **API format**: Switch from OpenAI-compatible format to Gemini's native `generateContent` format, which uses `inlineData` for images instead of `image_url`
 
-### 2. Add style-based category chips (SearchDialog.tsx)
-Expand the category filter chips to include popular frame shapes alongside the existing product-type categories:
+The prompt, validation logic, auth checks, and response parsing all remain identical — only the HTTP call changes.
 
-```
-Categories row: All | Eyeglasses | Sunglasses | Accessories
-Styles row:     Cat Eye | Aviator | Round | Rectangle | Wayfarer | Oval
-```
+| Detail | Before | After |
+|--------|--------|-------|
+| Secret | `LOVABLE_API_KEY` | `GEMINI_API_KEY` |
+| Endpoint | `ai.gateway.lovable.dev/v1/chat/completions` | `generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent` |
+| Auth | Bearer token | `?key=` query param |
+| Payload | OpenAI messages format | Gemini `contents` format |
 
-When a style chip is selected, filter by `style.ilike.%{style}%` in addition to any category filter. This replaces the current static "Popular" section with functional, filterable style chips.
-
-### 3. Update Popular suggestions
-Replace the static Popular terms with more diverse searchable terms that now actually work (since we're expanding the query fields):
-- Frame styles: Aviator, Cat Eye, Round, Rectangle, Wayfarer
-- Materials: Titanium, Acetate
-- Brands pulled from common inventory
-
-### 4. Align mobile search strip padding
-Ensure the mobile SearchStrip bar has balanced left/right padding matching the page content.
-
-## Files to modify
-| File | Change |
-|------|--------|
-| `src/components/search/SearchDialog.tsx` | Expand `.or()` fields, add style filter chips row, update Popular terms |
-| `src/components/navigation/SearchStrip.tsx` | Minor padding alignment if needed |
+No frontend changes required — the edge function response shape stays the same.
 
