@@ -60,35 +60,27 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
   const decrementQuantity = () => setQuantity((q) => Math.max(1, q - 1));
 
   return (
-    <div className="space-y-4">
-      {/* Price + Stock */}
-      <div>
-        <p className="text-3xl font-bold text-accent">
-          ₦{product.price.toLocaleString()}
-        </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          {product.currency || "NGN"} • VAT inclusive
-        </p>
-        {stockStatus !== "unknown" && (
-          <div className="mt-2">
-            <StockBadge status={stockStatus} />
+    <div className="space-y-3">
+      {/* Price + Stock + Qty — compact row */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <p className="text-2xl font-bold text-accent">
+            ₦{product.price.toLocaleString()}
+          </p>
+          {stockStatus !== "unknown" && <StockBadge status={stockStatus} />}
+        </div>
+        {!isOutOfStock && (
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" className="h-7 w-7" onClick={decrementQuantity} disabled={quantity <= 1}>
+              <Minus className="h-3.5 w-3.5" />
+            </Button>
+            <span className="w-8 text-center font-semibold text-sm">{quantity}</span>
+            <Button variant="outline" size="icon" className="h-7 w-7" onClick={incrementQuantity}>
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
           </div>
         )}
       </div>
-
-      {/* Quantity Selector */}
-      {!isOutOfStock && (
-        <div className="flex items-center gap-3">
-          <label className="text-sm font-medium">Qty</label>
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={decrementQuantity} disabled={quantity <= 1}>
-            <Minus className="h-4 w-4" />
-          </Button>
-          <span className="w-10 text-center font-semibold">{quantity}</span>
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={incrementQuantity}>
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
 
       {/* Primary Action Buttons */}
       <div className="flex flex-col gap-2">
@@ -96,35 +88,33 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
           <RequestItemDialog productId={product.id} productName={product.name} />
         ) : (
           <>
-            {/* Buy Now — hero CTA */}
-            <Button
-              variant="hero"
-              size="lg"
-              className="w-full gap-2"
-              onClick={handleBuyNow}
-              disabled={addToCart.isPending}
-            >
-              {!isAuthenticated ? (
-                <><LogIn className="h-5 w-5" /> Sign In to Buy</>
-              ) : (
-                <><Zap className="h-5 w-5" /> Buy Now</>
-              )}
-            </Button>
-
-            {/* Add to Cart — secondary */}
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full gap-2"
-              onClick={handleAddToCart}
-              disabled={addToCart.isPending}
-            >
-              {addToCart.isPending ? (
-                <><Loader2 className="h-5 w-5 animate-spin" /> Adding...</>
-              ) : (
-                <><ShoppingBag className="h-5 w-5" /> Add to Cart</>
-              )}
-            </Button>
+            {/* Buy Now + Add to Cart — side by side on desktop */}
+            <div className="flex flex-col lg:flex-row gap-2">
+              <Button
+                variant="hero"
+                className="flex-1 gap-2"
+                onClick={handleBuyNow}
+                disabled={addToCart.isPending}
+              >
+                {!isAuthenticated ? (
+                  <><LogIn className="h-4 w-4" /> Sign In to Buy</>
+                ) : (
+                  <><Zap className="h-4 w-4" /> Buy Now</>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 gap-2"
+                onClick={handleAddToCart}
+                disabled={addToCart.isPending}
+              >
+                {addToCart.isPending ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Adding...</>
+                ) : (
+                  <><ShoppingBag className="h-4 w-4" /> Add to Cart</>
+                )}
+              </Button>
+            </div>
           </>
         )}
 
@@ -147,15 +137,15 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
         )}
       </div>
 
-      {/* Trust Badges */}
-      <div className="grid grid-cols-2 gap-3 pt-3 border-t">
-        <div className="text-center p-2.5 bg-muted rounded-lg">
-          <p className="font-semibold text-xs">Free Shipping</p>
-          <p className="text-[10px] text-muted-foreground">Orders over ₦100,000</p>
+      {/* Trust Badges — compact single row */}
+      <div className="flex gap-2 pt-2 border-t text-center">
+        <div className="flex-1 py-1.5 bg-muted rounded-md">
+          <p className="font-semibold text-[10px]">Free Shipping</p>
+          <p className="text-[9px] text-muted-foreground">Over ₦100k</p>
         </div>
-        <div className="text-center p-2.5 bg-muted rounded-lg">
-          <p className="font-semibold text-xs">30-Day Returns</p>
-          <p className="text-[10px] text-muted-foreground">Easy returns</p>
+        <div className="flex-1 py-1.5 bg-muted rounded-md">
+          <p className="font-semibold text-[10px]">30-Day Returns</p>
+          <p className="text-[9px] text-muted-foreground">Easy returns</p>
         </div>
       </div>
     </div>

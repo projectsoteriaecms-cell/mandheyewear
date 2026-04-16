@@ -186,10 +186,10 @@ const ProductDetail = () => {
       <Navigation />
       {productJsonLd && <JsonLd data={productJsonLd} />}
 
-      <div className="pt-28 sm:pt-32 pb-28 lg:pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-20 sm:pt-24 pb-28 lg:pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
-          <div className="mb-3 lg:mb-6">
+          <div className="mb-2 lg:mb-3">
             <Button variant="ghost" size="sm" asChild className="touch-target -ml-2">
               <Link to="/shop">
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -200,7 +200,7 @@ const ProductDetail = () => {
           </div>
 
           {/* Product Hero Grid — Amazon-style above-the-fold */}
-          <div className="grid lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6 lg:gap-10 mb-10 lg:mb-16">
+          <div className="grid lg:grid-cols-2 gap-5 lg:gap-8 mb-10 lg:mb-16">
             {/* Left: Image Carousel */}
             <ProductImageGallery
               mainImage={product.image_url}
@@ -211,7 +211,7 @@ const ProductDetail = () => {
             />
 
             {/* Right: Product Info — sticky on desktop */}
-            <div className="lg:sticky lg:top-28 lg:self-start space-y-3">
+            <div className="lg:sticky lg:top-24 lg:self-start space-y-2">
               {/* Badges */}
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary" className="text-xs">
