@@ -1,30 +1,39 @@
 
 
-# Mobile Image — Square Aspect Ratio
+# Align Mobile Product Image with Page Content
 
 ## Problem
-The current `aspect-[5/6]` with `max-h-[40vh]` is making the image shorter but also narrower, leaving a gap on the right. A square aspect ratio (`aspect-square`) would balance width and height naturally while keeping the image well-contained.
+The product image currently uses `-mx-4` on mobile, which makes it bleed edge-to-edge while all other content (Back button, badges, title, price) respects the `px-4` page padding. This creates a visual misalignment — the image is wider than everything else.
 
 ## Change
 
-### ProductImageCarousel.tsx (line 81)
+### ProductDetail.tsx (line 205)
+Remove the `-mx-4 sm:mx-0` wrapper so the image sits within the same `px-4` padding as the rest of the page content.
+
 ```
 // Before
-"aspect-[5/6] max-h-[40vh] md:max-h-none md:aspect-[4/3]"
+<div className="-mx-4 sm:mx-0">
 
 // After
-"aspect-square max-h-[45vh] md:max-h-none md:aspect-[4/3]"
+<div>
 ```
 
-- `aspect-square` → 1:1 ratio, perfectly balanced width-to-height
-- `max-h-[45vh]` → bumped slightly from 40vh to 45vh so the square doesn't get overly compressed on shorter screens (on a 390px phone this gives ~380px, which is essentially full-width square)
-- Tablet/desktop unchanged (`md:aspect-[4/3]`)
+### ProductImageCarousel.tsx (line 90)
+Add `rounded-lg` on mobile too (currently only `md:rounded-lg`), since the image will no longer touch screen edges.
+
+```
+// Before
+"relative overflow-hidden bg-secondary group md:rounded-lg"
+
+// After
+"relative overflow-hidden bg-secondary group rounded-lg"
+```
 
 ### Result
-On 390px mobile: image renders at ~390×390px — full width, balanced square, no wasted space on the right, no excessive vertical stretch. Product info (title, price, CTA) remains visible below.
+On 390px mobile, the image will have 16px padding on both left and right — perfectly aligned with the Back button, title, price, and all other content below it.
 
-### File
 | File | Change |
 |------|--------|
-| `src/components/product/ProductImageCarousel.tsx` | `aspect-[5/6] max-h-[40vh]` → `aspect-square max-h-[45vh]` |
+| `src/pages/ProductDetail.tsx` | Remove `-mx-4 sm:mx-0` from image wrapper |
+| `src/components/product/ProductImageCarousel.tsx` | `md:rounded-lg` → `rounded-lg` |
 
