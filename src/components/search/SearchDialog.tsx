@@ -28,6 +28,14 @@ const CATEGORIES = [
   { key: "accessories", label: "Accessories" },
 ];
 
+const STYLES = [
+  "Cat Eye", "Aviator", "Round", "Rectangle", "Wayfarer", "Oval",
+];
+
+const POPULAR_TERMS = [
+  "Aviator", "Cat Eye", "Round", "Titanium", "Acetate", "Cartier", "Gucci",
+];
+
 const RECENT_SEARCHES_KEY = "mh_recent_searches";
 const MAX_RECENT = 5;
 
@@ -50,13 +58,14 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState("all");
+  const [styleFilter, setStyleFilter] = useState<string | null>(null);
   const [sortAZ, setSortAZ] = useState<"asc" | "desc" | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const debouncedQuery = useDebouncedValue(query, 300);
   const navigate = useNavigate();
 
-  const search = useCallback(async (term: string, cat: string, sort: "asc" | "desc" | null) => {
-    if (term.length < 2) {
+  const search = useCallback(async (term: string, cat: string, style: string | null, sort: "asc" | "desc" | null) => {
+    if (term.length < 2 && !style) {
       setResults([]);
       return;
     }
@@ -66,8 +75,12 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
       .from("products")
       .select("id, name, brand, price, image_url, item_type")
       .eq("is_active", true)
-      .eq("brand_line", "m_and_h_fashion")
-      .or(`name.ilike.%${term}%,brand.ilike.%${term}%,color.ilike.%${term}%`);
+      .eq("brand_line", "m_and_h_fashion");
+
+    // Text search across multiple fields
+    if (term.length >= 2) {
+      q = q.or(`name.ilike.%${term}%,brand.ilike.%${term}%,color.ilike.%${term}%,style.ilike.%${term}%,sku.ilike.%${term}%,material.ilike.%${term}%,description.ilike.%${term}%`);
+    }
 
     // Category filter
     if (cat === "eyeglasses") {
@@ -76,6 +89,11 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
       q = q.eq("item_type", "frames").eq("is_prescription_compatible", false);
     } else if (cat === "accessories") {
       q = q.in("item_type", ["accessories", "solutions", "cleanser", "other"]);
+    }
+
+    // Style filter
+    if (style) {
+      q = q.ilike("style", `%${style}%`);
     }
 
     // Sort
@@ -93,14 +111,15 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
   }, []);
 
   useEffect(() => {
-    search(debouncedQuery, category, sortAZ);
-  }, [debouncedQuery, category, sortAZ, search]);
+    search(debouncedQuery, category, styleFilter, sortAZ);
+  }, [debouncedQuery, category, styleFilter, sortAZ, search]);
 
   useEffect(() => {
     if (!open) {
       setQuery("");
       setResults([]);
       setCategory("all");
+      setStyleFilter(null);
       setSortAZ(null);
     } else {
       setRecentSearches(getRecentSearches());
@@ -125,13 +144,15 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
     navigate(`/product/${id}`);
   };
 
-  const handleRecentClick = (term: string) => {
+  const handleTermClick = (term: string) => {
     setQuery(term);
   };
 
   const toggleSort = () => {
     setSortAZ((prev) => (prev === "asc" ? "desc" : prev === "desc" ? null : "asc"));
   };
+
+  const hasActiveSearch = debouncedQuery.length >= 2 || styleFilter;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -142,7 +163,7 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name, brand, or color..."
+            placeholder="Search by name, brand, style, SKU..."
             className="border-0 focus-visible:ring-0 h-12 text-base"
             autoFocus
           />
@@ -154,7 +175,7 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
         </div>
 
         {/* Category chips + Sort */}
-        <div className="flex items-center gap-2 px-4 py-2.5 border-b overflow-x-auto">
+        <div className="flex items-center gap-2 px-4 py-2 border-b overflow-x-auto">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.key}
@@ -183,14 +204,33 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
           </button>
         </div>
 
-        <div className="max-h-80 overflow-y-auto">
+        {/* Style chips row */}
+        <div className="flex items-center gap-1.5 px-4 py-2 border-b overflow-x-auto">
+          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mr-1 flex-shrink-0">Style</span>
+          {STYLES.map((s) => (
+            <button
+              key={s}
+              onClick={() => setStyleFilter(styleFilter === s ? null : s)}
+              className={cn(
+                "px-2.5 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap",
+                styleFilter === s
+                  ? "bg-accent text-accent-foreground ring-1 ring-accent"
+                  : "bg-muted/60 text-muted-foreground hover:bg-muted"
+              )}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        <div className="max-h-72 overflow-y-auto">
           {loading && (
             <p className="p-4 text-sm text-muted-foreground text-center">Searching...</p>
           )}
 
-          {!loading && debouncedQuery.length >= 2 && results.length === 0 && (
+          {!loading && hasActiveSearch && results.length === 0 && (
             <p className="p-4 text-sm text-muted-foreground text-center">
-              No products found for "{debouncedQuery}"
+              No products found{debouncedQuery.length >= 2 ? ` for "${debouncedQuery}"` : ""}{styleFilter ? ` in ${styleFilter}` : ""}
             </p>
           )}
 
@@ -219,8 +259,8 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
             </button>
           ))}
 
-          {/* Empty state: recent searches + trending */}
-          {!loading && debouncedQuery.length < 2 && (
+          {/* Empty state: recent searches + popular */}
+          {!loading && !hasActiveSearch && (
             <div className="p-4 space-y-4">
               {recentSearches.length > 0 && (
                 <div>
@@ -232,7 +272,7 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
                     {recentSearches.map((term) => (
                       <button
                         key={term}
-                        onClick={() => handleRecentClick(term)}
+                        onClick={() => handleTermClick(term)}
                         className="px-3 py-1.5 rounded-full bg-muted text-xs font-medium text-foreground hover:bg-muted/80 transition-colors"
                       >
                         {term}
@@ -247,10 +287,10 @@ export const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
                   Popular
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {["Aviator", "Cat Eye", "Round", "Rectangle", "Wayfarer"].map((term) => (
+                  {POPULAR_TERMS.map((term) => (
                     <button
                       key={term}
-                      onClick={() => handleRecentClick(term)}
+                      onClick={() => handleTermClick(term)}
                       className="px-3 py-1.5 rounded-full bg-muted text-xs font-medium text-foreground hover:bg-muted/80 transition-colors"
                     >
                       {term}
