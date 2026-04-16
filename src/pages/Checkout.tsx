@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
 import { ShippingZoneIndicator } from "@/components/checkout/ShippingZoneIndicator";
+import { PriceLockBadge } from "@/components/checkout/PriceLockBadge";
+import { PaymentRetryPrompt } from "@/components/checkout/PaymentRetryPrompt";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useProfile } from "@/modules/personalization/hooks/useProfile";
@@ -68,6 +70,8 @@ const Checkout = () => {
   const { trackInitiateCheckout } = useMetaPixel();
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasTrackedCheckout, setHasTrackedCheckout] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [showRetryPrompt, setShowRetryPrompt] = useState(false);
 
   // Contact info (editable, pre-filled from profile)
   const [fullName, setFullName] = useState("");
@@ -272,21 +276,16 @@ const Checkout = () => {
         },
         onClose: () => {
           setIsProcessing(false);
-          toast({
-            title: "Payment Cancelled",
-            description: "You closed the payment window. No charges were made.",
-          });
+          setPaymentError("You closed the payment window. No charges were made.");
+          setShowRetryPrompt(true);
         },
       });
 
       handler.openIframe();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Payment failed";
-      toast({
-        title: "Payment Error",
-        description: message,
-        variant: "destructive",
-      });
+      setPaymentError(message);
+      setShowRetryPrompt(true);
       setIsProcessing(false);
     }
   };
@@ -608,6 +607,8 @@ const Checkout = () => {
                   </div>
                 </div>
 
+                <PriceLockBadge />
+
                 <Button
                   variant="hero"
                   size="lg"
@@ -649,6 +650,22 @@ const Checkout = () => {
       </main>
 
       <Footer />
+
+      {showRetryPrompt && paymentError && (
+        <PaymentRetryPrompt
+          errorMessage={paymentError}
+          onRetry={() => {
+            setShowRetryPrompt(false);
+            setPaymentError(null);
+            handlePayment();
+          }}
+          onDismiss={() => {
+            setShowRetryPrompt(false);
+            setPaymentError(null);
+          }}
+          isRetrying={isProcessing}
+        />
+      )}
     </div>
   );
 };
