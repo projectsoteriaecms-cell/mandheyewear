@@ -29,11 +29,22 @@ export function useProductReviews(productId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("product_reviews")
-        .select("*, profiles!product_reviews_user_id_fkey(full_name, avatar_url)")
+        .select("*")
         .eq("product_id", productId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as unknown as ProductReview[];
+      
+      // Fetch profile names separately
+      const userIds = [...new Set((data ?? []).map((r: any) => r.user_id))];
+      const { data: profiles } = userIds.length > 0
+        ? await supabase.from("profiles").select("user_id, full_name, avatar_url").in("user_id", userIds)
+        : { data: [] };
+      
+      const profileMap = new Map((profiles ?? []).map((p: any) => [p.user_id, p]));
+      return (data ?? []).map((r: any) => ({
+        ...r,
+        profiles: profileMap.get(r.user_id) || null,
+      })) as ProductReview[];
     },
     enabled: !!productId,
     staleTime: 2 * 60_000,
