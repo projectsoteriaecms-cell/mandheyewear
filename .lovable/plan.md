@@ -1,39 +1,40 @@
 
 
-# Align Mobile Product Image with Page Content
+# Extend Mobile Image Width to Match Title Text
 
 ## Problem
-The product image currently uses `-mx-4` on mobile, which makes it bleed edge-to-edge while all other content (Back button, badges, title, price) respects the `px-4` page padding. This creates a visual misalignment — the image is wider than everything else.
+On mobile (390px viewport), the `max-h-[45vh]` cap limits the image height to ~240px. Because the image uses `aspect-square`, this also constrains its **width** to ~240px — much narrower than the ~358px container width. The product title text fills the full container width, so the image appears noticeably narrower than the text below it.
 
-## Change
+## Root Cause
+`aspect-square` + `max-h-[45vh]` = height drives width. At 535px viewport height, 45vh = ~240px, so the square image becomes 240×240px instead of filling the available ~358px width.
 
-### ProductDetail.tsx (line 205)
-Remove the `-mx-4 sm:mx-0` wrapper so the image sits within the same `px-4` padding as the rest of the page content.
+## Fix
 
-```
-// Before
-<div className="-mx-4 sm:mx-0">
-
-// After
-<div>
-```
-
-### ProductImageCarousel.tsx (line 90)
-Add `rounded-lg` on mobile too (currently only `md:rounded-lg`), since the image will no longer touch screen edges.
+### ProductImageCarousel.tsx (line 81)
+Remove the mobile `max-h-[45vh]` and only apply the max-height cap at `md` breakpoint where it's needed for desktop layout.
 
 ```
 // Before
-"relative overflow-hidden bg-secondary group md:rounded-lg"
+"aspect-square max-h-[45vh] md:max-h-none md:aspect-[4/3]"
 
 // After
+"aspect-square md:max-h-none md:aspect-[4/3]"
+```
+
+Additionally, add `w-full` to the container (line 90) to ensure it stretches to full width:
+
+```
+// Before
 "relative overflow-hidden bg-secondary group rounded-lg"
+
+// After
+"relative overflow-hidden bg-secondary group rounded-lg w-full"
 ```
 
-### Result
-On 390px mobile, the image will have 16px padding on both left and right — perfectly aligned with the Back button, title, price, and all other content below it.
+## Result
+On 390px mobile: the image fills the full container width (~358px) as a square (358×358px), perfectly aligned with the title text width. Desktop layout remains unchanged.
 
 | File | Change |
 |------|--------|
-| `src/pages/ProductDetail.tsx` | Remove `-mx-4 sm:mx-0` from image wrapper |
-| `src/components/product/ProductImageCarousel.tsx` | `md:rounded-lg` → `rounded-lg` |
+| `src/components/product/ProductImageCarousel.tsx` | Remove `max-h-[45vh]`, add `w-full` |
 
