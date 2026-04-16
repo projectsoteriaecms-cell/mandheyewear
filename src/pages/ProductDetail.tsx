@@ -266,6 +266,17 @@ const ProductDetail = () => {
             </div>
           </div>
 
+          {/* Rich Description */}
+          <div className="mb-8 lg:mb-12">
+            <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground mb-4">
+              Product Details
+            </h2>
+            <ProductDescription
+              descriptionHtml={(product as any).description_html}
+              description={product.description}
+            />
+          </div>
+
           {/* Specifications */}
           <div className="mb-12 lg:mb-16">
             <ProductSpecifications product={product} />
