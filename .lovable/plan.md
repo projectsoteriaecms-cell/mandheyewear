@@ -1,44 +1,47 @@
 
 
-# Updated AR Platform Cost Analysis v3 — Expanded Competitive Comparison
+# Updated AR Platform Cost Analysis v4 — Corrections
 
-## What Changed
+## Changes from v3
 
-The existing v2 PDF only compared Google+Snap vs Banuba. The two uploaded research documents contain detailed evaluations of **9 additional AR/SaaS platforms** that need to be incorporated into an expanded comparison matrix. Also, references to "Google AI Ultra plan" in the DCH research brief should be ignored — the correct framing is the **Google Gemini paid API** (pay-as-you-go), which is already how v2 presents it.
+### 1. Demo Links Added for All Platforms
+Each platform in the comparison matrix will include a clickable demo link:
 
-## Platforms to Include in Expanded Comparison
+| Platform | Demo Link |
+|----------|-----------|
+| Google MediaPipe | mediapipe-studio.webapps.google.com/studio/demo/face_landmarker |
+| Fittingbox | info.fittingbox.com/en/virtual-try-on-get-demo |
+| GlamAR | webflow-prod.glamar.io/demo-store/eyewear |
+| Perfect Corp | perfectcorp.com/business/showcase/eye-wear |
+| OculFit | oculfit.com (+ App Store / Play Store links) |
+| Zakeke | admin.zakeke.com/Admin/Register (free trial) |
+| VARAi | varai.com/contact-us (schedule demo) |
+| DeepAR | demo.deepar.ai/quickstart-web-js-npm |
+| MirrAR | mirrar.in/contactus (book demo) |
+| Banuba | banuba.com/glasses-virtual-try-on (free trial) |
 
-From the research documents, the following platforms will be added alongside the existing Google+Snap and Banuba entries:
+### 2. Remove Snap Lens Studio as Separate Entry
+Since it's already combined with Google MediaPipe as the "Power Couple," it will no longer appear as a standalone competitor row in the comparison matrix. The comparison will show **9 competitors** vs the M&H Google+Snap solution.
 
-| Platform | Type | Monthly Cost | Key Strength |
-|----------|------|-------------|--------------|
-| **Fittingbox** | SaaS + Plugin | $59–$199/mo | 195K pre-digitised frames, frame removal, easiest integration |
-| **GlamAR** | SaaS + SDK | Flexible/tiered | Best value — AR + PD + AI model generation in one |
-| **Perfect Corp (YouCam)** | Enterprise SaaS | Enterprise pricing | Best photo try-on quality, used by Essilor/Safilo |
-| **OculFit** | SaaS + API | €70–€200/mo | Clinical-grade (<1mm PD), seg height, vertex distance |
-| **Zakeke** | SaaS + Plugin | $29.90–$149.90/mo | Affordable, hyper-realistic WebAR, 3D configurator |
-| **VARAi** | SaaS + Toolkit | ~$129+/mo | AI Content Studio, auto-3D models |
-| **DeepAR** | SDK | Free–$99/mo | AR effects only, no PD — not recommended |
-| **MirrAR** | Enterprise | Custom pricing | Multi-category (jewellery/watches), retail-only |
-| **Snap Lens Studio** | Free SDK | $0 licensing | Highest capability, highest build cost |
+### 3. Revised Maintenance Cost Structure (Decreasing Over Time)
 
-## PDF Structure (v3)
+| Period | Frequency | Rate | Annual Total |
+|--------|-----------|------|-------------|
+| Year 1 | Quarterly (4x) | ₦350,000 | ₦1,400,000 |
+| Year 2 | Quarterly (4x) | ₦250,000 | ₦1,000,000 |
+| Year 3 | Semi-annual (2x) | ₦200,000 | ₦400,000 |
 
-The new PDF (`/mnt/documents/mh-platform-cost-analysis-v3.pdf`) will retain all v2 content and add:
+### 4. Updated Multi-Year Projections
 
-### New Section: "Comprehensive AR SDK & SaaS Market Comparison" (after current Section 3)
-- **Full comparison matrix** — all 11 platforms evaluated across: Live AR Try-On, PD Measurement, Facial Diagnostics, Photo Try-On, Integration Complexity, Pricing, and Platform Assessment
-- **Pricing comparison chart** — visual bar chart showing annual cost of each platform vs M&H's Google+Snap approach (₦0 SDK + dev fee)
-- **3-Year TCO table** — Total Cost of Ownership comparing M&H approach vs subscribing to Banuba, Fittingbox, OculFit, etc.
-- **DCH Recommendation** framing the phased approach from the research: Phase 1 (GlamAR for retail), Phase 1 Clinical (Banuba for PD), Phase 2 (Snap Lens Studio for SaaS scale)
+| Item | Year 1 | Year 2 | Year 3 |
+|------|--------|--------|--------|
+| Development | ₦950,000 | — | — |
+| Google Cloud AI | ~₦800,000 | ~₦600,000 | ~₦600,000 |
+| Maintenance | ₦1,400,000 | ₦1,000,000 | ₦400,000 |
+| **Total** | **~₦3,150,000** | **~₦1,600,000** | **~₦1,000,000** |
 
-### Updated Section: Competitive Advantage
-- Expand beyond just Banuba — show how Google+Snap beats all subscription-based alternatives on cost
-- Emphasize: "Google AI Ultra" is NOT what powers this — it is the **Gemini paid API** (pay-as-you-go, no subscription)
+**3-Year Grand Total: ~₦5,750,000** (showing clear cost reduction as the platform matures)
 
-### All Existing Sections Retained
-- Executive Summary, Power Couple architecture, cost breakdown, budget runway, maintenance, Year 1 projection, recommendation — all carried forward from v2
-
-## Technical Approach
-Python + ReportLab branded PDF with M&H Ink/Cream palette. Same styling as v2. Approximately 12–14 pages. No mention of Lovable. All "Google AI Ultra" references from the research docs will be reframed as "Google Gemini API (pay-as-you-go)."
+## Output
+Updated PDF at `/mnt/documents/mh-platform-cost-analysis-v4.pdf` — same M&H Ink/Cream branding, ReportLab + matplotlib, ~15 pages. All corrections applied. No Lovable references.
 
