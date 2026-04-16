@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProductImageGallery } from "@/components/product/ProductImageGallery";
+import { ProductReviews } from "@/components/product/ProductReviews";
+import { useReviewStats } from "@/components/product/hooks/useProductReviews";
 import { ProductSpecifications } from "@/components/product/ProductSpecifications";
 import { ProductDescription } from "@/components/product/ProductDescription";
 import { AddToCartSection } from "@/components/product/AddToCartSection";
@@ -22,12 +24,36 @@ import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { useTrackActivity } from "@/shared/hooks/useTrackActivity";
 import { ArrowLeft, Star, ShoppingBag } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
+
+function ReviewStarsSummary({ productId }: { productId: string }) {
+  const stats = useReviewStats(productId);
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex">
+        {[1, 2, 3, 4, 5].map((s) => (
+          <Star
+            key={s}
+            className={cn(
+              "h-4 w-4",
+              s <= Math.round(stats.average) ? "fill-accent text-accent" : "text-muted-foreground/30"
+            )}
+          />
+        ))}
+      </div>
+      <span className="text-xs text-muted-foreground">
+        {stats.total > 0 ? `${stats.average.toFixed(1)} (${stats.total} review${stats.total !== 1 ? "s" : ""})` : "No reviews yet"}
+      </span>
+    </div>
+  );
+}
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -201,15 +227,8 @@ const ProductDetail = () => {
                 {product.name}
               </h1>
 
-              {/* Rating */}
-              <div className="flex items-center gap-2">
-                <div className="flex">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="h-4 w-4 fill-accent text-accent" />
-                  ))}
-                </div>
-                <span className="text-xs text-muted-foreground">(12 reviews)</span>
-              </div>
+              {/* Rating — live from reviews */}
+              <ReviewStarsSummary productId={product.id} />
 
               {/* Social Proof */}
               <SocialProofBadge productId={product.id} />
@@ -249,6 +268,11 @@ const ProductDetail = () => {
               />
             </div>
           )}
+
+          {/* Reviews Section */}
+          <div className="mb-10 lg:mb-16">
+            <ProductReviews productId={product.id} />
+          </div>
 
           {/* Related Products */}
           {filteredRelated && filteredRelated.length > 0 && (
