@@ -1,24 +1,30 @@
 
 
-# Mobile Image Height Reduction
+# Mobile Image — Square Aspect Ratio
 
 ## Problem
-On mobile (390px), the image uses `aspect-[4/5]` which produces ~488px height — too tall, leaving no room for product title/price before scrolling.
+The current `aspect-[5/6]` with `max-h-[40vh]` is making the image shorter but also narrower, leaving a gap on the right. A square aspect ratio (`aspect-square`) would balance width and height naturally while keeping the image well-contained.
 
 ## Change
 
 ### ProductImageCarousel.tsx (line 81)
-- Change mobile aspect from `aspect-[4/5]` to `aspect-[5/6]` (shorter) and add `max-h-[40vh]` on mobile to cap the height
-- This keeps the image wide and full-bleed but limits vertical space so title, price, and CTA peek above the fold
+```
+// Before
+"aspect-[5/6] max-h-[40vh] md:max-h-none md:aspect-[4/3]"
 
-**Specifically:**
-- Line 81: `aspect-[4/5] md:aspect-[4/3]` → `aspect-[5/6] max-h-[40vh] md:max-h-none md:aspect-[4/3]`
+// After
+"aspect-square max-h-[45vh] md:max-h-none md:aspect-[4/3]"
+```
+
+- `aspect-square` → 1:1 ratio, perfectly balanced width-to-height
+- `max-h-[45vh]` → bumped slightly from 40vh to 45vh so the square doesn't get overly compressed on shorter screens (on a 390px phone this gives ~380px, which is essentially full-width square)
+- Tablet/desktop unchanged (`md:aspect-[4/3]`)
 
 ### Result
-On a 390×844 phone: image height capped at ~338px instead of ~488px, leaving ~400px for product info visible without scrolling.
+On 390px mobile: image renders at ~390×390px — full width, balanced square, no wasted space on the right, no excessive vertical stretch. Product info (title, price, CTA) remains visible below.
 
 ### File
 | File | Change |
 |------|--------|
-| `src/components/product/ProductImageCarousel.tsx` | Shorter mobile aspect + `max-h-[40vh]` cap |
+| `src/components/product/ProductImageCarousel.tsx` | `aspect-[5/6] max-h-[40vh]` → `aspect-square max-h-[45vh]` |
 
