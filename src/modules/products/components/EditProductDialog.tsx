@@ -672,6 +672,48 @@ export const EditProductDialog = ({
             </ScrollArea>
           </TabsContent>
 
+          <TabsContent value="description">
+            <ScrollArea className="max-h-[60vh] pr-4">
+              <div className="py-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    AI-generated rich product description for the storefront.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateDescription}
+                    disabled={isGeneratingDesc}
+                  >
+                    {isGeneratingDesc ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="mr-2 h-4 w-4" />
+                    )}
+                    {isGeneratingDesc ? "Generating…" : "Generate Description"}
+                  </Button>
+                </div>
+
+                {descriptionHtml ? (
+                  <div className="border rounded-lg p-4 bg-muted/30">
+                    <h4 className="text-sm font-medium mb-2">Preview</h4>
+                    <div
+                      className="prose prose-sm dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+                    />
+                  </div>
+                ) : (
+                  <div className="border rounded-lg p-8 text-center text-muted-foreground bg-muted/20">
+                    <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">No rich description yet.</p>
+                    <p className="text-xs mt-1">Click "Generate Description" to create one using AI.</p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
           <TabsContent value="images">
             <div className="py-4">
               <ProductImageUpload
