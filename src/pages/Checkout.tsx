@@ -276,21 +276,16 @@ const Checkout = () => {
         },
         onClose: () => {
           setIsProcessing(false);
-          toast({
-            title: "Payment Cancelled",
-            description: "You closed the payment window. No charges were made.",
-          });
+          setPaymentError("You closed the payment window. No charges were made.");
+          setShowRetryPrompt(true);
         },
       });
 
       handler.openIframe();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Payment failed";
-      toast({
-        title: "Payment Error",
-        description: message,
-        variant: "destructive",
-      });
+      setPaymentError(message);
+      setShowRetryPrompt(true);
       setIsProcessing(false);
     }
   };
