@@ -607,6 +607,8 @@ const Checkout = () => {
                   </div>
                 </div>
 
+                <PriceLockBadge />
+
                 <Button
                   variant="hero"
                   size="lg"
