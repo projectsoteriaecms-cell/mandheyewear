@@ -835,6 +835,7 @@ export type Database = {
           order_status: Database["public"]["Enums"]["order_status"]
           payment_reference: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
+          review_requested_at: string | null
           shipped_at: string | null
           shipping_address: Json | null
           shipping_fee: number | null
@@ -858,6 +859,7 @@ export type Database = {
           order_status?: Database["public"]["Enums"]["order_status"]
           payment_reference?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          review_requested_at?: string | null
           shipped_at?: string | null
           shipping_address?: Json | null
           shipping_fee?: number | null
@@ -881,6 +883,7 @@ export type Database = {
           order_status?: Database["public"]["Enums"]["order_status"]
           payment_reference?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          review_requested_at?: string | null
           shipped_at?: string | null
           shipping_address?: Json | null
           shipping_fee?: number | null
