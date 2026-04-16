@@ -1,78 +1,54 @@
 
 
-# Product Page UX Optimization — Amazon-Grade Experience
+# Product Page UX Optimization — Zero-Scroll Decision Making
 
-## Current Problems Identified
+## Problem
+On desktop (1024px+), the product image uses `aspect-[4/5]` which is extremely tall, pushing the right-column content (price, buttons) below the fold. The grid is `[1fr_380px]` giving the image column too much space. Users must scroll to reach decision-critical elements.
 
-1. **Image gallery is static** — no auto-slide, no swipe gestures, no zoom. Users must manually click thumbnails.
-2. **Mobile PDP requires excessive scrolling** — image takes full viewport square, then price/title/description/actions are all below the fold.
-3. **QuickView dialog has no auto-slide** — manual arrows only, no swipe on mobile.
-4. **No image zoom** — Amazon lets users hover (desktop) or pinch-zoom (mobile) to inspect product details.
-5. **Desktop layout wastes vertical space** — the hero section (image + price + Add to Cart) should all be visible without scrolling, like Amazon.
-6. **Duplicate action buttons** — PDP has both an `AddToCartSection` (desktop) AND separate Wishlist/Try-On buttons outside it, creating redundancy.
-7. **MobileActionBar is minimal** — only shows price + Add to Cart, missing Try-On and Wishlist quick actions.
+## Root Causes
+1. **Image aspect ratio `4/5`** — too tall for desktop; forces ~600-700px height on a typical 1080p screen
+2. **Grid split `1fr / 380px`** — image column takes ~60% of width, making it massive
+3. **`pt-28 sm:pt-32`** top padding — ~128px consumed before content starts
+4. **Right column has `space-y-3` then `space-y-4` inside AddToCartSection** — cumulative whitespace pushes buttons down
+5. **Trust badges, social proof, qty selector** all eat vertical space before the CTA buttons
 
-## What We'll Build
+## Plan
 
-### 1. Auto-Sliding Image Carousel (Both PDP and QuickView)
-- Replace the static `ProductImageGallery` with an Embla-powered carousel (already installed)
-- **Auto-play every 3 seconds**, pauses on hover/touch
-- **Swipe gestures** on mobile (left/right to navigate)
-- **Dot indicators** on mobile, **thumbnail strip** on desktop
-- **Prev/Next arrows** on desktop hover
-- Shared hook `useProductCarousel` for both PDP and QuickView
+### 1. Tighten Desktop Image (ProductImageCarousel.tsx)
+- Change PDP aspect from `aspect-[4/5]` to `aspect-[4/3]` on desktop (`lg:aspect-[4/3]`), keep mobile at `aspect-[3/4]` (portrait for phones)
+- Add `lg:max-h-[calc(100vh-180px)]` so the image never exceeds viewport minus nav+breadcrumb
+- Thumbnails stay as-is (they're compact)
 
-### 2. Desktop: "Above the Fold" Hero Layout
-- Make the image carousel use `aspect-[4/5]` instead of `aspect-square` to be taller and more impactful
-- Ensure price, Add to Cart, and Buy Now are all visible without scrolling on a 1024px+ viewport
-- Add a **"Buy Now"** button (skips cart, goes straight to checkout) alongside Add to Cart — Amazon's biggest conversion trick
-- Sticky right column on desktop so product info stays visible while scrolling through details
+### 2. Rebalance Grid Layout (ProductDetail.tsx)
+- Change grid from `lg:grid-cols-[1fr_380px]` to `lg:grid-cols-2` — equal 50/50 split gives more room for the right column
+- Reduce top padding: `pt-20 sm:pt-24` (save ~32px)
+- Reduce breadcrumb margin: `mb-2 lg:mb-3`
+- Tighten right column spacing: `space-y-2` instead of `space-y-3`
 
-### 3. Mobile: Compact Above-the-Fold Product Hero
-- Image carousel takes ~60% of viewport height (not full square)
-- Price and product name overlay on the bottom of the image (semi-transparent gradient) so users see them immediately
-- Swipe-to-navigate images
-- Enhanced `MobileActionBar` with "Buy Now" + "Add to Cart" split buttons
+### 3. Compact AddToCartSection (AddToCartSection.tsx)
+- Reduce price from `text-3xl` to `text-2xl`
+- Remove the "NGN • VAT inclusive" subtitle line (save a row)
+- Make qty selector inline with price row on desktop
+- Change `space-y-4` to `space-y-3`
+- Make Buy Now and Add to Cart side-by-side on desktop (`flex-row` on `lg:`) instead of stacked
+- Compact trust badges: single row with smaller padding
 
-### 4. QuickView Dialog Upgrade
-- Same auto-sliding carousel with swipe support
-- Tighter layout: image takes 50% width on desktop, details on right
-- "Buy Now" button added alongside Add to Cart
+### 4. Mobile Viewport (390px)
+- Image: `aspect-[4/3]` with `max-h-[45vh]` — show product but leave room for title+price
+- Tighter padding throughout
+- Price visible immediately below image
 
-### 5. Image Zoom
-- **Desktop**: CSS `transform: scale(2)` on hover with `overflow: hidden` container, following cursor position
-- **Mobile**: Tap-to-zoom fullscreen overlay with pinch-zoom support
+### 5. QuickView Dialog (ProductQuickView.tsx)  
+- Already decent, minor tightening: reduce `gap-5` to `gap-4`, compact specs grid
 
-### 6. Streamlined Product Info Hierarchy
-Reorder the right column to match Amazon's proven layout:
-```text
-1. Product Name (h1)
-2. Rating stars + review count
-3. Price (large, bold) + Stock badge
-4. Social proof ("X viewing today")
-5. [Buy Now] [Add to Cart] — side by side
-6. [Virtual Try-On] [Wishlist] — secondary row
-7. Trust badges (shipping, returns)
-8. Specs accordion (collapsed)
-9. Description accordion (collapsed)
-```
+### Files Modified
+| File | Changes |
+|------|---------|
+| `ProductImageCarousel.tsx` | Responsive aspect ratios, viewport-constrained height |
+| `ProductDetail.tsx` | 50/50 grid, reduced padding, tighter spacing |
+| `AddToCartSection.tsx` | Compact layout, inline price+qty, side-by-side CTAs |
+| `ProductQuickView.tsx` | Minor spacing tightening |
 
-## Files to Create/Modify
-
-| File | Action |
-|------|--------|
-| `src/components/product/ProductImageCarousel.tsx` | **NEW** — Embla carousel with auto-play, swipe, zoom |
-| `src/components/product/ProductImageGallery.tsx` | **REPLACE** — swap to use `ProductImageCarousel` |
-| `src/pages/ProductDetail.tsx` | **EDIT** — reorder layout, add sticky column, Buy Now, compact mobile hero |
-| `src/components/product/AddToCartSection.tsx` | **EDIT** — add Buy Now button, streamline layout |
-| `src/components/mobile/MobileActionBar.tsx` | **EDIT** — add Buy Now split action |
-| `src/modules/storefront/components/shared/ProductQuickView.tsx` | **EDIT** — use new carousel, add Buy Now |
-
-## Technical Notes
-- Uses existing Embla Carousel dependency (already in `components/ui/carousel.tsx`)
-- Auto-play plugin: `embla-carousel-autoplay` (needs install)
-- Swipe is native to Embla — no custom gesture code needed
-- Image zoom uses pure CSS transforms — no additional libraries
-- "Buy Now" navigates to `/checkout` with a single-item cart override (query param `?buyNow=productId&qty=1`)
-- All changes are frontend-only, no backend modifications
+### Result
+On a 1080p desktop screen, users will see: product image, title, stars, price, Buy Now, and Add to Cart — all without scrolling. Description/specs remain in accordions below the fold.
 
