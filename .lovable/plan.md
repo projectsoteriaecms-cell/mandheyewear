@@ -1,71 +1,65 @@
 
 
-# AR Platform Cost Analysis — Stakeholder-Ready PDF
+# Combined AR Platform Cost Analysis — Google MediaPipe + Snap Lens Studio
 
-## Context
+## What I'll Create
 
-Your system already uses **Google MediaPipe** (free, open-source, Apache 2.0) for Live AR face tracking — this is Google's equivalent to Snap's face mesh SDK. Combined with **Snap Lens Studio + Camera Kit** (also free for developers), you have two world-class AR platforms at zero SDK licensing cost.
+An updated stakeholder-ready PDF at `/mnt/documents/mh-platform-cost-analysis-v2.pdf` that presents the Google + Snap "Power Couple" AR strategy with full cost breakdown.
 
-### Google vs Snap AR SDK Comparison
-
-| Capability | Google MediaPipe | Snap Camera Kit + Lens Studio |
-|---|---|---|
-| 3D Face Mesh | 478 landmarks, free | 3D face mesh, free |
-| Web Support | Yes (JS/WASM) | Yes (Web SDK) |
-| AR Lens Creation | N/A (code-based) | Visual editor (Lens Studio) |
-| Commercial License | Apache 2.0 (free forever) | Free for developers |
-| Per-use API cost | $0 | $0 |
-| Clinical-grade PD/measurement | Via Gemini API (pay-as-you-go) | Not built-in |
-
-**Key insight**: Both SDKs are completely free. The only costs are:
-1. **Google Gemini API** for AI analysis (pay-as-you-go, covered in existing analysis)
-2. **Development** (one-off) and **Maintenance** (quarterly)
-
-## What I'll Generate
-
-An updated stakeholder PDF at `/mnt/documents/mh-platform-cost-analysis-v2.pdf` that combines:
+## Report Structure
 
 ### Section 1: Executive Summary
-- The entire AI + AR platform runs on free SDKs with no subscriptions
-- Only costs: one-off development + quarterly maintenance + pay-as-you-go AI usage
+- Two free, world-class SDKs (Google MediaPipe + Snap Camera Kit) combined into one clinical-grade AR platform
+- No subscriptions, no per-use SDK fees — only development, maintenance, and pay-as-you-go AI
 
-### Section 2: Technology Stack (Simple Terms)
-- Google MediaPipe = face tracking engine (free)
-- Snap Lens Studio = AR effects/try-on engine (free)
-- Google Gemini API = AI brain for measurements & image generation (pay-as-you-go)
+### Section 2: The "Power Couple" — Why This Combination Wins
+- **Google MediaPipe** = Performance engine (478-point face mesh, on-device ML, battery-efficient tracking, clinical-grade PD measurement)
+- **Snap Lens Studio + Camera Kit** = Creative engine (3D assets, AR effects, interactive filters, GenAI features, massive pre-built library)
+- **Google Gemini API** = AI brain (image generation, eye screening, facial analysis)
+- Simple diagram showing how they connect
 
-### Section 3: What's Included in Development (₦950,000 One-Off)
-- Live AR Virtual Try-On with 3D face tracking
-- AI-powered product image generation (2,000 images)
+### Section 3: Competitive Advantage vs Banuba
+- Side-by-side comparison table (Google+Snap vs Banuba)
+- Cost: Free SDKs vs paid commercial license
+- Customization: Deep clinical integration vs plug-and-play
+- Quality: Combined strengths vs single-vendor limitations
+- Why this combination is superior for M&H's specific clinical + fashion use case
+
+### Section 4: Platform Capabilities Delivered
+- Live AR Virtual Try-On with 3D frame overlays
 - Clinical-grade PD & facial measurement
+- AI-powered product image generation (2,000 images)
 - Eye condition screening module
-- Full integration with M&H Eyewear platform
+- Real-time face tracking with creative AR effects
 
-### Section 4: Google Cloud AI Usage (Pay-As-You-Go)
-- Carried forward from v1 analysis: ~$200 bulk + ~$40/month ongoing
-- Recommendation: Load $500–$1,000, monitor spend
+### Section 5: Complete Cost Breakdown
 
-### Section 5: Quarterly Maintenance & Support (₦350,000/quarter)
-- Platform updates and bug fixes
-- New lens/AR effect development
-- AI model tuning and monitoring
-- Security patches and performance optimization
-
-### Section 6: Total Cost Summary Table
 | Item | Type | Amount |
-|---|---|---|
+|------|------|--------|
 | Platform Development | One-off | ₦950,000 |
 | Google Cloud AI (initial load) | One-off | $500–$1,000 |
-| Quarterly Maintenance | Recurring | ₦350,000/quarter |
-| SDK Licensing | — | ₦0 (Free) |
-| Subscriptions | — | ₦0 (None required) |
+| Quarterly Maintenance & Support | Recurring | ₦350,000/quarter |
+| Google MediaPipe SDK | — | ₦0 (Free, Apache 2.0) |
+| Snap Lens Studio + Camera Kit | — | ₦0 (Free for developers) |
+| Monthly subscriptions | — | ₦0 (None required) |
+
+### Section 6: Google Cloud AI Usage Detail
+- Product images: 2,000 × ~$0.10 = ~$200
+- VTO: 500/month × ~$0.08 = ~$40/month
+- PD + Eye screening: ~$0.002–$0.01/scan (negligible)
+- Budget runway projections ($500 vs $1,000)
 
 ### Section 7: Year 1 Total Projection
 - Development: ₦950,000
 - AI Usage: ~$500 (~₦800,000 at ₦1,600/$)
 - Maintenance (4 quarters): ₦1,400,000
-- **Year 1 Total: ~₦3,150,000** (no hidden costs, no subscriptions)
+- **Year 1 Total: ~₦3,150,000** — no hidden costs, no subscriptions, no licensing fees
+
+### Section 8: Recommendation
+- Start with $500 Google Cloud deposit
+- Monitor spend via Google Cloud Console
+- Scale AI usage as customer adoption grows
 
 ## Technical Approach
-Python + ReportLab branded PDF with M&H Ink/Cream palette, clean tables, and a simple cost chart. No mention of Lovable anywhere.
+Python + ReportLab branded PDF with M&H Ink/Cream palette, comparison tables, cost charts, and architecture diagram. No mention of Lovable anywhere. Framed entirely as a Google + Snap technical strategy.
 
