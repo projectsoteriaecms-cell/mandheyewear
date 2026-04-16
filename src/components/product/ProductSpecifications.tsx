@@ -1,12 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Ruler, Palette, Layers, Eye } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Product } from "@/modules/products/hooks/useProducts";
 
 interface ProductSpecificationsProps {
   product: Product;
+  /** Compact mode for accordion/inline use */
+  compact?: boolean;
 }
 
-export const ProductSpecifications = ({ product }: ProductSpecificationsProps) => {
+export const ProductSpecifications = ({ product, compact = false }: ProductSpecificationsProps) => {
   const specs = [
     { label: "Frame Width", value: product.frame_width, icon: Ruler },
     { label: "Bridge Size", value: product.bridge_size, icon: Ruler },
@@ -15,6 +18,28 @@ export const ProductSpecifications = ({ product }: ProductSpecificationsProps) =
     { label: "Color", value: product.color, icon: Palette },
     { label: "Style", value: product.style, icon: Eye },
   ].filter((spec) => spec.value);
+
+  if (compact) {
+    return (
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          {specs.map((spec) => (
+            <div key={spec.label} className="flex items-center gap-1.5">
+              <spec.icon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground">{spec.label}:</span>
+              <span className="font-medium capitalize truncate">{spec.value}</span>
+            </div>
+          ))}
+        </div>
+        {product.is_prescription_compatible && (
+          <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-300">
+            <Eye className="h-4 w-4" />
+            <span className="font-medium">Prescription Compatible</span>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <Card>
@@ -36,7 +61,6 @@ export const ProductSpecifications = ({ product }: ProductSpecificationsProps) =
           ))}
         </div>
 
-        {/* Prescription Compatible Badge */}
         {product.is_prescription_compatible && (
           <div className="mt-6 p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
             <div className="flex items-center gap-2">
