@@ -158,6 +158,37 @@ export const EditProductDialog = ({
       });
       setPrimaryImage(product.image_url);
       setAdditionalImages(product.additional_images || []);
+      setDescriptionHtml((product as any).description_html || null);
+    }
+  }, [product, form]);
+
+  const handleGenerateDescription = useCallback(async () => {
+    if (!product) return;
+    setIsGeneratingDesc(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("enrich-product-descriptions", {
+        body: { productId: product.id },
+      });
+      if (error) throw error;
+      if (data?.results?.[0]?.success) {
+        toast.success("Rich description generated successfully!");
+        // Fetch updated description
+        const { data: updated } = await supabase
+          .from("products")
+          .select("description_html, description")
+          .eq("id", product.id)
+          .single();
+        if (updated) {
+          setDescriptionHtml((updated as any).description_html);
+          form.setValue("description", (updated as any).description || "");
+        }
+      } else {
+        toast.error(data?.results?.[0]?.error || "Failed to generate description");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate description");
+    } finally {
+      setIsGeneratingDesc(false);
     }
   }, [product, form]);
 
