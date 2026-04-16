@@ -171,6 +171,80 @@ export type Database = {
         }
         Relationships: []
       }
+      browse_nudge_log: {
+        Row: {
+          id: string
+          product_id: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "browse_nudge_log_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cart_abandonment_events: {
+        Row: {
+          abandoned_at: string
+          cart_snapshot: Json
+          created_at: string | null
+          currency: string | null
+          discount_code: string | null
+          id: string
+          recovered_at: string | null
+          step_1_sent_at: string | null
+          step_2_sent_at: string | null
+          step_3_sent_at: string | null
+          total_value: number
+          user_id: string
+        }
+        Insert: {
+          abandoned_at?: string
+          cart_snapshot?: Json
+          created_at?: string | null
+          currency?: string | null
+          discount_code?: string | null
+          id?: string
+          recovered_at?: string | null
+          step_1_sent_at?: string | null
+          step_2_sent_at?: string | null
+          step_3_sent_at?: string | null
+          total_value?: number
+          user_id: string
+        }
+        Update: {
+          abandoned_at?: string
+          cart_snapshot?: Json
+          created_at?: string | null
+          currency?: string | null
+          discount_code?: string | null
+          id?: string
+          recovered_at?: string | null
+          step_1_sent_at?: string | null
+          step_2_sent_at?: string | null
+          step_3_sent_at?: string | null
+          total_value?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string
