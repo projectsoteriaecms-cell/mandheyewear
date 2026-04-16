@@ -154,29 +154,36 @@ serve(async (req) => {
           has_clip_on: frame?.has_clip_on,
         };
 
-        // Call Lovable AI
+        // Call Gemini API directly (gemini-2.5-flash for best speed/quality balance)
         const aiResponse = await withRetry(async () => {
-          const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${LOVABLE_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "google/gemini-2.5-flash",
-              messages: [
-                { role: "system", content: DESCRIPTION_TEMPLATE },
-                {
-                  role: "user",
-                  content: `Generate a rich HTML product description for this eyewear product:\n\n${JSON.stringify(productContext, null, 2)}\n\nReturn ONLY the HTML, no explanation or wrapping.`,
+          const resp = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                systemInstruction: { parts: [{ text: DESCRIPTION_TEMPLATE }] },
+                contents: [
+                  {
+                    role: "user",
+                    parts: [
+                      {
+                        text: `Generate a rich HTML product description for this eyewear product:\n\n${JSON.stringify(productContext, null, 2)}\n\nReturn ONLY the HTML, no explanation or wrapping.`,
+                      },
+                    ],
+                  },
+                ],
+                generationConfig: {
+                  temperature: 0.7,
+                  maxOutputTokens: 2048,
                 },
-              ],
-            }),
-          });
+              }),
+            }
+          );
 
           if (!resp.ok) {
             const errText = await resp.text();
-            const err: any = new Error(`AI gateway error: ${resp.status} ${errText}`);
+            const err: any = new Error(`Gemini API error: ${resp.status} ${errText}`);
             err.status = resp.status;
             throw err;
           }
