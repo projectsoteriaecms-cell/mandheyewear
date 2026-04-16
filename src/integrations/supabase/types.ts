@@ -887,6 +887,7 @@ export type Database = {
           created_at: string
           currency: string | null
           description: string | null
+          description_html: string | null
           description_raw: string | null
           external_id: string | null
           frame_width: string | null
@@ -923,6 +924,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           description?: string | null
+          description_html?: string | null
           description_raw?: string | null
           external_id?: string | null
           frame_width?: string | null
@@ -959,6 +961,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           description?: string | null
+          description_html?: string | null
           description_raw?: string | null
           external_id?: string | null
           frame_width?: string | null
