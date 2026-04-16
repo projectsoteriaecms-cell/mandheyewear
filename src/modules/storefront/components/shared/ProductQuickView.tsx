@@ -114,7 +114,7 @@ export const ProductQuickView = ({ productId, isOpen, onClose }: ProductQuickVie
       <Skeleton className="h-10 w-full" />
     </div>
   ) : product ? (
-    <div className="grid md:grid-cols-2 gap-5">
+    <div className="grid md:grid-cols-2 gap-4">
       {/* Image Carousel */}
       <div className="relative">
         <ProductImageCarousel
