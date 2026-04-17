@@ -36,6 +36,7 @@ interface TryOnResultProps {
   onAddToWishlist?: () => void;
   onClear?: () => void;
   className?: string;
+  compact?: boolean;
 }
 
 export const TryOnResult = ({
@@ -49,6 +50,7 @@ export const TryOnResult = ({
   onAddToWishlist,
   onClear,
   className,
+  compact = false,
 }: TryOnResultProps) => {
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const {
