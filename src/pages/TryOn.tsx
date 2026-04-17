@@ -223,41 +223,47 @@ const TryOn = () => {
           ) : (
             /* Photo Mode (existing AI VTO) */
             <>
-              {/* Info Banner */}
-              <Alert className="mb-8 bg-primary/5 border-primary/20">
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>How it works:</strong> Upload a clear, front-facing photo → Browse our frames → 
-                  Click "Try This Frame" → AI generates a realistic preview in seconds!
-                </AlertDescription>
-              </Alert>
+              {/* Info Banner - only shown before upload */}
+              {!userPhoto && (
+                <Alert className="mb-8 bg-primary/5 border-primary/20">
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>How it works:</strong> Upload a clear, front-facing photo, then tap any frame below — the AI generates a realistic preview in seconds, right above the frames.
+                  </AlertDescription>
+                </Alert>
+              )}
 
-              {/* Main Content Grid */}
-              <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                {/* Left: Photo Upload */}
-                <div data-tour-step="upload">
-                  <PhotoUpload
-                    photo={userPhoto}
-                    onPhotoChange={setPhoto}
-                    isProcessing={isGenerating}
-                  />
-                </div>
-
-                {/* Right: Try-On Result */}
-                <div data-tour-step="result">
-                  <TryOnResult
-                    result={currentResult}
-                    userPhoto={userPhoto}
-                    isGenerating={isGenerating}
-                    onRetry={handleRetry}
-                    onAddToCart={handleAddToCart}
-                    onAddToWishlist={handleAddToWishlist}
-                    onClear={clearResult}
-                  />
-                </div>
+              {/* Step 1: Upload (collapses once a photo exists) */}
+              <div className="mb-6" data-tour-step="upload">
+                <PhotoUpload
+                  photo={userPhoto}
+                  onPhotoChange={setPhoto}
+                  isProcessing={isGenerating}
+                  compact={!!userPhoto}
+                />
               </div>
 
-              {/* Frame Picker */}
+              {/* Step 2: Sticky Try-On Stage - appears after upload */}
+              {userPhoto && (
+                <div
+                  className="sticky top-20 sm:top-24 z-30 mb-6 -mx-4 sm:mx-0 px-4 sm:px-0 py-3 sm:py-0 bg-background/95 sm:bg-transparent backdrop-blur-sm sm:backdrop-blur-none border-b sm:border-0 border-border"
+                  data-tour-step="result"
+                >
+                  <div className="rounded-xl sm:border sm:border-border sm:bg-card sm:shadow-sm sm:p-4">
+                    <TryOnResult
+                      result={currentResult}
+                      userPhoto={userPhoto}
+                      isGenerating={isGenerating}
+                      onRetry={handleRetry}
+                      onAddToCart={handleAddToCart}
+                      onAddToWishlist={handleAddToWishlist}
+                      onClear={clearResult}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Frame Picker - tap any card to try */}
               <div className="mb-8" data-tour-step="frames">
                 <FramePicker
                   products={frameProducts}
@@ -267,24 +273,8 @@ const TryOn = () => {
                   onTryOn={handleTryOn}
                   isGenerating={isGenerating}
                   disabled={!userPhoto}
-                  data-tour-step="try-button"
                 />
               </div>
-
-              {/* Bottom CTA for mobile - Photo mode only */}
-              {userPhoto && selectedFrame && !isGenerating && (
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border lg:hidden z-40">
-                  <Button
-                    variant="gold"
-                    size="lg"
-                    className="w-full"
-                    onClick={() => handleTryOn(selectedFrame)}
-                  >
-                    <Sparkles className="h-5 w-5 mr-2" />
-                    Try On {selectedFrame.name}
-                  </Button>
-                </div>
-              )}
             </>
           )}
 
