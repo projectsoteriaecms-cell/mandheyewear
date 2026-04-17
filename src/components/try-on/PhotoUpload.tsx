@@ -219,6 +219,8 @@ export const PhotoUpload = ({
       </Card>
     );
   }
+
+  return (
     <Card>
       <CardContent className="p-6 space-y-4">
         <h3 className="text-lg font-semibold text-foreground">Upload Your Photo</h3>
