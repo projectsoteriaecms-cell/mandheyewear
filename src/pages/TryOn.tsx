@@ -246,11 +246,12 @@ const TryOn = () => {
               {/* Step 2: Sticky Try-On Stage - appears after upload */}
               {userPhoto && (
                 <div
-                  className="sticky top-20 sm:top-24 z-30 mb-6 -mx-4 sm:mx-0 px-4 sm:px-0 py-3 sm:py-0 bg-background/95 sm:bg-transparent backdrop-blur-sm sm:backdrop-blur-none border-b sm:border-0 border-border"
+                  className="sticky top-16 z-30 mb-4 -mx-4 sm:mx-0 px-3 sm:px-0 py-2 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm"
                   data-tour-step="result"
                 >
-                  <div className="rounded-xl sm:border sm:border-border sm:bg-card sm:shadow-sm sm:p-4">
+                  <div className="rounded-lg sm:border sm:border-border sm:bg-card sm:p-3">
                     <TryOnResult
+                      compact
                       result={currentResult}
                       userPhoto={userPhoto}
                       isGenerating={isGenerating}
