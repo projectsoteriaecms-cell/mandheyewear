@@ -11,12 +11,14 @@ interface PhotoUploadProps {
   photo: string | null;
   onPhotoChange: (photo: string | null) => void;
   isProcessing?: boolean;
+  compact?: boolean;
 }
 
 export const PhotoUpload = ({
   photo,
   onPhotoChange,
   isProcessing = false,
+  compact = false,
 }: PhotoUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user, isAuthenticated } = useAuth();
