@@ -1,56 +1,42 @@
 
 
-# Fix Virtual Try-On UX Flow
+# Make the Try-On Stage Truly Sticky & Compact
 
-## The Problem (you're right)
-Current `/try-on` page forces this awkward dance:
-1. Upload photo (top-left)
-2. Scroll **down** to pick a frame
-3. Click "Try This Frame"
-4. Scroll back **up** to see result (top-right)
-5. Repeat for every frame
+## Root cause
+The "sticky stage" added last round is sticky in CSS, but `TryOnResult` is **too tall to ever stay in viewport** (449px viewport vs ~700px card). So when the user taps a frame, the result is technically pinned but pushed off-screen. The session replay confirms 1100–1700px of scrolling after frame taps.
 
-Two big issues: (a) the result lives far from the action, (b) the layout treats it like a static dashboard instead of a guided flow.
+## Fix: a compact "Stage" mode for TryOnResult
 
-## New UX: Progressive Single-Column Flow with Sticky Result
+Add a `compact` prop to `TryOnResult` that, when true, renders a **slim, viewport-friendly** version specifically for the sticky region:
 
-Replace the side-by-side grid + bottom picker with a **vertical, step-driven layout** where the result panel becomes the focal point as soon as a photo exists.
+- **Single image only** (the result), no Original/With-Frames split — the user's photo is already shown in the compact upload bar above.
+- **Inline header**: frame name + price on one line, action buttons (Cart, Heart, Download, Share) as **icon-only buttons** on the right.
+- **Idle state collapses to a 1-line hint** ("Tap a frame below to preview it here") — no giant 4:3 placeholder eating 60% of the viewport.
+- **Loading state keeps the previous result visible** with a small spinner badge overlay (instead of replacing the image with a skeleton) — so tapping frame #2 doesn't blank out frame #1.
+- **Fixed compact height**: image capped at ~`max-h-[40vh]` so the whole stage fits in ~50vh, leaving room for frame grid below.
 
-### Step 1 — Upload (full width, centered)
-- Compact PhotoUpload card. Once uploaded, it collapses to a small thumbnail with "Change photo" link. No more giant left column sitting empty.
+## Sticky stage refinements in `TryOn.tsx`
 
-### Step 2 — Sticky Try-On Stage (appears after upload)
-A two-pane sticky module that **pins to the top of the viewport** while the user scrolls frames:
-- **Left:** Result preview (the carousel / live result / loading state)
-- **Right (desktop) / below (mobile):** Currently selected frame card + Add to Cart / Wishlist / Download
+- Tighter sticky offset (`top-16`) and remove the nested `sm:p-4` wrapper padding.
+- Pass `compact` to `TryOnResult` inside the sticky container.
+- Keep the full-rich `TryOnResult` only for the **History** detail view (unchanged).
+- Add a subtle border-bottom shadow on the sticky stage when scrolled, so it feels anchored.
 
-On mobile this becomes a sticky **top bar** showing the live result thumbnail + frame name, tappable to expand full-screen.
+## Frame grid: show generation feedback in-place
+Already done last round (card overlay spinner) — keep, but also **highlight the active card** with a persistent ring after generation so user remembers which one they're viewing in the sticky stage.
 
-### Step 3 — Frame Picker (below, scrollable)
-- Switches from horizontal scroll to a **responsive grid** (2 cols mobile, 3–4 cols desktop) so users can browse without horizontal scrolling.
-- Tapping any frame card **immediately triggers generation** (no separate "Try This Frame" button needed — the whole card is the action). Selected card gets a ring + "Generating…" shimmer.
-- Result updates in the sticky stage above — **no scrolling required**.
-
-### Optional polish
-- Auto-scroll to sticky stage on first generation (smooth).
-- "Quick toggle" chips above the picker: All · Sunglasses · Eyeglasses · Color filters — so users find frames faster.
-- Subtle pulse animation on the sticky result the first time it generates, so users notice it updated.
+## Mobile (449px viewport — current user)
+- Compact stage = ~`h-[42vh]` total: image (~32vh) + 1-line meta + icon row.
+- Frame grid stays 2-col, scrollable below.
+- Result: tap frame → see preview update in pinned stage **without scrolling**.
 
 ## Files to change
-- `src/pages/TryOn.tsx` — restructure layout: upload → sticky stage → grid picker
-- `src/components/try-on/FramePicker.tsx` — convert horizontal scroll to responsive grid; make whole card clickable to try; remove redundant button (keep visual cue)
-- `src/components/try-on/PhotoUpload.tsx` — add compact/collapsed mode after upload
-- New small wrapper for the sticky stage (or inline in TryOn.tsx using `sticky top-X` with TryOnResult inside)
+- `src/components/try-on/TryOnResult.tsx` — add `compact` prop branch (slim layout, single image, icon-only actions, persistent-image loading state, slim idle hint).
+- `src/pages/TryOn.tsx` — pass `compact` to the sticky `TryOnResult`, tighten sticky offset/padding.
 
-## What stays the same
-- AR mode, Tour, History, hooks (`useVirtualTryOn`), result carousel — all untouched.
-- No backend changes.
+## What stays
+- All hooks, AR mode, History (uses full TryOnResult), carousel for multi-angle, email capture, download logic — untouched.
 
 ## Outcome
-One continuous flow: **upload once → tap frames → watch result update live above**. No scrolling whiplash, no hidden state, mobile-friendly.
+The result panel actually stays visible while browsing frames on a 449px-tall viewport. Tapping frames updates the pinned preview live, with no scrolling required.
 
-<lov-actions>
-<lov-suggestion message="Looks good, implement it">Approve and implement</lov-suggestion>
-<lov-suggestion message="Make the sticky stage full-width with the result on top and frame info below, instead of side-by-side">Stack stage vertically</lov-suggestion>
-<lov-suggestion message="Also add filter chips (All / Sunglasses / Eyeglasses / by color) above the frame grid">Add filter chips too</lov-suggestion>
-</lov-actions>
