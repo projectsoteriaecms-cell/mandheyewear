@@ -1,10 +1,7 @@
-import { useRef } from "react";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/modules/products/hooks/useProducts";
 import type { FrameDetails } from "@/modules/personalization/hooks/useVirtualTryOn";
@@ -23,23 +20,10 @@ export const FramePicker = ({
   products,
   isLoading,
   selectedFrame,
-  onSelectFrame,
   onTryOn,
   isGenerating,
   disabled,
 }: FramePickerProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (direction: "left" | "right") => {
-    if (scrollRef.current) {
-      const scrollAmount = 280;
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
   const productToFrameDetails = (product: Product): FrameDetails => ({
     id: product.id,
     name: product.name,
@@ -54,9 +38,9 @@ export const FramePicker = ({
     return (
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-foreground">Select a Frame</h3>
-        <div className="flex gap-4 overflow-hidden">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-48 w-64 flex-shrink-0 rounded-lg" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <Skeleton key={i} className="h-56 w-full rounded-lg" />
           ))}
         </div>
       </div>
@@ -74,101 +58,90 @@ export const FramePicker = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">Select a Frame</h3>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => scroll("left")}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => scroll("right")}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+        <h3 className="text-lg font-semibold text-foreground">
+          {disabled ? "Upload a photo to start trying on" : "Tap any frame to try it on"}
+        </h3>
+        <span className="text-xs text-muted-foreground">{products.length} frames</span>
       </div>
 
-      <ScrollArea className="w-full whitespace-nowrap">
-        <div ref={scrollRef} className="flex gap-4 pb-4">
-          {products.map((product) => {
-            const frameDetails = productToFrameDetails(product);
-            const isSelected = selectedFrame?.id === product.id;
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        {products.map((product) => {
+          const frameDetails = productToFrameDetails(product);
+          const isSelected = selectedFrame?.id === product.id;
+          const isThisGenerating = isGenerating && isSelected;
 
-            return (
-              <Card
-                key={product.id}
-                className={cn(
-                  "flex-shrink-0 w-64 cursor-pointer transition-all hover:shadow-md",
-                  isSelected && "ring-2 ring-primary"
-                )}
-                onClick={() => onSelectFrame(frameDetails)}
-              >
-                <CardContent className="p-4 space-y-3">
-                  {/* Frame Image */}
-                  <div className="aspect-[4/3] bg-muted rounded-md overflow-hidden">
-                    {product.image_url ? (
-                      <img
-                        src={product.image_url}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                        No Image
+          return (
+            <Card
+              key={product.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                if (disabled || isGenerating) return;
+                onTryOn(frameDetails);
+              }}
+              onKeyDown={(e) => {
+                if ((e.key === "Enter" || e.key === " ") && !disabled && !isGenerating) {
+                  e.preventDefault();
+                  onTryOn(frameDetails);
+                }
+              }}
+              className={cn(
+                "group relative cursor-pointer transition-all overflow-hidden",
+                "hover:shadow-lg hover:-translate-y-0.5",
+                isSelected && "ring-2 ring-primary",
+                (disabled || (isGenerating && !isSelected)) && "opacity-60 cursor-not-allowed hover:translate-y-0 hover:shadow-none"
+              )}
+            >
+              <CardContent className="p-3 space-y-2">
+                <div className="aspect-[4/3] bg-muted rounded-md overflow-hidden relative">
+                  {product.image_url ? (
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                      No Image
+                    </div>
+                  )}
+
+                  {isThisGenerating && (
+                    <div className="absolute inset-0 bg-background/70 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      <span className="text-xs font-medium text-foreground">Generating…</span>
+                    </div>
+                  )}
+
+                  {!isThisGenerating && !disabled && (
+                    <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <div className="bg-background/90 rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-md">
+                        <Sparkles className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-xs font-medium">Try on</span>
                       </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <p className="font-medium text-sm text-foreground truncate">{product.name}</p>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {product.color && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        {product.color}
+                      </Badge>
                     )}
                   </div>
-
-                  {/* Frame Details */}
-                  <div className="space-y-1">
-                    <p className="font-medium text-sm text-foreground truncate">
-                      {product.name}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      {product.color && (
-                        <Badge variant="secondary" className="text-xs">
-                          {product.color}
-                        </Badge>
-                      )}
-                      {product.style && (
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {product.style}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-accent font-semibold">
-                      ₦{product.price.toLocaleString()}
-                    </p>
-                  </div>
-
-                  {/* Try On Button */}
-                  <Button
-                    variant={isSelected ? "gold" : "outline"}
-                    size="sm"
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTryOn(frameDetails);
-                    }}
-                    disabled={disabled || isGenerating}
-                  >
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    {isGenerating && isSelected ? "Generating..." : "Try This Frame"}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+                  <p className="text-accent font-semibold text-sm">
+                    ₦{product.price.toLocaleString()}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 };
