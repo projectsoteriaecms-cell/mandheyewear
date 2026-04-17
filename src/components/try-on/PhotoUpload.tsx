@@ -99,6 +99,42 @@ export const PhotoUpload = ({
     onPhotoChange(null);
   };
 
+  if (photo && compact) {
+    return (
+      <Card>
+        <CardContent className="p-3 flex items-center gap-3">
+          <div className="h-14 w-14 rounded-md overflow-hidden bg-muted flex-shrink-0">
+            <img src={photo} alt="Your photo" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">Your photo is ready</p>
+            <p className="text-xs text-muted-foreground">Tap a frame below to try it on</p>
+          </div>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="sm" onClick={triggerUpload} disabled={isProcessing}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            {isAuthenticated && (
+              <Button
+                variant={isSaved ? "ghost" : "outline"}
+                size="sm"
+                onClick={handleSaveAsVtoPhoto}
+                disabled={isSaving || isSaved}
+                title="Save as my try-on photo"
+              >
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : isSaved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={clearPhoto} disabled={isProcessing}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (photo) {
     return (
       <Card>
@@ -183,8 +219,6 @@ export const PhotoUpload = ({
       </Card>
     );
   }
-
-  return (
     <Card>
       <CardContent className="p-6 space-y-4">
         <h3 className="text-lg font-semibold text-foreground">Upload Your Photo</h3>
