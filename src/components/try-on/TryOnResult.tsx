@@ -137,6 +137,117 @@ export const TryOnResult = ({
     }
   };
 
+  // ===== COMPACT MODE: slim sticky stage layout =====
+  if (compact) {
+    const hasResult = result?.success && result.compositeImage;
+    const hasError = result && !result.success;
+
+    return (
+      <>
+        <div className={cn("space-y-2", className)}>
+          <div className="relative bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+            {hasResult ? (
+              <>
+                <img
+                  src={result!.compositeImage!}
+                  alt={`Try-on with ${result!.frameDetails?.name || "frame"}`}
+                  className="w-auto max-w-full max-h-[38vh] object-contain mx-auto cursor-zoom-in"
+                  style={{ imageOrientation: "from-image" }}
+                  onClick={() => setIsFullscreenOpen(true)}
+                />
+                {isGenerating && (
+                  <div className="absolute top-2 right-2 bg-background/90 rounded-full px-2 py-1 flex items-center gap-1.5 shadow-md">
+                    <RefreshCw className="h-3 w-3 animate-spin text-primary" />
+                    <span className="text-xs font-medium">Updating…</span>
+                  </div>
+                )}
+              </>
+            ) : isGenerating ? (
+              <div className="w-full h-[32vh] flex flex-col items-center justify-center gap-2">
+                <RefreshCw className="h-7 w-7 text-primary animate-spin" />
+                <p className="text-xs text-muted-foreground">Generating your try-on…</p>
+              </div>
+            ) : hasError ? (
+              <div className="w-full px-4 py-6 flex flex-col items-center justify-center gap-2 text-center">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+                <p className="text-xs text-muted-foreground">{result!.error || "Couldn't generate try-on"}</p>
+                {onRetry && (
+                  <Button variant="outline" size="sm" onClick={onRetry}>
+                    <RefreshCw className="h-3 w-3 mr-1.5" /> Try Again
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground py-3 px-3 text-center">
+                Tap a frame below to preview it here
+              </p>
+            )}
+          </div>
+
+          {hasResult && (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {result!.frameDetails?.name || "Frame"}
+                </p>
+                {result!.frameDetails?.price && (
+                  <p className="text-xs text-accent font-medium">
+                    ₦{result!.frameDetails.price.toLocaleString()}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                {onAddToWishlist && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onAddToWishlist} aria-label="Save to wishlist">
+                    <Heart className="h-4 w-4" />
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDownload} aria-label="Download">
+                  <Download className="h-4 w-4" />
+                </Button>
+                {onAddToCart && (
+                  <Button variant="gold" size="icon" className="h-8 w-8" onClick={onAddToCart} aria-label="Add to cart">
+                    <ShoppingCart className="h-4 w-4" />
+                  </Button>
+                )}
+                {onClear && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClear} aria-label="Clear">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
+          <DialogContent className="max-w-4xl w-[95vw] p-2 sm:p-4 bg-background/95 backdrop-blur-sm">
+            <DialogTitle className="sr-only">
+              Virtual Try-On Result - {result?.frameDetails?.name}
+            </DialogTitle>
+            {hasResult && (
+              <img
+                src={result!.compositeImage!}
+                alt={`Virtual try-on with ${result!.frameDetails?.name}`}
+                className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                style={{ imageOrientation: "from-image" }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        <EmailCaptureModal
+          isOpen={captureState.isOpen}
+          onClose={closeModal}
+          onSubmit={handleSubmit}
+          onSkip={handleSkipAndDownload}
+          result={captureState.result}
+          isSubmitting={isSubmitting}
+        />
+      </>
+    );
+  }
+
   // Loading state
   if (isGenerating) {
     return (
