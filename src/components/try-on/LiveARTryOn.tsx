@@ -11,6 +11,7 @@ import { useFrameAttributes, has3DMeasurements } from "@/shared/hooks/useFrameAt
 import type { TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isCameraKitConfigured } from "@/config/snap-lenses";
 
 interface FrameProduct {
   id: string;
@@ -139,11 +140,22 @@ export const LiveARTryOn = ({
     }
   }, [smileCaptureEnabled, selectedProduct, isCapturing, handleCapture]);
 
+  const snapReady = isCameraKitConfigured();
+
   return (
     <div className="space-y-6">
       {arError && (
         <Alert variant="destructive">
           <AlertDescription>{arError}</AlertDescription>
+        </Alert>
+      )}
+
+      {!snapReady && (
+        <Alert className="border-accent/30 bg-accent/5">
+          <Sparkles className="h-4 w-4 text-accent" />
+          <AlertDescription className="text-xs">
+            Running in <strong>MediaPipe mode</strong>. Add Snap Camera Kit credentials to unlock photoreal lenses.
+          </AlertDescription>
         </Alert>
       )}
 
