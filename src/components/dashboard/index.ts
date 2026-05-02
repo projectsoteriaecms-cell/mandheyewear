@@ -5,3 +5,4 @@ export { AppointmentsSection } from "./AppointmentsSection";
 export { AddressesSection } from "./AddressesSection";
 export { FrameProfileSection } from "./FrameProfileSection";
 export { SettingsSection } from "./SettingsSection";
+export { EmailVerificationBanner } from "./EmailVerificationBanner";
