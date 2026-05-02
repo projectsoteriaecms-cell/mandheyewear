@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useProfile, useUpdateProfile } from "@/modules/personalization/hooks/useProfile";
 import { useToast } from "@/shared/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, User } from "lucide-react";
+import { Loader2, User, ShieldCheck, ShieldAlert } from "lucide-react";
+import { useEmailVerification } from "@/modules/auth/hooks/useEmailVerification";
 
 interface ProfileSectionProps {
   userId: string;
@@ -16,6 +17,7 @@ export const ProfileSection = ({ userId }: ProfileSectionProps) => {
   const { data: profile, isLoading } = useProfile(userId);
   const updateProfile = useUpdateProfile();
   const { toast } = useToast();
+  const { isVerified, verifiedAt, resend, isResending, cooldownSeconds } = useEmailVerification();
   
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState("");
@@ -145,6 +147,40 @@ export const ProfileSection = ({ userId }: ProfileSectionProps) => {
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
                 <p className="font-medium">{profile?.email || "Not set"}</p>
+                {isVerified ? (
+                  <div className="mt-1 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    <span>
+                      Verified
+                      {verifiedAt
+                        ? ` on ${new Date(verifiedAt).toLocaleDateString(undefined, {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}`
+                        : ""}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                    <span className="inline-flex items-center gap-1.5">
+                      <ShieldAlert className="h-3.5 w-3.5" />
+                      Unverified
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => resend()}
+                      disabled={isResending || cooldownSeconds > 0}
+                      className="underline underline-offset-2 hover:text-amber-700 disabled:no-underline disabled:opacity-60"
+                    >
+                      {isResending
+                        ? "Sending..."
+                        : cooldownSeconds > 0
+                          ? `Resend in ${cooldownSeconds}s`
+                          : "Resend confirmation"}
+                    </button>
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Phone Number</p>

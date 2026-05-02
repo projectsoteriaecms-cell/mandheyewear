@@ -13,6 +13,7 @@ import {
   AddressesSection,
   FrameProfileSection,
   SettingsSection,
+  EmailVerificationBanner,
 } from "@/components/dashboard";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useWishlist } from "@/modules/orders/hooks/useWishlist";
@@ -131,6 +132,9 @@ const Dashboard = () => {
               </Button>
             </div>
 
+            {/* Email verification banner (only when email unconfirmed) */}
+            <EmailVerificationBanner />
+
             {/* Verification Pending Card */}
             <Card className="mb-8 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20">
               <CardHeader>
@@ -226,6 +230,9 @@ const Dashboard = () => {
               Sign Out
             </Button>
           </div>
+
+          {/* Email verification banner (only when email unconfirmed) */}
+          <EmailVerificationBanner />
 
           {/* Onboarding Banner */}
           {needsOnboarding && (
