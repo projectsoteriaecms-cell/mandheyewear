@@ -8,6 +8,7 @@ import { useToast } from "@/shared/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, User, ShieldCheck, ShieldAlert } from "lucide-react";
 import { useEmailVerification } from "@/modules/auth/hooks/useEmailVerification";
+import { EmailVerificationStatusDialog } from "./EmailVerificationStatusDialog";
 
 interface ProfileSectionProps {
   userId: string;
@@ -17,11 +18,12 @@ export const ProfileSection = ({ userId }: ProfileSectionProps) => {
   const { data: profile, isLoading } = useProfile(userId);
   const updateProfile = useUpdateProfile();
   const { toast } = useToast();
-  const { isVerified, verifiedAt, resend, isResending, cooldownSeconds } = useEmailVerification();
-  
+  const { isVerified } = useEmailVerification();
+
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
   const handleEdit = () => {
     setFullName(profile?.full_name || "");
@@ -147,40 +149,28 @@ export const ProfileSection = ({ userId }: ProfileSectionProps) => {
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
                 <p className="font-medium">{profile?.email || "Not set"}</p>
-                {isVerified ? (
-                  <div className="mt-1 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    <span>
+                <button
+                  type="button"
+                  onClick={() => setStatusDialogOpen(true)}
+                  className={`mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
+                    isVerified
+                      ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:hover:bg-emerald-900/60"
+                      : "bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-400 dark:hover:bg-amber-900/60"
+                  }`}
+                  aria-label="View email verification status"
+                >
+                  {isVerified ? (
+                    <>
+                      <ShieldCheck className="h-3.5 w-3.5" />
                       Verified
-                      {verifiedAt
-                        ? ` on ${new Date(verifiedAt).toLocaleDateString(undefined, {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}`
-                        : ""}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
-                    <span className="inline-flex items-center gap-1.5">
+                    </>
+                  ) : (
+                    <>
                       <ShieldAlert className="h-3.5 w-3.5" />
-                      Unverified
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => resend()}
-                      disabled={isResending || cooldownSeconds > 0}
-                      className="underline underline-offset-2 hover:text-amber-700 disabled:no-underline disabled:opacity-60"
-                    >
-                      {isResending
-                        ? "Sending..."
-                        : cooldownSeconds > 0
-                          ? `Resend in ${cooldownSeconds}s`
-                          : "Resend confirmation"}
-                    </button>
-                  </div>
-                )}
+                      Not verified — view details
+                    </>
+                  )}
+                </button>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Phone Number</p>
