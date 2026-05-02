@@ -1,64 +1,59 @@
 ## Goal
 
-Add a clear, friendly **email verification status indicator** so users know if their account is verified, and give them a one-click way to **resend the confirmation email** if it isn't.
+Add a single, reusable modal that clearly explains the user's email verification status and lets them resend the confirmation email or update their email address. Trigger it from existing entry points (Profile email row + dashboard banner) so users get a focused, dedicated surface instead of the current inline-only flow.
 
-## Where it will appear
+## What to build
 
-Two complementary touch points — both driven by the same data (`user.email_confirmed_at` from Supabase Auth):
+### 1. New component: `src/components/dashboard/EmailVerificationStatusDialog.tsx`
 
-1. **Inline banner on the Dashboard** — at the top of `src/pages/Dashboard.tsx`, just under the welcome header, visible across every dashboard tab. This is the primary nudge.
-2. **Status row in the Profile card** — inside `src/components/dashboard/ProfileSection.tsx`, next to the user's email field. This is the "at-a-glance" confirmation when they're already editing their profile.
+Controlled `Dialog` wrapping `useEmailVerification`. Two visual states:
 
-Both render only when relevant — the banner hides itself once the email is verified.
+**Verified state** (green theme)
+- `ShieldCheck` icon header, title "Email verified"
+- Body: "Your email `<email>` was verified on `<date>`. You're all set."
+- Single "Done" close button.
 
-## What it shows
+**Unverified state** (amber theme)
+- `MailWarning` icon header, title "Verify your email"
+- Body explains: a confirmation link was sent to `<email>`; check inbox/spam.
+- Sub-section "Steps to verify":
+  1. Open the email from us
+  2. Click the confirmation link
+  3. Return here — status updates automatically
+- Primary action: "Resend confirmation email" button with cooldown countdown (`mm:ss`) and spinner during send (mirrors banner behavior).
+- Secondary action: "I used a different email" toggles an inline form (email input + "Send confirmation" / "Cancel") that calls `updateEmail()`.
+- Footer note: "Still nothing after 5 minutes? Try updating your email or contact support."
 
-### When email is NOT verified
-- Amber/Flame-toned alert card with `MailWarning` icon
-- Title: "Verify your email to secure your account"
-- Body: "We sent a confirmation link to **{user.email}**. Check your inbox (and spam folder). Didn't get it?"
-- Primary action button: **"Resend confirmation email"**
-- Secondary action: **"I used a different email"** (links to a small inline form to update the email via `supabase.auth.updateUser({ email })`)
-- After clicking Resend: button disables, shows a 60-second countdown ("Resend in 0:58") to prevent spamming, and toasts "Email sent — check your inbox."
+Props: `open: boolean`, `onOpenChange: (open: boolean) => void`.
 
-### When email IS verified
-- Quiet, single-line success indicator inside the Profile card only (no top-of-dashboard banner)
-- Green check icon + "Email verified"
-- Includes the date verified for trust ("Verified on Apr 19, 2026")
+### 2. Wire triggers (no behavioral regressions)
 
-## Technical implementation
+- **`src/components/dashboard/ProfileSection.tsx`**: Replace the inline "Resend confirmation" link and the verified-date inline text with a single clickable status pill ("Verified" / "Not verified — view details") that opens the dialog. Keeps the visual hierarchy clean and gives both states a clear CTA into the modal.
+- **`src/components/dashboard/EmailVerificationBanner.tsx`**: Add a "View details" link/button alongside the existing resend button that opens the same dialog. Keeps the banner's quick-resend affordance but funnels users wanting more context into the modal. Existing inline "I used a different email" toggle stays for backward compatibility.
 
-### New shared hook
-**`src/modules/auth/hooks/useEmailVerification.ts`**
-- Reads `user` from `useAuth()`
-- Returns `{ isVerified, email, verifiedAt, resend, isResending, cooldownSeconds }`
-- `resend()` calls `supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: window.location.origin } })`
-- Manages 60s cooldown via `localStorage` key `email_verification_resent_at` so the timer survives page reloads
-- Surfaces toast errors (rate-limit, network, etc.) using `useToast`
+### 3. Export
 
-### New component
-**`src/components/dashboard/EmailVerificationBanner.tsx`**
-- Renders the unverified-state card described above
-- Uses semantic tokens only (`bg-card`, `text-foreground`, `border-destructive/40`, `text-amber-*` via tailwind config tokens already in use)
-- Returns `null` when `isVerified === true`
-- Includes the inline "Use a different email" mini-form (optional expand-on-click, not always visible)
+Add `EmailVerificationStatusDialog` to `src/components/dashboard/index.ts`.
 
-### Edits
-- **`src/pages/Dashboard.tsx`** — import and render `<EmailVerificationBanner />` directly under the welcome heading (line ~95 area, above the `<Tabs>`).
-- **`src/components/dashboard/ProfileSection.tsx`** — add a small `<VerifiedBadge />` row beside the email field showing either "Verified ✓" with date, or "Unverified — Resend" inline.
-- **`src/components/dashboard/index.ts`** — export the new banner.
+## Technical notes
 
-### What it does NOT change
-- No database migrations — uses `auth.users.email_confirmed_at` directly through the session.
-- No edge function changes — `supabase.auth.resend()` triggers the existing `auth-email-hook` automatically.
-- No new RLS policies.
+- Reuse existing `useEmailVerification` hook — no new logic needed; it already exposes `isVerified`, `verifiedAt`, `email`, `resend`, `updateEmail`, `isResending`, `cooldownSeconds`.
+- Use shadcn `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription`, `DialogFooter`.
+- Icons from `lucide-react`: `ShieldCheck`, `MailWarning`, `Loader2`, `RefreshCw`, `PencilLine`.
+- Local state inside the dialog: `showEmailEdit`, `newEmail`, `isUpdating` (same pattern as the banner).
+- After a successful `updateEmail`, reset the inline form but keep the dialog open so the user sees the success toast context.
+- Auto-close the dialog when state transitions to verified (effect on `isVerified`).
+- Respect existing 60s cooldown persisted in `localStorage` — no duplication.
 
-## Edge cases handled
-- User signed up via Google OAuth → `email_confirmed_at` is set automatically by the provider, banner never shows.
-- Auto-confirm is currently ON (per our previous diagnosis) → banner won't show for any current user. **This is the right behavior** — the moment you turn email confirmation ON in auth settings, the banner activates for the next signup who hasn't confirmed yet, with zero further code changes.
-- Resend rate limits from Supabase (typically 1/min) are absorbed by the 60s cooldown so users don't see the raw error.
-- If `resend()` returns an error like "Email already confirmed", the banner refreshes the session and self-hides.
+## Files
 
-## Out of scope (ask if you want these next)
-- Admin-side view of which customers have unverified emails — that'd be a separate small panel in the admin Users page.
-- Forcing unverified users to verify before checkout — would need a checkout-route guard; happy to add as a follow-up.
+- create `src/components/dashboard/EmailVerificationStatusDialog.tsx`
+- edit `src/components/dashboard/ProfileSection.tsx` (swap inline status block for a status pill button that opens the dialog)
+- edit `src/components/dashboard/EmailVerificationBanner.tsx` (add "View details" trigger)
+- edit `src/components/dashboard/index.ts` (export)
+
+## Out of scope
+
+- Backend / Supabase auth template changes (already configured).
+- New routes or page-level UI.
+- Changes to OAuth / Google sign-in flows (auto-verified users will see the verified state).
