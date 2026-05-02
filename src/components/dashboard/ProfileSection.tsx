@@ -71,7 +71,8 @@ export const ProfileSection = ({ userId }: ProfileSectionProps) => {
   }
 
   return (
-    <Card>
+    <>
+      <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -188,7 +189,12 @@ export const ProfileSection = ({ userId }: ProfileSectionProps) => {
             </Button>
           </>
         )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      <EmailVerificationStatusDialog
+        open={statusDialogOpen}
+        onOpenChange={setStatusDialogOpen}
+      />
+    </>
   );
 };
