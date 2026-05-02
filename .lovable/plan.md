@@ -1,52 +1,64 @@
-## What I found
+## Goal
 
-**1. Tam Vincent does not exist in the auth system.**
-I searched `auth.users` for any user whose name or email contains "tam" or "vincent" — zero matches. The 10 most recent signups (newest from April 19, 2026) do not include him. So either:
-- His signup never completed (form errored out client-side, network failure, or he closed the tab before submit), **or**
-- He used a different email/name than you're aware of.
+Add a clear, friendly **email verification status indicator** so users know if their account is verified, and give them a one-click way to **resend the confirmation email** if it isn't.
 
-**2. Your auth-email system is otherwise healthy.**
-- Email domain `notify.mandheyewear.com` → ✅ verified and ready.
-- `auth-email-hook` edge function is deployed and uses the correct queue-based pattern (`enqueue_email`).
-- Templates exist for signup, magic-link, recovery, invite, etc.
+## Where it will appear
 
-**3. But — `email_send_log` has 0 auth_emails rows ever logged.**
-Total rows in the log: 2. Rows for `template_name = 'auth_emails'`: **0**.
-This is the real red flag. Every recent signup in `auth.users` has `confirmation_sent_at = NULL` except one (April 19) — meaning Supabase Auth is **not actually triggering the email hook for most signups**, OR the hook is firing but failing before it logs.
+Two complementary touch points — both driven by the same data (`user.email_confirmed_at` from Supabase Auth):
 
-The most likely cause: **email confirmation is currently set to auto-confirm / disabled**, so most users get `email_confirmed_at` populated immediately at signup with no email ever sent. That matches the data — 9 of 10 recent users have `confirmation_sent_at = NULL` but `email_confirmed_at` set within milliseconds of `created_at`.
+1. **Inline banner on the Dashboard** — at the top of `src/pages/Dashboard.tsx`, just under the welcome header, visible across every dashboard tab. This is the primary nudge.
+2. **Status row in the Profile card** — inside `src/components/dashboard/ProfileSection.tsx`, next to the user's email field. This is the "at-a-glance" confirmation when they're already editing their profile.
 
-## Troubleshooting plan (what I'll do once you approve)
+Both render only when relevant — the banner hides itself once the email is verified.
 
-### Step 1 — Confirm with you which email Tam used
-Before changing anything, ask Tam for the exact email address he typed. I'll then re-query `auth.users` to confirm whether the row exists at all. This tells us:
-- **Row missing** → signup form failed; investigate client-side errors, password validation, or network.
-- **Row exists, `email_confirmed_at` already set** → auto-confirm is on, no email was ever sent (by design).
-- **Row exists, `confirmation_sent_at` set, `email_confirmed_at` NULL** → email was sent but didn't arrive (spam folder, suppression list, or delivery failure).
+## What it shows
 
-### Step 2 — Check Auth settings
-Verify in Cloud → Users → Auth Settings whether **"Confirm email"** is currently ON. The data pattern strongly suggests it is OFF (auto-confirm), which means no signup emails are being sent at all. If you want users to verify their email before logging in, this needs to be turned on.
+### When email is NOT verified
+- Amber/Flame-toned alert card with `MailWarning` icon
+- Title: "Verify your email to secure your account"
+- Body: "We sent a confirmation link to **{user.email}**. Check your inbox (and spam folder). Didn't get it?"
+- Primary action button: **"Resend confirmation email"**
+- Secondary action: **"I used a different email"** (links to a small inline form to update the email via `supabase.auth.updateUser({ email })`)
+- After clicking Resend: button disables, shows a 60-second countdown ("Resend in 0:58") to prevent spamming, and toasts "Email sent — check your inbox."
 
-### Step 3 — Check the suppression list for Tam's email
-Query `suppressed_emails` — if his address bounced or unsubscribed previously, all future sends are blocked.
+### When email IS verified
+- Quiet, single-line success indicator inside the Profile card only (no top-of-dashboard banner)
+- Green check icon + "Email verified"
+- Includes the date verified for trust ("Verified on Apr 19, 2026")
 
-### Step 4 — Test the full flow end-to-end
-With a fresh test email I control, sign up and watch:
-- `auth.users` row appears with `confirmation_sent_at` populated
-- `email_send_log` gets a `pending` → `sent` row with `template_name = 'auth_emails'`
-- Edge function logs for `auth-email-hook` and `process-email-queue` show success
-- Email arrives in inbox (and spam folder is checked)
+## Technical implementation
 
-### Step 5 — Surface findings and fix
-Based on what Steps 1–4 reveal, the fix is one of:
-- Turn ON "Confirm email" in auth settings
-- Remove Tam's address from suppression list (if applicable)
-- Re-deploy `auth-email-hook` if logs show it's erroring
-- Improve the signup form to surface errors to the user (so future failed signups don't go silent)
+### New shared hook
+**`src/modules/auth/hooks/useEmailVerification.ts`**
+- Reads `user` from `useAuth()`
+- Returns `{ isVerified, email, verifiedAt, resend, isResending, cooldownSeconds }`
+- `resend()` calls `supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: window.location.origin } })`
+- Manages 60s cooldown via `localStorage` key `email_verification_resent_at` so the timer survives page reloads
+- Surfaces toast errors (rate-limit, network, etc.) using `useToast`
 
-## What I need from you to proceed
+### New component
+**`src/components/dashboard/EmailVerificationBanner.tsx`**
+- Renders the unverified-state card described above
+- Uses semantic tokens only (`bg-card`, `text-foreground`, `border-destructive/40`, `text-amber-*` via tailwind config tokens already in use)
+- Returns `null` when `isVerified === true`
+- Includes the inline "Use a different email" mini-form (optional expand-on-click, not always visible)
 
-1. **Tam's exact email address** (to look up his record).
-2. Confirmation of intent: **do you want email confirmation required**, or is auto-confirm intentional? (This drives whether Step 2's fix is "turn it on" or "this is working as designed and Tam just didn't need an email.")
+### Edits
+- **`src/pages/Dashboard.tsx`** — import and render `<EmailVerificationBanner />` directly under the welcome heading (line ~95 area, above the `<Tabs>`).
+- **`src/components/dashboard/ProfileSection.tsx`** — add a small `<VerifiedBadge />` row beside the email field showing either "Verified ✓" with date, or "Unverified — Resend" inline.
+- **`src/components/dashboard/index.ts`** — export the new banner.
 
-Once I have those two answers, I can execute Steps 1–5 and report back with a concrete fix.
+### What it does NOT change
+- No database migrations — uses `auth.users.email_confirmed_at` directly through the session.
+- No edge function changes — `supabase.auth.resend()` triggers the existing `auth-email-hook` automatically.
+- No new RLS policies.
+
+## Edge cases handled
+- User signed up via Google OAuth → `email_confirmed_at` is set automatically by the provider, banner never shows.
+- Auto-confirm is currently ON (per our previous diagnosis) → banner won't show for any current user. **This is the right behavior** — the moment you turn email confirmation ON in auth settings, the banner activates for the next signup who hasn't confirmed yet, with zero further code changes.
+- Resend rate limits from Supabase (typically 1/min) are absorbed by the 60s cooldown so users don't see the raw error.
+- If `resend()` returns an error like "Email already confirmed", the banner refreshes the session and self-hides.
+
+## Out of scope (ask if you want these next)
+- Admin-side view of which customers have unverified emails — that'd be a separate small panel in the admin Users page.
+- Forcing unverified users to verify before checkout — would need a checkout-route guard; happy to add as a follow-up.
