@@ -41,6 +41,7 @@ export const EmailVerificationBanner = () => {
   };
 
   return (
+    <>
     <Card className="mb-6 border-amber-300 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/20">
       <CardContent className="py-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -156,5 +157,10 @@ export const EmailVerificationBanner = () => {
         </div>
       </CardContent>
     </Card>
+    <EmailVerificationStatusDialog
+      open={statusDialogOpen}
+      onOpenChange={setStatusDialogOpen}
+    />
+    </>
   );
 };
