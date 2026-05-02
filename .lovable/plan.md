@@ -1,43 +1,52 @@
-# Phase 1 Completion — Snap Camera Kit Credentials Wiring
+## What I found
 
-## What you've provided
-- **Lens Group ID**: `b7de1fc9-f3d3-4fbb-9a69-8227e9f70317` ✓
+**1. Tam Vincent does not exist in the auth system.**
+I searched `auth.users` for any user whose name or email contains "tam" or "vincent" — zero matches. The 10 most recent signups (newest from April 19, 2026) do not include him. So either:
+- His signup never completed (form errored out client-side, network failure, or he closed the tab before submit), **or**
+- He used a different email/name than you're aware of.
 
-## What's still needed from you
-- **Camera Kit Web API Token** — found at https://kit.snap.com → your app → **Camera Kit** → **API Tokens** tab. Copy the **Staging** (or **Production**) token. It's a long string starting with `eyJ...`.
+**2. Your auth-email system is otherwise healthy.**
+- Email domain `notify.mandheyewear.com` → ✅ verified and ready.
+- `auth-email-hook` edge function is deployed and uses the correct queue-based pattern (`enqueue_email`).
+- Templates exist for signup, magic-link, recovery, invite, etc.
 
-## Steps once you paste the API token
+**3. But — `email_send_log` has 0 auth_emails rows ever logged.**
+Total rows in the log: 2. Rows for `template_name = 'auth_emails'`: **0**.
+This is the real red flag. Every recent signup in `auth.users` has `confirmation_sent_at = NULL` except one (April 19) — meaning Supabase Auth is **not actually triggering the email hook for most signups**, OR the hook is firing but failing before it logs.
 
-1. **Add two frontend env vars** to the project (these are public/client-safe by Snap's design):
-   - `VITE_SNAP_CAMERA_KIT_TOKEN` = `<the eyJ... token you paste>`
-   - `VITE_SNAP_LENS_GROUP_ID` = `b7de1fc9-f3d3-4fbb-9a69-8227e9f70317`
+The most likely cause: **email confirmation is currently set to auto-confirm / disabled**, so most users get `email_confirmed_at` populated immediately at signup with no email ever sent. That matches the data — 9 of 10 recent users have `confirmation_sent_at = NULL` but `email_confirmed_at` set within milliseconds of `created_at`.
 
-   I'll prompt you with the secrets dialog — paste both values there.
+## Troubleshooting plan (what I'll do once you approve)
 
-2. **Verify config wiring** in `src/config/snap-lenses.ts` — already reads from `import.meta.env.VITE_SNAP_CAMERA_KIT_TOKEN` and `VITE_SNAP_LENS_GROUP_ID`, so no code change needed for the env plumbing.
+### Step 1 — Confirm with you which email Tam used
+Before changing anything, ask Tam for the exact email address he typed. I'll then re-query `auth.users` to confirm whether the row exists at all. This tells us:
+- **Row missing** → signup form failed; investigate client-side errors, password validation, or network.
+- **Row exists, `email_confirmed_at` already set** → auto-confirm is on, no email was ever sent (by design).
+- **Row exists, `confirmation_sent_at` set, `email_confirmed_at` NULL** → email was sent but didn't arrive (spam folder, suppression list, or delivery failure).
 
-3. **Health-check on `/try-on`**:
-   - `isCameraKitConfigured()` will flip from `false` → `true` once both vars are present.
-   - The "Running in MediaPipe mode" banner in `LiveARTryOn.tsx` will disappear.
-   - `useCameraKit` will dynamically import `@snap/camera-kit`, bootstrap with your token, fetch the lens group, and render Snap's default group lens (or whatever lens you've already added to the group) into the canvas.
+### Step 2 — Check Auth settings
+Verify in Cloud → Users → Auth Settings whether **"Confirm email"** is currently ON. The data pattern strongly suggests it is OFF (auto-confirm), which means no signup emails are being sent at all. If you want users to verify their email before logging in, this needs to be turned on.
 
-4. **Manual smoke test** (you do this in preview):
-   - Navigate to `/try-on` → switch to Live AR mode.
-   - Grant camera permission.
-   - You should see the Snap-rendered camera feed in the canvas. If the lens group is empty, the feed renders without effects — that's expected and confirms the SDK pipe is alive.
+### Step 3 — Check the suppression list for Tam's email
+Query `suppressed_emails` — if his address bounced or unsubscribed previously, all future sends are blocked.
 
-5. **If the lens group is empty**, I'll add a tiny "No lenses in group yet" hint in the AR Lens Selector so it's obvious the pipe works but content is pending Phase 3 (Lens Studio authoring).
+### Step 4 — Test the full flow end-to-end
+With a fresh test email I control, sign up and watch:
+- `auth.users` row appears with `confirmation_sent_at` populated
+- `email_send_log` gets a `pending` → `sent` row with `template_name = 'auth_emails'`
+- Edge function logs for `auth-email-hook` and `process-email-queue` show success
+- Email arrives in inbox (and spam folder is checked)
 
-## Acceptance criteria for Phase 1 done
-- `/try-on` Live AR mode initializes without the "MediaPipe mode" fallback banner.
-- Browser console shows no Camera Kit init errors.
-- Camera feed renders through the Snap canvas.
-- Phase 2 (DB schema for `snap_lens_id` + per-product `ar_engine` routing) can begin immediately after.
+### Step 5 — Surface findings and fix
+Based on what Steps 1–4 reveal, the fix is one of:
+- Turn ON "Confirm email" in auth settings
+- Remove Tam's address from suppression list (if applicable)
+- Re-deploy `auth-email-hook` if logs show it's erroring
+- Improve the signup form to surface errors to the user (so future failed signups don't go silent)
 
-## Technical notes
-- No backend changes in this step — Camera Kit Web tokens are designed for browser use.
-- Token is read at build time by Vite, so a redeploy/preview rebuild happens automatically when secrets change.
-- `@snap/camera-kit` is already in `package.json`; no install needed.
+## What I need from you to proceed
 
-## Next action
-Reply with the **API Token** (or say "ready") and I'll trigger the secrets prompt for both `VITE_SNAP_CAMERA_KIT_TOKEN` and `VITE_SNAP_LENS_GROUP_ID` in one go.
+1. **Tam's exact email address** (to look up his record).
+2. Confirmation of intent: **do you want email confirmation required**, or is auto-confirm intentional? (This drives whether Step 2's fix is "turn it on" or "this is working as designed and Tam just didn't need an email.")
+
+Once I have those two answers, I can execute Steps 1–5 and report back with a concrete fix.
