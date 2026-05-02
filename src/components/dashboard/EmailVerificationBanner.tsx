@@ -3,8 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MailWarning, Loader2, RefreshCw, PencilLine } from "lucide-react";
+import { MailWarning, Loader2, RefreshCw, PencilLine, Info } from "lucide-react";
 import { useEmailVerification } from "@/modules/auth/hooks/useEmailVerification";
+import { EmailVerificationStatusDialog } from "./EmailVerificationStatusDialog";
 
 const formatCooldown = (seconds: number) => {
   const m = Math.floor(seconds / 60);
@@ -25,6 +26,7 @@ export const EmailVerificationBanner = () => {
   const [showEmailEdit, setShowEmailEdit] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
   if (isVerified || !email) return null;
 
@@ -39,6 +41,7 @@ export const EmailVerificationBanner = () => {
   };
 
   return (
+    <>
     <Card className="mb-6 border-amber-300 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/20">
       <CardContent className="py-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -81,6 +84,15 @@ export const EmailVerificationBanner = () => {
                     Resend confirmation email
                   </>
                 )}
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setStatusDialogOpen(true)}
+              >
+                <Info className="mr-2 h-4 w-4" />
+                View details
               </Button>
 
               <Button
@@ -145,5 +157,10 @@ export const EmailVerificationBanner = () => {
         </div>
       </CardContent>
     </Card>
+    <EmailVerificationStatusDialog
+      open={statusDialogOpen}
+      onOpenChange={setStatusDialogOpen}
+    />
+    </>
   );
 };
