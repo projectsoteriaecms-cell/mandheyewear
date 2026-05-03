@@ -12,6 +12,18 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Verify webhook authenticity using shared secret
+  const expectedSecret = Deno.env.get("ZOHO_WEBHOOK_SECRET");
+  const providedToken =
+    req.headers.get("x-zoho-webhook-token") ||
+    new URL(req.url).searchParams.get("token");
+  if (!expectedSecret || providedToken !== expectedSecret) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);

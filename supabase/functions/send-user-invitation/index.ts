@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ?? "M&H Eyewear <noreply@notify.mandheyewear.com>";
@@ -36,6 +37,46 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Verify caller is authenticated and has manager/admin privileges
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(
+      authHeader.replace("Bearer ", ""),
+    );
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
+    const serviceClient = createClient(supabaseUrl, serviceKey);
+    const { data: roles } = await serviceClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", claimsData.claims.sub);
+    const allowed = new Set(["branch_manager", "admin", "super_admin"]);
+    const hasPrivilege = (roles ?? []).some((r: any) => allowed.has(r.role));
+    if (!hasPrivilege) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Forbidden: insufficient privileges" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
     const { email, role, invitedByName, signupUrl }: InvitationRequest = await req.json();
 
     if (!email || !role || !signupUrl) {
