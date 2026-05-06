@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
 import { RoleGuard } from "@/modules/auth/components/RoleGuard";
 import { useZohoSync } from "@/modules/integrations";
 import { useIsAdmin } from "@/modules/auth/hooks/useUserRole";
-import { useAdminProducts } from "@/modules/products";
+import { useAdminProducts, useAdminProductsPaged } from "@/modules/products";
+import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
+import { Button } from "@/components/ui/button";
 import { CreateProductDialog } from "@/modules/products/components/CreateProductDialog";
 import { BulkUploadDialog } from "@/modules/products/components/BulkUploadDialog";
 import { EditProductDialog } from "@/modules/products/components/EditProductDialog";
@@ -32,7 +34,7 @@ type Product = Database["public"]["Tables"]["products"]["Row"];
 type ViewMode = "grid" | "list";
 
 const Products = () => {
-  const { products, isLoading, deleteProduct } = useAdminProducts();
+  const { deleteProduct } = useAdminProducts();
   const { isAdmin } = useIsAdmin();
   const { status: syncStatus, pullItems, syncStock } = useZohoSync();
   const { isEnriching, enrichProgress, handleEnrichProducts } = useEnrichProducts();
@@ -41,6 +43,25 @@ const Products = () => {
   const [brandFilter, setBrandFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, brandFilter, statusFilter]);
+
+  const pagedQuery = useAdminProductsPaged({
+    page,
+    pageSize,
+    search: debouncedSearch,
+    brandFilter,
+    statusFilter,
+  });
+  const products = (pagedQuery.data?.rows ?? []) as Product[];
+  const totalCount = pagedQuery.data?.totalCount ?? 0;
+  const isLoading = pagedQuery.isLoading;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   // Dialog states
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -53,18 +74,6 @@ const Products = () => {
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [quickUploadProduct, setQuickUploadProduct] = useState<Product | null>(null);
-
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesBrand = brandFilter === "all" || product.brand_line === brandFilter;
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "active" && product.is_active) ||
-      (statusFilter === "inactive" && !product.is_active);
-    return matchesSearch && matchesBrand && matchesStatus;
-  });
 
   const handleDelete = async () => {
     if (deleteProductId) {
@@ -115,7 +124,7 @@ const Products = () => {
           <ZohoSyncHistoryPanel />
 
           <ProductsTable
-            products={filteredProducts}
+            products={products}
             isLoading={isLoading}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
@@ -123,7 +132,24 @@ const Products = () => {
             onDelete={setDeleteProductId}
             onQuickUpload={setQuickUploadProduct}
             formatPrice={formatPrice}
+            totalCount={totalCount}
           />
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between gap-4 px-1">
+              <p className="text-sm text-muted-foreground">
+                Page {page} of {totalPages} · {totalCount.toLocaleString()} products
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                  Previous
+                </Button>
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <CreateProductDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />

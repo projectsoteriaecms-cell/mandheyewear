@@ -46,6 +46,7 @@ interface ProductsTableProps {
   onDelete: (productId: string) => void;
   onQuickUpload: (product: Product) => void;
   formatPrice: (price: number) => string;
+  totalCount?: number;
 }
 
 export const ProductsTable = ({
@@ -57,14 +58,16 @@ export const ProductsTable = ({
   onDelete,
   onQuickUpload,
   formatPrice,
+  totalCount,
 }: ProductsTableProps) => {
+  const displayCount = totalCount ?? products.length;
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5" weight="light" />
-            Product Catalog ({products.length})
+            Product Catalog ({displayCount.toLocaleString()})
           </CardTitle>
           <ToggleGroup
             type="single"

@@ -59,6 +59,53 @@ export const useProductImageStats = () => {
   };
 };
 
+export interface AdminProductsParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  brandFilter?: string;
+  statusFilter?: string;
+}
+
+export const useAdminProductsPaged = (params: AdminProductsParams = {}) => {
+  const { page = 1, pageSize = 50, search = "", brandFilter = "all", statusFilter = "all" } = params;
+
+  return useQuery({
+    queryKey: ["admin-products-paged", { page, pageSize, search, brandFilter, statusFilter }],
+    queryFn: async () => {
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
+        .from("products")
+        .select(
+          `*, category:categories(id, name), supplier:suppliers(id, name)`,
+          { count: "exact" }
+        );
+
+      const term = search.trim();
+      if (term) {
+        const safe = term.replace(/[%,()]/g, " ");
+        query = query.or(`name.ilike.%${safe}%,sku.ilike.%${safe}%`);
+      }
+      if (brandFilter !== "all") {
+        query = query.eq("brand_line", brandFilter as any);
+      }
+      if (statusFilter === "active") query = query.eq("is_active", true);
+      if (statusFilter === "inactive") query = query.eq("is_active", false);
+
+      const { data, error, count } = await query
+        .order("image_url", { ascending: false, nullsFirst: false })
+        .order("updated_at", { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+      return { rows: data ?? [], totalCount: count ?? 0 };
+    },
+    placeholderData: (prev) => prev,
+  });
+};
+
 export const useAdminProducts = () => {
   const queryClient = useQueryClient();
 
@@ -92,6 +139,8 @@ export const useAdminProducts = () => {
 
       return allData;
     },
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const createProduct = useMutation({
@@ -191,3 +240,4 @@ export const useAdminProducts = () => {
     deleteProduct,
   };
 };
+
