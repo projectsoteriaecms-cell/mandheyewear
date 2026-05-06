@@ -231,10 +231,8 @@ export const useAdminProducts = () => {
   });
 
   return {
-    products: productsQuery.data?.rows ?? [],
-    totalCount: productsQuery.data?.totalCount ?? 0,
+    products: productsQuery.data ?? [],
     isLoading: productsQuery.isLoading,
-    isFetching: productsQuery.isFetching,
     error: productsQuery.error,
     createProduct,
     updateProduct,
@@ -242,3 +240,4 @@ export const useAdminProducts = () => {
     deleteProduct,
   };
 };
+
