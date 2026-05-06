@@ -59,39 +59,51 @@ export const useProductImageStats = () => {
   };
 };
 
-export const useAdminProducts = () => {
+export interface AdminProductsParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  brandFilter?: string;
+  statusFilter?: string;
+}
+
+export const useAdminProducts = (params: AdminProductsParams = {}) => {
   const queryClient = useQueryClient();
+  const { page = 1, pageSize = 50, search = "", brandFilter = "all", statusFilter = "all" } = params;
 
   const productsQuery = useQuery({
-    queryKey: ["admin-products"],
+    queryKey: ["admin-products", { page, pageSize, search, brandFilter, statusFilter }],
     queryFn: async () => {
-      const BATCH_SIZE = 1000;
-      let allData: any[] = [];
-      let from = 0;
-      let hasMore = true;
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
 
-      while (hasMore) {
-        const { data, error } = await supabase
-          .from("products")
-          .select(`
-            *,
-            category:categories(id, name),
-            supplier:suppliers(id, name),
-            frame_attributes(*),
-            lens_attributes(*)
-          `)
-          .order("image_url", { ascending: false, nullsFirst: false })
-          .order("updated_at", { ascending: false })
-          .range(from, from + BATCH_SIZE - 1);
+      let query = supabase
+        .from("products")
+        .select(
+          `*, category:categories(id, name), supplier:suppliers(id, name)`,
+          { count: "exact" }
+        );
 
-        if (error) throw error;
-        allData = allData.concat(data || []);
-        hasMore = (data?.length || 0) === BATCH_SIZE;
-        from += BATCH_SIZE;
+      const term = search.trim();
+      if (term) {
+        const safe = term.replace(/[%,()]/g, " ");
+        query = query.or(`name.ilike.%${safe}%,sku.ilike.%${safe}%`);
       }
+      if (brandFilter !== "all") {
+        query = query.eq("brand_line", brandFilter as any);
+      }
+      if (statusFilter === "active") query = query.eq("is_active", true);
+      if (statusFilter === "inactive") query = query.eq("is_active", false);
 
-      return allData;
+      const { data, error, count } = await query
+        .order("image_url", { ascending: false, nullsFirst: false })
+        .order("updated_at", { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+      return { rows: data ?? [], totalCount: count ?? 0 };
     },
+    placeholderData: (prev) => prev,
   });
 
   const createProduct = useMutation({
