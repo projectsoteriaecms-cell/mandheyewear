@@ -67,12 +67,11 @@ export interface AdminProductsParams {
   statusFilter?: string;
 }
 
-export const useAdminProducts = (params: AdminProductsParams = {}) => {
-  const queryClient = useQueryClient();
+export const useAdminProductsPaged = (params: AdminProductsParams = {}) => {
   const { page = 1, pageSize = 50, search = "", brandFilter = "all", statusFilter = "all" } = params;
 
-  const productsQuery = useQuery({
-    queryKey: ["admin-products", { page, pageSize, search, brandFilter, statusFilter }],
+  return useQuery({
+    queryKey: ["admin-products-paged", { page, pageSize, search, brandFilter, statusFilter }],
     queryFn: async () => {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
@@ -104,6 +103,44 @@ export const useAdminProducts = (params: AdminProductsParams = {}) => {
       return { rows: data ?? [], totalCount: count ?? 0 };
     },
     placeholderData: (prev) => prev,
+  });
+};
+
+export const useAdminProducts = () => {
+  const queryClient = useQueryClient();
+
+  const productsQuery = useQuery({
+    queryKey: ["admin-products"],
+    queryFn: async () => {
+      const BATCH_SIZE = 1000;
+      let allData: any[] = [];
+      let from = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("products")
+          .select(`
+            *,
+            category:categories(id, name),
+            supplier:suppliers(id, name),
+            frame_attributes(*),
+            lens_attributes(*)
+          `)
+          .order("image_url", { ascending: false, nullsFirst: false })
+          .order("updated_at", { ascending: false })
+          .range(from, from + BATCH_SIZE - 1);
+
+        if (error) throw error;
+        allData = allData.concat(data || []);
+        hasMore = (data?.length || 0) === BATCH_SIZE;
+        from += BATCH_SIZE;
+      }
+
+      return allData;
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const createProduct = useMutation({
