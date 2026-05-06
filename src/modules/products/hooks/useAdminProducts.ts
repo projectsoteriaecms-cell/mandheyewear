@@ -194,10 +194,18 @@ export const useAdminProducts = (params: AdminProductsParams = {}) => {
   });
 
   return {
-    products: productsQuery.data ?? [],
+    products: productsQuery.data?.rows ?? [],
+    totalCount: productsQuery.data?.totalCount ?? 0,
     isLoading: productsQuery.isLoading,
+    isFetching: productsQuery.isFetching,
     error: productsQuery.error,
     createProduct,
+    updateProduct,
+    bulkCreateProducts,
+    deleteProduct,
+  };
+};
+
     updateProduct,
     bulkCreateProducts,
     deleteProduct,
