@@ -124,7 +124,7 @@ const Products = () => {
           <ZohoSyncHistoryPanel />
 
           <ProductsTable
-            products={filteredProducts}
+            products={products}
             isLoading={isLoading}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
@@ -132,7 +132,24 @@ const Products = () => {
             onDelete={setDeleteProductId}
             onQuickUpload={setQuickUploadProduct}
             formatPrice={formatPrice}
+            totalCount={totalCount}
           />
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between gap-4 px-1">
+              <p className="text-sm text-muted-foreground">
+                Page {page} of {totalPages} · {totalCount.toLocaleString()} products
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                  Previous
+                </Button>
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <CreateProductDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
