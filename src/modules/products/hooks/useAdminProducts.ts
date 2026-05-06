@@ -205,9 +205,3 @@ export const useAdminProducts = (params: AdminProductsParams = {}) => {
     deleteProduct,
   };
 };
-
-    updateProduct,
-    bulkCreateProducts,
-    deleteProduct,
-  };
-};
