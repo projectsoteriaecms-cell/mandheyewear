@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
 import { RoleGuard } from "@/modules/auth/components/RoleGuard";
 import { useZohoSync } from "@/modules/integrations";
 import { useIsAdmin } from "@/modules/auth/hooks/useUserRole";
-import { useAdminProducts } from "@/modules/products";
+import { useAdminProducts, useAdminProductsPaged } from "@/modules/products";
+import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
+import { Button } from "@/components/ui/button";
 import { CreateProductDialog } from "@/modules/products/components/CreateProductDialog";
 import { BulkUploadDialog } from "@/modules/products/components/BulkUploadDialog";
 import { EditProductDialog } from "@/modules/products/components/EditProductDialog";
