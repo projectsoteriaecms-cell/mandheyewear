@@ -1,59 +1,47 @@
-## Goal
+## Problem
 
-Add a single, reusable modal that clearly explains the user's email verification status and lets them resend the confirmation email or update their email address. Trigger it from existing entry points (Profile email row + dashboard banner) so users get a focused, dedicated surface instead of the current inline-only flow.
+The admin Products page shows **Product Catalog (0)** and "No products found", but the database actually contains **11,496 active products**.
 
-## What to build
+Root cause: `src/modules/products/hooks/useAdminProducts.ts` fetches the entire catalog in one query by looping 1,000-row batches with heavy joins (`category`, `supplier`, `frame_attributes`, `lens_attributes`). With ~11.5k rows that's ~12 sequential round-trips. React Query aborts the in-flight chain on remount/refetch (visible as `AbortError: signal is aborted without reason`), so `products` resolves to `[]` and the UI renders the empty state.
 
-### 1. New component: `src/components/dashboard/EmailVerificationStatusDialog.tsx`
+Filtering and search are also done client-side over the full result set, which only works if the full set arrives — making the failure mode total.
 
-Controlled `Dialog` wrapping `useEmailVerification`. Two visual states:
+## Fix
 
-**Verified state** (green theme)
-- `ShieldCheck` icon header, title "Email verified"
-- Body: "Your email `<email>` was verified on `<date>`. You're all set."
-- Single "Done" close button.
+Switch the admin list from "load everything" to **server-side paginated + filtered** queries.
 
-**Unverified state** (amber theme)
-- `MailWarning` icon header, title "Verify your email"
-- Body explains: a confirmation link was sent to `<email>`; check inbox/spam.
-- Sub-section "Steps to verify":
-  1. Open the email from us
-  2. Click the confirmation link
-  3. Return here — status updates automatically
-- Primary action: "Resend confirmation email" button with cooldown countdown (`mm:ss`) and spinner during send (mirrors banner behavior).
-- Secondary action: "I used a different email" toggles an inline form (email input + "Send confirmation" / "Cancel") that calls `updateEmail()`.
-- Footer note: "Still nothing after 5 minutes? Try updating your email or contact support."
+### 1. `useAdminProducts` (hook)
+- Accept params: `{ page, pageSize, search, brandFilter, statusFilter }`.
+- Use a single Supabase query with:
+  - `.select(..., { count: 'exact' })` (drop `frame_attributes`/`lens_attributes` from the list query — fetch on edit instead).
+  - `.range(from, to)` for the current page only.
+  - `.ilike('name', %search%)` / `.or('name.ilike.%q%,sku.ilike.%q%')` when `search` is set.
+  - `.eq('brand_line', brandFilter)` when not "all".
+  - `.eq('is_active', true/false)` when not "all".
+- Return `{ products, totalCount, isLoading, ... }`.
+- Keep `createProduct` / `updateProduct` / `bulkCreateProducts` / `deleteProduct` mutations as-is.
 
-Props: `open: boolean`, `onOpenChange: (open: boolean) => void`.
+### 2. `src/pages/admin/Products.tsx`
+- Add `page` state (default `1`) and `pageSize` (default `50`).
+- Reset `page` to 1 whenever `searchQuery`, `brandFilter`, or `statusFilter` changes (debounce search ~300ms via existing `useDebouncedValue`).
+- Pass filters + page into `useAdminProducts` instead of filtering client-side.
+- Remove the local `filteredProducts` block.
 
-### 2. Wire triggers (no behavioral regressions)
+### 3. `ProductsTable` (`src/pages/admin/products/ProductsTable.tsx`)
+- Show `Product Catalog ({totalCount})` instead of `products.length`.
+- Add a simple pager footer: "Page X of Y · Prev / Next" using shadcn `Button`s.
 
-- **`src/components/dashboard/ProfileSection.tsx`**: Replace the inline "Resend confirmation" link and the verified-date inline text with a single clickable status pill ("Verified" / "Not verified — view details") that opens the dialog. Keeps the visual hierarchy clean and gives both states a clear CTA into the modal.
-- **`src/components/dashboard/EmailVerificationBanner.tsx`**: Add a "View details" link/button alongside the existing resend button that opens the same dialog. Keeps the banner's quick-resend affordance but funnels users wanting more context into the modal. Existing inline "I used a different email" toggle stays for backward compatibility.
-
-### 3. Export
-
-Add `EmailVerificationStatusDialog` to `src/components/dashboard/index.ts`.
-
-## Technical notes
-
-- Reuse existing `useEmailVerification` hook — no new logic needed; it already exposes `isVerified`, `verifiedAt`, `email`, `resend`, `updateEmail`, `isResending`, `cooldownSeconds`.
-- Use shadcn `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription`, `DialogFooter`.
-- Icons from `lucide-react`: `ShieldCheck`, `MailWarning`, `Loader2`, `RefreshCw`, `PencilLine`.
-- Local state inside the dialog: `showEmailEdit`, `newEmail`, `isUpdating` (same pattern as the banner).
-- After a successful `updateEmail`, reset the inline form but keep the dialog open so the user sees the success toast context.
-- Auto-close the dialog when state transitions to verified (effect on `isVerified`).
-- Respect existing 60s cooldown persisted in `localStorage` — no duplication.
-
-## Files
-
-- create `src/components/dashboard/EmailVerificationStatusDialog.tsx`
-- edit `src/components/dashboard/ProfileSection.tsx` (swap inline status block for a status pill button that opens the dialog)
-- edit `src/components/dashboard/EmailVerificationBanner.tsx` (add "View details" trigger)
-- edit `src/components/dashboard/index.ts` (export)
+### 4. Image-stats card
+`useProductImageStats` already uses an RPC and is fine — leave it.
 
 ## Out of scope
 
-- Backend / Supabase auth template changes (already configured).
-- New routes or page-level UI.
-- Changes to OAuth / Google sign-in flows (auto-verified users will see the verified state).
+- No DB schema or RLS changes (data and policies are correct; counts confirmed via SQL).
+- No changes to bulk import / Zoho sync / image-stats RPC.
+- Edit dialog will continue to load `frame_attributes` / `lens_attributes` on demand (already does via its own query path).
+
+## Acceptance
+
+- `/admin/products` loads in one network round-trip and shows the real count (11,496) in the header.
+- Search, brand filter, and status filter narrow results server-side.
+- No more `AbortError` from the chained batch loop.
