@@ -34,7 +34,7 @@ type Product = Database["public"]["Tables"]["products"]["Row"];
 type ViewMode = "grid" | "list";
 
 const Products = () => {
-  const { products, isLoading, deleteProduct } = useAdminProducts();
+  const { deleteProduct } = useAdminProducts();
   const { isAdmin } = useIsAdmin();
   const { status: syncStatus, pullItems, syncStock } = useZohoSync();
   const { isEnriching, enrichProgress, handleEnrichProducts } = useEnrichProducts();
@@ -43,6 +43,25 @@ const Products = () => {
   const [brandFilter, setBrandFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, brandFilter, statusFilter]);
+
+  const pagedQuery = useAdminProductsPaged({
+    page,
+    pageSize,
+    search: debouncedSearch,
+    brandFilter,
+    statusFilter,
+  });
+  const products = (pagedQuery.data?.rows ?? []) as Product[];
+  const totalCount = pagedQuery.data?.totalCount ?? 0;
+  const isLoading = pagedQuery.isLoading;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   // Dialog states
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -55,18 +74,6 @@ const Products = () => {
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [quickUploadProduct, setQuickUploadProduct] = useState<Product | null>(null);
-
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesBrand = brandFilter === "all" || product.brand_line === brandFilter;
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "active" && product.is_active) ||
-      (statusFilter === "inactive" && !product.is_active);
-    return matchesSearch && matchesBrand && matchesStatus;
-  });
 
   const handleDelete = async () => {
     if (deleteProductId) {
