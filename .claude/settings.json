@@ -1,4 +1,5 @@
 {
+  "enableAllProjectMcpServers": true,
   "mcpServers": {
     "lens-studio": {
       "headers": {
