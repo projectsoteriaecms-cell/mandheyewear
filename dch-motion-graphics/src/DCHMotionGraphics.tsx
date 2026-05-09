@@ -32,14 +32,23 @@ const C = {
   salmon:        "#E8785A",
 };
 
-// ─── LOGO POSITION ───────────────────────────────────────────────
-// Card is 120×180px. Left=700 puts visual center at x=760.
-// Spec arrow origin: x=820, y=380 — the true card center (left=760 + 60).
-// We split into card-left and arrow-center to be precise.
-const CARD_LEFT   = 700;
-const CARD_TOP    = 290;
-const ARROW_CX    = 820;  // 760 (card left per spec) + 60 (half width)
-const ARROW_CY    = 380;  // 290 (card top) + 90 (half height)
+// ─── LAYOUT CONSTANTS ────────────────────────────────────────────
+// Logo card: 190×280px, centered at (1155, 390)
+const CARD_W      = 190;
+const CARD_H      = 280;
+const CARD_LEFT   = 1060;
+const CARD_TOP    = 250;
+const ARROW_CX    = CARD_LEFT + CARD_W / 2;   // 1155
+const ARROW_CY    = CARD_TOP  + CARD_H / 2;   // 390
+
+// Pills: 3 columns in the left zone (x: 44 – ~975)
+const PILL_START_X   = 44;
+const PILL_START_Y   = 70;
+const PILL_ROW_H     = 100;
+const COL_OFFSETS    = [0, 300, 610];
+
+// Avatar size
+const AVATAR_D = 110;
 
 // ─── SERVICE PILLS (17 total, index 0–16) ────────────────────────
 const SERVICES = [
@@ -68,42 +77,48 @@ const SERVICES = [
   { label: "...and more",          bg: C.creamPill,     tx: C.grey,   hasThumb: false, thumbBg: "",        row: 5, col: 1 },
 ];
 
-// ─── TEAM AVATARS (9 total, index 0–8) ───────────────────────────
+// ─── TEAM AVATARS — spread across right zone x:1250–1800 ─────────
 const TEAMS = [
-  { label: "Founders",   pillBg: C.creamPill,     pillTx: C.dark,  avatarBg: "#8A5A3A", initials: "F", x: 960,  y: 80  },
-  { label: "Marketing",  pillBg: C.mintPill,      pillTx: C.dark,  avatarBg: "#5A3A2A", initials: "M", x: 1130, y: 60  },
-  { label: "Strategy",   pillBg: C.darkGreenPill, pillTx: C.white, avatarBg: "#C8A888", initials: "S", x: 1340, y: 80  },
-  { label: "Brand",      pillBg: C.pinkPill,      pillTx: C.dark,  avatarBg: "#6A7A8A", initials: "B", x: 920,  y: 290 },
-  { label: "Product",    pillBg: C.pinkPill,      pillTx: C.dark,  avatarBg: "#8A7A6A", initials: "P", x: 1110, y: 270 },
-  { label: "Growth",     pillBg: C.lightBluePill, pillTx: C.dark,  avatarBg: "#6A8A5A", initials: "G", x: 1320, y: 290 },
-  { label: "Operations", pillBg: C.lightBluePill, pillTx: C.dark,  avatarBg: "#7A6A5A", initials: "O", x: 960,  y: 490 },
-  { label: "Events",     pillBg: C.greenPill,     pillTx: C.dark,  avatarBg: "#8A9A7A", initials: "E", x: 1150, y: 510 },
-  { label: "Campaigns",  pillBg: C.darkGreenPill, pillTx: C.white, avatarBg: "#4A7A5A", initials: "C", x: 1350, y: 490 },
+  // Row 0 (y ≈ 30–50) — staggered
+  { label: "Founders",   pillBg: C.creamPill,     pillTx: C.dark,  avatarBg: "#8A5A3A", initials: "F", x: 1255, y: 45  },
+  { label: "Marketing",  pillBg: C.mintPill,      pillTx: C.dark,  avatarBg: "#5A3A2A", initials: "M", x: 1470, y: 28  },
+  { label: "Strategy",   pillBg: C.darkGreenPill, pillTx: C.white, avatarBg: "#C8A888", initials: "S", x: 1680, y: 45  },
+  // Row 1 (y ≈ 275–295)
+  { label: "Brand",      pillBg: C.pinkPill,      pillTx: C.dark,  avatarBg: "#6A7A8A", initials: "B", x: 1220, y: 288 },
+  { label: "Product",    pillBg: C.pinkPill,      pillTx: C.dark,  avatarBg: "#8A7A6A", initials: "P", x: 1440, y: 268 },
+  { label: "Growth",     pillBg: C.lightBluePill, pillTx: C.dark,  avatarBg: "#6A8A5A", initials: "G", x: 1660, y: 288 },
+  // Row 2 (y ≈ 510–535)
+  { label: "Operations", pillBg: C.lightBluePill, pillTx: C.dark,  avatarBg: "#7A6A5A", initials: "O", x: 1255, y: 510 },
+  { label: "Events",     pillBg: C.greenPill,     pillTx: C.dark,  avatarBg: "#8A9A7A", initials: "E", x: 1460, y: 532 },
+  { label: "Campaigns",  pillBg: C.darkGreenPill, pillTx: C.white, avatarBg: "#4A7A5A", initials: "C", x: 1658, y: 510 },
 ];
 
 // ─── BACKGROUND ──────────────────────────────────────────────────
 const Background: React.FC<{ fadeOut: number }> = ({ fadeOut }) => (
   <AbsoluteFill style={{ background: C.bg, opacity: 1 - fadeOut * 0.3 }}>
+    {/* Centre glow around logo */}
     <div style={{
       position: "absolute",
-      left: ARROW_CX - 300, top: ARROW_CY - 300,
-      width: 600, height: 600,
+      left: ARROW_CX - 420, top: ARROW_CY - 420,
+      width: 840, height: 840,
       borderRadius: "50%",
-      background: `radial-gradient(ellipse, ${C.glow}66 0%, transparent 70%)`,
+      background: `radial-gradient(ellipse, ${C.glow}55 0%, transparent 70%)`,
       pointerEvents: "none",
     }} />
+    {/* Top-left corner glow */}
     <div style={{
       position: "absolute",
-      left: -80, top: -80,
-      width: 400, height: 400,
+      left: -120, top: -120,
+      width: 580, height: 580,
       borderRadius: "50%",
       background: `radial-gradient(ellipse, ${C.glow}33 0%, transparent 70%)`,
       pointerEvents: "none",
     }} />
+    {/* Right-edge glow */}
     <div style={{
       position: "absolute",
-      right: -100, top: 200,
-      width: 500, height: 500,
+      right: -140, top: 180,
+      width: 680, height: 680,
       borderRadius: "50%",
       background: `radial-gradient(ellipse, ${C.glow}22 0%, transparent 70%)`,
       pointerEvents: "none",
@@ -112,6 +127,8 @@ const Background: React.FC<{ fadeOut: number }> = ({ fadeOut }) => (
 );
 
 // ─── SERVICE PILL ─────────────────────────────────────────────────
+const THUMB_D = 48;
+
 const ServicePill: React.FC<{
   svc: typeof SERVICES[0];
   idx: number;
@@ -128,12 +145,11 @@ const ServicePill: React.FC<{
   });
 
   const opacity = interpolate(prog, [0, 1], [0, 1]) * (1 - globalFade);
-  const tx      = interpolate(prog, [0, 1], [-30, 0]);
-  const scale   = interpolate(prog, [0, 1], [0.88, 1]);
+  const tx      = interpolate(prog, [0, 1], [-40, 0]);
+  const scale   = interpolate(prog, [0, 1], [0.85, 1]);
 
-  const colOffsets = [0, 208, 400];
-  const x = 38 + colOffsets[svc.col];
-  const y = 108 + svc.row * 72;
+  const x = PILL_START_X + COL_OFFSETS[svc.col];
+  const y = PILL_START_Y + svc.row * PILL_ROW_H;
 
   return (
     <div style={{
@@ -145,28 +161,28 @@ const ServicePill: React.FC<{
       <div style={{
         backgroundColor: svc.bg,
         color: svc.tx,
-        borderRadius: 40,
-        padding: svc.hasThumb ? "8px 18px 8px 8px" : "11px 22px",
+        borderRadius: 52,
+        padding: svc.hasThumb ? "11px 28px 11px 11px" : "15px 28px",
         display: "inline-flex",
         alignItems: "center",
-        gap: 10,
+        gap: 12,
         fontFamily: "'Segoe UI', 'Inter', 'Arial', sans-serif",
-        fontSize: 15,
-        fontWeight: 600,
+        fontSize: 22,
+        fontWeight: 700,
         whiteSpace: "nowrap",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-        letterSpacing: 0.2,
+        boxShadow: "0 3px 16px rgba(0,0,0,0.10)",
+        letterSpacing: 0.1,
       }}>
         {svc.hasThumb && (
           <div style={{
-            width: 36, height: 36,
+            width: THUMB_D, height: THUMB_D,
             borderRadius: "50%",
             backgroundColor: svc.thumbBg,
             flexShrink: 0,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 13,
+            fontSize: 18,
             color: C.white,
             fontWeight: 700,
           }}>
@@ -180,53 +196,74 @@ const ServicePill: React.FC<{
 };
 
 // ─── DCH LOGO CARD ────────────────────────────────────────────────
-const DCHLogoCard: React.FC<{ phase4Progress: number }> = ({ phase4Progress }) => {
-  const scale = interpolate(phase4Progress, [0, 1], [1, 1.15]);
-  // Phase 4: card drifts toward horizontal center (960 - 60 = 900)
-  const left  = interpolate(phase4Progress, [0, 1], [CARD_LEFT, 900]);
-  const top   = interpolate(phase4Progress, [0, 1], [CARD_TOP, 450]);
+const DCHLogoCard: React.FC<{
+  phase4Progress: number;
+  taglineOpacity: number;
+}> = ({ phase4Progress, taglineOpacity }) => {
+  const scale = interpolate(phase4Progress, [0, 1], [1, 1.2]);
+  // Phase 4: drift to canvas centre (960, 540)
+  const left  = interpolate(phase4Progress, [0, 1], [CARD_LEFT, 960 - CARD_W / 2]);
+  const top   = interpolate(phase4Progress, [0, 1], [CARD_TOP,  540 - CARD_H / 2]);
 
   return (
-    <div style={{
-      position: "absolute",
-      left, top,
-      transform: `scale(${scale})`,
-      transformOrigin: "center center",
-    }}>
+    <>
       <div style={{
-        width: 120,
-        height: 180,
-        backgroundColor: C.logoBg,
-        borderRadius: 24,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+        position: "absolute",
+        left, top,
+        transform: `scale(${scale})`,
+        transformOrigin: "center center",
       }}>
         <div style={{
-          color: C.logoText,
-          fontSize: 36,
-          fontWeight: 900,
-          fontFamily: "'Segoe UI', 'Inter', 'Arial', sans-serif",
-          letterSpacing: -1.5,
-          lineHeight: 1,
+          width: CARD_W,
+          height: CARD_H,
+          backgroundColor: C.logoBg,
+          borderRadius: 32,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 12px 48px rgba(0,0,0,0.24)",
         }}>
-          DCH
+          <div style={{
+            color: C.logoText,
+            fontSize: 60,
+            fontWeight: 900,
+            fontFamily: "'Segoe UI', 'Inter', 'Arial', sans-serif",
+            letterSpacing: -2,
+            lineHeight: 1,
+          }}>
+            DCH
+          </div>
+          <div style={{
+            width: 60, height: 3,
+            backgroundColor: C.logoText,
+            opacity: 0.35,
+            marginTop: 14,
+            borderRadius: 3,
+          }} />
         </div>
-        <div style={{
-          width: 40, height: 2,
-          backgroundColor: C.logoText,
-          opacity: 0.3,
-          marginTop: 8,
-          borderRadius: 2,
-        }} />
       </div>
-    </div>
+
+      {/* Tagline fades in during Phase 4 */}
+      <div style={{
+        position: "absolute",
+        left: 0, right: 0,
+        top: 540 + CARD_H / 2 + 32,
+        textAlign: "center",
+        opacity: taglineOpacity,
+        fontFamily: "'Segoe UI', 'Inter', 'Arial', sans-serif",
+        fontSize: 28,
+        fontWeight: 500,
+        color: C.dark,
+        letterSpacing: 0.5,
+      }}>
+        The intelligence layer behind growth.
+      </div>
+    </>
   );
 };
 
-// ─── ARROW (logo center → avatar center) ─────────────────────────
+// ─── ARROW (logo centre → avatar centre) ─────────────────────────
 const Arrow: React.FC<{
   x2: number; y2: number;
   delay: number;
@@ -235,11 +272,11 @@ const Arrow: React.FC<{
   const frame = useCurrentFrame();
 
   const prog = interpolate(
-    frame, [delay, delay + 18], [0, 1],
+    frame, [delay, delay + 20], [0, 1],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  const opacity = prog * 0.6 * (1 - globalFade);
+  const opacity = prog * 0.70 * (1 - globalFade);
   const endX = ARROW_CX + (x2 - ARROW_CX) * prog;
   const endY = ARROW_CY + (y2 - ARROW_CY) * prog;
 
@@ -253,18 +290,18 @@ const Arrow: React.FC<{
       <defs>
         <marker
           id={`ah-${delay}`}
-          markerWidth="8" markerHeight="8"
-          refX="6" refY="3"
+          markerWidth="10" markerHeight="10"
+          refX="7" refY="4"
           orient="auto"
         >
-          <path d="M0,0 L8,3 L0,6 Z" fill={C.glow} />
+          <path d="M0,0 L10,4 L0,8 Z" fill={C.glow} />
         </marker>
       </defs>
       <line
         x1={ARROW_CX} y1={ARROW_CY}
         x2={endX}      y2={endY}
         stroke={C.glow}
-        strokeWidth={2.5}
+        strokeWidth={4}
         opacity={opacity}
         markerEnd={`url(#ah-${delay})`}
         strokeLinecap="round"
@@ -304,15 +341,15 @@ const TeamAvatar: React.FC<{
       alignItems: "center",
     }}>
       <div style={{
-        width: 72, height: 72,
+        width: AVATAR_D, height: AVATAR_D,
         borderRadius: "50%",
         backgroundColor: team.avatarBg,
-        border: `3px solid ${C.white}`,
-        boxShadow: "0 4px 16px rgba(0,0,0,0.14)",
+        border: `4px solid ${C.white}`,
+        boxShadow: "0 6px 24px rgba(0,0,0,0.16)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: 26,
+        fontSize: 34,
         fontWeight: 700,
         color: C.white,
         fontFamily: "'Segoe UI', 'Inter', 'Arial', sans-serif",
@@ -324,14 +361,14 @@ const TeamAvatar: React.FC<{
       <div style={{
         backgroundColor: team.pillBg,
         color: team.pillTx,
-        padding: "6px 16px",
-        borderRadius: 24,
+        padding: "9px 22px",
+        borderRadius: 28,
         fontFamily: "'Segoe UI', 'Inter', 'Arial', sans-serif",
-        fontSize: 14,
-        fontWeight: 600,
+        fontSize: 18,
+        fontWeight: 700,
         whiteSpace: "nowrap",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-        marginTop: -12,
+        boxShadow: "0 3px 12px rgba(0,0,0,0.12)",
+        marginTop: -16,
         position: "relative",
         zIndex: 1,
       }}>
@@ -360,6 +397,12 @@ export const DCHMotionGraphics: React.FC<{
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
+  // Tagline fades in after logo has centred: frame 285–320
+  const taglineOpacity = interpolate(
+    frame, [285, 320], [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
   return (
     <AbsoluteFill>
       <Background fadeOut={globalFade} />
@@ -371,8 +414,8 @@ export const DCHMotionGraphics: React.FC<{
       {TEAMS.map((team, i) => (
         <Arrow
           key={`arrow-${team.label}`}
-          x2={team.x + 36}
-          y2={team.y + 36}
+          x2={team.x + AVATAR_D / 2}
+          y2={team.y + AVATAR_D / 2}
           delay={85 + i * 8}
           globalFade={globalFade}
         />
@@ -382,7 +425,7 @@ export const DCHMotionGraphics: React.FC<{
         <TeamAvatar key={team.label} team={team} idx={i} globalFade={globalFade} />
       ))}
 
-      <DCHLogoCard phase4Progress={phase4Progress} />
+      <DCHLogoCard phase4Progress={phase4Progress} taglineOpacity={taglineOpacity} />
     </AbsoluteFill>
   );
 };
