@@ -85,6 +85,10 @@ const Booking = () => {
   const [selectedTime, setSelectedTime] = useState("");
   const [notes, setNotes] = useState("");
   const [confirmedAppointment, setConfirmedAppointment] = useState<Appointment | null>(null);
+  const [dataConsent, setDataConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [consentError, setConsentError] = useState("");
+  const { toast } = useToast();
 
   const selectedBranch = branches?.find((b) => b.id === selectedBranchId);
   const selectedServiceData = SERVICES.find((s) => s.value === selectedService);
