@@ -14,6 +14,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { lovable } from "@/integrations/lovable";
 import { GoogleLogo } from "@phosphor-icons/react";
 import { supabase } from "@/integrations/supabase/client";
+import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
 import type { AppRole } from "../hooks/useUserRole";
 
 const Signup = () => {
