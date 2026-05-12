@@ -468,6 +468,18 @@ const Booking = () => {
                       maxLength={500}
                     />
                   </div>
+
+                  <DataProtectionConsent
+                    consent={dataConsent}
+                    onConsentChange={(v) => {
+                      setDataConsent(v);
+                      if (v) setConsentError("");
+                    }}
+                    marketing={marketingConsent}
+                    onMarketingChange={setMarketingConsent}
+                    error={consentError}
+                    idPrefix="booking"
+                  />
                 </div>
               )}
 
