@@ -35,6 +35,7 @@ import { canBookAppointments } from "@/shared/lib/permissions";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
+import { BookingAuthPanel } from "@/components/auth/BookingAuthPanel";
 import { useToast } from "@/shared/hooks/use-toast";
 
 const SERVICES = [
