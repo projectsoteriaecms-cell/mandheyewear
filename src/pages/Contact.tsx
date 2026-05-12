@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Phone, Envelope, MapPin, Clock, ChatCircle } from "@phosphor-icons/react";
 import { useToast } from "@/shared/hooks/use-toast";
 import { z } from "zod";
+import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
 
 const contactSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required").max(100),
@@ -30,6 +31,9 @@ const Contact = () => {
 
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dataConsent, setDataConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [consentError, setConsentError] = useState("");
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -51,6 +55,12 @@ const Contact = () => {
       toast({ title: "Validation Error", description: firstError || "Please check your inputs.", variant: "destructive" });
       return;
     }
+    if (!dataConsent) {
+      setConsentError("Please consent to data processing to send your message.");
+      toast({ title: "Consent Required", description: "We need your consent under the Nigeria Data Protection Act.", variant: "destructive" });
+      return;
+    }
+    setConsentError("");
 
     setIsSubmitting(true);
 
@@ -180,6 +190,14 @@ const Contact = () => {
                       required
                     />
                   </div>
+                  <DataProtectionConsent
+                    consent={dataConsent}
+                    onConsentChange={(v) => { setDataConsent(v); if (v) setConsentError(""); }}
+                    marketing={marketingConsent}
+                    onMarketingChange={setMarketingConsent}
+                    error={consentError}
+                    idPrefix="contact"
+                  />
                   <Button variant="hero" className="w-full" size="lg" type="submit" disabled={isSubmitting}>
                     {isSubmitting ? "Sending..." : "Send Message"}
                   </Button>

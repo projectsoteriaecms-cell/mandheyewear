@@ -14,6 +14,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { lovable } from "@/integrations/lovable";
 import { GoogleLogo } from "@phosphor-icons/react";
 import { supabase } from "@/integrations/supabase/client";
+import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
 import type { AppRole } from "../hooks/useUserRole";
 
 const Signup = () => {
@@ -28,6 +29,9 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [dataConsent, setDataConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [consentError, setConsentError] = useState("");
   const { signUp } = useAuth();
   const { toast } = useToast();
   const { trackCompleteRegistration } = useMetaPixel();
@@ -84,6 +88,17 @@ const Signup = () => {
       });
       return;
     }
+
+    if (!dataConsent) {
+      setConsentError("Please consent to data processing to create your account.");
+      toast({
+        title: "Consent Required",
+        description: "We need your consent under the Nigeria Data Protection Act to create your account.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setConsentError("");
 
     setIsLoading(true);
     const { error } = await signUp(email, password, fullName);
@@ -238,6 +253,16 @@ const Signup = () => {
                     required
                   />
                 </div>
+
+                <DataProtectionConsent
+                  consent={dataConsent}
+                  onConsentChange={(v) => { setDataConsent(v); if (v) setConsentError(""); }}
+                  marketing={marketingConsent}
+                  onMarketingChange={setMarketingConsent}
+                  disabled={isLoading || isGoogleLoading}
+                  error={consentError}
+                  idPrefix="signup"
+                />
 
                 <Button
                   type="submit"

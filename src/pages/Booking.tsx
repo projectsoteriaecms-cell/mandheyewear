@@ -34,6 +34,8 @@ import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { canBookAppointments } from "@/shared/lib/permissions";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
+import { useToast } from "@/shared/hooks/use-toast";
 
 const SERVICES = [
   { value: "comprehensive_eye_exam", label: "Comprehensive Eye Exam", duration: 45 },
@@ -83,6 +85,10 @@ const Booking = () => {
   const [selectedTime, setSelectedTime] = useState("");
   const [notes, setNotes] = useState("");
   const [confirmedAppointment, setConfirmedAppointment] = useState<Appointment | null>(null);
+  const [dataConsent, setDataConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [consentError, setConsentError] = useState("");
+  const { toast } = useToast();
 
   const selectedBranch = branches?.find((b) => b.id === selectedBranchId);
   const selectedServiceData = SERVICES.find((s) => s.value === selectedService);
@@ -100,6 +106,16 @@ const Booking = () => {
 
   const handleSubmit = async () => {
     if (!date || !selectedTime || !selectedBranchId || !selectedService) return;
+    if (!dataConsent) {
+      setConsentError("Please consent to data processing to confirm your booking.");
+      toast({
+        title: "Consent Required",
+        description: "We need your consent to process your booking under the Nigeria Data Protection Act.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setConsentError("");
 
     const appointment = await createAppointment.mutateAsync({
       branch_id: selectedBranchId,
@@ -452,6 +468,18 @@ const Booking = () => {
                       maxLength={500}
                     />
                   </div>
+
+                  <DataProtectionConsent
+                    consent={dataConsent}
+                    onConsentChange={(v) => {
+                      setDataConsent(v);
+                      if (v) setConsentError("");
+                    }}
+                    marketing={marketingConsent}
+                    onMarketingChange={setMarketingConsent}
+                    error={consentError}
+                    idPrefix="booking"
+                  />
                 </div>
               )}
 

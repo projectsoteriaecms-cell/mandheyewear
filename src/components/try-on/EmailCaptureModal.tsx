@@ -10,9 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, Loader2, Download, X } from "lucide-react";
+import { Mail, Loader2, Download } from "lucide-react";
 import type { TryOnResult } from "@/modules/personalization/hooks/useVirtualTryOn";
+import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
 
 interface EmailCaptureModalProps {
   isOpen: boolean;
@@ -33,7 +33,9 @@ export const EmailCaptureModal = ({
 }: EmailCaptureModalProps) => {
   const [email, setEmail] = useState("");
   const [marketingConsent, setMarketingConsent] = useState(false);
+  const [dataConsent, setDataConsent] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [consentError, setConsentError] = useState("");
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -54,10 +56,17 @@ export const EmailCaptureModal = ({
       return;
     }
 
+    if (!dataConsent) {
+      setConsentError("Please consent to data processing to receive your try-on by email.");
+      return;
+    }
+    setConsentError("");
+
     const { success } = await onSubmit(email, marketingConsent);
     if (success) {
       setEmail("");
       setMarketingConsent(false);
+      setDataConsent(false);
     }
   };
 
@@ -122,17 +131,16 @@ export const EmailCaptureModal = ({
             )}
           </div>
 
-          <div className="flex items-start space-x-3">
-            <Checkbox
-              id="marketing"
-              checked={marketingConsent}
-              onCheckedChange={(checked) => setMarketingConsent(checked === true)}
-              disabled={isSubmitting}
-            />
-            <Label htmlFor="marketing" className="text-sm text-muted-foreground font-normal cursor-pointer">
-              Send me style tips, exclusive offers, and new arrivals
-            </Label>
-          </div>
+          <DataProtectionConsent
+            consent={dataConsent}
+            onConsentChange={(v) => { setDataConsent(v); if (v) setConsentError(""); }}
+            marketing={marketingConsent}
+            onMarketingChange={setMarketingConsent}
+            disabled={isSubmitting}
+            error={consentError}
+            compact
+            idPrefix="tryon"
+          />
 
           <div className="flex flex-col gap-2">
             <Button type="submit" disabled={isSubmitting} className="w-full">
