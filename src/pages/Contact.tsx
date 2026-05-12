@@ -55,6 +55,12 @@ const Contact = () => {
       toast({ title: "Validation Error", description: firstError || "Please check your inputs.", variant: "destructive" });
       return;
     }
+    if (!dataConsent) {
+      setConsentError("Please consent to data processing to send your message.");
+      toast({ title: "Consent Required", description: "We need your consent under the Nigeria Data Protection Act.", variant: "destructive" });
+      return;
+    }
+    setConsentError("");
 
     setIsSubmitting(true);
 
