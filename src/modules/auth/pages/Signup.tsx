@@ -89,6 +89,17 @@ const Signup = () => {
       return;
     }
 
+    if (!dataConsent) {
+      setConsentError("Please consent to data processing to create your account.");
+      toast({
+        title: "Consent Required",
+        description: "We need your consent under the Nigeria Data Protection Act to create your account.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setConsentError("");
+
     setIsLoading(true);
     const { error } = await signUp(email, password, fullName);
     setIsLoading(false);
