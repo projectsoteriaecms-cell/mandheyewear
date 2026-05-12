@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Phone, Envelope, MapPin, Clock, ChatCircle } from "@phosphor-icons/react";
 import { useToast } from "@/shared/hooks/use-toast";
 import { z } from "zod";
+import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
 
 const contactSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required").max(100),
