@@ -31,6 +31,9 @@ const Contact = () => {
 
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dataConsent, setDataConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [consentError, setConsentError] = useState("");
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
