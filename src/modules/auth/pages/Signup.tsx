@@ -254,6 +254,16 @@ const Signup = () => {
                   />
                 </div>
 
+                <DataProtectionConsent
+                  consent={dataConsent}
+                  onConsentChange={(v) => { setDataConsent(v); if (v) setConsentError(""); }}
+                  marketing={marketingConsent}
+                  onMarketingChange={setMarketingConsent}
+                  disabled={isLoading || isGoogleLoading}
+                  error={consentError}
+                  idPrefix="signup"
+                />
+
                 <Button
                   type="submit"
                   variant="hero"
