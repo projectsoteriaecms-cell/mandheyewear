@@ -106,6 +106,16 @@ const Booking = () => {
 
   const handleSubmit = async () => {
     if (!date || !selectedTime || !selectedBranchId || !selectedService) return;
+    if (!dataConsent) {
+      setConsentError("Please consent to data processing to confirm your booking.");
+      toast({
+        title: "Consent Required",
+        description: "We need your consent to process your booking under the Nigeria Data Protection Act.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setConsentError("");
 
     const appointment = await createAppointment.mutateAsync({
       branch_id: selectedBranchId,
