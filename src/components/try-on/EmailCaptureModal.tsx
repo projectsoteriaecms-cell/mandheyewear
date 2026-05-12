@@ -56,10 +56,17 @@ export const EmailCaptureModal = ({
       return;
     }
 
+    if (!dataConsent) {
+      setConsentError("Please consent to data processing to receive your try-on by email.");
+      return;
+    }
+    setConsentError("");
+
     const { success } = await onSubmit(email, marketingConsent);
     if (success) {
       setEmail("");
       setMarketingConsent(false);
+      setDataConsent(false);
     }
   };
 
