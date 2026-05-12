@@ -35,6 +35,7 @@ import { canBookAppointments } from "@/shared/lib/permissions";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
+import { BookingAuthPanel } from "@/components/auth/BookingAuthPanel";
 import { useToast } from "@/shared/hooks/use-toast";
 
 const SERVICES = [
@@ -167,21 +168,21 @@ const Booking = () => {
     );
   }
 
-  // Not authenticated - show sign in prompt
+  // Not authenticated - show inline sign in / sign up
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
         <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md mx-auto text-center">
-            <LogIn className="h-16 w-16 mx-auto text-primary mb-4" />
-            <h1 className="text-2xl font-bold mb-4">Sign In Required</h1>
-            <p className="text-muted-foreground mb-8">
-              Please sign in to book an appointment. Your booking will be saved to your account.
-            </p>
-            <Button variant="hero" size="lg" asChild>
-              <Link to="/login?redirect=/booking">Sign In to Book</Link>
-            </Button>
+          <div className="max-w-md mx-auto">
+            <div className="text-center mb-6">
+              <LogIn className="h-12 w-12 mx-auto text-primary mb-3" />
+              <h1 className="text-2xl font-bold mb-2">Sign in to Book</h1>
+              <p className="text-muted-foreground text-sm">
+                Sign in or create an account to schedule your appointment.
+              </p>
+            </div>
+            <BookingAuthPanel />
           </div>
         </div>
         <Footer />
