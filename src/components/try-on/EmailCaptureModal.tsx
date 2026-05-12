@@ -33,7 +33,9 @@ export const EmailCaptureModal = ({
 }: EmailCaptureModalProps) => {
   const [email, setEmail] = useState("");
   const [marketingConsent, setMarketingConsent] = useState(false);
+  const [dataConsent, setDataConsent] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [consentError, setConsentError] = useState("");
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
