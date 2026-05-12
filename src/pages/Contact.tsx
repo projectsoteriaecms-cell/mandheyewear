@@ -190,6 +190,14 @@ const Contact = () => {
                       required
                     />
                   </div>
+                  <DataProtectionConsent
+                    consent={dataConsent}
+                    onConsentChange={(v) => { setDataConsent(v); if (v) setConsentError(""); }}
+                    marketing={marketingConsent}
+                    onMarketingChange={setMarketingConsent}
+                    error={consentError}
+                    idPrefix="contact"
+                  />
                   <Button variant="hero" className="w-full" size="lg" type="submit" disabled={isSubmitting}>
                     {isSubmitting ? "Sending..." : "Send Message"}
                   </Button>
