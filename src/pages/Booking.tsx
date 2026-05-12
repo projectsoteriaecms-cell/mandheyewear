@@ -34,6 +34,8 @@ import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { canBookAppointments } from "@/shared/lib/permissions";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
+import { useToast } from "@/shared/hooks/use-toast";
 
 const SERVICES = [
   { value: "comprehensive_eye_exam", label: "Comprehensive Eye Exam", duration: 45 },
