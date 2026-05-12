@@ -131,17 +131,16 @@ export const EmailCaptureModal = ({
             )}
           </div>
 
-          <div className="flex items-start space-x-3">
-            <Checkbox
-              id="marketing"
-              checked={marketingConsent}
-              onCheckedChange={(checked) => setMarketingConsent(checked === true)}
-              disabled={isSubmitting}
-            />
-            <Label htmlFor="marketing" className="text-sm text-muted-foreground font-normal cursor-pointer">
-              Send me style tips, exclusive offers, and new arrivals
-            </Label>
-          </div>
+          <DataProtectionConsent
+            consent={dataConsent}
+            onConsentChange={(v) => { setDataConsent(v); if (v) setConsentError(""); }}
+            marketing={marketingConsent}
+            onMarketingChange={setMarketingConsent}
+            disabled={isSubmitting}
+            error={consentError}
+            compact
+            idPrefix="tryon"
+          />
 
           <div className="flex flex-col gap-2">
             <Button type="submit" disabled={isSubmitting} className="w-full">
