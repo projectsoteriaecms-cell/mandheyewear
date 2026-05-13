@@ -93,7 +93,7 @@ export const TryOnGenerationExperience = ({
         )}
         {/* Scan line */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-0 right-0 h-1/3 bg-gradient-to-b from-transparent via-primary/30 to-transparent animate-scan" />
+          <div className="absolute left-0 right-0 h-1/3 bg-gradient-to-b from-transparent via-primary/30 to-transparent animate-scan-line" />
         </div>
         {/* Subtle vignette */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
