@@ -14,6 +14,7 @@ import { useCart } from "@/modules/orders/hooks/useCart";
 import { useWishlist } from "@/modules/orders/hooks/useWishlist";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
+import { TryOnGenerationExperience } from "./TryOnGenerationExperience";
 
 interface InlineTryOnModalProps {
   productId: string | null;
@@ -142,13 +143,10 @@ export const InlineTryOnModal = ({
 
           {/* Result area */}
           {showLoading && !currentResult ? (
-            <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary flex items-center justify-center">
-              <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                <Loader2 className="h-8 w-8 animate-spin text-accent" />
-                <p className="text-sm font-medium">Generating your try-on...</p>
-                <p className="text-xs">This takes about 5–10 seconds</p>
-              </div>
-            </div>
+            <TryOnGenerationExperience
+              userPhoto={savedPhotoUrl}
+              frameName={product?.name}
+            />
           ) : currentResult?.success ? (
             <>
               <TryOnCarousel slides={carouselSlides} />

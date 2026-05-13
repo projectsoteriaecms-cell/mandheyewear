@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { EmailCaptureModal } from "./EmailCaptureModal";
 import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
+import { TryOnGenerationExperience } from "./TryOnGenerationExperience";
 import { useVTOEmailCapture } from "@/modules/personalization/hooks/useVTOEmailCapture";
 import type { TryOnResult as TryOnResultType, MultiAngleResults } from "@/modules/personalization/hooks/useVirtualTryOn";
 
@@ -163,10 +164,12 @@ export const TryOnResult = ({
                 )}
               </>
             ) : isGenerating ? (
-              <div className="w-full h-[32vh] flex flex-col items-center justify-center gap-2">
-                <RefreshCw className="h-7 w-7 text-primary animate-spin" />
-                <p className="text-xs text-muted-foreground">Generating your try-on…</p>
-              </div>
+              <TryOnGenerationExperience
+                userPhoto={userPhoto}
+                frameName={result?.frameDetails?.name}
+                variant="compact"
+                className="border-0 bg-transparent p-2"
+              />
             ) : hasError ? (
               <div className="w-full px-4 py-6 flex flex-col items-center justify-center gap-2 text-center">
                 <AlertCircle className="h-6 w-6 text-destructive" />
@@ -252,27 +255,11 @@ export const TryOnResult = ({
   if (isGenerating) {
     return (
       <Card className={cn("overflow-hidden", className)}>
-        <CardContent className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-foreground">Try-On Result</h3>
-            <Badge variant="secondary" className="animate-pulse">
-              Generating...
-            </Badge>
-          </div>
-          <div className="aspect-[4/3] relative">
-            <Skeleton className="w-full h-full rounded-lg" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center space-y-2">
-                <RefreshCw className="h-8 w-8 text-primary animate-spin mx-auto" />
-                <p className="text-sm text-muted-foreground">
-                  AI is generating your try-on...
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  This may take a few seconds
-                </p>
-              </div>
-            </div>
-          </div>
+        <CardContent className="p-4 sm:p-6">
+          <TryOnGenerationExperience
+            userPhoto={userPhoto}
+            frameName={result?.frameDetails?.name}
+          />
         </CardContent>
       </Card>
     );
