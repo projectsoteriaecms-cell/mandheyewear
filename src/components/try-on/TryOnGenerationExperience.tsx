@@ -157,7 +157,7 @@ export const TryOnGenerationExperience = ({
         <Lightbulb className="h-4 w-4 shrink-0 text-accent mt-0.5" />
         <p
           key={tipIndex}
-          className="text-xs text-foreground/80 leading-relaxed animate-fade-in"
+          className="text-xs text-foreground/80 leading-relaxed animate-fade-in-up"
         >
           {TIPS[tipIndex]}
         </p>
