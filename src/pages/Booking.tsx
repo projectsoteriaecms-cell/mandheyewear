@@ -173,7 +173,7 @@ const Booking = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="pt-44 sm:pt-48 lg:pt-44 pb-24 px-4 sm:px-6 lg:px-8">
+        <div className="pt-56 sm:pt-60 lg:pt-52 pb-24 px-4 sm:px-6 lg:px-8">
           <div className="max-w-md mx-auto">
             <div className="text-center mb-6">
               <LogIn className="h-10 w-10 mx-auto text-primary mb-3" />
