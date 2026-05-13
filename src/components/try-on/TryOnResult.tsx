@@ -164,10 +164,12 @@ export const TryOnResult = ({
                 )}
               </>
             ) : isGenerating ? (
-              <div className="w-full h-[32vh] flex flex-col items-center justify-center gap-2">
-                <RefreshCw className="h-7 w-7 text-primary animate-spin" />
-                <p className="text-xs text-muted-foreground">Generating your try-on…</p>
-              </div>
+              <TryOnGenerationExperience
+                userPhoto={userPhoto}
+                frameName={result?.frameDetails?.name}
+                variant="compact"
+                className="border-0 bg-transparent p-2"
+              />
             ) : hasError ? (
               <div className="w-full px-4 py-6 flex flex-col items-center justify-center gap-2 text-center">
                 <AlertCircle className="h-6 w-6 text-destructive" />
