@@ -14,6 +14,7 @@ import { useCart } from "@/modules/orders/hooks/useCart";
 import { useWishlist } from "@/modules/orders/hooks/useWishlist";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
+import { TryOnGenerationExperience } from "./TryOnGenerationExperience";
 
 interface InlineTryOnModalProps {
   productId: string | null;
