@@ -253,27 +253,11 @@ export const TryOnResult = ({
   if (isGenerating) {
     return (
       <Card className={cn("overflow-hidden", className)}>
-        <CardContent className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-foreground">Try-On Result</h3>
-            <Badge variant="secondary" className="animate-pulse">
-              Generating...
-            </Badge>
-          </div>
-          <div className="aspect-[4/3] relative">
-            <Skeleton className="w-full h-full rounded-lg" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center space-y-2">
-                <RefreshCw className="h-8 w-8 text-primary animate-spin mx-auto" />
-                <p className="text-sm text-muted-foreground">
-                  AI is generating your try-on...
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  This may take a few seconds
-                </p>
-              </div>
-            </div>
-          </div>
+        <CardContent className="p-4 sm:p-6">
+          <TryOnGenerationExperience
+            userPhoto={userPhoto}
+            frameName={result?.frameDetails?.name}
+          />
         </CardContent>
       </Card>
     );
