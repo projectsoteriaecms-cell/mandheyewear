@@ -173,13 +173,13 @@ const Booking = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="pt-44 sm:pt-48 lg:pt-44 pb-24 px-4 sm:px-6 lg:px-8">
           <div className="max-w-md mx-auto">
             <div className="text-center mb-6">
-              <LogIn className="h-12 w-12 mx-auto text-primary mb-3" />
-              <h1 className="text-2xl font-bold mb-2">Sign in to Book</h1>
+              <LogIn className="h-10 w-10 mx-auto text-primary mb-3" />
+              <h1 className="text-2xl font-bold mb-2">Sign in or Create an Account to Book</h1>
               <p className="text-muted-foreground text-sm">
-                Sign in or create an account to schedule your appointment.
+                New here? Switch to <span className="font-medium text-foreground">Create Account</span> below to register in seconds.
               </p>
             </div>
             <BookingAuthPanel />
