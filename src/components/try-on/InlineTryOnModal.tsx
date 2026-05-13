@@ -144,7 +144,7 @@ export const InlineTryOnModal = ({
           {/* Result area */}
           {showLoading && !currentResult ? (
             <TryOnGenerationExperience
-              userPhoto={userPhoto}
+              userPhoto={savedPhotoUrl}
               frameName={product?.name}
             />
           ) : currentResult?.success ? (
