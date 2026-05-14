@@ -148,7 +148,7 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
                   </TooltipTrigger>
                   <TooltipContent><p>Add to Cart</p></TooltipContent>
                 </Tooltip>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleViewDetails}>
                   View Details
                 </Button>
               </div>
