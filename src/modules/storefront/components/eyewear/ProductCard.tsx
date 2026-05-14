@@ -15,6 +15,7 @@ import type { StockStatus } from "./StockBadge";
 import { getHeroImage } from "@/modules/products/lib/image-utils";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { InlineTryOnModal } from "@/components/try-on";
+import { setCurrentProduct } from "@/shared/hooks/useCurrentProduct";
 
 interface ProductCardProps {
   product: Product;
