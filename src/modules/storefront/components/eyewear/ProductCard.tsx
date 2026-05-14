@@ -69,6 +69,7 @@ export const ProductCard = ({ product, onQuickView }: ProductCardProps) => {
   };
 
   const handleTryOn = (e: React.MouseEvent) => {
+    setCurrentProduct({ id: product.id, name: product.name });
     triggerTryOn(product.id, e);
   };
 
