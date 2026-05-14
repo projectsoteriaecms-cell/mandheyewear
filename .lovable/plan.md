@@ -1,47 +1,66 @@
-## Problem
+## Goal
 
-The admin Products page shows **Product Catalog (0)** and "No products found", but the database actually contains **11,496 active products**.
+Add an engaging WhatsApp follow-through path for eye-exam bookings. The on-site booking flow remains the primary onboarding journey, but a dedicated "Book on WhatsApp" option will deep-link the user into a pre-filled, structured WhatsApp message that asks (or confirms) preferred branch, service, and appointment time — so leads who prefer chat get an instant, guided conversation with our team.
 
-Root cause: `src/modules/products/hooks/useAdminProducts.ts` fetches the entire catalog in one query by looping 1,000-row batches with heavy joins (`category`, `supplier`, `frame_attributes`, `lens_attributes`). With ~11.5k rows that's ~12 sequential round-trips. React Query aborts the in-flight chain on remount/refetch (visible as `AbortError: signal is aborted without reason`), so `products` resolves to `[]` and the UI renders the empty state.
+## Where the CTA appears
 
-Filtering and search are also done client-side over the full result set, which only works if the full set arrives — making the failure mode total.
+1. **Booking page (`/booking`)** — A new "Prefer WhatsApp? Chat with us instead" link/button under the stepper, visible at every step. The message auto-fills with whatever the user has already selected (branch, service, date, time, notes). If nothing selected yet, it sends the structured prompt template.
+2. **EyeCare page (`/eyecare`)** — A secondary "Book via WhatsApp" button next to each existing "Book an Appointment" CTA (hero + bottom CTA card). Sends the structured prompt template (no selections context here).
+3. **Floating WhatsApp button** — When the user is on `/booking`, override the existing eye-care template to use the same structured booking template (auto-filled if selections exist).
 
-## Fix
+## Message templates
 
-Switch the admin list from "load everything" to **server-side paginated + filtered** queries.
+**Structured prompt (no selections yet):**
+```
+Hello M&H Eye Care 👋
 
-### 1. `useAdminProducts` (hook)
-- Accept params: `{ page, pageSize, search, brandFilter, statusFilter }`.
-- Use a single Supabase query with:
-  - `.select(..., { count: 'exact' })` (drop `frame_attributes`/`lens_attributes` from the list query — fetch on edit instead).
-  - `.range(from, to)` for the current page only.
-  - `.ilike('name', %search%)` / `.or('name.ilike.%q%,sku.ilike.%q%')` when `search` is set.
-  - `.eq('brand_line', brandFilter)` when not "all".
-  - `.eq('is_active', true/false)` when not "all".
-- Return `{ products, totalCount, isLoading, ... }`.
-- Keep `createProduct` / `updateProduct` / `bulkCreateProducts` / `deleteProduct` mutations as-is.
+I'd like to book an eye exam. Please help me confirm:
 
-### 2. `src/pages/admin/Products.tsx`
-- Add `page` state (default `1`) and `pageSize` (default `50`).
-- Reset `page` to 1 whenever `searchQuery`, `brandFilter`, or `statusFilter` changes (debounce search ~300ms via existing `useDebouncedValue`).
-- Pass filters + page into `useAdminProducts` instead of filtering client-side.
-- Remove the local `filteredProducts` block.
+• Preferred Branch: 
+• Service Needed: 
+• Preferred Date & Time: 
+• Full Name: 
+• Phone Number: 
 
-### 3. `ProductsTable` (`src/pages/admin/products/ProductsTable.tsx`)
-- Show `Product Catalog ({totalCount})` instead of `products.length`.
-- Add a simple pager footer: "Page X of Y · Prev / Next" using shadcn `Button`s.
+Looking forward to your reply.
+```
 
-### 4. Image-stats card
-`useProductImageStats` already uses an RPC and is fine — leave it.
+**Auto-filled (partial or full selections from booking form):**
+```
+Hello M&H Eye Care 👋
+
+I'd like to book an eye exam with these details:
+
+• Branch: {selectedBranch.name or "—"}
+• Service: {selectedService.label or "—"}
+• Date: {formatted date or "—"}
+• Time: {formatted time or "—"}
+
+{notes ? "Notes: " + notes : ""}
+
+Please confirm availability. Thank you!
+```
+
+## Technical changes
+
+1. **New helper** `src/shared/lib/whatsappBooking.ts`
+   - Exports `WHATSAPP_NUMBER` constant (reuse `2349169849266`).
+   - `buildBookingWhatsAppMessage({ branchName?, serviceLabel?, dateLabel?, timeLabel?, notes? })` returns the structured or auto-filled string.
+   - `buildBookingWhatsAppUrl(params)` returns the full `https://wa.me/...?text=...` URL.
+
+2. **`src/pages/Booking.tsx`**
+   - Import helper. Compute branch/service/date/time labels from existing state.
+   - Add a small "Prefer WhatsApp? Chat to book directly →" link with WhatsApp icon below the stepper (visible steps 1–4), opening the auto-filled URL in a new tab.
+
+3. **`src/pages/EyeCare.tsx`**
+   - Add a `Button variant="outline"` next to each "Book an Appointment" CTA (hero + bottom card) linking to the structured prompt URL. Use `WhatsappLogo` from `@phosphor-icons/react`.
+
+4. **`src/components/WhatsAppButton.tsx`**
+   - When `location.pathname.startsWith("/booking")`, use the new structured booking template instead of the generic eye-care message.
+   - (Booking page selections are component-local so the floating button uses the no-selection structured prompt; the inline CTA on the booking page itself handles the auto-fill case.)
 
 ## Out of scope
 
-- No DB schema or RLS changes (data and policies are correct; counts confirmed via SQL).
-- No changes to bulk import / Zoho sync / image-stats RPC.
-- Edit dialog will continue to load `frame_attributes` / `lens_attributes` on demand (already does via its own query path).
-
-## Acceptance
-
-- `/admin/products` loads in one network round-trip and shows the real count (11,496) in the header.
-- Search, brand filter, and status filter narrow results server-side.
-- No more `AbortError` from the chained batch loop.
+- No backend / edge function changes.
+- No changes to the existing on-site booking flow itself (still primary path).
+- No analytics tracking added (can be a follow-up if requested).
