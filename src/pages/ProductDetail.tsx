@@ -76,6 +76,7 @@ const ProductDetail = () => {
 
   useEffect(() => {
     if (product && !isLoading) {
+      setCurrentProduct({ id: product.id, name: product.name });
       trackViewContent({
         content_ids: [product.id],
         content_name: product.name,
@@ -90,6 +91,9 @@ const ProductDetail = () => {
         metadata: { brand: product.brand, price_tier: product.price_tier },
       });
     }
+    return () => {
+      setCurrentProduct(null);
+    };
   }, [product, isLoading, trackViewContent, track]);
 
   const filteredRelated = relatedProducts
