@@ -4,7 +4,9 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Activity, Droplet, Glasses, Stethoscope, Users, Calendar } from "lucide-react";
+import { WhatsappLogo } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
+import { buildBookingWhatsAppUrl } from "@/shared/lib/whatsappBooking";
 
 const EyeCare = () => {
   useSEO({
