@@ -84,6 +84,7 @@ export const ProductCard = ({ product, onQuickView }: ProductCardProps) => {
   const handleQuickViewClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setCurrentProduct({ id: product.id, name: product.name });
     if (onQuickView) {
       onQuickView(product.id);
     } else {
