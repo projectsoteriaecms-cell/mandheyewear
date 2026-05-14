@@ -2,8 +2,7 @@ import { WhatsappLogo } from "@phosphor-icons/react";
 import { useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import { useCurrentProduct } from "@/shared/hooks/useCurrentProduct";
-
-const WHATSAPP_NUMBER = "2349169849266";
+import { WHATSAPP_NUMBER, buildBookingWhatsAppMessage } from "@/shared/lib/whatsappBooking";
 
 const EYECARE_MESSAGE = "Hello, I'd like to make an enquiry about your Eye Care services and booking an appointment.";
 const EYEWEAR_MESSAGE = "Hello, I'd like to make an enquiry about your eyewear products.";
@@ -15,6 +14,11 @@ export const WhatsAppButton = () => {
   const { product } = useCurrentProduct();
 
   const message = useMemo(() => {
+    const isBooking = location.pathname.startsWith("/booking");
+    if (isBooking) {
+      return buildBookingWhatsAppMessage();
+    }
+
     const isEyeCare = EYECARE_PATHS.some(path => location.pathname.startsWith(path));
     const baseMessage = isEyeCare ? EYECARE_MESSAGE : EYEWEAR_MESSAGE;
 
