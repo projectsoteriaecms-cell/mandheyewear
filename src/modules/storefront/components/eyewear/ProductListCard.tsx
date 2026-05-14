@@ -58,7 +58,12 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
   };
 
   const handleTryOn = (e: React.MouseEvent) => {
+    setCurrentProduct({ id: product.id, name: product.name });
     triggerTryOn(product.id, e);
+  };
+
+  const handleViewDetails = (e: React.MouseEvent) => {
+    setCurrentProduct({ id: product.id, name: product.name });
   };
 
   return (
