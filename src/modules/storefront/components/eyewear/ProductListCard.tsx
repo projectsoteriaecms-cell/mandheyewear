@@ -10,6 +10,7 @@ import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import type { Product } from "@/modules/products/hooks/useProducts";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { InlineTryOnModal } from "@/components/try-on";
+import { setCurrentProduct } from "@/shared/hooks/useCurrentProduct";
 
 import frame1 from "@/assets/frame-1.jpg";
 import frame2 from "@/assets/frame-2.jpg";
