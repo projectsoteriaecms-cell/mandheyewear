@@ -15,6 +15,7 @@ import type { StockStatus } from "./StockBadge";
 import { getHeroImage } from "@/modules/products/lib/image-utils";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { InlineTryOnModal } from "@/components/try-on";
+import { setCurrentProduct } from "@/shared/hooks/useCurrentProduct";
 
 interface ProductCardProps {
   product: Product;
@@ -68,6 +69,7 @@ export const ProductCard = ({ product, onQuickView }: ProductCardProps) => {
   };
 
   const handleTryOn = (e: React.MouseEvent) => {
+    setCurrentProduct({ id: product.id, name: product.name });
     triggerTryOn(product.id, e);
   };
 
@@ -82,6 +84,7 @@ export const ProductCard = ({ product, onQuickView }: ProductCardProps) => {
   const handleQuickViewClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setCurrentProduct({ id: product.id, name: product.name });
     if (onQuickView) {
       onQuickView(product.id);
     } else {

@@ -23,6 +23,7 @@ import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { useTrackActivity } from "@/shared/hooks/useTrackActivity";
+import { setCurrentProduct } from "@/shared/hooks/useCurrentProduct";
 import { ArrowLeft, Star, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -75,6 +76,7 @@ const ProductDetail = () => {
 
   useEffect(() => {
     if (product && !isLoading) {
+      setCurrentProduct({ id: product.id, name: product.name });
       trackViewContent({
         content_ids: [product.id],
         content_name: product.name,
@@ -89,6 +91,9 @@ const ProductDetail = () => {
         metadata: { brand: product.brand, price_tier: product.price_tier },
       });
     }
+    return () => {
+      setCurrentProduct(null);
+    };
   }, [product, isLoading, trackViewContent, track]);
 
   const filteredRelated = relatedProducts

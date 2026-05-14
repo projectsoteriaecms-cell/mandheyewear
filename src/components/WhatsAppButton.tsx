@@ -1,6 +1,7 @@
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { useLocation } from "react-router-dom";
 import { useMemo } from "react";
+import { useCurrentProduct } from "@/shared/hooks/useCurrentProduct";
 
 const WHATSAPP_NUMBER = "2349169849266";
 
@@ -11,11 +12,18 @@ const EYECARE_PATHS = ["/eyecare", "/booking"];
 
 export const WhatsAppButton = () => {
   const location = useLocation();
+  const { product } = useCurrentProduct();
 
   const message = useMemo(() => {
     const isEyeCare = EYECARE_PATHS.some(path => location.pathname.startsWith(path));
-    return isEyeCare ? EYECARE_MESSAGE : EYEWEAR_MESSAGE;
-  }, [location.pathname]);
+    const baseMessage = isEyeCare ? EYECARE_MESSAGE : EYEWEAR_MESSAGE;
+
+    if (product?.name) {
+      return `Hello, I'm interested in the "${product.name}". I'd like to make an enquiry about this eyewear frame.`;
+    }
+
+    return baseMessage;
+  }, [location.pathname, product]);
 
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 

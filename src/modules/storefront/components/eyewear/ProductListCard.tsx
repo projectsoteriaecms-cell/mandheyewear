@@ -10,6 +10,7 @@ import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import type { Product } from "@/modules/products/hooks/useProducts";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { InlineTryOnModal } from "@/components/try-on";
+import { setCurrentProduct } from "@/shared/hooks/useCurrentProduct";
 
 import frame1 from "@/assets/frame-1.jpg";
 import frame2 from "@/assets/frame-2.jpg";
@@ -57,7 +58,12 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
   };
 
   const handleTryOn = (e: React.MouseEvent) => {
+    setCurrentProduct({ id: product.id, name: product.name });
     triggerTryOn(product.id, e);
+  };
+
+  const handleViewDetails = (e: React.MouseEvent) => {
+    setCurrentProduct({ id: product.id, name: product.name });
   };
 
   return (
@@ -142,7 +148,7 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
                   </TooltipTrigger>
                   <TooltipContent><p>Add to Cart</p></TooltipContent>
                 </Tooltip>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleViewDetails}>
                   View Details
                 </Button>
               </div>
