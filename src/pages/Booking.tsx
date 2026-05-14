@@ -37,6 +37,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
 import { BookingAuthPanel } from "@/components/auth/BookingAuthPanel";
 import { useToast } from "@/shared/hooks/use-toast";
+import { WhatsappLogo } from "@phosphor-icons/react";
+import { buildBookingWhatsAppUrl } from "@/shared/lib/whatsappBooking";
 
 const SERVICES = [
   { value: "comprehensive_eye_exam", label: "Comprehensive Eye Exam", duration: 45 },
