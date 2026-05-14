@@ -1,6 +1,6 @@
 import { WhatsappLogo } from "@phosphor-icons/react";
 
-const WHATSAPP_NUMBER = "2348063363506";
+const WHATSAPP_NUMBER = "2349169849266";
 const DEFAULT_MESSAGE = "Hello, I'd like to make an enquiry about your eyewear products.";
 
 export const WhatsAppButton = () => {
