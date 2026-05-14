@@ -1,10 +1,23 @@
 import { WhatsappLogo } from "@phosphor-icons/react";
+import { useLocation } from "react-router-dom";
+import { useMemo } from "react";
 
 const WHATSAPP_NUMBER = "2349169849266";
-const DEFAULT_MESSAGE = "Hello, I'd like to make an enquiry about your eyewear products.";
+
+const EYECARE_MESSAGE = "Hello, I'd like to make an enquiry about your Eye Care services and booking an appointment.";
+const EYEWEAR_MESSAGE = "Hello, I'd like to make an enquiry about your eyewear products.";
+
+const EYECARE_PATHS = ["/eyecare", "/booking"];
 
 export const WhatsAppButton = () => {
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(DEFAULT_MESSAGE)}`;
+  const location = useLocation();
+
+  const message = useMemo(() => {
+    const isEyeCare = EYECARE_PATHS.some(path => location.pathname.startsWith(path));
+    return isEyeCare ? EYECARE_MESSAGE : EYEWEAR_MESSAGE;
+  }, [location.pathname]);
+
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
   return (
     <a
