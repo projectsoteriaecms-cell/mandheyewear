@@ -23,6 +23,7 @@ import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { useTrackActivity } from "@/shared/hooks/useTrackActivity";
+import { setCurrentProduct } from "@/shared/hooks/useCurrentProduct";
 import { ArrowLeft, Star, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
