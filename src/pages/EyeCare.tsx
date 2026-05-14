@@ -82,12 +82,20 @@ const EyeCare = () => {
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               Comprehensive eye health services backed by clinical excellence and advanced technology
             </p>
-            <Button variant="hero" size="lg" asChild>
-              <Link to="/booking">
-                <Calendar className="mr-2 h-5 w-5" />
-                Book an Appointment
-              </Link>
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button variant="hero" size="lg" asChild>
+                <Link to="/booking">
+                  <Calendar className="mr-2 h-5 w-5" />
+                  Book an Appointment
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild className="border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white">
+                <a href={buildBookingWhatsAppUrl()} target="_blank" rel="noopener noreferrer">
+                  <WhatsappLogo weight="fill" className="mr-2 h-5 w-5" />
+                  Book via WhatsApp
+                </a>
+              </Button>
+            </div>
           </div>
 
           {/* Services Grid */}
