@@ -204,6 +204,17 @@ const EyeCare = () => {
                     Book Appointment
                   </Link>
                 </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="bg-[#25D366] border-[#25D366] text-white hover:bg-[#1ebe5a] hover:text-white"
+                  asChild
+                >
+                  <a href={buildBookingWhatsAppUrl()} target="_blank" rel="noopener noreferrer">
+                    <WhatsappLogo weight="fill" className="mr-2 h-5 w-5" />
+                    Book via WhatsApp
+                  </a>
+                </Button>
                 <Button 
                   variant="outline" 
                   size="lg" 
