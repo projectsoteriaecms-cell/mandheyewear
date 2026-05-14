@@ -260,6 +260,25 @@ const Booking = () => {
             ))}
           </div>
 
+          {/* WhatsApp shortcut */}
+          <div className="mb-6 flex justify-center">
+            <a
+              href={buildBookingWhatsAppUrl({
+                branchName: selectedBranch?.name,
+                serviceLabel: selectedServiceData?.label,
+                dateLabel: date ? format(date, "EEEE, MMMM d, yyyy") : undefined,
+                timeLabel: selectedTime ? formatTimeSlot(selectedTime) : undefined,
+                notes: notes || undefined,
+              })}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-[#25D366]/30 bg-[#25D366]/10 px-4 py-2 text-sm font-medium text-foreground hover:bg-[#25D366]/20 transition-colors"
+            >
+              <WhatsappLogo weight="fill" className="h-4 w-4 text-[#25D366]" />
+              Prefer WhatsApp? Chat to book directly →
+            </a>
+          </div>
+
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl font-display">
