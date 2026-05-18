@@ -14,7 +14,7 @@ import {
   TryOnResult, 
   TryOnHistory,
   TryOnModeToggle,
-  LiveARTryOn,
+  LiveARComingSoon,
   TryOnTour,
   type TryOnMode 
 } from "@/components/try-on";
@@ -210,15 +210,9 @@ const TryOn = () => {
 
           {/* Conditional Content Based on Mode */}
           {tryOnMode === "ar" ? (
-            /* Live AR Mode */
-            <div className="max-w-lg mx-auto mb-8">
-              <LiveARTryOn
-                products={arFrameProducts}
-                productsLoading={productsLoading || !arReadyIds}
-                onCapture={handleARCapture}
-                onSwitchToPhoto={handleSwitchToPhoto}
-                totalFrameCount={frameProducts.length}
-              />
+            /* Live AR — Coming Soon */
+            <div className="max-w-2xl mx-auto mb-8">
+              <LiveARComingSoon onSwitchToPhoto={handleSwitchToPhoto} />
             </div>
           ) : (
             /* Photo Mode (existing AI VTO) */

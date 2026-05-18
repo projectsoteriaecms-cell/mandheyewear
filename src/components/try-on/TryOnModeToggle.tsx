@@ -34,10 +34,10 @@ export const TryOnModeToggle = ({ mode, onModeChange, disabled = false }: TryOnM
           <Sparkles className="h-4 w-4" />
           <span>Live AR</span>
           <Badge
-            variant="secondary"
-            className="absolute -top-2 -right-1 text-[10px] px-1.5 py-0 h-4 bg-accent text-accent-foreground"
+            variant="outline"
+            className="absolute -top-2 -right-1 text-[10px] px-1.5 py-0 h-4 bg-muted text-muted-foreground border-border"
           >
-            Beta
+            Coming Soon
           </Badge>
         </TabsTrigger>
       </TabsList>
