@@ -106,7 +106,7 @@ export const LiveARComingSoon = ({ onSwitchToPhoto }: LiveARComingSoonProps) => 
                 {submitting ? "Adding..." : "Notify Me"}
               </Button>
             </div>
-            <DataProtectionConsent checked={consent} onCheckedChange={setConsent} />
+            <DataProtectionConsent consent={consent} onConsentChange={setConsent} compact idPrefix="live-ar-waitlist" />
           </form>
         )}
 
