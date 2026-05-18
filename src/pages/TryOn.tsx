@@ -14,7 +14,7 @@ import {
   TryOnResult, 
   TryOnHistory,
   TryOnModeToggle,
-  LiveARTryOn,
+  LiveARComingSoon,
   TryOnTour,
   type TryOnMode 
 } from "@/components/try-on";
