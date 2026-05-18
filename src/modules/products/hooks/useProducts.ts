@@ -104,7 +104,7 @@ export const useFeaturedProducts = (limit = 4) => {
     queryKey: ["featured-products", limit],
     queryFn: async () => {
       // Get products with images, ordered by price desc (luxury first)
-      const { data, error } = await supabase
+      let q = supabase
         .from("products")
         .select("*")
         .eq("is_active", true)
@@ -112,6 +112,12 @@ export const useFeaturedProducts = (limit = 4) => {
         .not("image_url", "is", null)
         .gt("price", 0)
         .order("price", { ascending: false });
+
+      if (HIDE_MH_FRAMES) {
+        q = q.neq("item_type", "frames");
+      }
+
+      const { data, error } = await q;
 
       if (error) throw error;
 
