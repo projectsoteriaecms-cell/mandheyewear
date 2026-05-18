@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { HIDE_MH_FRAMES, MH_FRAME_CATEGORY_KEYS } from "../lib/catalog-flags";
 
 export type Product = Tables<"products">;
 
