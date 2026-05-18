@@ -72,13 +72,21 @@ export type CategoryCount = { category: string; count: number };
 
 export const useProductCategoryCounts = () => {
   return useQuery({
-    queryKey: ["product-category-counts"],
+    queryKey: ["product-category-counts", HIDE_MH_FRAMES],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_product_category_counts");
       if (error) throw error;
       const counts: Record<string, number> = {};
       for (const row of (data || []) as CategoryCount[]) {
         counts[row.category] = Number(row.count);
+      }
+      if (HIDE_MH_FRAMES) {
+        for (const key of MH_FRAME_CATEGORY_KEYS) counts[key] = 0;
+        // 'all' includes frames — recompute from remaining non-frame categories.
+        const nonFrame = Object.entries(counts)
+          .filter(([k]) => k !== "all" && !MH_FRAME_CATEGORY_KEYS.includes(k as any))
+          .reduce((sum, [, v]) => sum + v, 0);
+        counts.all = nonFrame;
       }
       return counts;
     },
