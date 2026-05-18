@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { HIDE_MH_FRAMES, MH_FRAME_CATEGORY_KEYS } from "../lib/catalog-flags";
 
 export type Product = Tables<"products">;
 
@@ -37,7 +38,7 @@ async function fetchAllRows(query: any): Promise<Product[]> {
 
 export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion", withImagesOnly?: boolean) => {
   return useQuery({
-    queryKey: ["products", brandLine, withImagesOnly],
+    queryKey: ["products", brandLine, withImagesOnly, HIDE_MH_FRAMES],
     queryFn: async () => {
       let query = supabase
         .from("products")
@@ -57,6 +58,11 @@ export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion", w
         query = query.gt("price", 0);
       }
 
+      // Soft-hide M&H Eyewear frames from storefront while images are being finetuned.
+      if (HIDE_MH_FRAMES && (brandLine === "m_and_h_fashion" || !brandLine)) {
+        query = query.neq("item_type", "frames");
+      }
+
       return fetchAllRows(query);
     },
   });
@@ -66,13 +72,21 @@ export type CategoryCount = { category: string; count: number };
 
 export const useProductCategoryCounts = () => {
   return useQuery({
-    queryKey: ["product-category-counts"],
+    queryKey: ["product-category-counts", HIDE_MH_FRAMES],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_product_category_counts");
       if (error) throw error;
       const counts: Record<string, number> = {};
       for (const row of (data || []) as CategoryCount[]) {
         counts[row.category] = Number(row.count);
+      }
+      if (HIDE_MH_FRAMES) {
+        for (const key of MH_FRAME_CATEGORY_KEYS) counts[key] = 0;
+        // 'all' includes frames — recompute from remaining non-frame categories.
+        const nonFrame = Object.entries(counts)
+          .filter(([k]) => k !== "all" && !MH_FRAME_CATEGORY_KEYS.includes(k as any))
+          .reduce((sum, [, v]) => sum + v, 0);
+        counts.all = nonFrame;
       }
       return counts;
     },
@@ -90,7 +104,7 @@ export const useFeaturedProducts = (limit = 4) => {
     queryKey: ["featured-products", limit],
     queryFn: async () => {
       // Get products with images, ordered by price desc (luxury first)
-      const { data, error } = await supabase
+      let q = supabase
         .from("products")
         .select("*")
         .eq("is_active", true)
@@ -98,6 +112,12 @@ export const useFeaturedProducts = (limit = 4) => {
         .not("image_url", "is", null)
         .gt("price", 0)
         .order("price", { ascending: false });
+
+      if (HIDE_MH_FRAMES) {
+        q = q.neq("item_type", "frames");
+      }
+
+      const { data, error } = await q;
 
       if (error) throw error;
 
