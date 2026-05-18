@@ -38,7 +38,7 @@ async function fetchAllRows(query: any): Promise<Product[]> {
 
 export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion", withImagesOnly?: boolean) => {
   return useQuery({
-    queryKey: ["products", brandLine, withImagesOnly],
+    queryKey: ["products", brandLine, withImagesOnly, HIDE_MH_FRAMES],
     queryFn: async () => {
       let query = supabase
         .from("products")
@@ -56,6 +56,11 @@ export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion", w
 
       if (withImagesOnly || brandLine === "m_and_h_fashion") {
         query = query.gt("price", 0);
+      }
+
+      // Soft-hide M&H Eyewear frames from storefront while images are being finetuned.
+      if (HIDE_MH_FRAMES && (brandLine === "m_and_h_fashion" || !brandLine)) {
+        query = query.neq("item_type", "frames");
       }
 
       return fetchAllRows(query);
