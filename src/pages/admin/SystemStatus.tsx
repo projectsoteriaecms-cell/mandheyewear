@@ -84,7 +84,12 @@ const SystemStatus = () => {
                 <Database className="h-5 w-5" />
                 Backend Connection
               </CardTitle>
-              <CardDescription>Lovable Cloud (managed backend)</CardDescription>
+              <CardDescription>
+                Supabase Postgres, Auth, Storage &amp; Edge Functions — managed via Lovable Cloud.
+                This project lives in Lovable's Supabase org, so it won't appear in your personal
+                supabase.com dashboard. Manage it from the <strong>Cloud</strong> tab in the Lovable sidebar
+                (Tables, SQL, Auth, Storage, Functions, Secrets).
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Row label="Status">
