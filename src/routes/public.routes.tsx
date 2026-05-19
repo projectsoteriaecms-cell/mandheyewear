@@ -27,6 +27,7 @@ const StyleQuiz = lazy(() => import("@/pages/StyleQuiz"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
 const Install = lazy(() => import("@/pages/Install"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const OfficeAddin = lazy(() => import("@/pages/OfficeAddin"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -65,5 +66,6 @@ export const publicRoutes = [
   <Route key="/style-quiz" path="/style-quiz" element={withSuspense(StyleQuiz)} />,
   <Route key="/onboarding" path="/onboarding" element={withSuspense(Onboarding)} />,
   <Route key="/install" path="/install" element={withSuspense(Install)} />,
+  <Route key="/office-addin" path="/office-addin" element={withSuspense(OfficeAddin)} />,
   <Route key="*" path="*" element={withSuspense(NotFound)} />,
 ];
