@@ -1,0 +1,17 @@
+export { HeroSection } from "./HeroSection";
+export { CategoryCards } from "./CategoryCards";
+export { QuickDiscovery } from "./QuickDiscovery";
+export { QuizPromo } from "./QuizPromo";
+export { VirtualTryOn } from "./VirtualTryOn";
+export { TrustBadges } from "./TrustBadges";
+export { ServicesOverview } from "./ServicesOverview";
+export { WhyChooseSoteria } from "./WhyChooseSoteria";
+export { BranchPreview } from "./BranchPreview";
+export { PartnershipBanner } from "./PartnershipBanner";
+export { TestimonialsSection } from "./TestimonialsSection";
+export { TeamGallery } from "./TeamGallery";
+export { BlogPreview } from "./BlogPreview";
+export { ProjectsGallery } from "./ProjectsGallery";
+export { CommitmentToExcellence } from "./CommitmentToExcellence";
+export { StackedReveal } from "./StackedReveal";
+export { FinalCTA } from "./FinalCTA";
