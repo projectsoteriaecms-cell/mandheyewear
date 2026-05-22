@@ -1117,14 +1117,31 @@ serve(async (req) => {
   }
 
   // ── Push product updates to Zoho Books ──
-  if (action === "push_updates") {
-    const { product_ids } = body as { product_ids: string[] };
+  if (action === "push_updates" || action === "push_all_mh") {
+    let { product_ids } = body as { product_ids?: string[] };
+
+    // push_all_mh: auto-load every active M&H product
+    if (action === "push_all_mh") {
+      const { data: mhProducts, error: fetchErr } = await supabase
+        .from("products")
+        .select("id")
+        .eq("brand_line", "m_and_h_fashion")
+        .eq("is_active", true);
+      if (fetchErr) {
+        return new Response(JSON.stringify({ error: fetchErr.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      product_ids = (mhProducts ?? []).map((p) => p.id);
+    }
+
     if (!Array.isArray(product_ids) || product_ids.length === 0) {
-      return new Response(JSON.stringify({ error: "product_ids array required" }), {
+      return new Response(JSON.stringify({ error: "No products to push" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
 
     const { data: syncLog } = await supabase
       .from("zoho_sync_log")
