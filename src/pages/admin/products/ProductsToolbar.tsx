@@ -6,10 +6,12 @@ import {
   FileXls,
   ArrowsClockwise,
   CloudArrowDown,
+  CloudArrowUp,
   Sparkle,
   Database,
   TextAa,
 } from "@phosphor-icons/react";
+
 import { BulkPackagingFixButton } from "@/modules/products/components/BulkPackagingFixButton";
 
 interface ProductsToolbarProps {
