@@ -1113,6 +1113,7 @@ export type Database = {
           name: string
           price: number
           price_tier: Database["public"]["Enums"]["price_tier"] | null
+          primary_image_locked: boolean
           record_type: Database["public"]["Enums"]["record_type"] | null
           reorder_level: number | null
           reorder_quantity: number | null
@@ -1150,6 +1151,7 @@ export type Database = {
           name: string
           price: number
           price_tier?: Database["public"]["Enums"]["price_tier"] | null
+          primary_image_locked?: boolean
           record_type?: Database["public"]["Enums"]["record_type"] | null
           reorder_level?: number | null
           reorder_quantity?: number | null
@@ -1187,6 +1189,7 @@ export type Database = {
           name?: string
           price?: number
           price_tier?: Database["public"]["Enums"]["price_tier"] | null
+          primary_image_locked?: boolean
           record_type?: Database["public"]["Enums"]["record_type"] | null
           reorder_level?: number | null
           reorder_quantity?: number | null
