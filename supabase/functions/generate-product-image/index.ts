@@ -591,12 +591,16 @@ serve(async (req) => {
           product, effectiveRefUrls, GEMINI_API_KEY, LOVABLE_API_KEY, supabase, SUPABASE_URL
         );
 
+        // Anchor lock: never overwrite the manually-uploaded primary
+        const updatePayload: Record<string, unknown> = {
+          additional_images: additionalUrls.length > 0 ? additionalUrls : null,
+        };
+        if (!product.primary_image_locked) {
+          updatePayload.image_url = heroUrl;
+        }
         const { error: updateErr } = await supabase
           .from("products")
-          .update({
-            image_url: heroUrl,
-            additional_images: additionalUrls.length > 0 ? additionalUrls : null,
-          })
+          .update(updatePayload)
           .eq("id", product.id);
         if (updateErr) throw new Error("Product update failed: " + updateErr.message);
 
