@@ -226,6 +226,56 @@ def download_image(url, save_path, session, extra_headers=None):
     return False
 
 
+SHOPIFY_STORES = {
+    "pretavoir.us", "designeroptics.com", "lookeronline.com",
+    "hallofframescompany.com", "designershadesdirect.com",
+    "burghleyandco.uk", "designerglasses.co.uk",
+}
+
+FRAMESDIRECT_IMG = "https://media.framesdirect.com/product_elarge_images/{slug}.jpg"
+
+
+def shopify_image(page_url, session):
+    """Use Shopify JSON API to get direct CDN image URL — no HTML parsing."""
+    try:
+        # Convert  /products/some-handle  →  /products/some-handle.json
+        base = page_url.split("?")[0].rstrip("/")
+        if not base.endswith(".json"):
+            base += ".json"
+        resp = session.get(base, timeout=15,
+                           headers={**dict(session.headers),
+                                    "Accept": "application/json"})
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        images = data.get("product", {}).get("images", [])
+        if images:
+            src = images[0].get("src", "")
+            # Shopify CDN sometimes returns protocol-relative URLs
+            return src if src.startswith("http") else "https:" + src
+    except Exception:
+        pass
+    return None
+
+
+def framesdirect_image(page_url, session):
+    """FramesDirect stores images at a predictable CDN path."""
+    try:
+        slug = page_url.rstrip("/").split("/")[-1]
+        img_url = FRAMESDIRECT_IMG.format(slug=slug)
+        resp = session.head(img_url, timeout=10, allow_redirects=True)
+        if resp.status_code == 200:
+            return img_url
+        # Try with -1 suffix (first variant)
+        img_url2 = FRAMESDIRECT_IMG.format(slug=slug + "-1")
+        resp2 = session.head(img_url2, timeout=10, allow_redirects=True)
+        if resp2.status_code == 200:
+            return img_url2
+    except Exception:
+        pass
+    return None
+
+
 def get_og_image(page_url, session):
     """Fetch product page and extract best image URL."""
     try:
@@ -234,15 +284,18 @@ def get_og_image(page_url, session):
                            headers={**dict(session.headers), "Referer": referer})
         if resp.status_code != 200:
             return None
-        soup = BeautifulSoup(resp.text, "html.parser")
+        html = resp.text
 
-        # og:image is most reliable
-        og = soup.find("meta", property="og:image")
-        if og and og.get("content"):
-            src = og["content"]
-            return src if src.startswith("http") else "https:" + src
+        # og:image meta tag — fastest
+        m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\'](https?[^"\']+)', html)
+        if not m:
+            m = re.search(r'<meta[^>]+content=["\'](https?[^"\']+)["\'][^>]+property=["\']og:image["\']', html)
+        if m:
+            return m.group(1)
 
-        # Shopify product JSON
+        soup = BeautifulSoup(html, "html.parser")
+
+        # Shopify product JSON embedded in page
         for script in soup.find_all("script", type="application/json"):
             try:
                 data = json.loads(script.string or "")
@@ -253,14 +306,15 @@ def get_og_image(page_url, session):
             except Exception:
                 pass
 
-        # CSS selectors fallback
+        # CSS selectors
         for sel in (
-            ".product__media img",
-            ".product-single__photo img",
-            ".product-image img",
-            ".product__image img",
-            "#main-image",
-            ".product-photo img",
+            ".product__media img[src]",
+            ".product-single__photo img[src]",
+            ".product-image img[src]",
+            ".product__image img[src]",
+            "#main-image[src]",
+            ".product-photo img[src]",
+            "img.product-featured-img[src]",
         ):
             img = soup.select_one(sel)
             if img and img.get("src"):
@@ -272,10 +326,26 @@ def get_og_image(page_url, session):
 
 
 def try_url(page_url, save_path, session):
-    """Try to get an image from a product page URL. Returns True on success."""
+    """Try every strategy to get an image from a product page URL."""
+    domain = page_url.split("/")[2].lstrip("www.")
+
+    # Strategy A: Shopify JSON API (fastest, most reliable)
+    if "/products/" in page_url and domain in SHOPIFY_STORES:
+        img_url = shopify_image(page_url, session)
+        if img_url and download_image(img_url, save_path, session):
+            return True, img_url
+
+    # Strategy B: FramesDirect CDN direct URL
+    if "framesdirect.com" in page_url:
+        img_url = framesdirect_image(page_url, session)
+        if img_url and download_image(img_url, save_path, session):
+            return True, img_url
+
+    # Strategy C: og:image / HTML parsing
     img_url = get_og_image(page_url, session)
     if img_url and download_image(img_url, save_path, session):
         return True, img_url
+
     return False, None
 
 
