@@ -10,7 +10,7 @@ import { QuickImageUploadModal } from "@/modules/products/components/QuickImageU
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Images } from "@phosphor-icons/react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Anchor } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageStatsCards, ImageFilterBar, SelectionActionBar } from "./product-images";
@@ -197,16 +197,48 @@ const ProductImages = () => {
       <AdminLayout>
         <div className="space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Product Images Manager</h1>
               <p className="text-muted-foreground">Manage product images for your catalog</p>
             </div>
-            {stats.missingPrimary > 0 && (
-              <p className="text-sm text-muted-foreground">
-                Click any product to start the guided generation workflow
-              </p>
-            )}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const { toast } = await import("sonner");
+                  const t = toast.loading("Scanning bucket for MH-XXX anchor images…");
+                  try {
+                    const { data, error } = await supabase.functions.invoke("link-anchor-images", { body: {} });
+                    if (error) throw error;
+                    toast.dismiss(t);
+                    if (!data?.matched) {
+                      toast.info("No MH-XXX.{jpg,png,webp} files found at the bucket root.");
+                    } else {
+                      toast.success(
+                        `Linked ${data.linked} / ${data.matched} anchor(s)` +
+                          (data.errored ? ` · ${data.errored} error(s)` : "") +
+                          (data.skipped ? ` · ${data.skipped} unmatched` : ""),
+                      );
+                      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+                      queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+                    }
+                  } catch (e: any) {
+                    toast.dismiss(t);
+                    toast.error(e?.message || "Failed to link anchors");
+                  }
+                }}
+              >
+                <Anchor className="h-4 w-4 mr-2" />
+                Link Anchor Images
+              </Button>
+              {stats.missingPrimary > 0 && (
+                <p className="text-sm text-muted-foreground hidden md:block">
+                  Click any product to start the guided generation workflow
+                </p>
+              )}
+            </div>
           </div>
 
           <ImageStatsCards stats={stats} filteredStats={filteredStats} />

@@ -459,9 +459,17 @@ serve(async (req) => {
       console.log(`🔄 Regenerating single shot "${shotSlug}" for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase
         .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, frame_attributes(model_code, frame_shape, frame_material, front_color)")
+        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color)")
         .eq("id", productId)
         .single();
+
+      // Anchor lock: refuse to overwrite primary if it's locked
+      if (shotSlug === "hero" && product?.primary_image_locked) {
+        return json({
+          error: "Primary image is locked (manual anchor). Regenerate a non-hero shot instead.",
+          code: "ANCHOR_LOCKED",
+        }, 400);
+      }
 
       if (fetchErr || !product) {
         return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
@@ -546,7 +554,7 @@ serve(async (req) => {
       console.log(`🔄 Regenerating images for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase
         .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, frame_attributes(model_code, frame_shape, frame_material, front_color)")
+        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color)")
         .eq("id", productId)
         .single();
 
@@ -583,12 +591,16 @@ serve(async (req) => {
           product, effectiveRefUrls, GEMINI_API_KEY, LOVABLE_API_KEY, supabase, SUPABASE_URL
         );
 
+        // Anchor lock: never overwrite the manually-uploaded primary
+        const updatePayload: Record<string, unknown> = {
+          additional_images: additionalUrls.length > 0 ? additionalUrls : null,
+        };
+        if (!product.primary_image_locked) {
+          updatePayload.image_url = heroUrl;
+        }
         const { error: updateErr } = await supabase
           .from("products")
-          .update({
-            image_url: heroUrl,
-            additional_images: additionalUrls.length > 0 ? additionalUrls : null,
-          })
+          .update(updatePayload)
           .eq("id", product.id);
         if (updateErr) throw new Error("Product update failed: " + updateErr.message);
 
@@ -618,7 +630,7 @@ serve(async (req) => {
 
     let productQuery = supabase
       .from("products")
-      .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, frame_attributes(model_code, frame_shape, frame_material, front_color)")
+      .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color)")
       .eq("is_active", true)
       .or("image_url.is.null,image_url.eq.")
       .order("item_type", { ascending: true })
@@ -678,12 +690,15 @@ serve(async (req) => {
           product, effectiveRefUrls, GEMINI_API_KEY, LOVABLE_API_KEY, supabase, SUPABASE_URL
         );
 
+        const updatePayload: Record<string, unknown> = {
+          additional_images: additionalUrls.length > 0 ? additionalUrls : null,
+        };
+        if (!product.primary_image_locked) {
+          updatePayload.image_url = heroUrl;
+        }
         const { error: updateErr } = await supabase
           .from("products")
-          .update({
-            image_url: heroUrl,
-            additional_images: additionalUrls.length > 0 ? additionalUrls : null,
-          })
+          .update(updatePayload)
           .eq("id", product.id);
         if (updateErr) throw new Error("Product update failed: " + updateErr.message);
 
