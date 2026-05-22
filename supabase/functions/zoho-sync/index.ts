@@ -327,20 +327,25 @@ async function processPage(
 
   const mapped = items.map(mapZohoItemToProduct);
 
-  // Step 1: Find ECMS products (no zoho_item_id) that could match
-  const { data: ecmsMatches } = await supabase
+  // M&H-only sync: pull is read-only on the catalog side.
+  // We never insert products from Zoho — the M&H catalog is curated.
+  // For each Zoho item, find a matching M&H product (by zoho_item_id, then SKU, then name)
+  // and update its price/stock. Unmatched Zoho items are ignored.
+  const { data: mhProducts } = await supabase
     .from("products")
-    .select("id, name, sku")
-    .is("zoho_item_id", null)
-    .not("external_id", "is", null);
+    .select("id, name, sku, zoho_item_id")
+    .eq("brand_line", "m_and_h_fashion");
 
-  // Build lookups: exact name -> id, and tokenized name for fuzzy matching
-  const ecmsExactLookup = new Map<string, string>();
-  const ecmsTokenized: Array<{ id: string; name: string; tokens: Set<string> }> = [];
-  if (ecmsMatches) {
-    for (const p of ecmsMatches) {
-      ecmsExactLookup.set(p.name.toLowerCase().trim(), p.id);
-      ecmsTokenized.push({ id: p.id, name: p.name, tokens: tokenizeName(p.name) });
+  const byZohoId = new Map<string, string>();
+  const bySku = new Map<string, string>();
+  const byName = new Map<string, string>();
+  const tokenized: Array<{ id: string; tokens: Set<string> }> = [];
+  if (mhProducts) {
+    for (const p of mhProducts) {
+      if (p.zoho_item_id) byZohoId.set(String(p.zoho_item_id), p.id);
+      if (p.sku) bySku.set(p.sku.toLowerCase().trim(), p.id);
+      if (p.name) byName.set(p.name.toLowerCase().trim(), p.id);
+      tokenized.push({ id: p.id, tokens: tokenizeName(p.name || "") });
     }
   }
 
@@ -348,110 +353,57 @@ async function processPage(
   let fuzzyMatched = 0;
   let updatedExisting = 0;
   let failed = 0;
-  const matchedEcmsIds = new Set<string>();
-  const newItems: typeof mapped = [];
+  const matchedIds = new Set<string>();
 
-  // Step 2: For each Zoho item, try exact match first, then fuzzy match
   for (const item of mapped) {
-    const normalizedName = item.name.toLowerCase().trim();
-    
-    // Try exact name match
-    let ecmsId = ecmsExactLookup.get(normalizedName);
-    let matchType = "exact";
+    let productId: string | undefined =
+      byZohoId.get(item.zoho_item_id) ||
+      bySku.get(item.sku.toLowerCase().trim()) ||
+      byName.get(item.name.toLowerCase().trim());
+    let matchType: "exact" | "fuzzy" = "exact";
 
-    // Try fuzzy match if no exact match
-    if (!ecmsId) {
+    if (!productId) {
+      // Fuzzy match by tokenized name
       const zohoTokens = tokenizeName(item.name);
       let bestScore = 0;
       let bestId: string | null = null;
-      
-      for (const ecms of ecmsTokenized) {
-        if (matchedEcmsIds.has(ecms.id)) continue; // Already matched
-        const score = jaccardSimilarity(zohoTokens, ecms.tokens);
-        if (score > bestScore) {
-          bestScore = score;
-          bestId = ecms.id;
-        }
+      for (const p of tokenized) {
+        if (matchedIds.has(p.id)) continue;
+        const score = jaccardSimilarity(zohoTokens, p.tokens);
+        if (score > bestScore) { bestScore = score; bestId = p.id; }
       }
-
-      // Auto-link if confidence > 0.6 (at least 60% token overlap)
-      if (bestScore >= 0.6 && bestId) {
-        ecmsId = bestId;
-        matchType = "fuzzy";
-        console.log(`[FUZZY MATCH] Score ${bestScore.toFixed(2)}: Zoho "${item.name}" → ECMS "${ecmsTokenized.find(e => e.id === bestId)?.name}"`);
-      }
+      if (bestScore >= 0.6 && bestId) { productId = bestId; matchType = "fuzzy"; }
     }
 
-    if (ecmsId && !matchedEcmsIds.has(ecmsId)) {
-      // Link: set zoho_item_id and update price/cost only, preserve images/description
-      const { error } = await supabase
-        .from("products")
-        .update({
-          zoho_item_id: item.zoho_item_id,
-          price: item.price,
-          cost_price: item.cost_price,
-          is_active: item.is_active,
-        })
-        .eq("id", ecmsId);
+    if (!productId || matchedIds.has(productId)) continue; // ignore unmatched Zoho items
 
-      if (error) {
-        console.error(`Failed to link ECMS product ${ecmsId}:`, error);
-        failed++;
-      } else {
-        if (matchType === "fuzzy") fuzzyMatched++;
-        else matched++;
-        matchedEcmsIds.add(ecmsId);
-        ecmsExactLookup.delete(normalizedName);
-      }
-    } else {
-      newItems.push(item);
-    }
-  }
-
-  // Step 3: Upsert remaining items (new or already-linked Zoho products)
-  if (newItems.length > 0) {
-    const { error: upsertError, data: upsertData } = await supabase
+    const { error } = await supabase
       .from("products")
-      .upsert(newItems, { onConflict: "zoho_item_id", ignoreDuplicates: false })
-      .select("id, zoho_item_id");
+      .update({
+        zoho_item_id: item.zoho_item_id,
+        price: item.price,
+        cost_price: item.cost_price,
+        is_active: item.is_active,
+      })
+      .eq("id", productId);
 
-    if (upsertError) {
-      console.error(`Batch upsert failed on page ${page}:`, upsertError);
-      failed += newItems.length;
-    } else {
-      const upsertedCount = upsertData?.length || newItems.length;
-      const zohoIds = newItems.map((i) => i.zoho_item_id);
-      const { count: existingCount } = await supabase
-        .from("products")
-        .select("id", { count: "exact", head: true })
-        .in("zoho_item_id", zohoIds);
-
-      updatedExisting = 0;
-      const insertedNew = upsertedCount;
-      
-      // Step 4: Sync stock for all items on this page
-      await discoverLocations(supabase, items);
-      const stockResult = await syncStockForItems(supabase, items, warehouseMappings, defaultBranchId, performedBy);
-
-      return {
-        matched,
-        fuzzyMatched,
-        newProducts: insertedNew,
-        updatedExisting,
-        failed,
-        hasMore,
-        stockUpdated: stockResult.stockUpdated,
-        stockSkipped: stockResult.stockSkipped,
-      };
-    }
+    if (error) { failed++; continue; }
+    matchedIds.add(productId);
+    if (matchType === "fuzzy") fuzzyMatched++; else matched++;
+    updatedExisting++;
   }
 
-  // Sync stock even if no new product upserts happened (all were matched)
+  // Sync stock for matched M&H items
   await discoverLocations(supabase, items);
-  const stockResult = await syncStockForItems(supabase, items, warehouseMappings, defaultBranchId, performedBy);
+  const matchedZohoItems = items.filter((it) =>
+    matchedIds.has(byZohoId.get(String((it as Record<string, unknown>).item_id)) || "") ||
+    Array.from(matchedIds).length > 0
+  );
+  const stockResult = await syncStockForItems(supabase, matchedZohoItems, warehouseMappings, defaultBranchId, performedBy);
 
   return { matched, fuzzyMatched, newProducts: 0, updatedExisting, failed, hasMore, stockUpdated: stockResult.stockUpdated, stockSkipped: stockResult.stockSkipped };
 }
+
 
 /** Update sync log metadata with running totals */
 async function updateSyncProgress(
