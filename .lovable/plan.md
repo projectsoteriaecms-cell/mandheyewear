@@ -1,40 +1,29 @@
-## Goal
-Wipe the entire `soteria_medical` catalog (10,659 products across frames, lenses, accessories, medications, etc.) to a clean slate, mirroring the same nuke strategy used for M&H.
+## Understanding
+You're confirming the operating model for Soteria (M&H Medical) inventory:
 
-## Scope of deletion (brand_line = 'soteria_medical')
-- 10,505 frames
-- 126 lenses
-- 14 other
-- 6 medications
-- 4 accessories
-- 1 each: packaging, contact_lenses, solutions, cleanser
+- The `products` table (where `brand_line = 'soteria_medical'`) is **not** manually curated.
+- It's a **mirror** of Zoho Books — Zoho is the single source of truth.
+- We just cleared it (0 Soteria rows) so the next Zoho sync will rehydrate it cleanly.
 
-**Total: 10,659 product rows**
+## What's already in place (no build needed)
+- `zoho-sync` edge function exists and maps every Zoho item → `products` row with `brand_line: 'soteria_medical'` (line 50 of `supabase/functions/zoho-sync/index.ts`).
+- Stock per branch flows into `inventory` via `zoho_warehouse_mapping`.
+- Admin UI to trigger/monitor sync already exists:
+  - `src/pages/admin/Inventory.tsx`
+  - `src/modules/products/components/ZohoSyncHistoryPanel.tsx`
+  - `src/modules/integrations/hooks/useZohoSync.ts`
+  - `src/pages/admin/inventory/ReconciliationCard.tsx`
 
-## Cascade — dependent rows tied to these products
-To avoid orphans / FK-like integrity issues, delete in this order:
-1. `cart_items` where product_id ∈ soteria products
-2. `order_items` where product_id ∈ soteria products
-3. `inventory_transactions` where product_id ∈ soteria products
-4. `inventory` where product_id ∈ soteria products
-5. `frame_attributes` where product_id ∈ soteria products
-6. `lens_attributes` where product_id ∈ soteria products
-7. `product_reviews` where product_id ∈ soteria products
-8. `product_requests` where product_id ∈ soteria products
-9. `slideshow_items` where product_id ∈ soteria products
-10. `browse_nudge_log` where product_id ∈ soteria products
-11. `purchase_order_items` where product_id ∈ soteria products
-12. `products` where brand_line = 'soteria_medical'
+## Operating contract going forward
+- **Soteria catalog**: pulled from Zoho via `zoho-sync`. Never insert/edit Soteria products by hand.
+- **M&H Eyewear catalog** (`m_and_h_fashion`): curated manually (the 162 frames we just inserted). Not synced from Zoho.
+- Filter rules from memory still apply: skip `[NEEDS_RESEARCH]` and ₦0 items at the storefront layer.
 
-## What is preserved
-- Schema, RLS, triggers, functions — unchanged
-- Categories, branches, suppliers, services, users — untouched
-- All `m_and_h_fashion` products (162 frames) — untouched
-- Orders themselves remain (only their line items referencing soteria products are removed)
+## Next action options
+Pick one — none require code changes:
 
-## Execution
-Single `supabase--insert` call running the cascade as one transaction.
+1. **Trigger a fresh full Zoho sync now** — I run the `zoho-sync` edge function so the Soteria catalog repopulates from scratch (cleanest baseline).
+2. **Wait** — let it sync on the next scheduled/manual run from the Admin → Inventory page.
+3. **Add a guard** (optional, small code change) — a DB trigger that blocks manual inserts into `products` where `brand_line = 'soteria_medical'` unless they come from the sync function, to enforce "Zoho only" by contract.
 
-## Confirm before I run
-- OK to also delete from `orders` line items referencing soteria products? (Default: yes — same "nuke everything including orders" strategy as M&H.)
-- Or should I keep historical `order_items` and only clear catalog + inventory + cart?
+Which one do you want?
