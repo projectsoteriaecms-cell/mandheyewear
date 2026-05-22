@@ -1,0 +1,171 @@
+[
+  {
+    "prompt": "Research this frame for me: CARTIER CT0349O 001 55-18-145. I need the full specs and at least 3 product images.",
+    "assertions": [
+      "Output includes parsed components (brand, model, color, measurements)",
+      "Lens width is 55mm, bridge is 18mm, temple is 145mm",
+      "Brand identified as CARTIER",
+      "Model code is CT0349O",
+      "Color code is 001",
+      "At least 3 product image URLs are provided",
+      "Output includes both human-readable report and JSON format",
+      "Research sources are documented",
+      "Missing fields are marked with [NOT FOUND] notation rather than guessed"
+    ]
+  },
+  {
+    "prompt": "Parse this frame: RAY-BAN RB3025 9035/1U 58-15-145 SUN",
+    "assertions": [
+      "Brand is RAY-BAN or RAYBAN",
+      "Model code is RB3025",
+      "Color code is 9035/1U",
+      "Lens width is 58mm",
+      "Type suffix is SUN (sunglasses)",
+      "Frame shape identified (likely Aviator)",
+      "At least 3 images found",
+      "Official Ray-Ban website mentioned in research sources"
+    ]
+  },
+  {
+    "prompt": "I need details on this frame: VOGUE VO 5421 W44 53-18-140",
+    "assertions": [
+      "Brand is VOGUE",
+      "Model code is VO5421 (normalized from VO 5421)",
+      "Measurements: 53-18-140",
+      "Web research executed",
+      "Product images collected",
+      "JSON output provided"
+    ]
+  },
+  {
+    "prompt": "Help me with this frame name: PRADA VPR 09Z 51-17 08Q-1O1 140",
+    "assertions": [
+      "Brand is PRADA",
+      "Model code extracted correctly (VPR09Z)",
+      "Complex color code (08Q-1O1) parsed",
+      "All three size measurements captured",
+      "Validation confirms Prada pattern match",
+      "Report includes both human-readable and JSON sections"
+    ]
+  },
+  {
+    "prompt": "Parse: GUCCI GG1497O 006 52-20-145",
+    "assertions": [
+      "Brand is GUCCI",
+      "Model matches Gucci pattern (GG + 5 digits + letter)",
+      "All measurements extracted",
+      "Research includes official Gucci sources",
+      "Minimum 3 images attempted"
+    ]
+  },
+  {
+    "prompt": "What are the specs for OAKLEY OX8156-0256-56-18-137 Matte brown tortoise?",
+    "assertions": [
+      "Brand is OAKLEY",
+      "Model code is OX8156",
+      "Variant code is 0256",
+      "Measurements: 56-18-137",
+      "Color description (Matte brown tortoise) noted",
+      "Oakley official website searched"
+    ]
+  },
+  {
+    "prompt": "Research frame: TOMMY HILFIGER TH1891 807 150",
+    "assertions": [
+      "Brand is TOMMY HILFIGER",
+      "Model code is TH1891",
+      "Color code is 807 (typically black)",
+      "Temple length is 150mm",
+      "At least 3 images collected",
+      "Authorized retailers checked"
+    ]
+  },
+  {
+    "prompt": "I have a Cartier CT0284O frame, can you get me the details?",
+    "assertions": [
+      "Recognizes incomplete input (missing color and sizes)",
+      "Parses brand (CARTIER) and model (CT0284O)",
+      "Conducts web research despite incomplete input",
+      "Finds product specifications online",
+      "Provides whatever data is available",
+      "Flags missing measurements"
+    ]
+  },
+  {
+    "prompt": "Parse this frame: Polaroid Frame pld D482 086 145",
+    "assertions": [
+      "Brand is POLAROID",
+      "Model code is PLD D482 (normalized)",
+      "Color code is 086",
+      "Temple length is 145mm",
+      "At least 3 product images found",
+      "Research includes official Polaroid sources or authorized retailers"
+    ]
+  },
+  {
+    "prompt": "Research: Polaroid Frame pld D448 ZX9 55-16-140 BLUE",
+    "assertions": [
+      "Brand is POLAROID",
+      "Model code is PLD D448",
+      "Color code is ZX9",
+      "Size measurements: 55-16-140",
+      "Color description BLUE noted in output",
+      "Complete JSON output provided"
+    ]
+  },
+  {
+    "prompt": "Get specs for: Polaroid Frame pld D436 086 55-17-145",
+    "assertions": [
+      "Brand is POLAROID",
+      "Model code is PLD D436",
+      "Color code is 086",
+      "All three measurements extracted (55-17-145)",
+      "Web research executed",
+      "Images collected"
+    ]
+  },
+  {
+    "prompt": "Help me with: Polaroid Frame pld D508/G J5G 145",
+    "assertions": [
+      "Brand is POLAROID",
+      "Model code is PLD D508/G (with /G variant indicator)",
+      "Color code is J5G",
+      "Temple length is 145mm",
+      "Handles model code with slash notation",
+      "Research completed successfully"
+    ]
+  },
+  {
+    "prompt": "Parse Polaroid Frame pld D451 J5G 145",
+    "assertions": [
+      "Brand is POLAROID",
+      "Model code is PLD D451",
+      "Color code is J5G",
+      "Incomplete size data noted (only temple length provided)",
+      "Flags missing lens width and bridge size",
+      "Conducts research despite incomplete measurements"
+    ]
+  },
+  {
+    "prompt": "Research this frame: Polaroid FRAME PLD D512 PJP 145",
+    "assertions": [
+      "Brand is POLAROID",
+      "Model code is PLD D512",
+      "Color code is PJP",
+      "Temple length is 145mm",
+      "Missing lens width and bridge size flagged",
+      "JSON output includes null values for missing fields"
+    ]
+  },
+  {
+    "prompt": "Find details: Polaroid FRAME PLD D488 807 145",
+    "assertions": [
+      "Brand is POLAROID",
+      "Model code is PLD D488",
+      "Color code is 807 (typically black)",
+      "Temple length is 145mm",
+      "At least 3 images attempted",
+      "Color description inferred if possible (807 = black)"
+    ]
+  }
+]
