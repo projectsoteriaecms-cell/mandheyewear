@@ -47,10 +47,11 @@ function mapZohoItemToProduct(item: Record<string, unknown>) {
     description: item.description ? String(item.description) : null,
     brand: item.brand ? String(item.brand) : null,
     is_active: item.status === "active",
-    brand_line: "soteria_medical" as const,
+    brand_line: "m_and_h_fashion" as const,
     external_id: String(item.item_id),
   };
 }
+
 
 // ── Stock sync types ──
 interface WarehouseMapping {
