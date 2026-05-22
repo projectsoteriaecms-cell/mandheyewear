@@ -393,13 +393,10 @@ async function processPage(
     updatedExisting++;
   }
 
-  // Sync stock for matched M&H items
+  // Sync stock for matched M&H items (syncStockForItems no-ops on unlinked products)
   await discoverLocations(supabase, items);
-  const matchedZohoItems = items.filter((it) =>
-    matchedIds.has(byZohoId.get(String((it as Record<string, unknown>).item_id)) || "") ||
-    Array.from(matchedIds).length > 0
-  );
-  const stockResult = await syncStockForItems(supabase, matchedZohoItems, warehouseMappings, defaultBranchId, performedBy);
+  const stockResult = await syncStockForItems(supabase, items, warehouseMappings, defaultBranchId, performedBy);
+
 
   return { matched, fuzzyMatched, newProducts: 0, updatedExisting, failed, hasMore, stockUpdated: stockResult.stockUpdated, stockSkipped: stockResult.stockSkipped };
 }
