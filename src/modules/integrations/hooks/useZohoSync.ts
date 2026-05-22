@@ -193,11 +193,36 @@ export function useZohoSync() {
     return data;
   }, [invalidateProductQueries]);
 
+  const pushAllToZoho = useCallback(async () => {
+    setStatus("syncing");
+    setResult(null);
+    toast.info("Pushing all M&H products to Zoho — this may take a few minutes…");
+    try {
+      const { data, error } = await supabase.functions.invoke("zoho-sync", {
+        body: { action: "push_all_mh" },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setStatus("success");
+      const pushed = data?.pushed ?? 0;
+      const created = data?.created ?? 0;
+      const failed = data?.failed ?? 0;
+      invalidateProductQueries();
+      toast.success(`Push complete: ${created} created, ${pushed} updated${failed ? `, ${failed} failed` : ""}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setStatus("error");
+      setResult({ error: message });
+      toast.error(`Push failed: ${message}`);
+    }
+  }, [invalidateProductQueries]);
+
   const reset = useCallback(() => {
     stopPolling();
     setStatus("idle");
     setResult(null);
   }, [stopPolling]);
 
-  return { status, result, pullItems, syncStock, linkProduct, pushOrder, reset };
+  return { status, result, pullItems, syncStock, linkProduct, pushOrder, pushAllToZoho, reset };
 }
+
