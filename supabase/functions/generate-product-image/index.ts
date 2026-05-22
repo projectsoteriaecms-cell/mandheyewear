@@ -459,9 +459,17 @@ serve(async (req) => {
       console.log(`🔄 Regenerating single shot "${shotSlug}" for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase
         .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, frame_attributes(model_code, frame_shape, frame_material, front_color)")
+        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color)")
         .eq("id", productId)
         .single();
+
+      // Anchor lock: refuse to overwrite primary if it's locked
+      if (shotSlug === "hero" && product?.primary_image_locked) {
+        return json({
+          error: "Primary image is locked (manual anchor). Regenerate a non-hero shot instead.",
+          code: "ANCHOR_LOCKED",
+        }, 400);
+      }
 
       if (fetchErr || !product) {
         return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
