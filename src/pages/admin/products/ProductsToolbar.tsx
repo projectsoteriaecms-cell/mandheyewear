@@ -23,6 +23,7 @@ interface ProductsToolbarProps {
   onEnrichProducts: () => void;
   onPullItems: () => void;
   onSyncStock?: () => void;
+  onPushAllToZoho?: () => void;
   onOpenLinkDialog: () => void;
   onOpenBulkImageUpload: () => void;
   onOpenBulkUpload: () => void;
@@ -41,6 +42,7 @@ export const ProductsToolbar = ({
   onEnrichProducts,
   onPullItems,
   onSyncStock,
+  onPushAllToZoho,
   onOpenLinkDialog,
   onOpenBulkImageUpload,
   onOpenBulkUpload,
@@ -49,6 +51,7 @@ export const ProductsToolbar = ({
   onOpenDataCleanup,
   onOpenNameCleanup,
 }: ProductsToolbarProps) => {
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
