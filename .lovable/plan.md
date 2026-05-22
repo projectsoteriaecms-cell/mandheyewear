@@ -1,29 +1,42 @@
-## Understanding
-You're confirming the operating model for Soteria (M&H Medical) inventory:
+## Plan
 
-- The `products` table (where `brand_line = 'soteria_medical'`) is **not** manually curated.
-- It's a **mirror** of Zoho Books — Zoho is the single source of truth.
-- We just cleared it (0 Soteria rows) so the next Zoho sync will rehydrate it cleanly.
+### 1. Re-nuke Soteria catalog (clean slate)
+- Stop the in-progress Zoho pull immediately.
+- Delete every `products` row where `brand_line = 'soteria_medical'` (plus any orphaned `inventory`, `product_images`, `product_variants` tied to those products).
+- Leave M&H Eyewear (162 frames, `m_and_h_fashion`) completely untouched.
+- Verify counts after: M&H = 162, Soteria = 0.
 
-## What's already in place (no build needed)
-- `zoho-sync` edge function exists and maps every Zoho item → `products` row with `brand_line: 'soteria_medical'` (line 50 of `supabase/functions/zoho-sync/index.ts`).
-- Stock per branch flows into `inventory` via `zoho_warehouse_mapping`.
-- Admin UI to trigger/monitor sync already exists:
-  - `src/pages/admin/Inventory.tsx`
-  - `src/modules/products/components/ZohoSyncHistoryPanel.tsx`
-  - `src/modules/integrations/hooks/useZohoSync.ts`
-  - `src/pages/admin/inventory/ReconciliationCard.tsx`
+### 2. Make M&H ↔ Zoho a clean two-way sync
+Repurpose the existing `zoho-sync` edge function so M&H Eyewear becomes the synced brand instead of Soteria.
 
-## Operating contract going forward
-- **Soteria catalog**: pulled from Zoho via `zoho-sync`. Never insert/edit Soteria products by hand.
-- **M&H Eyewear catalog** (`m_and_h_fashion`): curated manually (the 162 frames we just inserted). Not synced from Zoho.
-- Filter rules from memory still apply: skip `[NEEDS_RESEARCH]` and ₦0 items at the storefront layer.
+**Outbound (M&H → Zoho)** — push our 162 frames into Zoho as Items:
+- New action `push_items`: for every M&H product not yet linked to a Zoho item, create the item in Zoho Books (name, SKU, price, stock per branch warehouse) and store the returned `zoho_item_id` on the product.
+- On product update in our DB (trigger or manual "Push to Zoho" button), update the matching Zoho item.
 
-## Next action options
-Pick one — none require code changes:
+**Inbound (Zoho → M&H)** — pull stock & price changes back:
+- Existing `pull_items` logic, rewritten to:
+  - Only touch products with `brand_line = 'm_and_h_fashion'` and a known `zoho_item_id`.
+  - Update stock per branch via `zoho_warehouse_mapping` → `inventory`.
+  - Update price if it changed in Zoho.
+  - **Never insert new products** from Zoho (M&H catalog is curated, not auto-grown).
 
-1. **Trigger a fresh full Zoho sync now** — I run the `zoho-sync` edge function so the Soteria catalog repopulates from scratch (cleanest baseline).
-2. **Wait** — let it sync on the next scheduled/manual run from the Admin → Inventory page.
-3. **Add a guard** (optional, small code change) — a DB trigger that blocks manual inserts into `products` where `brand_line = 'soteria_medical'` unless they come from the sync function, to enforce "Zoho only" by contract.
+**Guardrail**: add a DB check so `brand_line = 'soteria_medical'` rows can no longer be created — Soteria is fully retired from the catalog.
 
-Which one do you want?
+**Naming integrity**: since you've already cleaned M&H names, the outbound push will overwrite whatever exists in Zoho for those SKUs (our DB becomes the source of truth for names; Zoho stays the source of truth for stock movement).
+
+### 3. Collapsible Zoho Sync History panel
+On `/admin/products` (and wherever `ZohoSyncHistoryPanel` renders), wrap the panel in a shadcn `Collapsible`:
+- Header row always visible: title "Zoho Sync History" + chevron + latest status pill (e.g. "Syncing… less than a minute ago").
+- Body (the list of past sync runs) hidden by default; expands on click.
+- Persist open/closed state in `localStorage` so it remembers your preference.
+
+### Technical notes
+- Files touched: `supabase/functions/zoho-sync/index.ts` (rewrite item mapping for `m_and_h_fashion`, add `push_items` action), `src/modules/admin/components/ZohoSyncHistoryPanel.tsx` (Collapsible wrapper), one migration (delete Soteria rows + add brand_line guard).
+- No changes to storefront filtering — it already only shows `m_and_h_fashion`.
+- Sync history rows themselves are preserved (audit log untouched).
+
+### Order of execution after approval
+1. Migration: nuke Soteria + add guard.
+2. Edit `ZohoSyncHistoryPanel` to be collapsible.
+3. Rewrite `zoho-sync` for two-way M&H flow + add admin "Push all to Zoho" button.
+4. Trigger first outbound push, verify items appear in Zoho with correct names.
