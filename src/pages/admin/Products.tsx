@@ -102,6 +102,8 @@ const Products = () => {
             onEnrichProducts={handleEnrichProducts}
             onPullItems={pullItems}
             onSyncStock={syncStock}
+            onPushAllToZoho={pushAllToZoho}
+
             onOpenLinkDialog={() => setIsLinkDialogOpen(true)}
             onOpenBulkImageUpload={() => setIsBulkImageUploadOpen(true)}
             onOpenBulkUpload={() => setIsBulkUploadOpen(true)}
