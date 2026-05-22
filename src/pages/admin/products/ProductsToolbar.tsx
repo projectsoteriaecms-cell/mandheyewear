@@ -6,10 +6,12 @@ import {
   FileXls,
   ArrowsClockwise,
   CloudArrowDown,
+  CloudArrowUp,
   Sparkle,
   Database,
   TextAa,
 } from "@phosphor-icons/react";
+
 import { BulkPackagingFixButton } from "@/modules/products/components/BulkPackagingFixButton";
 
 interface ProductsToolbarProps {
@@ -21,6 +23,7 @@ interface ProductsToolbarProps {
   onEnrichProducts: () => void;
   onPullItems: () => void;
   onSyncStock?: () => void;
+  onPushAllToZoho?: () => void;
   onOpenLinkDialog: () => void;
   onOpenBulkImageUpload: () => void;
   onOpenBulkUpload: () => void;
@@ -39,6 +42,7 @@ export const ProductsToolbar = ({
   onEnrichProducts,
   onPullItems,
   onSyncStock,
+  onPushAllToZoho,
   onOpenLinkDialog,
   onOpenBulkImageUpload,
   onOpenBulkUpload,
@@ -47,6 +51,7 @@ export const ProductsToolbar = ({
   onOpenDataCleanup,
   onOpenNameCleanup,
 }: ProductsToolbarProps) => {
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
@@ -89,6 +94,13 @@ export const ProductsToolbar = ({
             {stockSyncStatus === "syncing" ? "Syncing Stock…" : "Sync Stock"}
           </Button>
         )}
+        {isAdmin && onPushAllToZoho && (
+          <Button variant="outline" onClick={onPushAllToZoho} disabled={syncStatus === "syncing"}>
+            <CloudArrowUp className="mr-2 h-4 w-4" weight="light" />
+            Push to Zoho
+          </Button>
+        )}
+
         {isAdmin && (
           <Button variant="outline" onClick={onOpenLinkDialog}>
             <ArrowsClockwise className="mr-2 h-4 w-4" weight="light" />
