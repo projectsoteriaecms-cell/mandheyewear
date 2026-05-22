@@ -1252,8 +1252,41 @@ serve(async (req) => {
     }
   }
 
+  if (action === "push_all_mh") {
+    // Push every active M&H product to Zoho (create if missing, update if linked)
+    const { data: mhProducts, error: fetchErr } = await supabase
+      .from("products")
+      .select("id")
+      .eq("brand_line", "m_and_h_fashion")
+      .eq("is_active", true);
+
+    if (fetchErr) {
+      return new Response(JSON.stringify({ error: fetchErr.message }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Delegate to push_updates internally
+    const productIds = (mhProducts ?? []).map((p) => p.id);
+    if (productIds.length === 0) {
+      return new Response(JSON.stringify({ success: true, pushed: 0, created: 0, failed: 0, message: "No M&H products to push" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Reuse push_updates by re-invoking the handler with a synthetic body
+    const forwardReq = new Request(req.url, {
+      method: "POST",
+      headers: req.headers,
+      body: JSON.stringify({ action: "push_updates", product_ids: productIds }),
+    });
+    return await (globalThis as { Deno: { serve: unknown } }).Deno && fetch(forwardReq) as unknown as Response ||
+      new Response(JSON.stringify({ error: "Forward failed" }), { status: 500, headers: corsHeaders });
+  }
+
   return new Response(JSON.stringify({ error: `Unknown action: ${action}` }), {
     status: 400,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 });
+
