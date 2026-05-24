@@ -1,0 +1,1235 @@
+[
+  {
+    "sku": "MH-1793",
+    "status": "failed",
+    "brand": "Cartier",
+    "model": "CT0344O 003",
+    "tried": [
+      "https://pretavoir.us/products/cartier-ct0344o-003",
+      "https://www.eyespecs.com/Cartier-Core-Range-CT0344O-Eyeglasses-Rimless-Rectangle-Shape-531660400.html",
+      "https://hallofframescompany.com/products/ct0344o-003"
+    ]
+  },
+  {
+    "sku": "MH-471",
+    "status": "manual",
+    "notes": "Model code C34C38MJ not found on any authorized retailer site searched. Possible",
+    "brand": "Cartier",
+    "model": "C34C38MJ"
+  },
+  {
+    "sku": "MH-474",
+    "status": "manual",
+    "notes": "CT0349O 001 titanium not found on smartbuyglasses.com or framesdirect.com. Not r",
+    "brand": "Cartier",
+    "model": "CT0349O 001 Titanium"
+  },
+  {
+    "sku": "MH-183",
+    "status": "failed",
+    "brand": "Tiffany & Co",
+    "model": "TF4197 8001/S4",
+    "tried": [
+      "https://pretavoir.us/products/tiffany-tf4197-8001s4",
+      "https://www.eyeons.com/tiffany-tf4197-8001s4-62-black",
+      "https://en.smartbuyglasses.ch/designer-sunglasses/Tiffany-&-Co./Tiffany-&-Co.-TF4197-8001S4-628071.html"
+    ]
+  },
+  {
+    "sku": "MH-460",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/gucci-gg1221o-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/gucci-gg1221o-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-1699",
+    "status": "failed",
+    "brand": "Gucci",
+    "model": "GG1504O 006",
+    "tried": [
+      "https://pretavoir.us/products/gucci-gg1504o-006",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Gucci/Gucci-GG1504O-006-668965.html"
+    ]
+  },
+  {
+    "sku": "MH-1703",
+    "status": "manual",
+    "notes": "GG1438O 003 not found on smartbuyglasses.com or framesdirect.com. Only 001 (blac",
+    "brand": "Gucci",
+    "model": "GG1438O 003"
+  },
+  {
+    "sku": "MH-320",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/burberry-be4406u-sunglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/burberry-be4406u-sunglasses.jpg"
+  },
+  {
+    "sku": "MH-457",
+    "status": "failed",
+    "brand": "Gucci",
+    "model": "GG1219O 001",
+    "tried": [
+      "https://pretavoir.us/products/gucci-gg1219o-001",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Gucci/Gucci-GG1219O-001-610518.html"
+    ]
+  },
+  {
+    "sku": "MH-1693",
+    "status": "failed",
+    "brand": "Gucci",
+    "model": "GG1497O 006",
+    "tried": [
+      "https://pretavoir.us/products/gucci-gg1497o-006",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Gucci/Gucci-GG1497O-006-668953.html"
+    ]
+  },
+  {
+    "sku": "MH-1704",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/gucci-gg1303o-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/gucci-gg1303o-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-426",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/tom-ford-blue-light-collection-ft5040-b-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/tom-ford-blue-light-collection-ft5040-b-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-319",
+    "status": "failed",
+    "brand": "Prada",
+    "model": "PR A52V 01U1O1",
+    "tried": [
+      "https://www.otticasm.com/en/eyeglasses-prada-pr-a52v-01u1o1.html",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Prada/Prada-PR-A52V-01U1O1-667639.html"
+    ]
+  },
+  {
+    "sku": "MH-90",
+    "status": "failed",
+    "brand": "Versace",
+    "model": "VE4445 GB1/M1",
+    "tried": [
+      "https://www.otticasm.com/en/sunglasses-versace-ve-4445-gb1-m1.html",
+      "https://www.smartbuyglasses.com/designer-sunglasses/Versace/Versace-VE4445-GB1M1-634769.html"
+    ]
+  },
+  {
+    "sku": "MH-188",
+    "status": "failed",
+    "brand": "Versace",
+    "model": "VE4458 GB1/87",
+    "tried": [
+      "https://designeroptics.com/products/versace-4458-sunglasses",
+      "https://www.smartbuyglasses.com/designer-sunglasses/Versace/Versace-VE4458-GB187-658282.html"
+    ]
+  },
+  {
+    "sku": "MH-202",
+    "status": "failed",
+    "brand": "Marc Jacobs",
+    "model": "MJ 1091/N/S 06JIB",
+    "tried": [
+      "https://pretavoir.us/products/marc-jacobs-mj-1091ns-06jib-with-detachable-chain"
+    ]
+  },
+  {
+    "sku": "MH-1739",
+    "status": "manual",
+    "notes": "JC3004B 5013 color not found on smartbuyglasses.com. Nearby colors 5000 and 5002",
+    "brand": "Jimmy Choo",
+    "model": "JC3004B 5013"
+  },
+  {
+    "sku": "MH-314",
+    "status": "failed",
+    "brand": "Prada",
+    "model": "PR 58ZV 17I1O1",
+    "tried": [
+      "https://pretavoir.us/products/prada-pr-58zv-17i1o1",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Prada/Prada-PR-58ZV-17I1O1-644632.html"
+    ]
+  },
+  {
+    "sku": "MH-323",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-83",
+    "status": "failed",
+    "brand": "Prada",
+    "model": "PR 09ZV 08Q1O1",
+    "tried": [
+      "https://pretavoir.us/products/prada-pr-09zv-1ab1o1",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Prada/Prada-PR-09ZV-08Q1O1-674861.html"
+    ]
+  },
+  {
+    "sku": "MH-120",
+    "status": "failed",
+    "brand": "Prada",
+    "model": "PR 22ZV 16K1O1",
+    "tried": [
+      "https://pretavoir.us/products/prada-pr-22zv-16k1o1",
+      "https://www.eyespecs.com/Prada-PR-22ZV-Eyeglasses-Men-s-Full-Rim-Square-Shape-531670945.html",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Prada/Prada-PR-22ZV-16K1O1-644602.html"
+    ]
+  },
+  {
+    "sku": "MH-1722",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/burberry-be2387-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/burberry-be2387-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-1748",
+    "status": "failed",
+    "brand": "Cartier",
+    "model": "CT0284O",
+    "tried": [
+      "https://pretavoir.us/products/cartier-ct0284o-002",
+      "https://www.eyeons.com/cartier-ct0284o"
+    ]
+  },
+  {
+    "sku": "MH-81",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/dolce-gabbana-dg3376b-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/dolce-gabbana-dg3376b-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-1740",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/burberry-be2403-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/burberry-be2403-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-1744",
+    "status": "failed",
+    "brand": "Moschino",
+    "model": "MOS637 807",
+    "tried": [
+      "https://pretavoir.us/products/moschino-mos-637-807",
+      "https://www.smartbuyglasses.ie/designer-eyeglasses/Moschino/Moschino-MOS637-807-695501.html"
+    ]
+  },
+  {
+    "sku": "MH-1745",
+    "status": "failed",
+    "brand": "Dsquared2",
+    "model": "D2 0102 3YG",
+    "tried": [
+      "https://www.fashioneyewear.com/en-us/products/dsquared2-d2-0102",
+      "https://www.smartbuyglasses.it/occhiali-da-vista/Dsquared2/Dsquared2-D2-0102-3YG-691835.html"
+    ]
+  },
+  {
+    "sku": "MH-1731",
+    "status": "failed",
+    "brand": "Marc Jacobs",
+    "model": "MARC848 2M2",
+    "tried": [
+      "https://designeroptics.com/products/marc-jacobs-marc848-eyeglasses",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Marc-Jacobs/Marc-Jacobs-MARC-848-2M2-702725.html"
+    ]
+  },
+  {
+    "sku": "MH-1742",
+    "status": "failed",
+    "brand": "David Beckham",
+    "model": "DB 7020/BOLD 807",
+    "tried": [
+      "https://pretavoir.us/products/david-beckham-db-7020bold-807",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/David-Beckham/David-Beckham-DB-7020BOLD-807-589588.html"
+    ]
+  },
+  {
+    "sku": "MH-91",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/giorgio-armani-ar7230u-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/giorgio-armani-ar7230u-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-93",
+    "status": "failed",
+    "brand": "Miu Miu",
+    "model": "MU06VV 1AB1O1",
+    "tried": [
+      "https://www.otticasm.com/en/eyeglasses-miu-miu-mu-06vv-1ab1o1.html",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Miu-Miu/Miu-Miu-MU06VV-1AB1O1-637001.html"
+    ]
+  },
+  {
+    "sku": "MH-1724",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/versace-ve3339u-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/versace-ve3339u-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-96",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/versace-ve3338-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/versace-ve3338-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-98",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/versace-ve3346-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/versace-ve3346-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-1510",
+    "status": "manual",
+    "notes": "HG1257 1ED not found on smartbuyglasses.com or framesdirect.com. Found on ottica",
+    "brand": "Hugo",
+    "model": "HG1257 1ED"
+  },
+  {
+    "sku": "MH-104",
+    "status": "failed",
+    "brand": "Burberry",
+    "model": "BE1376 VIRGINIA 1340",
+    "tried": [
+      "https://pretavoir.us/products/burberry-virginia-be1376-1340",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Burberry/Burberry-BE1376-VIRGINIA-Asian-Fit-1340-641633.html"
+    ]
+  },
+  {
+    "sku": "MH-470",
+    "status": "failed",
+    "brand": "Dunhill",
+    "model": "DU0038OA 003",
+    "tried": [
+      "https://designeroptics.com/products/dunhill-du0038oa-eyeglasses",
+      "https://pretavoir.us/products/dunhill-du0038oa-001",
+      "https://selecteyewear.com/products/dunhill-du0038oa"
+    ]
+  },
+  {
+    "sku": "MH-1720",
+    "status": "manual",
+    "notes": "DAKARIAN CNG14 24K specific product page not found. Clary Gray eyeglasses availa",
+    "brand": "Clary Gray",
+    "model": "DAKARIAN CNG14 24K"
+  },
+  {
+    "sku": "MH-1692",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/mont-blanc-mb0266o-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/mont-blanc-mb0266o-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-1696",
+    "status": "failed",
+    "brand": "Saint Laurent",
+    "model": "SL 699 006",
+    "tried": [
+      "https://pretavoir.us/products/saint-laurent-sl-699-006",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Saint-Laurent/Saint-Laurent-SL-699-Asian-Fit-006-668763.html"
+    ]
+  },
+  {
+    "sku": "MH-453",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/mont-blanc-mb0199oa-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/mont-blanc-mb0199oa-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-1694",
+    "status": "failed",
+    "brand": "Saint Laurent",
+    "model": "SL 379/F SLIM 001",
+    "tried": [
+      "https://gaffos.com/products/saint-laurent-sl-379f-slim-001-rectangle-metal-silver-eyeglasses-with-demo-lens",
+      "https://www.eyeons.com/saint-laurent-sl-379-f-slim-028-54-silver"
+    ]
+  },
+  {
+    "sku": "MH-17",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/oakley-hstn-sunglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/oakley-hstn-sunglasses.jpg"
+  },
+  {
+    "sku": "MH-504",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-111",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-1506",
+    "status": "failed",
+    "brand": "Hugo",
+    "model": "HG1359 807",
+    "tried": [
+      "https://www.otticasm.com/en/eyeglasses-hugo-hg-1359-109463-807.html",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/HUGO/HUGO-HG-1359-807-708826.html"
+    ]
+  },
+  {
+    "sku": "MH-79",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/burberry-be2347-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/burberry-be2347-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-1747",
+    "status": "failed",
+    "brand": "Cartier",
+    "model": "CT00630 55-18-135",
+    "tried": [
+      "https://solsticesunglasses.com/products/cartier-ct0063o-ct0063o",
+      "https://www.coolframes.ca/glasses/cartier-eyewear/ct0063o-eyeglasses.html"
+    ]
+  },
+  {
+    "sku": "MH-74",
+    "status": "failed",
+    "brand": "Versace",
+    "model": "MOD 3327 5381",
+    "tried": [
+      "https://designeroptics.com/products/versace-3327u-eyeglasses",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Versace/Versace-VE3327U-5381-616641.html"
+    ]
+  },
+  {
+    "sku": "MH-1512",
+    "status": "manual",
+    "notes": "TH2072 KB7 not found on SmartBuyGlasses or FramesDirect; similar KB7 models exis",
+    "brand": "Tommy Hilfiger",
+    "model": "TH2072 KB7"
+  },
+  {
+    "sku": "MH-250",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/tommy-hilfiger-th-1892-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/tommy-hilfiger-th-1892-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-106",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/ray-ban-rb3625-sunglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/ray-ban-rb3625-sunglasses.jpg"
+  },
+  {
+    "sku": "MH-1444",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-1446",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-162",
+    "status": "failed",
+    "brand": "Tommy Hilfiger",
+    "model": "TH 1990 PJP",
+    "tried": [
+      "https://designeroptics.com/products/tommy-hilfiger-th1990-eyeglasses",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Tommy-Hilfiger/Tommy-Hilfiger-TH-1990-PJP-643287.html"
+    ]
+  },
+  {
+    "sku": "MH-107",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-1443",
+    "status": "manual",
+    "notes": "P.C.8875 J5G not found on SmartBuyGlasses or FramesDirect; similar J5G Pierre Ca",
+    "brand": "Pierre Cardin",
+    "model": "P.C.8875 J5G"
+  },
+  {
+    "sku": "MH-1733",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/eyeglasses/carrera",
+    "image": "https://media.framesdirect.com/product_elarge_images/carrera.jpg"
+  },
+  {
+    "sku": "MH-1734",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/carrera-victory-c-04-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/carrera-victory-c-04-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-253",
+    "status": "manual",
+    "notes": "TH2046 IPQ not found on SmartBuyGlasses or FramesDirect specifically",
+    "brand": "Tommy Hilfiger",
+    "model": "TH2046 IPQ"
+  },
+  {
+    "sku": "MH-1721",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/carrera-ca-344-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/carrera-ca-344-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-1719",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/polo-ph2212-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/polo-ph2212-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-192",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/ray-ban-rb3579n-blaze-sunglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/ray-ban-rb3579n-blaze-sunglasses.jpg"
+  },
+  {
+    "sku": "MH-1511",
+    "status": "failed",
+    "brand": "Tommy Hilfiger",
+    "model": "TH1891 807",
+    "tried": [
+      "https://www.quivedo.com/en/tommy-hilfiger-th-1891-105660-807",
+      "https://www.smartbuyglasses.co.uk/designer-eyeglasses/Tommy-Hilfiger/Tommy-Hilfiger-TH-1891-807-590586.html"
+    ]
+  },
+  {
+    "sku": "MH-1738",
+    "status": "failed",
+    "brand": "Arnette",
+    "model": "AN 4332 SATURNY 29217J",
+    "tried": [
+      "https://www.coolframes.com/glasses/arnette-eyewear/an4332-saturnya-designer-sunglasses.html",
+      "https://www.smartbuyglasses.com/designer-sunglasses/Arnette/Arnette-AN4332-Saturnya-29217J-660131.html"
+    ]
+  },
+  {
+    "sku": "MH-1448",
+    "status": "manual",
+    "notes": "LV1042 J5G not found on SmartBuyGlasses or FramesDirect; found on selectspecs.co",
+    "brand": "Levi's",
+    "model": "LV1042 J5G"
+  },
+  {
+    "sku": "MH-9",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-263",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/carrera-carrera-291-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/carrera-carrera-291-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-51",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-66",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/polo-ph2257u-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/polo-ph2257u-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-64",
+    "status": "failed",
+    "brand": "Vogue",
+    "model": "VO5404S 297273",
+    "tried": [
+      "https://www.otticasm.com/en/sunglasses-vogue-vo-5404s-297273.html",
+      "https://www.smartbuyglasses.de/designer-sonnenbrillen/Vogue-Eyewear/Vogue-Eyewear-VO5404S-297273-583552.html"
+    ]
+  },
+  {
+    "sku": "MH-55",
+    "status": "failed",
+    "brand": "Vogue",
+    "model": "VO 5409S W65613",
+    "tried": [
+      "https://www.otticasm.com/en/sunglasses-vogue-vo-5409s-w65613.html",
+      "https://www.smartbuyglasses.com/designer-sunglasses/Vogue-Eyewear/Vogue-Eyewear-VO5409S-W4411-583578.html"
+    ]
+  },
+  {
+    "sku": "MH-258",
+    "status": "failed",
+    "brand": "Carrera Ducati",
+    "model": "CARDUC 010 807",
+    "tried": [
+      "https://www.quivedo.com/en/carrera-ducati-carduc-010-105959-807",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Carrera-Ducati/Carrera-Ducati-CARDUC-010-807-585005.html"
+    ]
+  },
+  {
+    "sku": "MH-259",
+    "status": "failed",
+    "brand": "Carrera Ducati",
+    "model": "CARDUC 010 OIT",
+    "tried": [
+      "https://pretavoir.us/products/carrera-x-ducati-carduc-010-oit",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Carrera-Ducati/Carrera-Ducati-CARDUC-010-OIT-585006.html"
+    ]
+  },
+  {
+    "sku": "MH-507",
+    "status": "manual",
+    "notes": "DM716 COL.2 not found on SmartBuyGlasses, FramesDirect, or glasses.com; brand no",
+    "brand": "Dario Martini",
+    "model": "DM716 COL.2"
+  },
+  {
+    "sku": "MH-1718",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/vogue-vo5421-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/vogue-vo5421-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-212",
+    "status": "manual",
+    "notes": "7A 081 6LB not found on SmartBuyGlasses or FramesDirect; found on SelectSpecs bu",
+    "brand": "Seventh Street",
+    "model": "7A 081 6LB"
+  },
+  {
+    "sku": "MH-243",
+    "status": "failed",
+    "brand": "Polaroid",
+    "model": "PLD D436 086",
+    "tried": [
+      "https://lookeronline.com/products/polaroid-d436-086",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Polaroid/Polaroid-PLD-D436-086-572197.html"
+    ]
+  },
+  {
+    "sku": "MH-224",
+    "status": "failed",
+    "brand": "Polaroid",
+    "model": "PLD D512 PJP",
+    "tried": [
+      "https://www.coolframes.com/glasses/polaroid-core-eyewear/pld-d512-unisex-mens-womens-eyeglasses.html",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Polaroid/Polaroid-PLD-D512-PJP-655793.html"
+    ]
+  },
+  {
+    "sku": "MH-464",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/puma-pu0347o-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/puma-pu0347o-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-1502",
+    "status": "failed",
+    "brand": "Polaroid",
+    "model": "PLD D389/G RHL",
+    "tried": [
+      "https://lookeronline.com/products/polaroid-d389-g-rhl",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Polaroid/Polaroid-PLD-D389G-RHL-539099.html"
+    ]
+  },
+  {
+    "sku": "MH-204",
+    "status": "failed",
+    "brand": "Seventh Street",
+    "model": "7A 108 086",
+    "tried": [
+      "https://www.edel-optics.com/7A-108-086-by-Seventh-Street.html",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Seventh-Street/Seventh-Street-7A108-08A-631587.html"
+    ]
+  },
+  {
+    "sku": "MH-1503",
+    "status": "manual",
+    "notes": "PLD D373 PJP not found on SmartBuyGlasses or FramesDirect; D373 exists in 086 an",
+    "brand": "Polaroid",
+    "model": "PLD D373 PJP"
+  },
+  {
+    "sku": "MH-1505",
+    "status": "failed",
+    "brand": "Polaroid",
+    "model": "PLD D379 900",
+    "tried": [
+      "https://www.otticasm.com/en/eyeglasses-polaroid-pld-d379-103199-900.html",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Polaroid/Polaroid-PLD-D379-900-513431.html"
+    ]
+  },
+  {
+    "sku": "MH-448",
+    "status": "manual",
+    "notes": "La Martina MAV749 COL.16 not found on SmartBuyGlasses or FramesDirect; brand not",
+    "brand": "La Martina",
+    "model": "MAV749 COL.16"
+  },
+  {
+    "sku": "MH-449",
+    "status": "manual",
+    "notes": "La Martina MAV720 COL.12 not found on SmartBuyGlasses or FramesDirect; brand not",
+    "brand": "La Martina",
+    "model": "MAV720 COL.12"
+  },
+  {
+    "sku": "MH-506",
+    "status": "manual",
+    "notes": "DM 796 COL.2 not found on SmartBuyGlasses, FramesDirect, or glasses.com; brand n",
+    "brand": "Dario Martini",
+    "model": "DM 796 COL.2"
+  },
+  {
+    "sku": "MH-1466",
+    "status": "manual",
+    "notes": "S.T. Dupont DP-3985 C2 not found on SmartBuyGlasses or FramesDirect; brand exist",
+    "brand": "S.T. Dupont",
+    "model": "DP-3985 C2"
+  },
+  {
+    "sku": "MH-1467",
+    "status": "manual",
+    "notes": "S.T. Dupont Titanium 2104 not found on SmartBuyGlasses or FramesDirect",
+    "brand": "S.T. Dupont",
+    "model": "Titanium2104"
+  },
+  {
+    "sku": "MH-1779",
+    "status": "manual",
+    "notes": "CT0563S (sunglasses) not found as optical/eyeglass frame on authorised retailers",
+    "brand": "Cartier",
+    "model": "CT0563S C2"
+  },
+  {
+    "sku": "MH-1780",
+    "status": "manual",
+    "notes": "Cartier 30104 C9 not found on any authorised retailer website. Model number not ",
+    "brand": "Cartier",
+    "model": "30104 C9"
+  },
+  {
+    "sku": "MH-131",
+    "status": "ok",
+    "page": "https://www.visio-net.com/eyeglasses/polaroid-pldd490g-j5g.html",
+    "image": "https://media.visio-net.fr/oscommerce/images/viewerxxl_new/polaroid-PLDD490G-J5G-52_P00.jpg?v=3.1.1"
+  },
+  {
+    "sku": "MH-220",
+    "status": "ok",
+    "page": "https://www.visio-net.com/eyeglasses/polaroid-pldd508g-j5g.html",
+    "image": "https://media.visio-net.fr/oscommerce/images/viewerxxl_new/polaroid-PLDD508G-J5G-53_P00.jpg?v=3.1.1"
+  },
+  {
+    "sku": "MH-221",
+    "status": "failed",
+    "brand": "Polaroid",
+    "model": "PLD D451 J5G",
+    "tried": [
+      "https://lookeronline.com/products/polaroid-d451-j5g",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Polaroid/Polaroid-PLD-D451-J5G-591488.html"
+    ]
+  },
+  {
+    "sku": "MH-249",
+    "status": "failed",
+    "brand": "Polaroid",
+    "model": "PLD D459/G 807",
+    "tried": [
+      "https://www.fashioneyewear.com/en-us/products/polaroid-pld-d459-g",
+      "https://www.eyeons.com/products/polaroid-pld-d459-g",
+      "https://www.smartbuyglasses.co.uk/designer-eyeglasses/Polaroid/Polaroid-PLD-D459G-807-591519.html"
+    ]
+  },
+  {
+    "sku": "MH-1471",
+    "status": "failed",
+    "brand": "Hackett Bespoke",
+    "model": "HEB306 190",
+    "tried": [
+      "https://www.edel-optics.com/306-190-by-Hackett.html",
+      "https://www.edel-optics.com.mt/HEB306-190-by-Hackett.html"
+    ]
+  },
+  {
+    "sku": "MH-414",
+    "status": "manual",
+    "notes": "DHM378-3 specific page not returned in search results; closest match is DHM379 o",
+    "brand": "Daniel Hechter",
+    "model": "DHM378-3"
+  },
+  {
+    "sku": "MH-1476",
+    "status": "ok",
+    "page": "https://www.laparisienne-eyewear.com/products/sandro-optical-frame-sd3017-56900",
+    "image": "http://www.laparisienne-eyewear.com/cdn/shop/files/Logo_2_-_Copie_3d0f29df-81e0-4a87-a968-9a5d69a6ae2a.jpg?v=1755069048&width=2048"
+  },
+  {
+    "sku": "MH-1480",
+    "status": "manual",
+    "notes": "DHM193-7 not found on any authorised retailer website.",
+    "brand": "Daniel Hechter",
+    "model": "DHM193-7"
+  },
+  {
+    "sku": "MH-1481",
+    "status": "failed",
+    "brand": "Daniel Hechter",
+    "model": "DHM340-2",
+    "tried": [
+      "https://www.selectspecs.com/glasses/daniel-hechter/dhm340/ss2724.08.html"
+    ]
+  },
+  {
+    "sku": "MH-1482",
+    "status": "manual",
+    "notes": "DHM281-7 not found on any authorised retailer website.",
+    "brand": "Daniel Hechter",
+    "model": "DHM281-7"
+  },
+  {
+    "sku": "MH-1483",
+    "status": "manual",
+    "notes": "DHP614-2 not found on any authorised retailer website.",
+    "brand": "Daniel Hechter",
+    "model": "DHP614-2"
+  },
+  {
+    "sku": "MH-1485",
+    "status": "failed",
+    "brand": "Ted Baker",
+    "model": "Damon TB4343 562",
+    "tried": [
+      "https://pretavoir.us/products/ted-baker-damon-4343-562",
+      "https://www.smartbuyglasses.co.uk/designer-eyeglasses/Ted-Baker/Ted-Baker-TB4343-562-619095.html"
+    ]
+  },
+  {
+    "sku": "MH-1486",
+    "status": "failed",
+    "brand": "Ted Baker",
+    "model": "Morris TB4328 667",
+    "tried": [
+      "https://www.designerglasses.co.uk/product/ted-baker-tb4328-morris/"
+    ]
+  },
+  {
+    "sku": "MH-1491",
+    "status": "failed",
+    "brand": "Ted Baker",
+    "model": "Dawson TB4344 002",
+    "tried": [
+      "https://pretavoir.us/products/ted-baker-dawson-4344-002",
+      "https://www.fashioneyewear.com/en-us/products/ted-baker-dawson-tb4344",
+      "https://www.selectspecs.com/glasses/ted-baker-london/tb4344/ss2383.45.html"
+    ]
+  },
+  {
+    "sku": "MH-1494",
+    "status": "failed",
+    "brand": "Ted Baker",
+    "model": "Archer TB8219 351",
+    "tried": [
+      "https://discountedsunglasses.co.uk/products/ted-baker-glasses-frames-tb8219-archer-351-cognac-horn-men",
+      "https://www.fashioneyewear.com/en-us/products/ted-baker-archer-tb8219",
+      "https://www.smartbuyglasses.co.uk/designer-eyeglasses/Ted-Baker/Ted-Baker-TB8219-Archer-351-501200.html"
+    ]
+  },
+  {
+    "sku": "MH-1496",
+    "status": "failed",
+    "brand": "Ted Baker",
+    "model": "Vincent TB2323 104",
+    "tried": [
+      "https://www.burghleyandco.uk/products/ted-baker-optical-frame-tb2323-104-55",
+      "https://www.designerglasses.co.uk/product/ted-baker-tb2323-vincent/"
+    ]
+  },
+  {
+    "sku": "MH-242",
+    "status": "failed",
+    "brand": "Polaroid",
+    "model": "PLD D448 ZX9",
+    "tried": [
+      "https://optimaloptic.com/prescription-glasses/polaroid-pld-d448-zx9.html",
+      "https://www.amazon.com/Polaroid-Pld-D448-Unisex-Sunglasses/dp/B0FJ7MMCQX",
+      "https://www.edel-optics.ca/PLD-D448-ZX9-by-Polaroid.html"
+    ]
+  },
+  {
+    "sku": "MH-172",
+    "status": "failed",
+    "brand": "Carolina Herrera",
+    "model": "HER 0150 086",
+    "tried": [
+      "https://pretavoir.us/collections/welcomediscount/products/carolina-herrera-her-0150-086",
+      "https://solsticesunglasses.com/products/carolina-herrera-her-0150"
+    ]
+  },
+  {
+    "sku": "MH-228",
+    "status": "failed",
+    "brand": "Polaroid",
+    "model": "PLD D482 086",
+    "tried": [
+      "https://www.eye-oo.com/products/polaroid-pld-d482-086",
+      "https://www.fashioneyewear.com/en-us/products/polaroid-pld-d482",
+      "https://www.smartbuyglasses.co.uk/designer-eyeglasses/Polaroid/Polaroid-PLD-D482-086-634078.html"
+    ]
+  },
+  {
+    "sku": "MH-215",
+    "status": "failed",
+    "brand": "Polaroid",
+    "model": "PLD D488 807",
+    "tried": [
+      "https://www.fashioneyewear.com/en-us/products/polaroid-pld-d488",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Polaroid/Polaroid-PLD-D488-Polarized-807-638181.html"
+    ]
+  },
+  {
+    "sku": "MH-367",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "D3333 C5"
+  },
+  {
+    "sku": "MH-328",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "MB1402-A C5"
+  },
+  {
+    "sku": "MH-393",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "SH9103 C4"
+  },
+  {
+    "sku": "MH-355",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "XL110 C3"
+  },
+  {
+    "sku": "MH-370",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "TA9067 C5"
+  },
+  {
+    "sku": "MH-396",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "MG3850 C5"
+  },
+  {
+    "sku": "MH-327",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "TA9066 C4"
+  },
+  {
+    "sku": "MH-351",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "8604 C3"
+  },
+  {
+    "sku": "MH-354",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "8592 C1"
+  },
+  {
+    "sku": "MH-1460",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/tommy-hilfiger-th-1948-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/tommy-hilfiger-th-1948-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-361",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "D3337 C1"
+  },
+  {
+    "sku": "MH-372",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "D3337 C2"
+  },
+  {
+    "sku": "MH-399",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "9869 C1"
+  },
+  {
+    "sku": "MH-343",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "MG6557A C1"
+  },
+  {
+    "sku": "MH-358",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "TA9067 C1"
+  },
+  {
+    "sku": "MH-360",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "HC-16068 C1"
+  },
+  {
+    "sku": "MH-398",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "PY-526 C8"
+  },
+  {
+    "sku": "MH-344",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "MB1403 C4"
+  },
+  {
+    "sku": "MH-357",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "TA9067 C4"
+  },
+  {
+    "sku": "MH-406",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "TA9068 C2"
+  },
+  {
+    "sku": "MH-574",
+    "status": "ok",
+    "page": "https://www.framesdirect.com/guess-gu2879-eyeglasses",
+    "image": "https://media.framesdirect.com/product_elarge_images/guess-gu2879-eyeglasses.jpg"
+  },
+  {
+    "sku": "MH-576",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-350",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "8563 C3"
+  },
+  {
+    "sku": "MH-337",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "8563 C2"
+  },
+  {
+    "sku": "MH-338",
+    "status": "manual",
+    "notes": "Macruona brand not found on any major authorised retailer or indexed by search e",
+    "brand": "Macruona",
+    "model": "8563 C1"
+  },
+  {
+    "sku": "MH-551",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-569",
+    "status": "manual",
+    "notes": "SD6018 118 not found on any authorised retailer website.",
+    "brand": "Sandro",
+    "model": "SD6018 118"
+  },
+  {
+    "sku": "MH-573",
+    "status": "manual",
+    "notes": "GFF 0164 not found on pretavoir, smartbuyglasses, or other authorised retailers.",
+    "brand": "GF Ferre",
+    "model": "GFF 0164 005"
+  },
+  {
+    "sku": "MH-1405",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-1400",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-1403",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-1584",
+    "status": "manual",
+    "notes": "TF6138 not found on SmartBuyGlasses, FramesDirect, or any major retailer. Model ",
+    "brand": "Tiffany & Co.",
+    "model": "TF6138 001"
+  },
+  {
+    "sku": "MH-1399",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-331",
+    "status": "manual",
+    "notes": "Macruona is a local Nigerian brand. Not available on international optical retai",
+    "brand": "Macruona",
+    "model": "MR01-02 C.03"
+  },
+  {
+    "sku": "MH-330",
+    "status": "manual",
+    "notes": "Macruona is a local Nigerian brand. Not available on international optical retai",
+    "brand": "Macruona",
+    "model": "MR01-01 C.01H"
+  },
+  {
+    "sku": "MH-1371",
+    "status": "manual",
+    "notes": "Swarovski SW 1028 (older SW-prefix model) not found on SmartBuyGlasses, FramesDi",
+    "brand": "Swarovski",
+    "model": "SW 1028 16W"
+  },
+  {
+    "sku": "MH-1372",
+    "status": "manual",
+    "notes": "Swarovski SW 1028 (older SW-prefix model) not found on SmartBuyGlasses, FramesDi",
+    "brand": "Swarovski",
+    "model": "SW 1028 18M"
+  },
+  {
+    "sku": "MH-1378",
+    "status": "manual",
+    "notes": "Menrad MOD.14111 not found on SmartBuyGlasses, Edel-Optics, SelectSpecs, or Spec",
+    "brand": "Menrad",
+    "model": "MOD.14111 2100"
+  },
+  {
+    "sku": "MH-1380",
+    "status": "manual",
+    "notes": "Linda Farrow LFL/351 not found on official lindafarrow.com, specscollective.com,",
+    "brand": "Linda Farrow",
+    "model": "LFL/351/2"
+  },
+  {
+    "sku": "MH-1381",
+    "status": "manual",
+    "notes": "Linda Farrow LFL/351 not found on official lindafarrow.com, specscollective.com,",
+    "brand": "Linda Farrow",
+    "model": "LFL/351/4"
+  },
+  {
+    "sku": "MH-400",
+    "status": "manual",
+    "notes": "Macruona is a local Nigerian brand. Not available on international optical retai",
+    "brand": "Macruona",
+    "model": "FE06-12 C.01"
+  },
+  {
+    "sku": "MH-362",
+    "status": "manual",
+    "notes": "Macruona is a local Nigerian brand. Not available on international optical retai",
+    "brand": "Macruona",
+    "model": "FE06-12 C.03"
+  },
+  {
+    "sku": "MH-1595",
+    "status": "ok",
+    "page": "https://hbx.com/men/brands/gentle-monster/love-punch-sunglasses",
+    "image": "https://image-cdn.hypb.st/https%3A%2F%2Fs3.store.hypebeast.com%2Fmedia%2Fimage%2Fe7%2Ff9%2FSunglasses_12_1-2ea278406fa28b6d17d1ae7d063b.jpg?fit=max&amp;w=1080&amp;q=90"
+  },
+  {
+    "sku": "MH-1596",
+    "status": "failed",
+    "brand": "Gentle Monster",
+    "model": "OLLIE COL.PC3",
+    "tried": [
+      "https://www.farfetch.com/ca/shopping/women/gentle-monster-ollie-pc3-sunglasses-item-13408477.aspx",
+      "https://www.ssense.com/en-us/women/product/gentle-monster/pink-and-silver-ollie-sunglasses/3832661",
+      "https://www.smooshop.com/en/product/gentle-monster-ollie-pc3-sunglasses/"
+    ]
+  },
+  {
+    "sku": "MH-589",
+    "status": "failed",
+    "brand": "Eyezen",
+    "model": "HD 0116 FINN GUN",
+    "tried": [
+      "https://www.fostergrant.com/store/digital-glasses/eyezen/finn",
+      "https://www.amazon.com/Foster-Grant-Eyezen-Digital-Glasses/dp/B01DVN5RX2",
+      "https://www.londondrugs.com/foster-grant-eyezen-finn-digital-glasses/L6295703.html"
+    ]
+  },
+  {
+    "sku": "MH-591",
+    "status": "failed",
+    "brand": "Eyezen",
+    "model": "HD 0116 TIBBY BRY",
+    "tried": [
+      "https://www.londondrugs.com/foster-grant-eyezen-tibby-digital-glasses/L6295695.html",
+      "https://www.amazon.com/Foster-Grant-Digital-Glasses-Eyeglasses/dp/B01MZ8DJTM",
+      "https://www.fostergrant.com/"
+    ]
+  },
+  {
+    "sku": "MH-1377",
+    "status": "skipped"
+  },
+  {
+    "sku": "MH-1651",
+    "status": "manual",
+    "notes": "M&H is a local Nigerian brand. Not available on international optical retail sit",
+    "brand": "M&H",
+    "model": "BS1003 C9"
+  },
+  {
+    "sku": "MH-1654",
+    "status": "manual",
+    "notes": "M&H is a local Nigerian brand. Not available on international optical retail sit",
+    "brand": "M&H",
+    "model": "FD8819 C2"
+  },
+  {
+    "sku": "MH-1729",
+    "status": "failed",
+    "brand": "Polaroid",
+    "model": "PLD 0036/R/BB 086",
+    "tried": [
+      "https://www.visiondirect.com.au/designer-eyeglasses/Polaroid/Polaroid-PLD-0036RBB-Blue-Light-Block-086G6-655659.html",
+      "https://www.polaroideyewear.com/products/310303",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Polaroid/Polaroid-PLD-0036RBB-Blue-Light-Block-086G6-655659.html"
+    ]
+  },
+  {
+    "sku": "MH-1730",
+    "status": "failed",
+    "brand": "Polaroid",
+    "model": "PLD 0035/R/BB PJP",
+    "tried": [
+      "https://www.visiondirect.com.au/designer-eyeglasses/Polaroid/Polaroid-PLD-0035-R-BB-with-Blue-Light-Block-PJP-G6-666151.html",
+      "https://lookeronline.com/products/polaroid-0035-r-bb-pjp",
+      "https://www.smartbuyglasses.com/designer-eyeglasses/Polaroid/Polaroid-PLD-0035-R-BB-with-Blue-Light-Block-PJP-G6-666151.html"
+    ]
+  }
+]
