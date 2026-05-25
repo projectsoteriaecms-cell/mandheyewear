@@ -113,6 +113,7 @@ const Products = () => {
             onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
             onOpenDataCleanup={() => setIsDataCleanupOpen(true)}
             onOpenNameCleanup={() => setIsNameCleanupOpen(true)}
+            onOpenSeedDescriptions={() => setIsSeedDescriptionsOpen(true)}
           />
 
           <ProductsFilterBar
