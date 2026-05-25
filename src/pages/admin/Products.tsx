@@ -17,6 +17,7 @@ import { QuickImageUploadModal } from "@/modules/products/components/QuickImageU
 import { LinkToZohoDialog } from "@/modules/products/components/LinkToZohoDialog";
 import { DataCleanupDialog } from "@/modules/products/components/DataCleanupDialog";
 import { NameCleanupDialog } from "@/modules/products/components/NameCleanupDialog";
+import { SeedDescriptionsDialog } from "@/modules/products/components/SeedDescriptionsDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,6 +72,7 @@ const Products = () => {
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [isDataCleanupOpen, setIsDataCleanupOpen] = useState(false);
   const [isNameCleanupOpen, setIsNameCleanupOpen] = useState(false);
+  const [isSeedDescriptionsOpen, setIsSeedDescriptionsOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [quickUploadProduct, setQuickUploadProduct] = useState<Product | null>(null);
@@ -111,6 +113,7 @@ const Products = () => {
             onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
             onOpenDataCleanup={() => setIsDataCleanupOpen(true)}
             onOpenNameCleanup={() => setIsNameCleanupOpen(true)}
+            onOpenSeedDescriptions={() => setIsSeedDescriptionsOpen(true)}
           />
 
           <ProductsFilterBar
@@ -163,6 +166,7 @@ const Products = () => {
         <LinkToZohoDialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen} />
         <DataCleanupDialog open={isDataCleanupOpen} onOpenChange={setIsDataCleanupOpen} />
         <NameCleanupDialog open={isNameCleanupOpen} onOpenChange={setIsNameCleanupOpen} />
+        <SeedDescriptionsDialog open={isSeedDescriptionsOpen} onOpenChange={setIsSeedDescriptionsOpen} />
 
         <AlertDialog open={!!deleteProductId} onOpenChange={() => setDeleteProductId(null)}>
           <AlertDialogContent>
