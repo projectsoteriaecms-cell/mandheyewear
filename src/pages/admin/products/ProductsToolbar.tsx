@@ -51,6 +51,7 @@ export const ProductsToolbar = ({
   onOpenCreateDialog,
   onOpenDataCleanup,
   onOpenNameCleanup,
+  onOpenSeedDescriptions,
 }: ProductsToolbarProps) => {
 
   return (
