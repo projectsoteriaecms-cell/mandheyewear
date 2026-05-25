@@ -1,0 +1,1 @@
+REVOKE SELECT (cost_price, reorder_level, reorder_quantity, lead_time_days, supplier_id, zoho_item_id, external_id) ON public.products FROM anon, authenticated;
