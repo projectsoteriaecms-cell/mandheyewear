@@ -279,7 +279,42 @@ Deno.serve(async (req) => {
     let framesUpserted = 0;
     const errors: Array<{ sku: string; error: string }> = [];
 
-    for (const c of changes) {
+    // If overrides were supplied (admin edited the dry-run), apply them verbatim
+    // (per-row skip flags respected; skipFilled is NOT enforced because the admin
+    // explicitly confirmed each value).
+    const overrides: Array<{ sku: string; productPatch: Record<string, any>; framePatch: Record<string, any>; skip?: boolean }> =
+      Array.isArray(body?.overrides) ? body.overrides : [];
+
+    const commitList = overrides.length > 0
+      ? overrides
+          .filter((o) => !o.skip)
+          .map((o) => {
+            const prod = productMap.get(o.sku);
+            if (!prod) return null;
+            const productChanges: Record<string, { from: any; to: any }> = {};
+            const frameChanges: Record<string, { from: any; to: any }> = {};
+            for (const [k, v] of Object.entries(o.productPatch ?? {})) {
+              if (v === undefined || v === null || v === "") continue;
+              productChanges[k] = { from: (prod as any)[k] ?? null, to: v };
+            }
+            const existingFrame = frameMap.get(prod.id) ?? {};
+            for (const [k, v] of Object.entries(o.framePatch ?? {})) {
+              if (v === undefined || v === null || v === "") continue;
+              frameChanges[k] = { from: (existingFrame as any)[k] ?? null, to: v };
+            }
+            return {
+              sku: o.sku,
+              product_id: prod.id,
+              productChanges,
+              frameChanges,
+              skipped:
+                Object.keys(productChanges).length === 0 && Object.keys(frameChanges).length === 0,
+            };
+          })
+          .filter(Boolean) as typeof changes
+      : changes;
+
+    for (const c of commitList) {
       if (c.skipped) continue;
       try {
         if (Object.keys(c.productChanges).length > 0) {
