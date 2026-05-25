@@ -423,6 +423,8 @@ export type Database = {
       frame_attributes: {
         Row: {
           ar_overlay_url: string | null
+          best_for_faces: string | null
+          best_for_occasions: string | null
           bridge_size: number | null
           created_at: string
           frame_material: string | null
@@ -430,14 +432,24 @@ export type Database = {
           front_color: string | null
           has_clip_on: boolean | null
           id: string
+          lens_height: number | null
           lens_width: number | null
           model_code: string | null
+          pd_range_max: number | null
+          pd_range_min: number | null
           product_id: string
+          progressive_compatible: boolean | null
+          rx_sph_max: number | null
+          rx_sph_min: number | null
+          size_label: string | null
           temple_color: string | null
           temple_length: number | null
+          total_width: number | null
         }
         Insert: {
           ar_overlay_url?: string | null
+          best_for_faces?: string | null
+          best_for_occasions?: string | null
           bridge_size?: number | null
           created_at?: string
           frame_material?: string | null
@@ -445,14 +457,24 @@ export type Database = {
           front_color?: string | null
           has_clip_on?: boolean | null
           id?: string
+          lens_height?: number | null
           lens_width?: number | null
           model_code?: string | null
+          pd_range_max?: number | null
+          pd_range_min?: number | null
           product_id: string
+          progressive_compatible?: boolean | null
+          rx_sph_max?: number | null
+          rx_sph_min?: number | null
+          size_label?: string | null
           temple_color?: string | null
           temple_length?: number | null
+          total_width?: number | null
         }
         Update: {
           ar_overlay_url?: string | null
+          best_for_faces?: string | null
+          best_for_occasions?: string | null
           bridge_size?: number | null
           created_at?: string
           frame_material?: string | null
@@ -460,11 +482,19 @@ export type Database = {
           front_color?: string | null
           has_clip_on?: boolean | null
           id?: string
+          lens_height?: number | null
           lens_width?: number | null
           model_code?: string | null
+          pd_range_max?: number | null
+          pd_range_min?: number | null
           product_id?: string
+          progressive_compatible?: boolean | null
+          rx_sph_max?: number | null
+          rx_sph_min?: number | null
+          size_label?: string | null
           temple_color?: string | null
           temple_length?: number | null
+          total_width?: number | null
         }
         Relationships: [
           {
@@ -1120,6 +1150,7 @@ export type Database = {
           sku: string
           style: string | null
           supplier_id: string | null
+          tagline: string | null
           temple_length: string | null
           unit: string | null
           updated_at: string
@@ -1158,6 +1189,7 @@ export type Database = {
           sku: string
           style?: string | null
           supplier_id?: string | null
+          tagline?: string | null
           temple_length?: string | null
           unit?: string | null
           updated_at?: string
@@ -1196,6 +1228,7 @@ export type Database = {
           sku?: string
           style?: string | null
           supplier_id?: string | null
+          tagline?: string | null
           temple_length?: string | null
           unit?: string | null
           updated_at?: string
