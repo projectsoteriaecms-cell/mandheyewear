@@ -17,4 +17,5 @@ export type { ImagePosition } from "./ProductImageUpload";
 export { ProductListView } from "./ProductListView";
 export { QuickImageUploadModal } from "./QuickImageUploadModal";
 export { SeedDescriptionsDialog } from "./SeedDescriptionsDialog";
+export { SeedImagesDialog } from "./SeedImagesDialog";
 export { ZohoSyncHistoryPanel } from "./ZohoSyncHistoryPanel";

@@ -32,6 +32,7 @@ interface ProductsToolbarProps {
   onOpenDataCleanup?: () => void;
   onOpenNameCleanup?: () => void;
   onOpenSeedDescriptions?: () => void;
+  onOpenSeedImages?: () => void;
 }
 
 export const ProductsToolbar = ({
@@ -52,6 +53,7 @@ export const ProductsToolbar = ({
   onOpenDataCleanup,
   onOpenNameCleanup,
   onOpenSeedDescriptions,
+  onOpenSeedImages,
 }: ProductsToolbarProps) => {
 
   return (
@@ -137,6 +139,12 @@ export const ProductsToolbar = ({
           <Button variant="outline" onClick={onOpenSeedDescriptions}>
             <Sparkle className="mr-2 h-4 w-4" weight="light" />
             Seed Descriptions
+          </Button>
+        )}
+        {isAdmin && onOpenSeedImages && (
+          <Button variant="outline" onClick={onOpenSeedImages}>
+            <ImageSquare className="mr-2 h-4 w-4" weight="light" />
+            Seed Images
           </Button>
         )}
         <Button onClick={onOpenCreateDialog}>
