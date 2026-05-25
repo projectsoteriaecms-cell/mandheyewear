@@ -32,11 +32,19 @@ export interface SeedCommitResult {
   errors: Array<{ sku: string; error: string }>;
 }
 
+export interface SeedOverride {
+  sku: string;
+  productPatch: Record<string, unknown>;
+  framePatch: Record<string, unknown>;
+  skip?: boolean;
+}
+
 interface SeedArgs {
   mode: SeedMode;
   source: SeedSource;
   skipFilled: boolean;
   payload?: { rich?: Record<string, unknown>; structured?: Record<string, unknown> };
+  overrides?: SeedOverride[];
 }
 
 export function useSeedDescriptions() {
