@@ -1,42 +1,33 @@
-## Plan
+# Schema additions for products & frame_attributes
 
-### 1. Re-nuke Soteria catalog (clean slate)
-- Stop the in-progress Zoho pull immediately.
-- Delete every `products` row where `brand_line = 'soteria_medical'` (plus any orphaned `inventory`, `product_images`, `product_variants` tied to those products).
-- Leave M&H Eyewear (162 frames, `m_and_h_fashion`) completely untouched.
-- Verify counts after: M&H = 162, Soteria = 0.
+Add the columns you provided to the database so future product copy, fit data, and Rx-compatibility info can be stored.
 
-### 2. Make M&H ↔ Zoho a clean two-way sync
-Repurpose the existing `zoho-sync` edge function so M&H Eyewear becomes the synced brand instead of Soteria.
+## Migration
 
-**Outbound (M&H → Zoho)** — push our 162 frames into Zoho as Items:
-- New action `push_items`: for every M&H product not yet linked to a Zoho item, create the item in Zoho Books (name, SKU, price, stock per branch warehouse) and store the returned `zoho_item_id` on the product.
-- On product update in our DB (trigger or manual "Push to Zoho" button), update the matching Zoho item.
+```sql
+ALTER TABLE public.products
+  ADD COLUMN IF NOT EXISTS tagline text;
 
-**Inbound (Zoho → M&H)** — pull stock & price changes back:
-- Existing `pull_items` logic, rewritten to:
-  - Only touch products with `brand_line = 'm_and_h_fashion'` and a known `zoho_item_id`.
-  - Update stock per branch via `zoho_warehouse_mapping` → `inventory`.
-  - Update price if it changed in Zoho.
-  - **Never insert new products** from Zoho (M&H catalog is curated, not auto-grown).
+ALTER TABLE public.frame_attributes
+  ADD COLUMN IF NOT EXISTS lens_height            integer,
+  ADD COLUMN IF NOT EXISTS total_width            integer,
+  ADD COLUMN IF NOT EXISTS pd_range_min           integer,
+  ADD COLUMN IF NOT EXISTS pd_range_max           integer,
+  ADD COLUMN IF NOT EXISTS rx_sph_min             numeric(5,2),
+  ADD COLUMN IF NOT EXISTS rx_sph_max             numeric(5,2),
+  ADD COLUMN IF NOT EXISTS progressive_compatible boolean,
+  ADD COLUMN IF NOT EXISTS size_label             text,
+  ADD COLUMN IF NOT EXISTS best_for_faces         text,
+  ADD COLUMN IF NOT EXISTS best_for_occasions     text;
+```
 
-**Guardrail**: add a DB check so `brand_line = 'soteria_medical'` rows can no longer be created — Soteria is fully retired from the catalog.
+## Notes
 
-**Naming integrity**: since you've already cleaned M&H names, the outbound push will overwrite whatever exists in Zoho for those SKUs (our DB becomes the source of truth for names; Zoho stays the source of truth for stock movement).
+- All columns are nullable with no default — safe additive change, no impact on existing rows or queries.
+- RLS policies on both tables already cover these new columns (policies are row-level, not column-level).
+- After migration runs, `src/integrations/supabase/types.ts` regenerates automatically, so TypeScript will recognize the new fields immediately.
+- No frontend code changes in this step. UI surfaces (PDP spec block, admin product editor, fit-finder) can be wired up afterward — let me know which ones you want first.
 
-### 3. Collapsible Zoho Sync History panel
-On `/admin/products` (and wherever `ZohoSyncHistoryPanel` renders), wrap the panel in a shadcn `Collapsible`:
-- Header row always visible: title "Zoho Sync History" + chevron + latest status pill (e.g. "Syncing… less than a minute ago").
-- Body (the list of past sync runs) hidden by default; expands on click.
-- Persist open/closed state in `localStorage` so it remembers your preference.
+## Open question (optional)
 
-### Technical notes
-- Files touched: `supabase/functions/zoho-sync/index.ts` (rewrite item mapping for `m_and_h_fashion`, add `push_items` action), `src/modules/admin/components/ZohoSyncHistoryPanel.tsx` (Collapsible wrapper), one migration (delete Soteria rows + add brand_line guard).
-- No changes to storefront filtering — it already only shows `m_and_h_fashion`.
-- Sync history rows themselves are preserved (audit log untouched).
-
-### Order of execution after approval
-1. Migration: nuke Soteria + add guard.
-2. Edit `ZohoSyncHistoryPanel` to be collapsible.
-3. Rewrite `zoho-sync` for two-way M&H flow + add admin "Push all to Zoho" button.
-4. Trigger first outbound push, verify items appear in Zoho with correct names.
+`best_for_faces` and `best_for_occasions` are stored as `text`. If you'd rather store multiple values per frame (e.g. "round, oval, heart"), I can switch them to `text[]` arrays instead — say the word before approving.
