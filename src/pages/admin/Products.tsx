@@ -166,6 +166,7 @@ const Products = () => {
         <LinkToZohoDialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen} />
         <DataCleanupDialog open={isDataCleanupOpen} onOpenChange={setIsDataCleanupOpen} />
         <NameCleanupDialog open={isNameCleanupOpen} onOpenChange={setIsNameCleanupOpen} />
+        <SeedDescriptionsDialog open={isSeedDescriptionsOpen} onOpenChange={setIsSeedDescriptionsOpen} />
 
         <AlertDialog open={!!deleteProductId} onOpenChange={() => setDeleteProductId(null)}>
           <AlertDialogContent>
