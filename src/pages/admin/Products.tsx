@@ -72,6 +72,7 @@ const Products = () => {
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [isDataCleanupOpen, setIsDataCleanupOpen] = useState(false);
   const [isNameCleanupOpen, setIsNameCleanupOpen] = useState(false);
+  const [isSeedDescriptionsOpen, setIsSeedDescriptionsOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [quickUploadProduct, setQuickUploadProduct] = useState<Product | null>(null);
