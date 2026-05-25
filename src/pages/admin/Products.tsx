@@ -17,6 +17,7 @@ import { QuickImageUploadModal } from "@/modules/products/components/QuickImageU
 import { LinkToZohoDialog } from "@/modules/products/components/LinkToZohoDialog";
 import { DataCleanupDialog } from "@/modules/products/components/DataCleanupDialog";
 import { NameCleanupDialog } from "@/modules/products/components/NameCleanupDialog";
+import { SeedDescriptionsDialog } from "@/modules/products/components/SeedDescriptionsDialog";
 import {
   AlertDialog,
   AlertDialogAction,
