@@ -1,75 +1,82 @@
-## Goal
+# Extend Seed Descriptions: Images + Editable Copy
 
-Add a one-click **"Seed Descriptions"** flow to the admin Products page that pushes the bundled frame copy (`frame_descriptions.json` + `frame_data.json`) into `products` and `frame_attributes` — with a dry-run preview before commit, and an optional file upload override. No service_role key needed; everything runs inside Lovable with existing admin auth + RLS.
+Build on the existing one-click "Seed Descriptions" admin flow (Products page) by adding two capabilities:
 
-## UX flow
+1. **Seed Images** — bulk-upload bundled frame photos to the `product-images` bucket and wire them onto products.
+2. **Editable copy in dry-run** — let admins tweak each SKU's tagline/description/specs in the preview table before committing.
 
-1. Admin clicks **Seed Descriptions** in the Products toolbar.
-2. Dialog opens with:
-   - Source selector: **Bundled JSON** (default) or **Upload file** (.json or .csv).
-   - "Skip rows where description/tagline already filled" toggle (default on).
-   - **Analyze** button → runs dry-run.
-3. Dry-run results panel shows a per-SKU diff table:
-   - SKU · matched product? · fields that would change (tagline, description, lens_height, pd_range, rx_sph, progressive_compatible, size_label, best_for_faces, best_for_occasions, frame_shape, frame_material, lens_width, bridge_size, temple_length).
-   - Summary: X matched · Y unmatched SKUs · Z would change · W skipped (already filled).
-4. **Commit changes** button (disabled until dry-run completes) writes to DB and shows a final report.
+Same auth model as today: admin/super_admin only, RLS-enforced, no service_role key.
 
-## SKU → field mapping
+---
 
-From `frame_descriptions.json` (rich copy):
-- `headline` → `products.tagline`
-- `short_description` + `bullets` (rendered as HTML `<p>` + `<ul>`) → `products.description` (and `description_html` mirror)
-- `specs.lens_height` → `frame_attributes.lens_height` (parse "46 mm" → 46)
-- `specs.total_frame_width` → `frame_attributes.total_width`
-- `fit.size` → `frame_attributes.size_label`
-- `fit.pd_range` → split into `pd_range_min` / `pd_range_max`
-- `fit.rx_range` → parse "-8.00 to +6.00" → `rx_sph_min` / `rx_sph_max`
-- `fit.progressive` ("Yes"/"No") → `progressive_compatible`
-- `fit.frame_shape` → `frame_shape`, `fit.frame_material` → `frame_material`
-- `style_guide.face_shapes` → `best_for_faces`
-- `style_guide.occasions` → `best_for_occasions`
+## 1. Seed Images
 
-From `frame_data.json` (structured fallback) — used when description JSON is missing a field:
-- `lens_width`, `bridge_width`, `temple_length` → corresponding `frame_attributes` columns.
+**Source.** 67 files already committed at repo root `frame_images/MH-<SKU>.{jpg,png}`. Same "Bundled / Upload" choice as the descriptions flow — upload mode accepts a multi-file picker so admins can drop a fresh batch from disk without committing them to the repo.
 
-Matching: by `products.sku` (e.g. `MH-471`).
+**New edge function: `seed-product-images`**
+- Modes: `dry_run` (per-SKU plan: which products match, which already have a primary image, file size/extension) and `commit`.
+- For `bundled`, the function reads `frame_images/*` shipped alongside `index.ts` (same pattern as the JSON files in `seed-product-descriptions`).
+- For `upload`, the dialog converts each file to base64 and sends `{ sku, filename, contentType, dataBase64 }[]` in the request body.
+- For each file:
+  - Derive SKU from filename (`MH-1234.jpg` → `MH-1234`), match against `products.sku`.
+  - Upload to `product-images/seed/<sku>.<ext>` using the user's JWT (existing bucket RLS already allows admin writes).
+  - Get the public URL and update `products`:
+    - If `image_url` is empty OR `skipFilled = false` → set `image_url`.
+    - Otherwise append to `additional_images` (de-duped) so we never silently overwrite a curated hero shot.
+- Return `{ matched, wouldUpload, skipped, unmatched, uploads: [{ sku, url, action }], errors }`.
 
-## Architecture
+**UI: new "Seed Images" button next to "Seed Descriptions"**
+- Opens `SeedImagesDialog.tsx` (mirrors the descriptions dialog: source selector, skip-filled toggle, Analyze → Commit, per-SKU result table with thumbnails).
+- On commit success, invalidate `admin-products`, `products`, and `product-image-stats` queries.
 
-**Edge function `seed-product-descriptions`** (one function, two modes):
-- Input: `{ mode: "dry_run" | "commit", source: "bundled" | "upload", payload?: <parsed records>, skipFilled: boolean }`.
-- Verifies caller is `admin` or `super_admin` via JWT + `has_role` RPC (RLS already permits admins to write `products` and `frame_attributes`, so we use the user's JWT — no service_role).
-- When `source: "bundled"`, reads the JSON files committed into the function's own folder (we copy `frame_descriptions.json` and `frame_data.json` into `supabase/functions/seed-product-descriptions/` at deploy time).
-- Builds a normalized list of `{ sku, productPatch, framePatch }`.
-- Fetches all candidate products in one query (`select id, sku, description, tagline from products where sku in (...)`).
-- Dry-run: returns the diff. Commit: runs `upsert` on `frame_attributes` (by product_id) and `update` on `products`. Returns summary.
+No new tables. No migration. Existing `product-images` bucket is reused.
 
-**Frontend**
-- New file `src/modules/products/components/SeedDescriptionsDialog.tsx` (dialog + diff table).
-- New hook `src/modules/products/hooks/useSeedDescriptions.ts` (wraps `supabase.functions.invoke`).
-- Wire into `ProductsToolbar` as a new admin-only button beside **Enrich Metadata**.
+---
 
-## Files to add / change
+## 2. Editable copy in dry-run
 
-- `supabase/functions/seed-product-descriptions/index.ts` (new)
-- `supabase/functions/seed-product-descriptions/frame_descriptions.json` (copy of repo file)
-- `supabase/functions/seed-product-descriptions/frame_data.json` (copy of repo file)
-- `src/modules/products/components/SeedDescriptionsDialog.tsx` (new)
-- `src/modules/products/hooks/useSeedDescriptions.ts` (new)
-- `src/modules/products/components/index.ts` (export)
-- `src/pages/admin/products/ProductsToolbar.tsx` (add button + prop)
-- `src/pages/admin/Products.tsx` (state + dialog mount)
+Make the descriptions dry-run preview act like a mini spreadsheet so admins can adjust seed text per SKU before committing.
 
-No DB migration needed — all target columns already exist from the previous migration.
+**Changes to `SeedDescriptionsDialog.tsx`**
+- After dry-run returns, store `changes` in local state as an editable map keyed by SKU.
+- Replace the read-only `<table>` rows with inline editors:
+  - `tagline` → single-line `<Input>`
+  - `description_html` → `<Textarea>` (3 rows, monospace)
+  - Frame numeric fields (`lens_height`, `total_width`, `pd_range_min/max`, `rx_sph_min/max`) → small number inputs in a compact grid
+  - Boolean (`progressive_compatible`) → `<Switch>`
+  - Text fields (`size_label`, `best_for_faces`, `best_for_occasions`, `frame_shape`, `frame_material`) → `<Input>`
+- Add a per-row "Skip this SKU" checkbox.
+- "Commit changes" now sends the edited array back as `overrides` instead of re-reading from source.
 
-## Security
+**Edge function `seed-product-descriptions` — add `overrides` mode**
+- New optional `overrides: Array<{ sku, productPatch, framePatch, skip? }>` on the commit request.
+- When present, skip the bundled/upload resolution entirely and use overrides directly. `skipFilled` still respected on the server.
+- Existing dry-run path is unchanged.
 
-- Function calls `supabase.auth.getUser()` on the incoming JWT and rejects non-admins with 403.
-- DB writes use the user's JWT (not service_role), so existing RLS ("Admins can manage products", "Managers can manage frame attributes") remains the enforcement layer.
-- Uploaded files are parsed in-memory only; never written to storage.
+---
 
-## Out of scope (can follow later)
+## Files
 
-- Image uploads (you're handling those manually in the storage bucket).
-- Auto-categorization / brand inference — leaves existing values untouched.
-- Re-running enrichment AI — this is a pure copy push.
+**New**
+- `supabase/functions/seed-product-images/index.ts`
+- `supabase/functions/seed-product-images/frame_images/MH-*.{jpg,png}` (copied from repo `frame_images/`)
+- `src/modules/products/components/SeedImagesDialog.tsx`
+- `src/modules/products/hooks/useSeedImages.ts`
+
+**Edited**
+- `src/modules/products/components/SeedDescriptionsDialog.tsx` — editable rows, overrides payload
+- `src/modules/products/hooks/useSeedDescriptions.ts` — add `overrides` to the request type
+- `supabase/functions/seed-product-descriptions/index.ts` — honor `overrides`
+- `src/modules/products/components/index.ts`, `hooks/index.ts` — exports
+- `src/pages/admin/Products.tsx` — mount second dialog
+- `src/pages/admin/products/ProductsToolbar.tsx` — add "Seed Images" button
+
+---
+
+## Out of scope
+
+- Auto-generating images with AI (already handled in the PDCA flow).
+- Per-image cropping/resizing in the browser.
+- Touching `frame_attributes` schema or RLS — everything fits the existing columns.
+
+Approve and I'll build it.
