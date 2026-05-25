@@ -67,6 +67,7 @@ const genders = [
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   sku: z.string().min(1, "SKU is required"),
+  tagline: z.string().optional(),
   brand_line: z.enum(["soteria_medical", "m_and_h_fashion"]),
   item_type: z.string().optional(),
   price: z.number().min(0, "Price must be positive"),
@@ -119,6 +120,7 @@ export const EditProductDialog = ({
       item_type: "frames",
       price: 0,
       cost_price: 0,
+      tagline: "",
       description: "",
       color: "",
       material: "",
@@ -141,6 +143,7 @@ export const EditProductDialog = ({
         item_type: product.item_type || "frames",
         price: product.price,
         cost_price: product.cost_price || 0,
+        tagline: (product as any).tagline || "",
         description: product.description || "",
         color: product.color || "",
         material: product.material || "",
@@ -241,6 +244,7 @@ export const EditProductDialog = ({
       item_type: data.item_type as any,
       price: data.price,
       cost_price: data.cost_price || null,
+      ...({ tagline: data.tagline || null } as any),
       description: data.description || null,
       color: data.color || null,
       material: data.material || null,
@@ -674,43 +678,93 @@ export const EditProductDialog = ({
 
           <TabsContent value="description">
             <ScrollArea className="max-h-[60vh] pr-4">
-              <div className="py-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    AI-generated rich product description for the storefront.
-                  </p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGenerateDescription}
-                    disabled={isGeneratingDesc}
-                  >
-                    {isGeneratingDesc ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="mr-2 h-4 w-4" />
-                    )}
-                    {isGeneratingDesc ? "Generating…" : "Generate Description"}
-                  </Button>
-                </div>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="py-4 space-y-4">
 
-                {descriptionHtml ? (
-                  <div className="border rounded-lg p-4 bg-muted/30">
-                    <h4 className="text-sm font-medium mb-2">Preview</h4>
-                    <div
-                      className="prose prose-sm dark:prose-invert max-w-none"
-                      dangerouslySetInnerHTML={{ __html: descriptionHtml }}
-                    />
+                  {/* Tagline */}
+                  <FormField
+                    control={form.control}
+                    name="tagline"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tagline <span className="text-muted-foreground font-normal">(max 8 words — personality hook)</span></FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Office-ready metal. Serious without trying."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Plain description (bullets etc.) */}
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Short description + bullet points..."
+                            className="min-h-[100px]"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="flex items-center justify-between pt-1">
+                    <p className="text-xs text-muted-foreground">
+                      Rich HTML preview (auto-generated from description above or via AI)
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGenerateDescription}
+                      disabled={isGeneratingDesc}
+                    >
+                      {isGeneratingDesc ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="mr-2 h-4 w-4" />
+                      )}
+                      {isGeneratingDesc ? "Generating…" : "Generate with AI"}
+                    </Button>
                   </div>
-                ) : (
-                  <div className="border rounded-lg p-8 text-center text-muted-foreground bg-muted/20">
-                    <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                    <p className="text-sm">No rich description yet.</p>
-                    <p className="text-xs mt-1">Click "Generate Description" to create one using AI.</p>
+
+                  {descriptionHtml ? (
+                    <div className="border rounded-lg p-4 bg-muted/30">
+                      <h4 className="text-sm font-medium mb-2">Storefront Preview</h4>
+                      <div
+                        className="prose prose-sm dark:prose-invert max-w-none"
+                        dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="border rounded-lg p-6 text-center text-muted-foreground bg-muted/20">
+                      <Sparkles className="h-7 w-7 mx-auto mb-2 opacity-40" />
+                      <p className="text-sm">No rich HTML yet.</p>
+                      <p className="text-xs mt-1">Fill in the description above, then click "Generate with AI".</p>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={updateProduct.isPending}>
+                      {updateProduct.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Save Description
+                    </Button>
                   </div>
-                )}
-              </div>
+                </form>
+              </Form>
             </ScrollArea>
           </TabsContent>
 

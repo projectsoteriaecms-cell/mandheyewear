@@ -1,6 +1,16 @@
 """
 M&H Frame Image Processor
-Pipeline: HEIC -> PNG -> Remove Background (remove.bg) -> Enhance -> Save
+Pipeline: HEIC -> PNG -> Remove Background -> Enhance -> Save
+
+Background removal modes (set BG_REMOVAL_MODE below):
+
+  "local"  — uses the rembg library (runs on your machine, no API credits needed)
+             Install once:  pip install rembg[cli] onnxruntime
+             First run downloads ~100 MB model automatically (u2netp = fast).
+             Use model "u2net" for higher quality (~170 MB).
+
+  "api"    — uses the remove.bg cloud API (50 free images/month on free tier)
+             Set API_KEY to your remove.bg key.
 """
 
 import os
@@ -14,9 +24,17 @@ import urllib.error
 import pillow_heif
 from PIL import Image, ImageEnhance
 
-# ─────────────────────────────────────────────
-# CONFIG — paste your remove.bg API key here
-# ─────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────
+# CONFIG
+# ─────────────────────────────────────────────────────────────────────
+# Background removal mode: "local" (rembg) or "api" (remove.bg)
+BG_REMOVAL_MODE = "local"
+
+# ── Local rembg settings (used when BG_REMOVAL_MODE = "local") ───────
+# Models: "u2netp" = 4.7 MB fast model  |  "u2net" = 170 MB high-quality
+REMBG_MODEL = "u2netp"
+
+# ── remove.bg API settings (used when BG_REMOVAL_MODE = "api") ───────
 API_KEY = "gzhhDAV2LQs7iAFEDpXVvKDe"
 
 INPUT_FOLDER  = r"C:\Users\DELL\Downloads\M&H Store Images"
@@ -27,9 +45,9 @@ SHARPNESS  = 1.4
 CONTRAST   = 1.15
 BRIGHTNESS = 1.05
 
-# Delay between API calls (seconds) to avoid rate limiting
+# Delay between API calls (only used in "api" mode)
 API_DELAY = 1.0
-# ─────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────
 
 
 def register_heif():
@@ -50,7 +68,25 @@ def heic_to_png_bytes(filepath: str) -> bytes:
     return buf.getvalue()
 
 
-def remove_background(png_bytes: bytes, api_key: str) -> bytes:
+def remove_background_local(png_bytes: bytes) -> bytes:
+    """Remove background using rembg (runs locally, no API key needed).
+
+    Install:  pip install rembg[cli] onnxruntime
+    First run downloads the model (~100 MB) automatically.
+    """
+    try:
+        from rembg import remove as rembg_remove, new_session
+    except ImportError:
+        raise ImportError(
+            "rembg is not installed. Run:  pip install rembg[cli] onnxruntime"
+        )
+
+    session = new_session(REMBG_MODEL)
+    result_bytes = rembg_remove(png_bytes, session=session)
+    return result_bytes
+
+
+def remove_background_api(png_bytes: bytes, api_key: str) -> bytes:
     """Send PNG bytes to remove.bg API, return result PNG bytes."""
     boundary = "----FormBoundary7MA4YWxkTrZu0gW"
 
@@ -85,13 +121,24 @@ def enhance_image(img: Image.Image) -> Image.Image:
     return img
 
 
+def do_remove_background(png_bytes: bytes) -> bytes:
+    """Dispatcher: uses local rembg or remove.bg API based on BG_REMOVAL_MODE."""
+    if BG_REMOVAL_MODE == "local":
+        return remove_background_local(png_bytes)
+    else:
+        return remove_background_api(png_bytes, API_KEY)
+
+
 def process_all():
     register_heif()
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-    if API_KEY == "YOUR_REMOVE_BG_API_KEY":
+    if BG_REMOVAL_MODE == "api" and API_KEY == "YOUR_REMOVE_BG_API_KEY":
         print("ERROR: Please set your remove.bg API key at the top of this script.")
         return
+
+    mode_label = "rembg (local)" if BG_REMOVAL_MODE == "local" else "remove.bg API"
+    print(f"Background removal mode: {mode_label}\n")
 
     # Find which SKUs are already done (skip them)
     done_skus = set()
@@ -138,7 +185,7 @@ def process_all():
             print("converted", end=" ", flush=True)
 
             # Step 2: Remove background
-            result_bytes = remove_background(png_bytes, API_KEY)
+            result_bytes = do_remove_background(png_bytes)
             print("bg removed", end=" ", flush=True)
 
             # Step 3: Enhance
@@ -149,7 +196,7 @@ def process_all():
             # Step 4: Save
             output_path = os.path.join(OUTPUT_FOLDER, f"{sku}.png")
             img.save(output_path, format="PNG", compress_level=6)
-            print(f"→ saved {sku}.png ✓")
+            print(f"-> saved {sku}.png")
 
             succeeded.append(sku)
 
@@ -164,8 +211,8 @@ def process_all():
             print(f"FAILED — {msg}")
             failed.append((filename, msg))
 
-        # Delay between API calls
-        if idx < total:
+        # Delay between API calls (only needed in API mode)
+        if idx < total and BG_REMOVAL_MODE == "api":
             time.sleep(API_DELAY)
 
     # ── Summary ──────────────────────────────
@@ -186,9 +233,12 @@ def process_existing_jpgs():
     Saves each as PNG (transparent bg) and deletes the original JPG.
     Skips any JPG that already has a matching PNG (already processed).
     """
-    if API_KEY == "YOUR_REMOVE_BG_API_KEY":
+    if BG_REMOVAL_MODE == "api" and API_KEY == "YOUR_REMOVE_BG_API_KEY":
         print("ERROR: Please set your remove.bg API key at the top of this script.")
         return
+
+    mode_label = "rembg (local)" if BG_REMOVAL_MODE == "local" else "remove.bg API"
+    print(f"Background removal mode: {mode_label}\n")
 
     # Find all JPGs in output folder that don't yet have a PNG counterpart
     existing_pngs = {
@@ -230,7 +280,7 @@ def process_existing_jpgs():
             print("converted", end=" ", flush=True)
 
             # Remove background
-            result_bytes = remove_background(png_bytes, API_KEY)
+            result_bytes = do_remove_background(png_bytes)
             print("bg removed", end=" ", flush=True)
 
             # Enhance
@@ -260,7 +310,7 @@ def process_existing_jpgs():
             print(f"FAILED — {msg}")
             failed.append((filename, msg))
 
-        if idx < total:
+        if idx < total and BG_REMOVAL_MODE == "api":
             time.sleep(API_DELAY)
 
     print(f"\n{'='*50}")

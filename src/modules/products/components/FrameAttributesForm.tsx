@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Form,
   FormControl,
@@ -19,29 +20,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { useFrameAttributes } from "@/modules/products";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 const frameAttributesSchema = z.object({
-  model_code: z.string().optional(),
-  frame_shape: z.string().optional(),
-  lens_width: z.coerce.number().min(0).optional().or(z.literal("")),
-  bridge_size: z.coerce.number().min(0).optional().or(z.literal("")),
+  // Core measurements
+  model_code:    z.string().optional(),
+  frame_shape:   z.string().optional(),
+  lens_width:    z.coerce.number().min(0).optional().or(z.literal("")),
+  bridge_size:   z.coerce.number().min(0).optional().or(z.literal("")),
   temple_length: z.coerce.number().min(0).optional().or(z.literal("")),
+  lens_height:   z.coerce.number().min(0).optional().or(z.literal("")),
+  total_width:   z.coerce.number().min(0).optional().or(z.literal("")),
+  // Materials & colour
   frame_material: z.string().optional(),
-  front_color: z.string().optional(),
-  temple_color: z.string().optional(),
-  has_clip_on: z.boolean().default(false),
+  front_color:    z.string().optional(),
+  temple_color:   z.string().optional(),
+  has_clip_on:    z.boolean().default(false),
+  // Fit & compatibility
+  size_label:            z.string().optional(),
+  pd_range_min:          z.coerce.number().min(0).optional().or(z.literal("")),
+  pd_range_max:          z.coerce.number().min(0).optional().or(z.literal("")),
+  rx_sph_min:            z.coerce.number().optional().or(z.literal("")),
+  rx_sph_max:            z.coerce.number().optional().or(z.literal("")),
+  progressive_compatible: z.boolean().default(false),
+  // Style guide
+  best_for_faces:     z.string().optional(),
+  best_for_occasions: z.string().optional(),
 });
 
 type FrameAttributesFormValues = z.infer<typeof frameAttributesSchema>;
 
 const FRAME_SHAPES = [
   "Aviator",
-  "Cat Eye",
+  "Cat-Eye",
   "Oval",
-  "Rectangle",
+  "Rectangular",
   "Round",
   "Square",
   "Wayfarer",
@@ -51,6 +67,8 @@ const FRAME_SHAPES = [
   "Rimless",
   "Semi-Rimless",
 ];
+
+const SIZE_LABELS = ["Narrow", "Small", "Medium", "Large", "Extra Large"];
 
 const FRAME_MATERIALS = [
   "Acetate",
@@ -80,41 +98,75 @@ export const FrameAttributesForm = ({ productId }: FrameAttributesFormProps) => 
       lens_width: "",
       bridge_size: "",
       temple_length: "",
+      lens_height: "",
+      total_width: "",
       frame_material: "",
       front_color: "",
       temple_color: "",
       has_clip_on: false,
+      size_label: "",
+      pd_range_min: "",
+      pd_range_max: "",
+      rx_sph_min: "",
+      rx_sph_max: "",
+      progressive_compatible: false,
+      best_for_faces: "",
+      best_for_occasions: "",
     },
   });
 
   useEffect(() => {
     if (frameAttributes) {
+      const fa = frameAttributes as any;
       form.reset({
-        model_code: frameAttributes.model_code || "",
-        frame_shape: frameAttributes.frame_shape || "",
-        lens_width: frameAttributes.lens_width || "",
-        bridge_size: frameAttributes.bridge_size || "",
-        temple_length: frameAttributes.temple_length || "",
-        frame_material: frameAttributes.frame_material || "",
-        front_color: frameAttributes.front_color || "",
-        temple_color: frameAttributes.temple_color || "",
-        has_clip_on: frameAttributes.has_clip_on || false,
+        model_code:    fa.model_code || "",
+        frame_shape:   fa.frame_shape || "",
+        lens_width:    fa.lens_width || "",
+        bridge_size:   fa.bridge_size || "",
+        temple_length: fa.temple_length || "",
+        lens_height:   fa.lens_height || "",
+        total_width:   fa.total_width || "",
+        frame_material: fa.frame_material || "",
+        front_color:   fa.front_color || "",
+        temple_color:  fa.temple_color || "",
+        has_clip_on:   fa.has_clip_on || false,
+        size_label:    fa.size_label || "",
+        pd_range_min:  fa.pd_range_min || "",
+        pd_range_max:  fa.pd_range_max || "",
+        rx_sph_min:    fa.rx_sph_min || "",
+        rx_sph_max:    fa.rx_sph_max || "",
+        progressive_compatible: fa.progressive_compatible || false,
+        best_for_faces:     fa.best_for_faces || "",
+        best_for_occasions: fa.best_for_occasions || "",
       });
     }
   }, [frameAttributes, form]);
 
   const onSubmit = (data: FrameAttributesFormValues) => {
     upsertFrameAttributes.mutate({
-      product_id: productId,
-      model_code: data.model_code || null,
-      frame_shape: data.frame_shape || null,
-      lens_width: data.lens_width ? Number(data.lens_width) : null,
-      bridge_size: data.bridge_size ? Number(data.bridge_size) : null,
+      product_id:    productId,
+      model_code:    data.model_code    || null,
+      frame_shape:   data.frame_shape   || null,
+      lens_width:    data.lens_width    ? Number(data.lens_width)    : null,
+      bridge_size:   data.bridge_size   ? Number(data.bridge_size)   : null,
       temple_length: data.temple_length ? Number(data.temple_length) : null,
       frame_material: data.frame_material || null,
-      front_color: data.front_color || null,
-      temple_color: data.temple_color || null,
-      has_clip_on: data.has_clip_on,
+      front_color:   data.front_color   || null,
+      temple_color:  data.temple_color  || null,
+      has_clip_on:   data.has_clip_on,
+      // New spec fields — cast through `any` until types.ts is regenerated
+      ...({
+        lens_height:   data.lens_height  ? Number(data.lens_height)  : null,
+        total_width:   data.total_width  ? Number(data.total_width)  : null,
+        size_label:    data.size_label   || null,
+        pd_range_min:  data.pd_range_min ? Number(data.pd_range_min) : null,
+        pd_range_max:  data.pd_range_max ? Number(data.pd_range_max) : null,
+        rx_sph_min:    data.rx_sph_min   ? Number(data.rx_sph_min)   : null,
+        rx_sph_max:    data.rx_sph_max   ? Number(data.rx_sph_max)   : null,
+        progressive_compatible: data.progressive_compatible,
+        best_for_faces:     data.best_for_faces     || null,
+        best_for_occasions: data.best_for_occasions || null,
+      } as any),
     });
   };
 
@@ -128,7 +180,9 @@ export const FrameAttributesForm = ({ productId }: FrameAttributesFormProps) => 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+
+        {/* ── Identity ─────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -143,7 +197,6 @@ export const FrameAttributesForm = ({ productId }: FrameAttributesFormProps) => 
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="frame_shape"
@@ -158,9 +211,7 @@ export const FrameAttributesForm = ({ productId }: FrameAttributesFormProps) => 
                   </FormControl>
                   <SelectContent>
                     {FRAME_SHAPES.map((shape) => (
-                      <SelectItem key={shape} value={shape}>
-                        {shape}
-                      </SelectItem>
+                      <SelectItem key={shape} value={shape}>{shape}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -170,6 +221,9 @@ export const FrameAttributesForm = ({ productId }: FrameAttributesFormProps) => 
           />
         </div>
 
+        {/* ── Measurements ─────────────────────────────────────────────── */}
+        <Separator />
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Measurements</p>
         <div className="grid grid-cols-3 gap-4">
           <FormField
             control={form.control}
@@ -177,43 +231,84 @@ export const FrameAttributesForm = ({ productId }: FrameAttributesFormProps) => 
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Lens Width (mm)</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="52" {...field} />
-                </FormControl>
+                <FormControl><Input type="number" placeholder="52" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="bridge_size"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Bridge Size (mm)</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="18" {...field} />
-                </FormControl>
+                <FormLabel>Bridge (mm)</FormLabel>
+                <FormControl><Input type="number" placeholder="18" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="temple_length"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Temple Length (mm)</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="140" {...field} />
-                </FormControl>
+                <FormLabel>Temple (mm)</FormLabel>
+                <FormControl><Input type="number" placeholder="140" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="lens_height"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Lens Height (mm)</FormLabel>
+                <FormControl><Input type="number" placeholder="38 (est.)" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="total_width"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Total Width (mm)</FormLabel>
+                <FormControl><Input type="number" placeholder="140 (calc.)" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="size_label"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Size</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select size" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {SIZE_LABELS.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
+        {/* ── Material & Colour ────────────────────────────────────────── */}
+        <Separator />
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Material & Colour</p>
         <FormField
           control={form.control}
           name="frame_material"
@@ -228,9 +323,7 @@ export const FrameAttributesForm = ({ productId }: FrameAttributesFormProps) => 
                 </FormControl>
                 <SelectContent>
                   {FRAME_MATERIALS.map((material) => (
-                    <SelectItem key={material} value={material}>
-                      {material}
-                    </SelectItem>
+                    <SelectItem key={material} value={material}>{material}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -238,30 +331,136 @@ export const FrameAttributesForm = ({ productId }: FrameAttributesFormProps) => 
             </FormItem>
           )}
         />
-
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="front_color"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Front Color</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., Black" {...field} />
-                </FormControl>
+                <FormLabel>Front Colour</FormLabel>
+                <FormControl><Input placeholder="e.g., Black" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="temple_color"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Temple Color</FormLabel>
+                <FormLabel>Temple Colour</FormLabel>
+                <FormControl><Input placeholder="e.g., Gold" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* ── Prescription Compatibility ────────────────────────────────── */}
+        <Separator />
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Prescription Compatibility</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2">
+            <FormField
+              control={form.control}
+              name="pd_range_min"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>PD Min (mm)</FormLabel>
+                  <FormControl><Input type="number" placeholder="56" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="pd_range_max"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>PD Max (mm)</FormLabel>
+                  <FormControl><Input type="number" placeholder="72" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <FormField
+              control={form.control}
+              name="rx_sph_min"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>RX SPH Min</FormLabel>
+                  <FormControl><Input type="number" step="0.25" placeholder="-8.00" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="rx_sph_max"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>RX SPH Max</FormLabel>
+                  <FormControl><Input type="number" step="0.25" placeholder="+6.00" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-6">
+          <FormField
+            control={form.control}
+            name="progressive_compatible"
+            render={({ field }) => (
+              <FormItem className="flex items-center gap-2">
                 <FormControl>
-                  <Input placeholder="e.g., Gold" {...field} />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="!mt-0">Progressive Lenses Compatible</FormLabel>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="has_clip_on"
+            render={({ field }) => (
+              <FormItem className="flex items-center gap-2">
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="!mt-0">Has Clip-On</FormLabel>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* ── Style Guide ───────────────────────────────────────────────── */}
+        <Separator />
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Style Guide</p>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="best_for_faces"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Best Face Shapes</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Oval, Round, Heart" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="best_for_occasions"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Best Occasions</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Work / Casual / All-day" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -269,37 +468,13 @@ export const FrameAttributesForm = ({ productId }: FrameAttributesFormProps) => 
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="has_clip_on"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>Has Clip-On Attachment</FormLabel>
-                <p className="text-sm text-muted-foreground">
-                  This frame comes with a clip-on sunglasses attachment
-                </p>
-              </div>
-            </FormItem>
-          )}
-        />
-
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={upsertFrameAttributes.isPending}
           className="w-full"
         >
           {upsertFrameAttributes.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
           ) : (
             "Save Frame Attributes"
           )}
