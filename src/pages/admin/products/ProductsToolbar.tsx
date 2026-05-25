@@ -31,6 +31,7 @@ interface ProductsToolbarProps {
   onOpenCreateDialog: () => void;
   onOpenDataCleanup?: () => void;
   onOpenNameCleanup?: () => void;
+  onOpenSeedDescriptions?: () => void;
 }
 
 export const ProductsToolbar = ({
