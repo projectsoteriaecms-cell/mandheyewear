@@ -1,0 +1,2577 @@
+sku,brand,model,color,tier,tier_tone,lens_type,frame_shape,frame_material,rim_type,lens_width,bridge_width,temple_length,size_label,price_ngn,gender,pd_range,rx_range,progressive,image_ready,png_ready,image_file,ai_prompt
+MH-104,Burberry,B 1376 1340,DARK HAVANA,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,55,17,140,Medium,400000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Burberry
+MODEL: B 1376 1340
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: DARK HAVANA
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-106,Ray-Ban,RB 3625 003/3M,SILVER BLACK,Premium,Bold and iconic,Sunglasses,Rectangular,Acetate,Full-rim,62,14,140,Extra Large,376000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Ray-Ban
+MODEL: RB 3625 003/3M
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: SILVER BLACK
+LENS WIDTH: 62mm
+BRIDGE: 14mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-107,Ray-Ban,RB3025 9202/31,GOLD,Premium,Bold and iconic,Sunglasses,Aviator,Acetate,Full-rim,62,14,140,Extra Large,335000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,True,False,MH-107.jpg,"BRAND TIER: Premium
+BRAND: Ray-Ban
+MODEL: RB3025 9202/31
+FRAME SHAPE: Aviator
+FRAME MATERIAL: Acetate
+COLOR: GOLD
+LENS WIDTH: 62mm
+BRIDGE: 14mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-111,Dolce & Gabbana,DG5101 501,BLACK,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,52,18,145,Small,375000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,False,MH-111.jpg,"BRAND TIER: Premium
+BRAND: Dolce & Gabbana
+MODEL: DG5101 501
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: BLACK
+LENS WIDTH: 52mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-120,Prada,VPR 22Z 16K-101,BLACK,Luxury,Refined and understated,Optical,Rectangular,Acetate,Full-rim,55,17,145,Medium,518000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Prada
+MODEL: VPR 22Z 16K-101
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: BLACK
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-131,Polaroid,PLD D490/G J5G,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,52,18,145,Small,140000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,False,MH-131.jpg,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D490/G J5G
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-132,Seventh Street,7A 588 010,METAL SILVER,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,,,135,Medium,220000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Seventh Street
+MODEL: 7A 588 010
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: METAL SILVER
+LENS WIDTH: XX
+BRIDGE: XX
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 135mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1371,Swarovski,SW 1028 16W,,Accessible,Fresh and approachable,Optical,Wayfarer,Acetate,Full-rim,60,16,140,Extra Large,40000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1371.png,"BRAND TIER: Accessible
+BRAND: Swarovski
+MODEL: SW 1028 16W
+FRAME SHAPE: Wayfarer
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 60mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1372,Swarovski,SW 1028 18M,,Accessible,Fresh and approachable,Optical,Wayfarer,Acetate,Full-rim,60,16,140,Extra Large,40000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1372.png,"BRAND TIER: Accessible
+BRAND: Swarovski
+MODEL: SW 1028 18M
+FRAME SHAPE: Wayfarer
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 60mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1377,Joseph Marc,ENGLER IG1803 HAVANA,,Accessible,Fresh and approachable,Optical,Wayfarer,Acetate,Full-rim,54,17,145,Medium,30000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,False,MH-1377.jpg,"BRAND TIER: Accessible
+BRAND: Joseph Marc
+MODEL: ENGLER IG1803 HAVANA
+FRAME SHAPE: Wayfarer
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1378,Menrad,MOD.14111-2100,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,56,17,140,Medium,40000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Menrad
+MODEL: MOD.14111-2100
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1380,Linda Farrow,LFL/351/2,,Premium,Bold and iconic,Sunglasses,Cat-Eye,Acetate,Full-rim,56,17,145,Medium,40000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1380.png,"BRAND TIER: Premium
+BRAND: Linda Farrow
+MODEL: LFL/351/2
+FRAME SHAPE: Cat-Eye
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1381,Linda Farrow,LFL/351/4,,Premium,Bold and iconic,Sunglasses,Cat-Eye,Acetate,Full-rim,56,17,145,Medium,40000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1381.png,"BRAND TIER: Premium
+BRAND: Linda Farrow
+MODEL: LFL/351/4
+FRAME SHAPE: Cat-Eye
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1399,Cole Haan,CH4045 971 CRYSTAL,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,18,140,Small,45000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,False,MH-1399.jpg,"BRAND TIER: Accessible
+BRAND: Cole Haan
+MODEL: CH4045 971 CRYSTAL
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1400,Columbia,C3016 201,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,59,17,150,Large,50000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,True,False,MH-1400.jpg,"BRAND TIER: Accessible
+BRAND: Columbia
+MODEL: C3016 201
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 59mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1403,Columbia,C3015 072,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,61,17,150,Extra Large,50000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,True,False,MH-1403.jpg,"BRAND TIER: Accessible
+BRAND: Columbia
+MODEL: C3015 072
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 61mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1405,Columbia,C8036 022,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,57,17,150,Large,50000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,True,False,MH-1405.jpg,"BRAND TIER: Accessible
+BRAND: Columbia
+MODEL: C8036 022
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 57mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1443,Pierre Cardin,P.C.8875 J5G,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,52,19,140,Small,330000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1443.png,"BRAND TIER: Accessible
+BRAND: Pierre Cardin
+MODEL: P.C.8875 J5G
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1444,Tommy Hilfiger,TH2049 003,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,18,145,Small,375000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,False,MH-1444.jpg,"BRAND TIER: Accessible
+BRAND: Tommy Hilfiger
+MODEL: TH2049 003
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1446,Tommy Hilfiger,TH1962 000,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,16,140,Medium,375000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,False,MH-1446.jpg,"BRAND TIER: Accessible
+BRAND: Tommy Hilfiger
+MODEL: TH1962 000
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1448,Levi's,LV1042 J5G,GOLD STAINLESS STEEL,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,53,21,145,Small,270000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Levi's
+MODEL: LV1042 J5G
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: GOLD STAINLESS STEEL
+LENS WIDTH: 53mm
+BRIDGE: 21mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1460,Tommy Hilfiger,TH1948 COL.03,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,15,145,Medium,65000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Tommy Hilfiger
+MODEL: TH1948 COL.03
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 15mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1466,S.T. Dupont,DP-3985 C2,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,55,26,140,Medium,150000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: S.T. Dupont
+MODEL: DP-3985 C2
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 26mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1467,S.T. Dupont,Titanium2104,,Premium,Bold and iconic,Optical,Rectangular,Titanium,Full-rim,54,18,140,Medium,150000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: S.T. Dupont
+MODEL: Titanium2104
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Titanium
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1471,Hackett Bespoke,HEB306 190,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,56,17,145,Medium,125000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Hackett Bespoke
+MODEL: HEB306 190
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1476,Sandro,SD3017 940,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,56,17,140,Medium,120000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,False,MH-1476.jpg,"BRAND TIER: Accessible
+BRAND: Sandro
+MODEL: SD3017 940
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1480,Daniel Hechter,DHM193-7,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,16,135,Small,120000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1480.png,"BRAND TIER: Accessible
+BRAND: Daniel Hechter
+MODEL: DHM193-7
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 135mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1481,Daniel Hechter,DHM340-2 1/P1121,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,56,16,150,Medium,120000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Daniel Hechter
+MODEL: DHM340-2 1/P1121
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1482,Daniel Hechter,DHM281-7 P620,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,52,17,140,Small,120000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1482.png,"BRAND TIER: Accessible
+BRAND: Daniel Hechter
+MODEL: DHM281-7 P620
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1483,Daniel Hechter,DHP614-2 P520,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,52,19,145,Small,120000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1483.png,"BRAND TIER: Accessible
+BRAND: Daniel Hechter
+MODEL: DHP614-2 P520
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1485,Ted Baker,Damon TB4343 562,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,17,140,Medium,120000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Ted Baker
+MODEL: Damon TB4343 562
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1486,Ted Baker,Morris 4328 667,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,17,140,Small,120000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Ted Baker
+MODEL: Morris 4328 667
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1491,Ted Baker,Dawson 4344 002,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,52,17,145,Small,120000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Ted Baker
+MODEL: Dawson 4344 002
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1494,Ted Baker,Archer 8219 351,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,52,16,145,Small,120000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Ted Baker
+MODEL: Archer 8219 351
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1496,Ted Baker,Vincent 2323 104,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,17,140,Medium,120000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Ted Baker
+MODEL: Vincent 2323 104
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1502,Polaroid,PLD D389/G RHL,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,54,20,150,Medium,165000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D389/G RHL
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 20mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1503,Polaroid,PLD D373 PJP,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,54,17,140,Medium,155000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1503.png,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D373 PJP
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1505,Polaroid,PLD D379 900,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,18,145,Small,155000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D379 900
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1506,Hugo,HG1359 807,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,56,15,145,Medium,375000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Hugo
+MODEL: HG1359 807
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 15mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1510,Hugo,HG1257 1ED,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,54,18,140,Medium,411000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1510.png,"BRAND TIER: Premium
+BRAND: Hugo
+MODEL: HG1257 1ED
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1511,Tommy Hilfiger,TH1891 807,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,52,18,150,Small,285000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Tommy Hilfiger
+MODEL: TH1891 807
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1512,Tommy Hilfiger,TH2072 KB7,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,19,150,Small,390000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1512.png,"BRAND TIER: Accessible
+BRAND: Tommy Hilfiger
+MODEL: TH2072 KB7
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1584,Tiffany & Co,TF6138 001,,Luxury,Refined and understated,Optical,Aviator,Acetate,Full-rim,62,13,140,Extra Large,40000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Tiffany & Co
+MODEL: TF6138 001
+FRAME SHAPE: Aviator
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 62mm
+BRIDGE: 13mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1595,Gentle Monster,LOVE PUNCH COL.02,,Premium,Bold and iconic,Optical,Cat-Eye,Acetate,Full-rim,55,20,145,Medium,35000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,False,MH-1595.jpg,"BRAND TIER: Premium
+BRAND: Gentle Monster
+MODEL: LOVE PUNCH COL.02
+FRAME SHAPE: Cat-Eye
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 20mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1596,Gentle Monster,OLLIE COL.PC3,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,57,19,156,Large,35000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Gentle Monster
+MODEL: OLLIE COL.PC3
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 57mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 156mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-162,Tommy Hilfiger,TH 1990 PJP,BLUE,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,52,18,145,Small,372000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Tommy Hilfiger
+MODEL: TH 1990 PJP
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: BLUE
+LENS WIDTH: 52mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1651,M&H,BS1003 C9,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,56,17,145,Medium,30000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1651.png,"BRAND TIER: Value
+BRAND: M&H
+MODEL: BS1003 C9
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1654,M&H,FD8819 C2,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,54,21,145,Medium,30000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1654.png,"BRAND TIER: Value
+BRAND: M&H
+MODEL: FD8819 C2
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 21mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1692,Mont Blanc,MB0266O 005,,Luxury,Refined and understated,Optical,Rectangular,Metal,Full-rim,54,19,150,Medium,750000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Mont Blanc
+MODEL: MB0266O 005
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1693,Gucci,GG1497O 006,,Luxury,Refined and understated,Optical,Rectangular,Metal,Full-rim,52,20,145,Small,750000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Gucci
+MODEL: GG1497O 006
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 20mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1694,Saint Laurent,SL 379/F SLIM 001,,Luxury,Refined and understated,Optical,Rectangular,Metal,Full-rim,54,17,145,Medium,650000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Saint Laurent
+MODEL: SL 379/F SLIM 001
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1696,Saint Laurent,SL 699 006,,Luxury,Refined and understated,Optical,Rectangular,Metal,Full-rim,53,21,145,Small,750000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Saint Laurent
+MODEL: SL 699 006
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 21mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1699,Gucci,GG1504O 006,,Luxury,Refined and understated,Optical,Rectangular,Metal,Full-rim,56,18,145,Medium,785000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Gucci
+MODEL: GG1504O 006
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-17,Oakley,OO9242-0552,MATTE BLACK,Premium,Bold and iconic,Sunglasses,Rectangular,Acetate,Full-rim,52,21,142,Small,485000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Oakley
+MODEL: OO9242-0552
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: MATTE BLACK
+LENS WIDTH: 52mm
+BRIDGE: 21mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 142mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1703,Gucci,GG1438O 003,,Luxury,Refined and understated,Optical,Square,Metal,Full-rim,53,20,145,Small,780000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1703.png,"BRAND TIER: Luxury
+BRAND: Gucci
+MODEL: GG1438O 003
+FRAME SHAPE: Square
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 20mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1704,Gucci,GG1303O 006,,Luxury,Refined and understated,Optical,Rectangular,Metal,Full-rim,57,18,145,Large,750000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Gucci
+MODEL: GG1303O 006
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 57mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1718,Vogue,VO 5421 W44,,Accessible,Fresh and approachable,Optical,Cat-Eye,Acetate,Full-rim,53,18,140,Small,180000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Vogue
+MODEL: VO 5421 W44
+FRAME SHAPE: Cat-Eye
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1719,Polo Ralph Lauren,PH 2212 5303,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,19,145,Medium,294000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polo Ralph Lauren
+MODEL: PH 2212 5303
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-172,Carolina Herrera,HER 0150 086,HAVANA,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,16,145,Small,110000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Carolina Herrera
+MODEL: HER 0150 086
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: HAVANA
+LENS WIDTH: 53mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1720,Clary Gray,DAKARIAN CNG14 24K,,Luxury,Refined and understated,Optical,Rectangular,Acetate,Full-rim,58,17,145,Large,850000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1720.png,"BRAND TIER: Luxury
+BRAND: Clary Gray
+MODEL: DAKARIAN CNG14 24K
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 58mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1721,Carrera,344 2M2,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,17,145,Medium,300000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Carrera
+MODEL: 344 2M2
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1722,Burberry,B 2387 4096,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,55,18,150,Medium,510000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Burberry
+MODEL: B 2387 4096
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1724,Versace,MOD.3339U 5406,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,53,16,140,Small,435000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Versace
+MODEL: MOD.3339U 5406
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1729,Polaroid,PLD 0036/R/BB 086,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,15,145,Small,30000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD 0036/R/BB 086
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 15mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1730,Polaroid,PLD 0035/R/BB PJP,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,54,17,145,Medium,30000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD 0035/R/BB PJP
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1731,Marc Jacobs,MARC848 2M2,BLACK,Luxury,Refined and understated,Optical,Rectangular,Acetate,Full-rim,56,17,145,Medium,450000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Marc Jacobs
+MODEL: MARC848 2M2
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: BLACK
+LENS WIDTH: 56mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1733,Carrera,VICTORY C 06 807,,Accessible,Fresh and approachable,Optical,Wayfarer,Acetate,Full-rim,55,16,145,Medium,315000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Carrera
+MODEL: VICTORY C 06 807
+FRAME SHAPE: Wayfarer
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1734,Carrera,VICTORY C 04 003,,Accessible,Fresh and approachable,Optical,Wayfarer,Acetate,Full-rim,55,17,145,Medium,315000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Carrera
+MODEL: VICTORY C 04 003
+FRAME SHAPE: Wayfarer
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1738,Arnette,AN 4332 29217J,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,76,9,130,Extra Large,285000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Arnette
+MODEL: AN 4332 29217J
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 76mm
+BRIDGE: 9mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 130mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1739,Jimmy Choo,JC 3004B 5013,,Luxury,Refined and understated,Optical,Rectangular,Acetate,Full-rim,54,16,140,Medium,540000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1739.png,"BRAND TIER: Luxury
+BRAND: Jimmy Choo
+MODEL: JC 3004B 5013
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1740,Burberry,B 2403 4119,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,51,17,140,Small,480000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Burberry
+MODEL: B 2403 4119
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 51mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1742,David Beckham,DB 7020/BOLD 807,,Luxury,Refined and understated,Optical,Rectangular,Acetate,Full-rim,56,19,150,Medium,450000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: David Beckham
+MODEL: DB 7020/BOLD 807
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1744,Moschino,MOS637 807,,Luxury,Refined and understated,Optical,Cat-Eye,Acetate,Full-rim,55,17,150,Medium,480000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Moschino
+MODEL: MOS637 807
+FRAME SHAPE: Cat-Eye
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1745,Dsquared2,D2 0102 3YG,,Luxury,Refined and understated,Optical,Rectangular,Acetate,Full-rim,58,16,145,Large,465000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Dsquared2
+MODEL: D2 0102 3YG
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 58mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1747,Cartier,CT00630,,Luxury,Refined and understated,Optical,Rectangular,Metal,Full-rim,55,18,135,Medium,360000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Cartier
+MODEL: CT00630
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 135mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1748,Cartier,CT0284O,RIMLESS,Luxury,Refined and understated,Optical,Oval,Metal,Rimless,56,15,145,Medium,500000,Unisex,56 – 72mm,SPH: -4.00 to +4.00,No,False,False,,"BRAND TIER: Luxury
+BRAND: Cartier
+MODEL: CT0284O
+FRAME SHAPE: Oval
+FRAME MATERIAL: Metal
+COLOR: RIMLESS
+LENS WIDTH: 56mm
+BRIDGE: 15mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1779,Cartier,CT0563S C2,,Luxury,Refined and understated,Optical,Square,Metal,Full-rim,56,18,145,Medium,130000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1779.png,"BRAND TIER: Luxury
+BRAND: Cartier
+MODEL: CT0563S C2
+FRAME SHAPE: Square
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1780,Cartier,30104 C9,,Luxury,Refined and understated,Optical,Rectangular,Metal,Full-rim,54,15,145,Medium,130000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-1780.png,"BRAND TIER: Luxury
+BRAND: Cartier
+MODEL: 30104 C9
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 15mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-1793,Cartier,CT0344O 003,,Luxury,Refined and understated,Optical,Oval,Metal,Rimless,56,19,145,Medium,2376000,Unisex,56 – 72mm,SPH: -4.00 to +4.00,No,False,False,,"BRAND TIER: Luxury
+BRAND: Cartier
+MODEL: CT0344O 003
+FRAME SHAPE: Oval
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-183,Tiffany & Co,TF4197 8001/S4,,Luxury,Refined and understated,Sunglasses,Cat-Eye,Acetate,Full-rim,62,17,140,Extra Large,840000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Tiffany & Co
+MODEL: TF4197 8001/S4
+FRAME SHAPE: Cat-Eye
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 62mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-188,Versace,MOD.4458 GB1/87,,Premium,Bold and iconic,Sunglasses,Rectangular,Acetate,Full-rim,54,19,135,Medium,615000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Versace
+MODEL: MOD.4458 GB1/87
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 135mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-192,Ray-Ban,RB3579-N 9035/1U,,Premium,Bold and iconic,Sunglasses,Wayfarer,Acetate,Full-rim,58,15,145,Large,285000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Ray-Ban
+MODEL: RB3579-N 9035/1U
+FRAME SHAPE: Wayfarer
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 58mm
+BRIDGE: 15mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-202,Marc Jacobs,MJ1091/N/S 06JIB,,Luxury,Refined and understated,Sunglasses,Wayfarer,Acetate,Full-rim,59,14,140,Large,585000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Marc Jacobs
+MODEL: MJ1091/N/S 06JIB
+FRAME SHAPE: Wayfarer
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 59mm
+BRIDGE: 14mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-204,Seventh Street,7A 108 086,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,57,18,145,Large,160000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Seventh Street
+MODEL: 7A 108 086
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 57mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-212,Seventh Street,7A 081 6LB,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,57,18,145,Large,170000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,True,True,MH-212.png,"BRAND TIER: Accessible
+BRAND: Seventh Street
+MODEL: 7A 081 6LB
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 57mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-215,Polaroid,PLD D488 807,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,56,17,145,Medium,105000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D488 807
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-220,Polaroid,PLD D508/G J5G,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,17,145,Small,125000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,False,MH-220.jpg,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D508/G J5G
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-221,Polaroid,PLD D451 J5G,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,15,145,Medium,125000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D451 J5G
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 15mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-224,Polaroid,PLD D512 PJP,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,15,145,Small,165000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D512 PJP
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 15mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-228,Polaroid,PLD D482 086,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,19,145,Small,105000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D482 086
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-242,Polaroid,PLD D448 ZX9,BLUE,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,16,140,Medium,110000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D448 ZX9
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: BLUE
+LENS WIDTH: 55mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-243,Polaroid,PLD D436 086,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,17,145,Medium,165000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D436 086
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-249,Polaroid,PLD D459/G 807,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,52,17,145,Small,125000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Polaroid
+MODEL: PLD D459/G 807
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-250,Tommy Hilfiger,TH 1892 KB7,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,52,19,145,Small,378000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Tommy Hilfiger
+MODEL: TH 1892 KB7
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-253,Tommy Hilfiger,TH2046 IPQ,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,18,145,Small,306000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Tommy Hilfiger
+MODEL: TH2046 IPQ
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-258,Carrera Ducati,CARDUC 010 807,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,17,145,Medium,190000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Carrera Ducati
+MODEL: CARDUC 010 807
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-259,Carrera Ducati,CARDUC 010 OIT,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,17,145,Medium,190000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Carrera Ducati
+MODEL: CARDUC 010 OIT
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-263,Carrera,291 R80,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,57,19,145,Large,230000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Carrera
+MODEL: 291 R80
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 57mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-314,Prada,VPR 58Z 17I-1O1,,Luxury,Refined and understated,Optical,Square,Acetate,Full-rim,57,19,145,Large,521000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Prada
+MODEL: VPR 58Z 17I-1O1
+FRAME SHAPE: Square
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 57mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-319,Prada,VPR A52 01U-1O1,,Luxury,Refined and understated,Optical,Rectangular,Acetate,Full-rim,54,19,145,Medium,675000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Prada
+MODEL: VPR A52 01U-1O1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-320,Burberry,B 4406-U 3001/87,BLACK,Premium,Bold and iconic,Sunglasses,Rectangular,Acetate,Full-rim,55,20,140,Medium,760000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Burberry
+MODEL: B 4406-U 3001/87
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: BLACK
+LENS WIDTH: 55mm
+BRIDGE: 20mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-323,Dolce & Gabbana,DG3376-B 502,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,53,18,140,Small,521000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,False,MH-323.jpg,"BRAND TIER: Premium
+BRAND: Dolce & Gabbana
+MODEL: DG3376-B 502
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-327,Macruona,TA9066 C4,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,57,17,142,Large,70000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: TA9066 C4
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 57mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 142mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-328,Macruona,MB1402-A C5,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,54,19,145,Medium,70000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-328.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: MB1402-A C5
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-330,Macruona,MR01-01 C.01H,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,49,21,145,Narrow,40000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-330.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: MR01-01 C.01H
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 49mm
+BRIDGE: 21mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-331,Macruona,MR01-02 C.03,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,50,21,145,Narrow,40000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: MR01-02 C.03
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 50mm
+BRIDGE: 21mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-337,Macruona,8563 C2,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,54,16,140,Medium,50000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-337.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: 8563 C2
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-338,Macruona,8563 C1,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,54,16,140,Medium,50000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-338.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: 8563 C1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-343,Macruona,MG6557A C1,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,50,18,142,Narrow,60000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: MG6557A C1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 50mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 142mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-344,Macruona,MB1403 C4,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,49,19,140,Narrow,60000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-344.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: MB1403 C4
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 49mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-350,Macruona,8563 C3,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,54,16,140,Medium,50000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-350.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: 8563 C3
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-351,Macruona,8604 C3,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,56,17,140,Medium,70000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: 8604 C3
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-354,Macruona,8592 C1,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,53,17,142,Small,70000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-354.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: 8592 C1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 142mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-355,Macruona,XL110 C3,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,52,17,145,Small,70000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-355.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: XL110 C3
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-357,Macruona,TA9067 C4,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,51,20,140,Small,60000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-357.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: TA9067 C4
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 51mm
+BRIDGE: 20mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-358,Macruona,TA9067 C1,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,51,20,140,Small,60000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-358.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: TA9067 C1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 51mm
+BRIDGE: 20mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-360,Macruona,HC-16068 C1,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,56,16,145,Medium,60000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: HC-16068 C1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-361,Macruona,D3337 C1,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,56,18,145,Medium,65000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-361.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: D3337 C1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-362,Macruona,FE06-12 C.03,,Value,Functional and confident,Optical,Square,Acetate,Full-rim,48,22,145,Narrow,35000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-362.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: FE06-12 C.03
+FRAME SHAPE: Square
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 48mm
+BRIDGE: 22mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-367,Macruona,D3333 C5,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,53,16,142,Small,70000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-367.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: D3333 C5
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 142mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-370,Macruona,TA9067 C5,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,51,20,140,Small,70000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-370.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: TA9067 C5
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 51mm
+BRIDGE: 20mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-372,Macruona,D3337 C2,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,56,18,145,Medium,65000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-372.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: D3337 C2
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-393,Macruona,SH9103 C4,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,56,17,142,Medium,70000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: SH9103 C4
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 142mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-396,Macruona,MG3850 C5,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,55,17,142,Medium,70000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-396.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: MG3850 C5
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 142mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-398,Macruona,PY-526 C8,,Value,Functional and confident,Sunglasses,Rectangular,Acetate,Full-rim,54,17,145,Medium,60000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-398.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: PY-526 C8
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-399,Macruona,9869 C1,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,55,17,145,Medium,65000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-399.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: 9869 C1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-400,Macruona,FE06-12 C.01,,Value,Functional and confident,Optical,Square,Acetate,Full-rim,48,22,145,Narrow,35000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-400.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: FE06-12 C.01
+FRAME SHAPE: Square
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 48mm
+BRIDGE: 22mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-406,Macruona,TA9068 C2,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,54,19,142,Medium,60000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-406.png,"BRAND TIER: Value
+BRAND: Macruona
+MODEL: TA9068 C2
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 142mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-414,Daniel Hechter,DHM378-3 1/P222,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,55,16,145,Medium,120000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-414.png,"BRAND TIER: Accessible
+BRAND: Daniel Hechter
+MODEL: DHM378-3 1/P222
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-426,Tom Ford,TF5040-B 001,,Luxury,Refined and understated,Optical,Rectangular,Acetate,Full-rim,52,20,140,Small,700000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Tom Ford
+MODEL: TF5040-B 001
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 20mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-448,La Martina,MAV749 COL.16,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,20,145,Small,150000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-448.png,"BRAND TIER: Accessible
+BRAND: La Martina
+MODEL: MAV749 COL.16
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 20mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-449,La Martina,MAV720 COL.12,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,52,17,145,Small,150000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-449.png,"BRAND TIER: Accessible
+BRAND: La Martina
+MODEL: MAV720 COL.12
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-453,Mont Blanc,MB01990A 006,,Luxury,Refined and understated,Optical,Rectangular,Metal,Full-rim,56,17,150,Medium,680000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Mont Blanc
+MODEL: MB01990A 006
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-457,Gucci,GG12190 001,,Luxury,Refined and understated,Optical,Rectangular,Metal,Full-rim,50,19,145,Narrow,750000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Gucci
+MODEL: GG12190 001
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 50mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-460,Gucci,GG12210 002,,Luxury,Refined and understated,Optical,Rectangular,Metal,Full-rim,56,16,140,Medium,800000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Gucci
+MODEL: GG12210 002
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-464,Puma,PU03470 002,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,56,18,145,Medium,165000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Value
+BRAND: Puma
+MODEL: PU03470 002
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 56mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-470,Dunhill,DU00380A 003 TITANIUM,,Luxury,Refined and understated,Optical,Rectangular,Titanium,Full-rim,55,16,145,Medium,900000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-470.png,"BRAND TIER: Luxury
+BRAND: Dunhill
+MODEL: DU00380A 003 TITANIUM
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Titanium
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-471,Cartier,C34C38MJ,,Luxury,Refined and understated,Optical,Oval,Metal,Full-rim,60,14,140,Extra Large,1900000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,True,True,MH-471.png,"BRAND TIER: Luxury
+BRAND: Cartier
+MODEL: C34C38MJ
+FRAME SHAPE: Oval
+FRAME MATERIAL: Metal
+COLOR: See product image
+LENS WIDTH: 60mm
+BRIDGE: 14mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-474,Cartier,CT03490 001,TITANIUM,Luxury,Refined and understated,Optical,Rectangular,Titanium,Full-rim,55,18,145,Medium,1550000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-474.png,"BRAND TIER: Luxury
+BRAND: Cartier
+MODEL: CT03490 001
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Titanium
+COLOR: TITANIUM
+LENS WIDTH: 55mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-504,Dario Martini,DM 822 COL.1,GOLD,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,55,18,135,Medium,400000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,False,MH-504.jpg,"BRAND TIER: Premium
+BRAND: Dario Martini
+MODEL: DM 822 COL.1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: GOLD
+LENS WIDTH: 55mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 135mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-506,Dario Martini,DM 796 COL.2,BLACK CAT-EYE SWAROVSKI,Premium,Bold and iconic,Optical,Cat-Eye,Acetate,Full-rim,54,19,140,Medium,150000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-506.png,"BRAND TIER: Premium
+BRAND: Dario Martini
+MODEL: DM 796 COL.2
+FRAME SHAPE: Cat-Eye
+FRAME MATERIAL: Acetate
+COLOR: BLACK CAT-EYE SWAROVSKI
+LENS WIDTH: 54mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-507,Dario Martini,DM716 COL.2,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,50,19,135,Narrow,190000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,True,MH-507.png,"BRAND TIER: Premium
+BRAND: Dario Martini
+MODEL: DM716 COL.2
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 50mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 135mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-51,Vogue,VO 4298-T 5191,,Accessible,Fresh and approachable,Optical,Cat-Eye,Acetate,Full-rim,53,18,140,Small,225000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,False,MH-51.jpg,"BRAND TIER: Accessible
+BRAND: Vogue
+MODEL: VO 4298-T 5191
+FRAME SHAPE: Cat-Eye
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-55,Vogue,VO 5409S W65613,BLACK,Accessible,Fresh and approachable,Sunglasses,Cat-Eye,Acetate,Full-rim,52,18,140,Small,205000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Vogue
+MODEL: VO 5409S W65613
+FRAME SHAPE: Cat-Eye
+FRAME MATERIAL: Acetate
+COLOR: BLACK
+LENS WIDTH: 52mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-551,Pepper Jean,PJ1301 C4 TOPSY,,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,53,17,135,Small,50000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,True,False,MH-551.jpg,"BRAND TIER: Accessible
+BRAND: Pepper Jean
+MODEL: PJ1301 C4 TOPSY
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 53mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 135mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-569,Sandro,SD6018 118,,Accessible,Fresh and approachable,Sunglasses,Cat-Eye,Acetate,Full-rim,54,17,140,Medium,50000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,True,MH-569.png,"BRAND TIER: Accessible
+BRAND: Sandro
+MODEL: SD6018 118
+FRAME SHAPE: Cat-Eye
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-573,GF Ferre,GFF 0164 005,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,54,17,140,Medium,50000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Value
+BRAND: GF Ferre
+MODEL: GFF 0164 005
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 54mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-574,Guess,GU2879 028,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,55,17,140,Medium,55000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Value
+BRAND: Guess
+MODEL: GU2879 028
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-576,Guess,GU2878 071,,Value,Functional and confident,Optical,Rectangular,Acetate,Full-rim,55,15,140,Medium,55000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,False,MH-576.jpg,"BRAND TIER: Value
+BRAND: Guess
+MODEL: GU2878 071
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 55mm
+BRIDGE: 15mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Functional and confident
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-64,Vogue,VO5404S 297273,DARK BROWN,Accessible,Fresh and approachable,Sunglasses,Rectangular,Acetate,Full-rim,54,18,145,Medium,205000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Vogue
+MODEL: VO5404S 297273
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: DARK BROWN
+LENS WIDTH: 54mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Sunglasses
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-66,Ralph Lauren,PH 2257U 5407,SHINY TRANSPARENT GREY,Accessible,Fresh and approachable,Optical,Rectangular,Acetate,Full-rim,57,16,150,Large,209000,Unisex,58 – 76mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Accessible
+BRAND: Ralph Lauren
+MODEL: PH 2257U 5407
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: SHINY TRANSPARENT GREY
+LENS WIDTH: 57mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 150mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Fresh and approachable
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-74,Versace,MOD 3327 5381,BORDEAUX,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,55,18,145,Medium,352000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Versace
+MODEL: MOD 3327 5381
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: BORDEAUX
+LENS WIDTH: 55mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-79,Burberry,B2347 3943,,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,52,19,140,Small,365000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Burberry
+MODEL: B2347 3943
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 52mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-81,Dolce & Gabbana,DG 3376-B 3420,OPAL CRYSTAL,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,53,18,140,Small,482000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Dolce & Gabbana
+MODEL: DG 3376-B 3420
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: OPAL CRYSTAL
+LENS WIDTH: 53mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-83,Prada,VPR 09Z 08Q-1O1,,Luxury,Refined and understated,Optical,Rectangular,Acetate,Full-rim,51,17,140,Small,518000,Unisex,54 – 68mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Prada
+MODEL: VPR 09Z 08Q-1O1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: See product image
+LENS WIDTH: 51mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-9,Oakley,OX8156-0256,MATTE BROWN TORTOISE,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,56,18,137,Medium,240000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,True,False,MH-9.jpg,"BRAND TIER: Premium
+BRAND: Oakley
+MODEL: OX8156-0256
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: MATTE BROWN TORTOISE
+LENS WIDTH: 56mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 137mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-90,Versace,MOD 4445 GB1/M1,BLACK,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,54,19,145,Medium,662000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Versace
+MODEL: MOD 4445 GB1/M1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: BLACK
+LENS WIDTH: 54mm
+BRIDGE: 19mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-91,Giorgio Armani,AR7230-U 5914,TRANSPARENT GREY,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,55,17,145,Medium,446000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Giorgio Armani
+MODEL: AR7230-U 5914
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: TRANSPARENT GREY
+LENS WIDTH: 55mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 145mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-93,Miu Miu,VMU 06V 1AB-1O1,BLACK,Luxury,Refined and understated,Optical,Rectangular,Acetate,Full-rim,54,17,140,Medium,446000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Luxury
+BRAND: Miu Miu
+MODEL: VMU 06V 1AB-1O1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: BLACK
+LENS WIDTH: 54mm
+BRIDGE: 17mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Refined and understated
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-96,Versace,MOD 3338 GB1,BLACK,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,54,18,140,Medium,420000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Versace
+MODEL: MOD 3338 GB1
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: BLACK
+LENS WIDTH: 54mm
+BRIDGE: 18mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
+MH-98,Versace,MOD 3346 148,CRYSTAL,Premium,Bold and iconic,Optical,Rectangular,Acetate,Full-rim,55,16,140,Medium,420000,Unisex,56 – 72mm,SPH: -8.00 to +6.00,Yes,False,False,,"BRAND TIER: Premium
+BRAND: Versace
+MODEL: MOD 3346 148
+FRAME SHAPE: Rectangular
+FRAME MATERIAL: Acetate
+COLOR: CRYSTAL
+LENS WIDTH: 55mm
+BRIDGE: 16mm
+LENS HEIGHT: (measure from image)
+TOTAL WIDTH: (calculate)
+TEMPLE: 140mm
+GENDER: Unisex
+LENS TYPE: Optical
+Tone: Bold and iconic
+Do not use: stunning, amazing, perfect, sleek, elevate, game-changer.
+Under 120 words total."
