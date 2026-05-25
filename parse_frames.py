@@ -511,9 +511,12 @@ def guess_material(brand: str, model: str, raw: str) -> str:
         return "TR-90"
     if "RIMLESS" in combined:
         return "Metal"
-    # Brand-level defaults
-    for lux in ("CARTIER","GUCCI","MONT BLANC","SAINT LAURENT","DUNHILL"):
-        if lux in combined:
+    # Brand-level defaults — these brands use metal as their primary material
+    METAL_BRANDS = ("CARTIER","GUCCI","MONT BLANC","SAINT LAURENT","DUNHILL",
+                    "CLARY GRAY","HUGO","HACKETT","ARNETTE","OAKLEY",
+                    "RAY-BAN","CARRERA","SEVENTH STREET","PUMA")
+    for b in METAL_BRANDS:
+        if b in combined:
             return "Metal"
     return "Acetate"
 
