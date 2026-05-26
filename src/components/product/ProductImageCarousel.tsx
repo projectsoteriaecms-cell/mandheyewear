@@ -78,7 +78,7 @@ export const ProductImageCarousel = ({
   }
 
   const isPdp = variant === "pdp";
-  const aspectClass = isPdp ? "aspect-square md:max-h-none md:aspect-[4/3]" : "aspect-square";
+  const aspectClass = "aspect-square";
 
   return (
     <>
