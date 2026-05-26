@@ -74,6 +74,7 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
       const res = (await seed.mutateAsync({
         mode: "dry_run",
         source,
+        target,
         skipFilled,
         files: source === "upload" ? uploadedFiles : undefined,
       })) as SeedImagesDryRunResult;
@@ -88,13 +89,15 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
       const res = (await seed.mutateAsync({
         mode: "commit",
         source,
+        target,
         skipFilled,
         files: source === "upload" ? uploadedFiles : undefined,
       })) as SeedImagesCommitResult;
       setCommitResult(res);
+      const linkedMsg = res.anchorLink?.linked != null ? ` · ${res.anchorLink.linked} anchor(s) linked` : "";
       toast({
         title: "Image seed complete",
-        description: `${res.uploaded} image(s) uploaded · ${res.errors.length} error(s)`,
+        description: `${res.uploaded} seeded · ${res.anchorUploaded ?? 0} anchor(s)${linkedMsg} · ${res.errors.length} error(s)`,
       });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       qc.invalidateQueries({ queryKey: ["products"] });
@@ -103,6 +106,7 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
       toast({ title: "Commit failed", description: (e as Error).message, variant: "destructive" });
     }
   };
+
 
   const canAnalyze = source === "bundled" || uploadedFiles.length > 0;
   const planRows = useMemo(() => dryRun?.plan ?? [], [dryRun]);
