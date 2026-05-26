@@ -189,7 +189,7 @@ export const ProductImageCarousel = ({
                 <img
                   src={src}
                   alt={`${productName} thumbnail ${i + 1}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain bg-white p-1"
                 />
               </button>
             ))}
