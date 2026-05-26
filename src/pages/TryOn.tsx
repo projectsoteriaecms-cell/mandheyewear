@@ -52,7 +52,9 @@ const TryOn = () => {
     currentResult,
     savedTryOns,
     userPhoto,
-    generateTryOn,
+    multiAngleResults,
+    isGeneratingAngles,
+    generateMultiAngle,
     clearResult,
     clearHistory,
     setPhoto,
@@ -123,12 +125,12 @@ const TryOn = () => {
     }
 
     setSelectedFrame(frame);
-    await generateTryOn(userPhoto, frame);
+    await generateMultiAngle(userPhoto, frame);
   };
 
   const handleRetry = () => {
     if (selectedFrame && userPhoto) {
-      generateTryOn(userPhoto, selectedFrame);
+      generateMultiAngle(userPhoto, selectedFrame);
     }
   };
 
@@ -249,6 +251,8 @@ const TryOn = () => {
                       result={currentResult}
                       userPhoto={userPhoto}
                       isGenerating={isGenerating}
+                      multiAngleResults={multiAngleResults}
+                      isGeneratingAngles={isGeneratingAngles}
                       onRetry={handleRetry}
                       onAddToCart={handleAddToCart}
                       onAddToWishlist={handleAddToWishlist}

@@ -6,10 +6,11 @@ import { isKnownBrand, isHouseBrand } from "@/modules/products/lib/brand-classif
 import { ProductImageCard } from "@/modules/products/components/ProductImageCard";
 import { ProductImageListView } from "@/modules/products/components/ProductImageListView";
 import { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
+import { GenerateImagesDialog } from "@/modules/products/components/GenerateImagesDialog";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Images } from "@phosphor-icons/react";
+import { Images, Lightning } from "@phosphor-icons/react";
 import { Loader2, Anchor, GitCompare } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -168,6 +169,16 @@ const ProductImages = () => {
 
   const exitSelectMode = useCallback(() => { setSelectMode(false); setSelectedIds(new Set()); }, []);
 
+  const [isGenerateImagesOpen, setIsGenerateImagesOpen] = useState(false);
+
+  // Build the product list for the GenerateImagesDialog when in selection mode
+  const selectedProductsForGenerate = useMemo(() => {
+    if (selectedIds.size === 0) return undefined;
+    return products
+      .filter((p) => selectedIds.has(p.id))
+      .map((p) => ({ id: p.id, name: p.name, sku: p.sku, item_type: p.item_type, brand: p.brand }));
+  }, [products, selectedIds]);
+
 
   const selectionSummary = useMemo(() => {
     const selected = products.filter((p) => selectedIds.has(p.id));
@@ -241,9 +252,14 @@ const ProductImages = () => {
                 Link Anchor Images
               </Button>
               {stats.missingPrimary > 0 && (
-                <p className="text-sm text-muted-foreground hidden md:block">
-                  Click any product to start the guided generation workflow
-                </p>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => { setIsGenerateImagesOpen(true); }}
+                >
+                  <Lightning className="h-4 w-4 mr-2" weight="fill" />
+                  Generate AI Images ({stats.missingPrimary} missing)
+                </Button>
               )}
             </div>
           </div>
@@ -330,7 +346,7 @@ const ProductImages = () => {
             frames={selectionSummary.frames}
             others={selectionSummary.others}
             shots={selectionSummary.shots}
-            onGenerate={() => {}}
+            onGenerate={() => setIsGenerateImagesOpen(true)}
             onExit={exitSelectMode}
           />
         </div>
@@ -339,6 +355,19 @@ const ProductImages = () => {
           product={selectedProduct ?? null}
           open={!!selectedProductId}
           onOpenChange={(open) => { if (!open) setSelectedProductId(null); }}
+        />
+
+        <GenerateImagesDialog
+          open={isGenerateImagesOpen}
+          onOpenChange={setIsGenerateImagesOpen}
+          categoryCounts={categoryCounts}
+          selectedProducts={selectedProductsForGenerate}
+          onComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+            queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+            queryClient.invalidateQueries({ queryKey: ["product-image-category-stats"] });
+            if (selectedProductsForGenerate) exitSelectMode();
+          }}
         />
       </AdminLayout>
     </RoleGuard>

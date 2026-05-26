@@ -4,8 +4,12 @@ Pipeline: HEIC -> PNG -> Remove Background -> Enhance -> Save
 
 Background removal modes (set BG_REMOVAL_MODE below):
 
+  "simple" — PIL-only flood-fill from borders (no extra installs needed).
+             Works great for studio photos on white/light backgrounds.
+             Zero disk space required. USE THIS when disk is low.
+
   "local"  — uses the rembg library (runs on your machine, no API credits needed)
-             Install once:  pip install rembg[cli] onnxruntime
+             Install once:  pip install rembg onnxruntime
              First run downloads ~100 MB model automatically (u2netp = fast).
              Use model "u2net" for higher quality (~170 MB).
 
@@ -27,8 +31,8 @@ from PIL import Image, ImageEnhance
 # ─────────────────────────────────────────────────────────────────────
 # CONFIG
 # ─────────────────────────────────────────────────────────────────────
-# Background removal mode: "local" (rembg) or "api" (remove.bg)
-BG_REMOVAL_MODE = "local"
+# Background removal mode: "simple" (PIL only), "local" (rembg), or "api" (remove.bg)
+BG_REMOVAL_MODE = "simple"
 
 # ── Local rembg settings (used when BG_REMOVAL_MODE = "local") ───────
 # Models: "u2netp" = 4.7 MB fast model  |  "u2net" = 170 MB high-quality
@@ -63,6 +67,70 @@ def extract_sku(filename: str) -> str | None:
 def heic_to_png_bytes(filepath: str) -> bytes:
     """Open a HEIC file and return PNG bytes in memory."""
     img = Image.open(filepath).convert("RGBA")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def remove_background_simple(png_bytes: bytes, tolerance: int = 30) -> bytes:
+    """
+    Lightweight background removal using BFS flood-fill from image borders.
+    No extra libraries needed — only Pillow.
+
+    How it works:
+      1. Sample the average colour of the 4 corners to detect the studio background.
+      2. BFS outward from every border pixel that is "close" to the background colour.
+      3. Mark all reached pixels fully transparent.
+      4. Apply a 1-pixel feather on the mask border for smooth edges.
+
+    Works well for product photos shot on white / light-grey studio backgrounds.
+    """
+    from collections import deque
+
+    img = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
+    w, h = img.size
+    pixels = img.load()
+
+    # ── 1. Estimate background colour from corners ────────────────────────
+    corners = [pixels[0, 0][:3], pixels[w-1, 0][:3],
+               pixels[0, h-1][:3], pixels[w-1, h-1][:3]]
+    bg_r = sum(c[0] for c in corners) // 4
+    bg_g = sum(c[1] for c in corners) // 4
+    bg_b = sum(c[2] for c in corners) // 4
+
+    def is_bg(r, g, b):
+        return abs(r - bg_r) + abs(g - bg_g) + abs(b - bg_b) < tolerance * 3
+
+    # ── 2. BFS flood-fill from all four borders ───────────────────────────
+    visited = [[False] * h for _ in range(w)]
+    queue = deque()
+
+    def seed(x, y):
+        if not visited[x][y] and is_bg(*pixels[x, y][:3]):
+            visited[x][y] = True
+            queue.append((x, y))
+
+    for x in range(w):
+        seed(x, 0); seed(x, h - 1)
+    for y in range(h):
+        seed(0, y); seed(w - 1, y)
+
+    while queue:
+        x, y = queue.popleft()
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < w and 0 <= ny < h and not visited[nx][ny]:
+                if is_bg(*pixels[nx, ny][:3]):
+                    visited[nx][ny] = True
+                    queue.append((nx, ny))
+
+    # ── 3. Write transparent pixels for background ────────────────────────
+    for x in range(w):
+        for y in range(h):
+            if visited[x][y]:
+                r, g, b, _ = pixels[x, y]
+                pixels[x, y] = (r, g, b, 0)
+
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     return buf.getvalue()
@@ -122,8 +190,10 @@ def enhance_image(img: Image.Image) -> Image.Image:
 
 
 def do_remove_background(png_bytes: bytes) -> bytes:
-    """Dispatcher: uses local rembg or remove.bg API based on BG_REMOVAL_MODE."""
-    if BG_REMOVAL_MODE == "local":
+    """Dispatcher: uses simple PIL, local rembg, or remove.bg API based on BG_REMOVAL_MODE."""
+    if BG_REMOVAL_MODE == "simple":
+        return remove_background_simple(png_bytes)
+    elif BG_REMOVAL_MODE == "local":
         return remove_background_local(png_bytes)
     else:
         return remove_background_api(png_bytes, API_KEY)
@@ -137,8 +207,8 @@ def process_all():
         print("ERROR: Please set your remove.bg API key at the top of this script.")
         return
 
-    mode_label = "rembg (local)" if BG_REMOVAL_MODE == "local" else "remove.bg API"
-    print(f"Background removal mode: {mode_label}\n")
+    mode_labels = {"simple": "PIL flood-fill (no extra libs)", "local": "rembg (local AI)", "api": "remove.bg API"}
+    print(f"Background removal mode: {mode_labels.get(BG_REMOVAL_MODE, BG_REMOVAL_MODE)}\n")
 
     # Find which SKUs are already done (skip them)
     done_skus = set()
@@ -237,8 +307,8 @@ def process_existing_jpgs():
         print("ERROR: Please set your remove.bg API key at the top of this script.")
         return
 
-    mode_label = "rembg (local)" if BG_REMOVAL_MODE == "local" else "remove.bg API"
-    print(f"Background removal mode: {mode_label}\n")
+    mode_labels = {"simple": "PIL flood-fill (no extra libs)", "local": "rembg (local AI)", "api": "remove.bg API"}
+    print(f"Background removal mode: {mode_labels.get(BG_REMOVAL_MODE, BG_REMOVAL_MODE)}\n")
 
     # Find all JPGs in output folder that don't yet have a PNG counterpart
     existing_pngs = {
@@ -291,11 +361,11 @@ def process_existing_jpgs():
             # Save as PNG
             output_path = os.path.join(OUTPUT_FOLDER, f"{sku}.png")
             img.save(output_path, format="PNG", compress_level=6)
-            print(f"→ saved {sku}.png ✓")
+            print(f"-> saved {sku}.png")
 
             # Delete original JPG now that PNG exists
             os.remove(filepath)
-            print(f"           (removed original {filename})")
+            print(f"   (removed original {filename})")
 
             succeeded.append(sku)
 
