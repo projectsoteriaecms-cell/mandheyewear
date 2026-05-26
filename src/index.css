@@ -800,10 +800,13 @@ All colors MUST be HSL.
   color: hsl(var(--foreground));
 }
 
-/* Product surface tile: white stage for transparent frame PNGs.
+/* Product surface tile: warm pearl stage for transparent frame PNGs.
+   Radial gradient brightens at centre (where the frame sits) and fades to a warm
+   neutral at the edges, giving every frame colour — black, gold, tortoise, clear —
+   visible contrast without a flat white wash.
    Adds soft contact shadow at the bottom so the frame appears to rest on a surface. */
 .product-surface {
-  background-color: #ffffff;
+  background: radial-gradient(ellipse at 50% 42%, #fdfcfa 0%, #f0ede6 55%, #e4e0d8 100%);
   position: relative;
   isolation: isolate;
 }

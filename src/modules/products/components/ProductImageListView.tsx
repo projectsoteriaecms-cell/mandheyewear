@@ -83,12 +83,15 @@ export const ProductImageListView = ({
             )}
 
             {/* Thumbnail */}
-            <div className="relative h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div
+              className="relative h-14 w-14 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
+              style={{ background: "radial-gradient(ellipse at 50% 42%, #fdfcfa 0%, #f0ede6 55%, #e4e0d8 100%)" }}
+            >
               {product.image_url ? (
                 <img
                   src={product.image_url}
                   alt={product.name}
-                  className="h-14 w-14 rounded-lg object-cover"
+                  className="h-full w-full rounded-lg object-contain p-[8%]"
                 />
               ) : (
                 <Image className="h-6 w-6 text-muted-foreground" weight="light" />

@@ -73,12 +73,17 @@ export const ProductImageCard = ({
       {/* Image Container */}
       <AspectRatio ratio={1}>
         {product.image_url ? (
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
+          <div
+            className="w-full h-full"
+            style={{ background: "radial-gradient(ellipse at 50% 42%, #fdfcfa 0%, #f0ede6 55%, #e4e0d8 100%)" }}
+          >
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="w-full h-full object-contain p-[6%]"
+              loading="lazy"
+            />
+          </div>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-muted/50 text-muted-foreground">
             <Image className="h-8 w-8 mb-1" />
