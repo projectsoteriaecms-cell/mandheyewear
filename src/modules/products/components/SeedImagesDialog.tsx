@@ -15,8 +15,10 @@ import {
   type SeedImagesDryRunResult,
   type SeedImagesCommitResult,
   type SeedImagesSource,
+  type SeedImagesTarget,
   type SeedImageFile,
 } from "../hooks/useSeedImages";
+
 
 interface Props {
   open: boolean;
