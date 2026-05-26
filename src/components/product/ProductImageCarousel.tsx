@@ -138,7 +138,9 @@ export const ProductImageCarousel = ({
             </Suspense>
           )}
           {view === "2d" && (
+          <>
           <div ref={emblaRef} className="overflow-hidden h-full">
+
             <div className="flex h-full">
               {images.map((src, i) => {
                 const isAnchor = i === 0 && isAnchorLocked;
