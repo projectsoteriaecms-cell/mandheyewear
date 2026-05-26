@@ -60,6 +60,16 @@ function ReviewStarsSummary({ productId }: { productId: string }) {
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
   const { data: product, isLoading, error } = useProduct(productId || "");
+  const { data: frameAttrs } = useFrameAttributes(productId || null);
+  const frame3D = frameAttrs
+    ? {
+        lensWidth: frameAttrs.lens_width,
+        bridgeSize: frameAttrs.bridge_size,
+        templeLength: frameAttrs.temple_length,
+        frameShape: frameAttrs.frame_shape,
+        color: frameAttrs.front_color,
+      }
+    : null;
 
   useSEO({
     title: product ? `${product.name}${product.brand ? ` – ${product.brand}` : ""} | M&H Eyewear` : "Loading... | M&H Eyewear",
