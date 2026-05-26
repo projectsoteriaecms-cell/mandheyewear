@@ -187,38 +187,53 @@ Deno.serve(async (req) => {
 
     // COMMIT
     const uploads: Array<{ sku: string; url: string; action: string }> = [];
+    const anchorUploads: Array<{ sku: string; path: string }> = [];
     const errors: Array<{ sku: string; error: string }> = [];
 
     for (const f of files) {
       const prod = productMap.get(f.sku);
       if (!prod || !f.bytes) continue;
       try {
-        const path = `seed/${f.sku}-${Date.now()}.${f.ext}`;
-        const blob = new Blob([f.bytes], { type: contentTypeFor(f.ext) });
-        const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, blob, {
-          contentType: contentTypeFor(f.ext),
-          upsert: true,
-        });
-        if (upErr) throw upErr;
-        const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
-        const url = pub.publicUrl;
+        // SEED upload (versioned path, sets/appends product image_url)
+        if (doSeed) {
+          const path = `seed/${f.sku}-${Date.now()}.${f.ext}`;
+          const blob = new Blob([f.bytes], { type: contentTypeFor(f.ext) });
+          const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, blob, {
+            contentType: contentTypeFor(f.ext),
+            upsert: true,
+          });
+          if (upErr) throw upErr;
+          const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+          const url = pub.publicUrl;
 
-        const hadPrimary = !!(prod.image_url && String(prod.image_url).trim());
-        if (!hadPrimary || !skipFilled) {
-          const { error } = await supabase.from("products").update({ image_url: url }).eq("id", prod.id);
-          if (error) throw error;
-          uploads.push({ sku: f.sku, url, action: "set_primary" });
-          // keep state coherent for subsequent files of same sku
-          prod.image_url = url;
-        } else {
-          const existing = Array.isArray(prod.additional_images) ? prod.additional_images : [];
-          if (!existing.includes(url)) {
-            const next = [...existing, url];
-            const { error } = await supabase.from("products").update({ additional_images: next }).eq("id", prod.id);
+          const hadPrimary = !!(prod.image_url && String(prod.image_url).trim());
+          if (!hadPrimary || !skipFilled) {
+            const { error } = await supabase.from("products").update({ image_url: url }).eq("id", prod.id);
             if (error) throw error;
-            prod.additional_images = next;
+            uploads.push({ sku: f.sku, url, action: "set_primary" });
+            prod.image_url = url;
+          } else {
+            const existing = Array.isArray(prod.additional_images) ? prod.additional_images : [];
+            if (!existing.includes(url)) {
+              const next = [...existing, url];
+              const { error } = await supabase.from("products").update({ additional_images: next }).eq("id", prod.id);
+              if (error) throw error;
+              prod.additional_images = next;
+            }
+            uploads.push({ sku: f.sku, url, action: "append_additional" });
           }
-          uploads.push({ sku: f.sku, url, action: "append_additional" });
+        }
+
+        // ANCHOR upload (bucket root MH-XXX.{ext} so link-anchor-images can find it)
+        if (doAnchor) {
+          const anchorPath = `${f.sku}.${f.ext}`;
+          const blob2 = new Blob([f.bytes], { type: contentTypeFor(f.ext) });
+          const { error: anchorErr } = await supabase.storage.from(BUCKET).upload(anchorPath, blob2, {
+            contentType: contentTypeFor(f.ext),
+            upsert: true,
+          });
+          if (anchorErr) throw anchorErr;
+          anchorUploads.push({ sku: f.sku, path: anchorPath });
         }
       } catch (e) {
         errors.push({ sku: f.sku, error: (e as Error).message });
@@ -228,15 +243,19 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         mode,
+        target,
         matched: plan.length - unmatched.length,
         unmatched,
         unmatchedCount: unmatched.length,
         uploaded: uploads.length,
+        anchorUploaded: anchorUploads.length,
         uploads,
+        anchorUploads,
         errors,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (e) {
     console.error("seed-product-images error", e);
     return new Response(JSON.stringify({ error: (e as Error).message }), {
