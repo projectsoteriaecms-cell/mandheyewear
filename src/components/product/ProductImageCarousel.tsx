@@ -276,10 +276,44 @@ export const ProductImageCarousel = ({
             </div>
           )}
 
-          {/* Image counter */}
-          <div className="absolute top-3 right-3 bg-background/70 backdrop-blur-sm text-xs font-medium px-2 py-1 rounded-full">
-            {selectedIndex + 1}/{images.length}
-          </div>
+          {/* Image counter — 2D only */}
+          {view === "2d" && (
+            <div className="absolute top-3 right-3 bg-background/70 backdrop-blur-sm text-xs font-medium px-2 py-1 rounded-full">
+              {selectedIndex + 1}/{images.length}
+            </div>
+          )}
+
+          {/* 2D / 3D toggle */}
+          {has3D && (
+            <div className="absolute top-3 right-3 z-20 flex items-center gap-1 bg-background/85 backdrop-blur-md rounded-full p-1 border border-border/50 shadow-md"
+              style={view === "2d" ? { top: "2.75rem" } : undefined}
+            >
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setView("2d"); }}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors",
+                  view === "2d" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-label="Photo view"
+              >
+                <ImageIcon className="h-3 w-3" />
+                Photo
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setView("3d"); }}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors",
+                  view === "3d" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-label="3D view"
+              >
+                <Box className="h-3 w-3" />
+                3D
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Thumbnail strip — desktop only (PDP) */}
