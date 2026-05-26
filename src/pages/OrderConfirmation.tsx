@@ -129,12 +129,23 @@ const OrderConfirmation = () => {
     );
   }
 
-  const shippingAddress = order.shipping_address as { 
+  const shippingAddress = order.shipping_address as {
     fullName?: string;
     address?: string;
     city?: string;
     state?: string;
   } | null;
+
+  // Map order status → which timeline step is active (0-based)
+  const timelineStep = (() => {
+    const s = order.order_status;
+    if (s === "delivered") return 3;
+    if (["shipped", "shipped_local", "shipped_interstate", "shipped_international",
+         "in_transit_hub", "customs_clearance", "in_transit_country", "out_for_delivery",
+         "ready_for_pickup"].includes(s)) return 2;
+    if (["processing", "packed"].includes(s)) return 1;
+    return 0; // pending / confirmed
+  })();
 
   return (
     <div className="min-h-screen bg-background">
@@ -221,33 +232,33 @@ const OrderConfirmation = () => {
             <CardContent className="p-6">
               <h2 className="font-semibold text-foreground mb-4">Order Status</h2>
               <div className="flex items-center justify-between">
-                <div className="flex flex-col items-center">
-                  <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center">
-                    <CheckCircle className="h-5 w-5 text-accent-foreground" />
-                  </div>
-                  <span className="text-xs mt-2 text-center">Confirmed</span>
-                </div>
-                <div className="flex-1 h-1 bg-muted mx-2" />
-                <div className="flex flex-col items-center">
-                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                    <Package className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <span className="text-xs mt-2 text-center">Processing</span>
-                </div>
-                <div className="flex-1 h-1 bg-muted mx-2" />
-                <div className="flex flex-col items-center">
-                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                    <Truck className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <span className="text-xs mt-2 text-center">Shipped</span>
-                </div>
-                <div className="flex-1 h-1 bg-muted mx-2" />
-                <div className="flex flex-col items-center">
-                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                    <MapPin className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <span className="text-xs mt-2 text-center">Delivered</span>
-                </div>
+                {[
+                  { label: "Confirmed", icon: CheckCircle },
+                  { label: "Processing", icon: Package },
+                  { label: "Shipped", icon: Truck },
+                  { label: "Delivered", icon: MapPin },
+                ].map((step, i) => {
+                  const isActive = i === timelineStep;
+                  const isDone = i < timelineStep;
+                  const Icon = step.icon;
+                  return (
+                    <>
+                      <div key={step.label} className="flex flex-col items-center">
+                        <div className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors ${
+                          isDone ? "bg-accent/60" : isActive ? "bg-accent" : "bg-muted"
+                        }`}>
+                          <Icon className={`h-5 w-5 ${isDone || isActive ? "text-accent-foreground" : "text-muted-foreground"}`} />
+                        </div>
+                        <span className={`text-xs mt-2 text-center font-medium ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
+                          {step.label}
+                        </span>
+                      </div>
+                      {i < 3 && (
+                        <div key={`line-${i}`} className={`flex-1 h-1 mx-2 transition-colors ${i < timelineStep ? "bg-accent/50" : "bg-muted"}`} />
+                      )}
+                    </>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -358,6 +369,12 @@ const OrderConfirmation = () => {
               </Link>
             </Button>
             <Button variant="outline" className="flex-1" asChild>
+              <Link to={`/track-order?order=${order.order_number}`}>
+                <Truck className="mr-2 h-4 w-4" />
+                Track Order
+              </Link>
+            </Button>
+            <Button variant="ghost" className="flex-1" asChild>
               <Link to="/shop">Continue Shopping</Link>
             </Button>
           </div>

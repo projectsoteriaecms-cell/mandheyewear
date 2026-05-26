@@ -28,6 +28,7 @@ const PRODUCTS_PER_PAGE = 12;
 
 type ViewMode = "grid" | "list";
 type PriceTier = "budget" | "standard" | "premium" | "luxury";
+type SortMode = "featured" | "low-high" | "high-low" | "newest" | "trending";
 
 const Eyewear = () => {
   useSEO({
@@ -38,23 +39,31 @@ const Eyewear = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [genderFilter, setGenderFilter] = useState("all");
   const [styleFilter, setStyleFilter] = useState("all");
-  const [priceSort, setPriceSort] = useState("featured");
+  const [priceSort, setPriceSort] = useState<SortMode>("featured");
   const [currentPage, setCurrentPage] = useState(1);
   const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [priceTierFilter, setPriceTierFilter] = useState<PriceTier | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
-  // Parse price tier and category from URL params
+  // Parse filter/sort/category from URL params
   useEffect(() => {
     const filter = searchParams.get("filter");
-    if (filter?.startsWith("price-tier-")) {
+    if (filter === "new-arrivals") {
+      setPriceSort("newest");
+      setPriceTierFilter(null);
+    } else if (filter === "trending") {
+      setPriceSort("trending");
+      setPriceTierFilter(null);
+    } else if (filter?.startsWith("price-tier-")) {
       const tier = filter.replace("price-tier-", "") as PriceTier;
       if (["budget", "standard", "premium", "luxury"].includes(tier)) {
         setPriceTierFilter(tier);
       }
+      setPriceSort("featured");
     } else {
       setPriceTierFilter(null);
+      // Don't reset priceSort here — let the user's manual choice persist
     }
     const category = searchParams.get("category");
     setCategoryFilter(category || "all");
@@ -100,6 +109,20 @@ const Eyewear = () => {
 
         if (priceSort === "low-high") return a.price - b.price;
         if (priceSort === "high-low") return b.price - a.price;
+        if (priceSort === "newest") {
+          return new Date((b as any).created_at || 0).getTime() -
+                 new Date((a as any).created_at || 0).getTime();
+        }
+        if (priceSort === "trending") {
+          // Proxy for trending: premium/luxury tiers with images first
+          const tierScore = (p: typeof a) => {
+            if (p.price_tier === "luxury") return 4;
+            if (p.price_tier === "premium") return 3;
+            if (p.price_tier === "standard") return 2;
+            return 1;
+          };
+          return tierScore(b) - tierScore(a);
+        }
         return 0;
       });
   }, [products, genderFilter, styleFilter, priceSort, priceTierFilter, categoryFilter]);

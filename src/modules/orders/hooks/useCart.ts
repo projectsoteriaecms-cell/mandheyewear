@@ -200,6 +200,43 @@ export const useCart = () => {
     },
   });
 
+  const updateCartItemLens = useMutation({
+    mutationFn: async ({
+      cartItemId,
+      lensConfig,
+    }: {
+      cartItemId: string;
+      lensConfig: {
+        lens_type: string | null;
+        lens_index: string | null;
+        lens_coatings: string[] | null;
+        lens_price: number;
+        prescription_id: string | null;
+        prescription_data: Record<string, unknown> | null;
+        requires_fitting: boolean;
+        fitting_booked: boolean;
+        frame_only: boolean;
+      };
+    }) => {
+      const { error } = await supabase
+        .from("cart_items")
+        .update(lensConfig)
+        .eq("id", cartItemId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart", user?.id] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: (error as Error).message || "Failed to update lens selection.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const clearCart = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Must be logged in");
@@ -227,6 +264,7 @@ export const useCart = () => {
   return {
     cartItems,
     cartCount,
+    updateCartItemLens,
     cartTotal,
     isLoading: cartQuery.isLoading,
     canAddToCart: !!user,

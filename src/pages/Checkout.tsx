@@ -40,7 +40,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, CheckCircle2, Clock, Phone, Mail, ClipboardList, AlertTriangle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const PAYSTACK_PUBLIC_KEY = "pk_test_b65019a2e28f286dd4906d6aaa80bff38f035460";
+// Use live key in production, fall back to test key in development
+const PAYSTACK_PUBLIC_KEY =
+  import.meta.env.VITE_PAYSTACK_PUBLIC_KEY ||
+  "pk_test_b65019a2e28f286dd4906d6aaa80bff38f035460";
 
 const loadPaystackScript = (): Promise<void> => {
   return new Promise((resolve, reject) => {
@@ -464,6 +467,30 @@ const Checkout = () => {
 
         <h1 className="text-2xl sm:text-3xl font-display font-semibold mb-4 sm:mb-8">Checkout</h1>
 
+        {/* Early Rx banner — shown immediately if cart has Rx items but no valid prescription */}
+        {hasRxItems && !hasValidRx && (
+          <div className="mb-6 flex items-start gap-3 rounded-xl border-2 border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30 p-4">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-amber-800 dark:text-amber-300">
+                Prescription required before you can pay
+              </p>
+              <p className="text-sm text-amber-700 dark:text-amber-400 mt-0.5">
+                Your cart includes prescription lenses. Add a valid prescription now — it only takes a minute.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="shrink-0 border-amber-400 text-amber-800 hover:bg-amber-100 dark:border-amber-600 dark:text-amber-300"
+              onClick={() => setRxDialogOpen(true)}
+            >
+              <ClipboardList className="h-3.5 w-3.5 mr-1.5" />
+              Add Prescription
+            </Button>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
 
@@ -742,12 +769,18 @@ const Checkout = () => {
                   size="lg"
                   className="w-full"
                   onClick={handlePayment}
-                  disabled={isProcessing}
+                  disabled={isProcessing || (hasRxItems && !hasValidRx)}
+                  title={hasRxItems && !hasValidRx ? "Add a valid prescription to continue" : undefined}
                 >
                   {isProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Processing...
+                    </>
+                  ) : hasRxItems && !hasValidRx ? (
+                    <>
+                      <AlertTriangle className="mr-2 h-4 w-4" />
+                      Add Prescription to Continue
                     </>
                   ) : (
                     `Pay ₦${orderTotal.toLocaleString()}`

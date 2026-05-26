@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -11,7 +12,8 @@ import {
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { usePrescriptions } from "@/modules/prescriptions/hooks/usePrescriptions";
-import { Bag, Minus, Plus, Trash, CircleNotch, Eyeglasses, Warning } from "@phosphor-icons/react";
+import { LensConfigurator, type LensConfig } from "@/modules/lens/components/LensConfigurator";
+import { Bag, Minus, Plus, Trash, CircleNotch, Eyeglasses, Warning, PencilSimple } from "@phosphor-icons/react";
 
 // Import placeholder images
 import frame1 from "@/assets/frame-1.jpg";
@@ -27,10 +29,13 @@ const getPlaceholderImage = (productId: string) => {
 };
 
 export const CartDrawer = () => {
-  const { cartItems, cartCount, cartTotal, updateQuantity, removeFromCart, isLoading } =
+  const { cartItems, cartCount, cartTotal, updateQuantity, removeFromCart, updateCartItemLens, isLoading } =
     useCart();
   const { isAuthenticated } = useAuth();
   const { activePrescriptions } = usePrescriptions();
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+
+  const editingItem = editingItemId ? cartItems.find(i => i.id === editingItemId) : null;
 
   const hasRxItems = cartItems.some(
     (item) => (item as any).lens_type && (item as any).lens_type !== "frame_only"
@@ -131,13 +136,13 @@ export const CartDrawer = () => {
                       {item.product?.style || "Eyewear"}
                     </p>
                     <p className="font-bold text-accent mt-1">
-                      ₦{(item.product?.price || 0).toLocaleString()}
+                      ₦{((item.product?.price || 0) + ((item as any).lens_price || 0)).toLocaleString()}
                     </p>
 
                     {/* Lens service sub-row */}
-                    {(item as any).lens_type && (item as any).lens_type !== "frame_only" && (
-                      <div className="mt-1.5 flex items-start gap-1.5 rounded-md bg-primary/5 border border-primary/15 px-2 py-1.5">
-                        <Eyeglasses weight="duotone" className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                    {(item as any).lens_type && (item as any).lens_type !== "frame_only" ? (
+                      <div className="mt-1.5 flex items-center gap-1.5 rounded-md bg-primary/5 border border-primary/15 px-2 py-1.5">
+                        <Eyeglasses weight="duotone" className="h-3.5 w-3.5 text-primary shrink-0" />
                         <div className="min-w-0 flex-1">
                           <p className="text-[11px] font-medium text-foreground leading-tight capitalize">
                             {((item as any).lens_type as string).replace(/_/g, " ")} lenses
@@ -150,8 +155,24 @@ export const CartDrawer = () => {
                             <p className="text-[11px] text-muted-foreground leading-tight">Included</p>
                           )}
                         </div>
+                        <button
+                          className="ml-auto text-[10px] text-primary/70 hover:text-primary flex items-center gap-0.5 shrink-0"
+                          onClick={() => setEditingItemId(item.id)}
+                        >
+                          <PencilSimple className="h-3 w-3" />
+                          Edit
+                        </button>
                       </div>
-                    )}
+                    ) : item.product?.item_type === "frames" ? (
+                      /* Frame without lens config — invite user to add lenses */
+                      <button
+                        className="mt-1.5 text-[11px] text-primary/60 hover:text-primary flex items-center gap-1"
+                        onClick={() => setEditingItemId(item.id)}
+                      >
+                        <PencilSimple className="h-3 w-3" />
+                        Add prescription lenses
+                      </button>
+                    ) : null}
 
                     {/* Quantity Controls */}
                     <div className="flex items-center justify-between mt-2">
@@ -247,6 +268,33 @@ export const CartDrawer = () => {
           </div>
         )}
       </SheetContent>
+
+      {/* Lens configurator — opens when user clicks "Edit lenses" on a cart item */}
+      {editingItem && editingItem.product && (
+        <LensConfigurator
+          open={!!editingItemId}
+          onOpenChange={(open) => { if (!open) setEditingItemId(null); }}
+          productName={editingItem.product.name || "Frame"}
+          productId={editingItem.product_id}
+          onConfirm={(config: LensConfig) => {
+            updateCartItemLens.mutate({
+              cartItemId: editingItem.id,
+              lensConfig: {
+                lens_type: config.lensType,
+                lens_index: config.lensIndex ?? null,
+                lens_coatings: config.lensCoatings ?? null,
+                lens_price: config.lensPrice ?? 0,
+                prescription_id: config.prescriptionId ?? null,
+                prescription_data: config.prescriptionData as Record<string, unknown> ?? null,
+                requires_fitting: config.requiresFitting ?? false,
+                fitting_booked: false,
+                frame_only: !config.lensType || config.lensType === "frame_only",
+              },
+            });
+            setEditingItemId(null);
+          }}
+        />
+      )}
     </Sheet>
   );
 };

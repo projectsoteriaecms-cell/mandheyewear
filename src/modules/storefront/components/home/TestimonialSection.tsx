@@ -89,10 +89,10 @@ export const TestimonialSection = () => {
         {/* Link */}
         <div className="mt-8 sm:mt-10">
           <Link
-            to="/reviews"
+            to="/shop"
             className="inline-flex items-center gap-2 text-sm font-display font-semibold tracking-wide uppercase text-mh-gold hover:gap-3 transition-all duration-300"
           >
-            See What Our Customers Are Saying
+            Shop Our Collection
             <ArrowRight weight="bold" className="w-4 h-4" />
           </Link>
         </div>

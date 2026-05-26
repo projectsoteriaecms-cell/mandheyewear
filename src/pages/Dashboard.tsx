@@ -18,6 +18,7 @@ import {
 } from "@/components/dashboard";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useWishlist } from "@/modules/orders/hooks/useWishlist";
+import { useOrders } from "@/modules/orders/hooks/useOrders";
 import { useAppointments } from "@/modules/appointments/hooks/useAppointments";
 import { usePrescriptions } from "@/modules/prescriptions/hooks/usePrescriptions";
 import { useUserRole } from "@/modules/auth/hooks/useUserRole";
@@ -46,6 +47,7 @@ const Dashboard = () => {
   const { wishlistCount } = useWishlist();
   const { data: appointments } = useAppointments();
   const { activePrescriptions } = usePrescriptions();
+  const { data: orders } = useOrders(user?.id);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -262,7 +264,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
             <div className="p-4 rounded-lg border bg-card">
               <ShoppingBag className="h-5 w-5 text-primary mb-2" />
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-2xl font-bold">{orders?.length ?? 0}</p>
               <p className="text-sm text-muted-foreground">Orders</p>
             </div>
             <div className="p-4 rounded-lg border bg-card">
@@ -280,73 +282,103 @@ const Dashboard = () => {
               <p className="text-2xl font-bold">{activePrescriptions.length}</p>
               <p className="text-sm text-muted-foreground">Rx Valid</p>
             </div>
-            <div className="p-4 rounded-lg border bg-card">
+            <div className="p-4 rounded-lg border bg-card cursor-pointer hover:bg-muted/40 transition-colors" onClick={() => {
+              const tabs = document.querySelector('[data-value="frame-profile"]') as HTMLElement;
+              tabs?.click();
+            }}>
               <Sparkles className="h-5 w-5 text-accent mb-2" />
-              <p className="text-2xl font-bold">-</p>
+              <p className="text-sm font-semibold text-muted-foreground mt-1">
+                {needsOnboarding ? "Not set up" : "Active"}
+              </p>
               <p className="text-sm text-muted-foreground">Frame Profile</p>
             </div>
           </div>
 
           {/* Tabs - Warby Parker Style */}
           <Tabs defaultValue={defaultTab} className="space-y-6">
-            <TabsList className="w-full justify-start overflow-x-auto flex-nowrap bg-transparent border-b rounded-none p-0 h-auto">
-              <TabsTrigger 
-                value="profile" 
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
-              >
-                <User className="mr-2 h-4 w-4 hidden sm:inline" />
-                Profile
-              </TabsTrigger>
-              <TabsTrigger 
-                value="orders"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
-              >
-                <ShoppingBag className="mr-2 h-4 w-4 hidden sm:inline" />
-                Orders
-              </TabsTrigger>
-              <TabsTrigger 
-                value="appointments"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
-              >
-                <Calendar className="mr-2 h-4 w-4 hidden sm:inline" />
-                Appointments
-              </TabsTrigger>
-              <TabsTrigger 
-                value="addresses"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
-              >
-                <MapPin className="mr-2 h-4 w-4 hidden sm:inline" />
-                Addresses
-              </TabsTrigger>
-              <TabsTrigger
-                value="wishlist"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
-              >
-                <Heart className="mr-2 h-4 w-4 hidden sm:inline" />
-                Favorites
-              </TabsTrigger>
-              <TabsTrigger
-                value="prescriptions"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
-              >
-                <ClipboardList className="mr-2 h-4 w-4 hidden sm:inline" />
-                Prescriptions
-              </TabsTrigger>
-              <TabsTrigger
-                value="frame-profile"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
-              >
-                <Sparkles className="mr-2 h-4 w-4 hidden sm:inline" />
-                Frame Profile
-              </TabsTrigger>
-              <TabsTrigger 
-                value="settings"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
-              >
-                <Settings className="mr-2 h-4 w-4 hidden sm:inline" />
-                Settings
-              </TabsTrigger>
-            </TabsList>
+            {/* Scrollable tab bar with fade-out hint on mobile */}
+            <div className="relative">
+              <TabsList className="w-full justify-start overflow-x-auto flex-nowrap bg-transparent border-b rounded-none p-0 h-auto scrollbar-hide">
+                <TabsTrigger
+                  value="profile"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
+                >
+                  <User className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Profile</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="orders"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
+                >
+                  <ShoppingBag className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Orders</span>
+                  {(orders?.length ?? 0) > 0 && (
+                    <span className="ml-1.5 hidden sm:inline-flex h-4 min-w-4 px-1 rounded-full bg-primary/15 text-primary text-[10px] font-bold items-center justify-center">
+                      {orders!.length}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="appointments"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
+                >
+                  <Calendar className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Appointments</span>
+                  {upcomingAppointments > 0 && (
+                    <span className="ml-1.5 hidden sm:inline-flex h-4 min-w-4 px-1 rounded-full bg-primary/15 text-primary text-[10px] font-bold items-center justify-center">
+                      {upcomingAppointments}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="addresses"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
+                >
+                  <MapPin className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Addresses</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="wishlist"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
+                >
+                  <Heart className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Favorites</span>
+                  {wishlistCount > 0 && (
+                    <span className="ml-1.5 hidden sm:inline-flex h-4 min-w-4 px-1 rounded-full bg-destructive/15 text-destructive text-[10px] font-bold items-center justify-center">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="prescriptions"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
+                >
+                  <ClipboardList className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Prescriptions</span>
+                  {activePrescriptions.length > 0 && (
+                    <span className="ml-1.5 hidden sm:inline-flex h-4 min-w-4 px-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold items-center justify-center">
+                      {activePrescriptions.length}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="frame-profile"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
+                >
+                  <Sparkles className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Frame Profile</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="settings"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
+                >
+                  <Settings className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Settings</span>
+                </TabsTrigger>
+              </TabsList>
+              {/* Right-side fade hint so users know the tab bar scrolls on mobile */}
+              <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-background to-transparent sm:hidden" />
+            </div>
 
             <TabsContent value="profile">
               <ProfileSection userId={user.id} />
