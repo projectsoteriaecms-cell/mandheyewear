@@ -142,9 +142,35 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
             </RadioGroup>
           </div>
 
+          <div className="space-y-2">
+            <Label>Target</Label>
+            <RadioGroup
+              value={target}
+              onValueChange={(v) => { setTarget(v as SeedImagesTarget); setDryRun(null); setCommitResult(null); }}
+              className="flex flex-wrap gap-6"
+            >
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="both" id="img-tgt-both" />
+                <Label htmlFor="img-tgt-both" className="font-normal cursor-pointer">Both — seed + anchor (recommended)</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="seed" id="img-tgt-seed" />
+                <Label htmlFor="img-tgt-seed" className="font-normal cursor-pointer">Seed only (thumbnails)</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="anchor" id="img-tgt-anchor" />
+                <Label htmlFor="img-tgt-anchor" className="font-normal cursor-pointer">Anchor only (VTO/AR source)</Label>
+              </div>
+            </RadioGroup>
+            <p className="text-xs text-muted-foreground">
+              Anchor uploads also publish each file to the bucket root as MH-SKU.ext, then auto-run Link Anchor Images to lock the primary.
+            </p>
+          </div>
+
           {source === "upload" && (
             <div className="space-y-2">
               <Label htmlFor="seed-img-files" className="flex items-center gap-2">
+
                 <Upload className="h-4 w-4" /> Choose files (multiple)
               </Label>
               <input
