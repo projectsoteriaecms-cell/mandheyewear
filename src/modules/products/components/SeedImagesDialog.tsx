@@ -15,8 +15,10 @@ import {
   type SeedImagesDryRunResult,
   type SeedImagesCommitResult,
   type SeedImagesSource,
+  type SeedImagesTarget,
   type SeedImageFile,
 } from "../hooks/useSeedImages";
+
 
 interface Props {
   open: boolean;
@@ -28,7 +30,9 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
   const seed = useSeedImages();
 
   const [source, setSource] = useState<SeedImagesSource>("bundled");
+  const [target, setTarget] = useState<SeedImagesTarget>("both");
   const [skipFilled, setSkipFilled] = useState(true);
+
   const [uploadedFiles, setUploadedFiles] = useState<SeedImageFile[]>([]);
   const [dryRun, setDryRun] = useState<SeedImagesDryRunResult | null>(null);
   const [commitResult, setCommitResult] = useState<SeedImagesCommitResult | null>(null);
@@ -70,6 +74,7 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
       const res = (await seed.mutateAsync({
         mode: "dry_run",
         source,
+        target,
         skipFilled,
         files: source === "upload" ? uploadedFiles : undefined,
       })) as SeedImagesDryRunResult;
@@ -84,13 +89,15 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
       const res = (await seed.mutateAsync({
         mode: "commit",
         source,
+        target,
         skipFilled,
         files: source === "upload" ? uploadedFiles : undefined,
       })) as SeedImagesCommitResult;
       setCommitResult(res);
+      const linkedMsg = res.anchorLink?.linked != null ? ` · ${res.anchorLink.linked} anchor(s) linked` : "";
       toast({
         title: "Image seed complete",
-        description: `${res.uploaded} image(s) uploaded · ${res.errors.length} error(s)`,
+        description: `${res.uploaded} seeded · ${res.anchorUploaded ?? 0} anchor(s)${linkedMsg} · ${res.errors.length} error(s)`,
       });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       qc.invalidateQueries({ queryKey: ["products"] });
@@ -99,6 +106,7 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
       toast({ title: "Commit failed", description: (e as Error).message, variant: "destructive" });
     }
   };
+
 
   const canAnalyze = source === "bundled" || uploadedFiles.length > 0;
   const planRows = useMemo(() => dryRun?.plan ?? [], [dryRun]);
@@ -134,9 +142,35 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
             </RadioGroup>
           </div>
 
+          <div className="space-y-2">
+            <Label>Target</Label>
+            <RadioGroup
+              value={target}
+              onValueChange={(v) => { setTarget(v as SeedImagesTarget); setDryRun(null); setCommitResult(null); }}
+              className="flex flex-wrap gap-6"
+            >
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="both" id="img-tgt-both" />
+                <Label htmlFor="img-tgt-both" className="font-normal cursor-pointer">Both — seed + anchor (recommended)</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="seed" id="img-tgt-seed" />
+                <Label htmlFor="img-tgt-seed" className="font-normal cursor-pointer">Seed only (thumbnails)</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="anchor" id="img-tgt-anchor" />
+                <Label htmlFor="img-tgt-anchor" className="font-normal cursor-pointer">Anchor only (VTO/AR source)</Label>
+              </div>
+            </RadioGroup>
+            <p className="text-xs text-muted-foreground">
+              Anchor uploads also publish each file to the bucket root as MH-SKU.ext, then auto-run Link Anchor Images to lock the primary.
+            </p>
+          </div>
+
           {source === "upload" && (
             <div className="space-y-2">
               <Label htmlFor="seed-img-files" className="flex items-center gap-2">
+
                 <Upload className="h-4 w-4" /> Choose files (multiple)
               </Label>
               <input
@@ -234,11 +268,21 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
                 Upload finished
               </div>
               <div className="flex flex-wrap gap-2 text-sm">
-                <Badge variant="default">Uploaded: {commitResult.uploaded}</Badge>
+                <Badge variant="default">Seeded: {commitResult.uploaded}</Badge>
+                {commitResult.anchorUploaded != null && (
+                  <Badge variant="secondary">Anchor uploads: {commitResult.anchorUploaded}</Badge>
+                )}
+                {commitResult.anchorLink?.linked != null && (
+                  <Badge variant="secondary">Anchors linked: {commitResult.anchorLink.linked}</Badge>
+                )}
                 {commitResult.errors.length > 0 && (
                   <Badge variant="destructive">Errors: {commitResult.errors.length}</Badge>
                 )}
               </div>
+              {commitResult.anchorLink?.error && (
+                <p className="text-xs text-destructive">Link Anchor Images: {commitResult.anchorLink.error}</p>
+              )}
+
               {commitResult.errors.length > 0 && (
                 <details className="text-xs">
                   <summary className="cursor-pointer">Error details</summary>
