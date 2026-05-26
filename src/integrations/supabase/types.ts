@@ -249,34 +249,65 @@ export type Database = {
         Row: {
           created_at: string
           expires_at: string | null
+          fitting_booked: boolean
+          frame_only: boolean
           id: string
+          lens_coatings: string[] | null
+          lens_index: string | null
+          lens_price: number
+          lens_type: string | null
           prescription_data: Json | null
+          prescription_id: string | null
           product_id: string
           quantity: number
+          requires_fitting: boolean
           reserved_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
           expires_at?: string | null
+          fitting_booked?: boolean
+          frame_only?: boolean
           id?: string
+          lens_coatings?: string[] | null
+          lens_index?: string | null
+          lens_price?: number
+          lens_type?: string | null
           prescription_data?: Json | null
+          prescription_id?: string | null
           product_id: string
           quantity?: number
+          requires_fitting?: boolean
           reserved_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
           expires_at?: string | null
+          fitting_booked?: boolean
+          frame_only?: boolean
           id?: string
+          lens_coatings?: string[] | null
+          lens_index?: string | null
+          lens_price?: number
+          lens_type?: string | null
           prescription_data?: Json | null
+          prescription_id?: string | null
           product_id?: string
           quantity?: number
+          requires_fitting?: boolean
           reserved_at?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "cart_items_prescription_id_fkey"
+            columns: ["prescription_id"]
+            isOneToOne: false
+            referencedRelation: "user_prescriptions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cart_items_product_id_fkey"
             columns: ["product_id"]
@@ -808,30 +839,54 @@ export type Database = {
       order_items: {
         Row: {
           created_at: string
+          fitting_booked: boolean
+          frame_only: boolean
           id: string
+          lens_coatings: string[] | null
+          lens_index: string | null
+          lens_price: number
+          lens_type: string | null
           order_id: string
           prescription_data: Json | null
+          prescription_id: string | null
           price_at_purchase: number
           product_id: string
           quantity: number
+          requires_fitting: boolean
         }
         Insert: {
           created_at?: string
+          fitting_booked?: boolean
+          frame_only?: boolean
           id?: string
+          lens_coatings?: string[] | null
+          lens_index?: string | null
+          lens_price?: number
+          lens_type?: string | null
           order_id: string
           prescription_data?: Json | null
+          prescription_id?: string | null
           price_at_purchase: number
           product_id: string
           quantity?: number
+          requires_fitting?: boolean
         }
         Update: {
           created_at?: string
+          fitting_booked?: boolean
+          frame_only?: boolean
           id?: string
+          lens_coatings?: string[] | null
+          lens_index?: string | null
+          lens_price?: number
+          lens_type?: string | null
           order_id?: string
           prescription_data?: Json | null
+          prescription_id?: string | null
           price_at_purchase?: number
           product_id?: string
           quantity?: number
+          requires_fitting?: boolean
         }
         Relationships: [
           {
@@ -1983,6 +2038,69 @@ export type Database = {
           pupillary_distance_mm?: number | null
           raw_analysis?: Json | null
           temple_width_mm?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_prescriptions: {
+        Row: {
+          clinic_name: string | null
+          created_at: string
+          document_url: string | null
+          expiry_date: string | null
+          id: string
+          is_active: boolean
+          issued_date: string | null
+          left_eye: Json | null
+          notes: string | null
+          pd_distance: number | null
+          pd_left: number | null
+          pd_near: number | null
+          pd_right: number | null
+          prescriber_name: string | null
+          right_eye: Json | null
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clinic_name?: string | null
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          issued_date?: string | null
+          left_eye?: Json | null
+          notes?: string | null
+          pd_distance?: number | null
+          pd_left?: number | null
+          pd_near?: number | null
+          pd_right?: number | null
+          prescriber_name?: string | null
+          right_eye?: Json | null
+          source?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clinic_name?: string | null
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          issued_date?: string | null
+          left_eye?: Json | null
+          notes?: string | null
+          pd_distance?: number | null
+          pd_left?: number | null
+          pd_near?: number | null
+          pd_right?: number | null
+          prescriber_name?: string | null
+          right_eye?: Json | null
+          source?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
