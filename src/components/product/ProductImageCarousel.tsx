@@ -1,9 +1,21 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, lazy, Suspense } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, ImageOff, X, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageOff, X, RotateCcw, Box, Image as ImageIcon, Loader2 } from "lucide-react";
 import { getDisplayImages } from "@/modules/products/lib/image-utils";
+
+const ProductFrame3DViewer = lazy(() =>
+  import("./ProductFrame3DViewer").then((m) => ({ default: m.ProductFrame3DViewer }))
+);
+
+export interface Frame3DAttributes {
+  lensWidth?: number | null;
+  bridgeSize?: number | null;
+  templeLength?: number | null;
+  frameShape?: string | null;
+  color?: string | null;
+}
 
 interface ProductImageCarouselProps {
   mainImage: string | null;
@@ -14,6 +26,8 @@ interface ProductImageCarouselProps {
   className?: string;
   /** When true the first (anchor) image spins 360° on its Y axis */
   isAnchorLocked?: boolean;
+  /** When provided, enables a "3D" toggle that swaps the main view for an interactive parametric model */
+  frame3D?: Frame3DAttributes | null;
 }
 
 export const ProductImageCarousel = ({
