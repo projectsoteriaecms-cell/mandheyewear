@@ -75,7 +75,7 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
             <img
               src={imageUrl}
               alt={product.name}
-              className="w-full h-full object-contain p-3 sm:p-4 transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-contain scale-[1.3] transition-transform duration-500 group-hover:scale-[1.4]"
             />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
             
