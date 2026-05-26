@@ -97,14 +97,14 @@ export const ProductCard = ({ product, onQuickView }: ProductCardProps) => {
   return (
     <div className="block touch-feedback" onClick={handleCardClick} role="button" tabIndex={0}>
       <Card className="group overflow-hidden hover:shadow-gold transition-all cursor-pointer mobile-card">
-        <div className="relative h-48 sm:h-64 overflow-hidden bg-secondary">
+        <div className="product-surface relative h-48 sm:h-64 overflow-hidden rounded-md ring-1 ring-border/40">
           <img
             src={imageUrl}
             alt={product.name}
             loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-full object-contain p-3 sm:p-4 transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all" />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
           
           {/* Stock badge */}
           {stockStatus !== "unknown" && (
