@@ -102,7 +102,7 @@ export const ProductCard = ({ product, onQuickView }: ProductCardProps) => {
             src={imageUrl}
             alt={product.name}
             loading="lazy"
-            className="w-full h-full object-contain scale-[1.35] transition-transform duration-500 group-hover:scale-[1.45]"
+            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.05]"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
           
