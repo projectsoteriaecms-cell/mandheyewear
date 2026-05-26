@@ -103,27 +103,30 @@ const Eyewear = () => {
         return p.item_type === categoryFilter;
       })
       .sort((a, b) => {
+        // Tier score helper — luxury at top, untiered at bottom
+        const tierScore = (p: typeof a) => {
+          if (p.price_tier === "luxury") return 4;
+          if (p.price_tier === "premium") return 3;
+          if (p.price_tier === "standard") return 2;
+          if (p.price_tier === "budget") return 1;
+          return 0;
+        };
+
+        // Primary: products with images always surface above those without
         const aHasImage = a.image_url ? 1 : 0;
         const bHasImage = b.image_url ? 1 : 0;
         if (aHasImage !== bHasImage) return bHasImage - aHasImage;
 
+        // Manual sort overrides (user chose a different order in the sidebar)
         if (priceSort === "low-high") return a.price - b.price;
         if (priceSort === "high-low") return b.price - a.price;
         if (priceSort === "newest") {
           return new Date((b as any).created_at || 0).getTime() -
                  new Date((a as any).created_at || 0).getTime();
         }
-        if (priceSort === "trending") {
-          // Proxy for trending: premium/luxury tiers with images first
-          const tierScore = (p: typeof a) => {
-            if (p.price_tier === "luxury") return 4;
-            if (p.price_tier === "premium") return 3;
-            if (p.price_tier === "standard") return 2;
-            return 1;
-          };
-          return tierScore(b) - tierScore(a);
-        }
-        return 0;
+
+        // Default ("featured") and "trending": highest tier first within each image group
+        return tierScore(b) - tierScore(a);
       });
   }, [products, genderFilter, styleFilter, priceSort, priceTierFilter, categoryFilter]);
 
