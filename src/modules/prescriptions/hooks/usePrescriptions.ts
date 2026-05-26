@@ -66,7 +66,7 @@ export function usePrescriptions() {
         .eq("is_active", true)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as Prescription[];
+      return (data ?? []) as unknown as Prescription[];
     },
     enabled: !!user,
   });
@@ -76,11 +76,11 @@ export function usePrescriptions() {
       if (!user) throw new Error("Not authenticated");
       const { data, error } = await supabase
         .from("user_prescriptions")
-        .insert({ ...rx, user_id: user.id })
+        .insert({ ...rx, user_id: user.id } as never)
         .select()
         .single();
       if (error) throw error;
-      return data as Prescription;
+      return data as unknown as Prescription;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["prescriptions", user?.id] });
