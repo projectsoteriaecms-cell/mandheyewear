@@ -268,11 +268,21 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
                 Upload finished
               </div>
               <div className="flex flex-wrap gap-2 text-sm">
-                <Badge variant="default">Uploaded: {commitResult.uploaded}</Badge>
+                <Badge variant="default">Seeded: {commitResult.uploaded}</Badge>
+                {commitResult.anchorUploaded != null && (
+                  <Badge variant="secondary">Anchor uploads: {commitResult.anchorUploaded}</Badge>
+                )}
+                {commitResult.anchorLink?.linked != null && (
+                  <Badge variant="secondary">Anchors linked: {commitResult.anchorLink.linked}</Badge>
+                )}
                 {commitResult.errors.length > 0 && (
                   <Badge variant="destructive">Errors: {commitResult.errors.length}</Badge>
                 )}
               </div>
+              {commitResult.anchorLink?.error && (
+                <p className="text-xs text-destructive">Link Anchor Images: {commitResult.anchorLink.error}</p>
+              )}
+
               {commitResult.errors.length > 0 && (
                 <details className="text-xs">
                   <summary className="cursor-pointer">Error details</summary>
