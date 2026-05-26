@@ -37,10 +37,13 @@ export const ProductImageCarousel = ({
   variant = "pdp",
   className,
   isAnchorLocked = false,
+  frame3D = null,
 }: ProductImageCarouselProps) => {
   const images = getDisplayImages({ image_url: mainImage, additional_images: additionalImages });
   const hasImages = images.length > 0;
+  const has3D = !!(frame3D && (frame3D.lensWidth || frame3D.frameShape));
 
+  const [view, setView] = useState<"2d" | "3d">("2d");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
