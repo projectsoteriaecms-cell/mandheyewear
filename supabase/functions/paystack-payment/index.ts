@@ -220,6 +220,26 @@ async function handleVerify(
 
   // Send order notification email (non-blocking)
   try {
+    // Derive Rx / fitting flags from metadata cart items (richer than DB cart)
+    const metaCartItems: any[] = metadata.cart_items || [];
+    const hasRxItems = metaCartItems.some(
+      (ci: any) => ci.lens_type && ci.lens_type !== "frame_only"
+    );
+    const requiresFitting = metaCartItems.some(
+      (ci: any) => ci.requires_fitting === true
+    );
+
+    // Build enriched items list: prefer metadata (has lens prices) over DB items
+    const emailItems = (metaCartItems.length > 0 ? metaCartItems : cartItems).map(
+      (item: any) => ({
+        product_name: item.name || item.product_name || "Product",
+        quantity: item.quantity,
+        price: item.price || 0,
+        lens_type: item.lens_type || null,
+        lens_price: item.lens_price || 0,
+      })
+    );
+
     const notificationPayload = {
       order_id: order.id,
       order_number: order.order_number,
@@ -232,11 +252,9 @@ async function handleVerify(
       total_amount: totalAmount,
       payment_reference: reference,
       currency: "NGN",
-      items: cartItems.map((item: any) => ({
-        product_name: item.name || "Product",
-        quantity: item.quantity,
-        price: item.price,
-      })),
+      has_rx_items: hasRxItems,
+      requires_fitting: requiresFitting,
+      items: emailItems,
       notify_customer: true,
     };
 

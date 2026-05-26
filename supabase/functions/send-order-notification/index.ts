@@ -28,10 +28,14 @@ interface OrderNotificationBody {
   total_amount: number;
   payment_reference: string;
   currency: string;
+  has_rx_items?: boolean;
+  requires_fitting?: boolean;
   items: Array<{
     product_name: string;
     quantity: number;
     price: number;
+    lens_type?: string | null;
+    lens_price?: number;
   }>;
   notify_customer?: boolean;
   // Shipping-specific
@@ -72,7 +76,19 @@ function buildOperationsEmail(data: OrderNotificationBody): string {
   const addr = data.shipping_address;
   const addressParts = [addr.address, addr.landmark && `📍 ${addr.landmark}`, addr.city, addr.state || addr.region, addr.postal_code, addr.country].filter(Boolean);
 
+  const rxBanner = data.requires_fitting
+    ? `<div style="background:#fff3e0;border-left:4px solid #f57c00;padding:12px 16px;margin:0 0 20px;border-radius:0 8px 8px 0;">
+        <p style="margin:0;font-size:14px;font-weight:700;color:#e65100;">🔧 FITTING APPOINTMENT REQUIRED</p>
+        <p style="margin:4px 0 0;font-size:13px;color:#6d4c41;">This order contains prescription lenses. Customer must book an in-store fitting before dispensing. Check admin panel for details.</p>
+      </div>`
+    : data.has_rx_items
+    ? `<div style="background:#e8f4fd;border-left:4px solid #1976d2;padding:12px 16px;margin:0 0 20px;border-radius:0 8px 8px 0;">
+        <p style="margin:0;font-size:13px;color:#1565c0;">👓 Rx order — prescription lenses included.</p>
+      </div>`
+    : "";
+
   return emailWrapper("#1a1a2e", "🛒", "New Order Received", `Order ${data.order_number}`, `
+    ${rxBanner}
     <table style="width:100%;font-size:14px;margin-bottom:20px;">
       <tr><td style="padding:4px 0;color:#888;width:120px;">Name:</td><td style="font-weight:600;">${data.customer_name}</td></tr>
       <tr><td style="padding:4px 0;color:#888;">Email:</td><td>${data.customer_email}</td></tr>
@@ -98,12 +114,37 @@ function buildOperationsEmail(data: OrderNotificationBody): string {
 
 // ─── Customer: Order Confirmation ───
 function buildCustomerConfirmationEmail(data: OrderNotificationBody): string {
-  const itemsList = data.items.map(item =>
-    `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;">
-      <span style="color:#333;">${item.product_name} × ${item.quantity}</span>
-      <span style="color:#1a1a2e;font-weight:600;">₦${item.price.toLocaleString()}</span>
-    </div>`
-  ).join("");
+  const itemsList = data.items.map(item => {
+    const hasLens = item.lens_type && item.lens_type !== "frame_only";
+    const lensLabel = hasLens
+      ? item.lens_type!.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())
+      : null;
+    return `<div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <span style="color:#333;font-size:14px;">${item.product_name} × ${item.quantity}</span>
+        <span style="color:#1a1a2e;font-weight:600;font-size:14px;white-space:nowrap;margin-left:12px;">₦${item.price.toLocaleString()}</span>
+      </div>
+      ${hasLens ? `<div style="display:inline-flex;align-items:center;gap:6px;background:#f0f4ff;border:1px solid #dce4ff;border-radius:4px;padding:3px 8px;margin-top:4px;">
+        <span style="font-size:12px;color:#3b5bdb;">🔹 ${lensLabel} lenses${item.lens_price && item.lens_price > 0 ? ` (+₦${item.lens_price.toLocaleString()})` : ""}</span>
+      </div>` : ""}
+    </div>`;
+  }).join("");
+
+  const fittingReminder = data.requires_fitting ? `
+    <div style="background:#fff8e1;border:2px solid #ffc107;border-radius:10px;padding:18px 20px;margin:0 0 20px;">
+      <p style="margin:0 0 8px;font-size:15px;font-weight:700;color:#e65100;">🔧 Fitting Appointment Required</p>
+      <p style="margin:0 0 12px;font-size:13px;color:#5d4037;line-height:1.6;">
+        Your order includes prescription lenses that require a free <strong>30-minute in-store fitting appointment</strong>
+        before we can dispense them. Please book your slot at your nearest M&H branch as soon as possible to avoid delays.
+      </p>
+      <div style="text-align:center;">
+        <a href="${SITE_URL}/dashboard?tab=orders"
+           style="display:inline-block;background:#f57c00;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;">
+          Book Fitting Appointment
+        </a>
+      </div>
+    </div>
+  ` : "";
 
   return emailWrapper("#1a1a2e", "✅", "Order Confirmed!", data.order_number, `
     <p style="font-size:16px;color:#333;margin:0 0 8px;">Hi ${data.customer_name},</p>
@@ -114,13 +155,14 @@ function buildCustomerConfirmationEmail(data: OrderNotificationBody): string {
       <p style="margin:0 0 6px;font-size:14px;"><strong>Order Number:</strong> ${data.order_number}</p>
       <p style="margin:0;font-size:14px;"><strong>Total:</strong> ₦${data.total_amount.toLocaleString()}</p>
     </div>
+    ${fittingReminder}
     <h3 style="font-size:14px;color:#555;margin:0 0 10px;text-transform:uppercase;letter-spacing:0.5px;">Order Items</h3>
     ${itemsList}
     <p style="font-size:14px;color:#666;margin:20px 0 0;line-height:1.6;">
       We'll notify you once your order ships. You can track your order status at any time on our website.
     </p>
     <div style="text-align:center;margin:24px 0 0;">
-      <a href="${SITE_URL}/dashboard" style="display:inline-block;background:#1a1a2e;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">View My Orders</a>
+      <a href="${SITE_URL}/dashboard?tab=orders" style="display:inline-block;background:#1a1a2e;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">View My Orders</a>
     </div>
   `);
 }
