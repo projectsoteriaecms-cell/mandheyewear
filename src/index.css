@@ -799,3 +799,25 @@ All colors MUST be HSL.
 .product-description ul li strong {
   color: hsl(var(--foreground));
 }
+
+/* Product surface tile: white stage for transparent frame PNGs.
+   Adds soft contact shadow at the bottom so the frame appears to rest on a surface. */
+.product-surface {
+  background-color: #ffffff;
+  position: relative;
+  isolation: isolate;
+}
+.product-surface::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 6%;
+  height: 12%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, hsl(var(--foreground) / 0.18) 0%, hsl(var(--foreground) / 0.06) 45%, transparent 75%);
+  filter: blur(6px);
+  pointer-events: none;
+  z-index: 0;
+}
+.product-surface > * { position: relative; z-index: 1; }
