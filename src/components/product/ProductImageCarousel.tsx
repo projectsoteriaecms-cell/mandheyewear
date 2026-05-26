@@ -108,7 +108,7 @@ export const ProductImageCarousel = ({
                     src={src}
                     alt={`${productName} - View ${i + 1}`}
                     className={cn(
-                      "w-full h-full object-contain p-4 md:p-6 transition-transform duration-300",
+                      "w-full h-full object-contain scale-[1.25] transition-transform duration-300",
                       isZoomed && selectedIndex === i && "hidden md:block"
                     )}
                     draggable={false}
