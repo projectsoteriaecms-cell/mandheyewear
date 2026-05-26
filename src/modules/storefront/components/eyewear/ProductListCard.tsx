@@ -71,7 +71,7 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
       <Card className="group overflow-hidden hover:shadow-gold transition-all cursor-pointer">
         <div className="flex flex-col sm:flex-row">
           {/* Image Section */}
-          <div className="product-surface relative w-full sm:w-48 md:w-56 h-48 sm:h-auto flex-shrink-0 overflow-hidden ring-1 ring-border/40">
+          <div data-surface="list" className="product-surface relative w-full sm:w-48 md:w-56 h-48 sm:h-auto flex-shrink-0 overflow-hidden ring-1 ring-border/40">
             <img
               src={imageUrl}
               alt={product.name}
