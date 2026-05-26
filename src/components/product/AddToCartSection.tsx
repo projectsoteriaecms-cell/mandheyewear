@@ -196,22 +196,6 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
         )}
       </div>
 
-      {/* Lens summary chip — shows after configuration */}
-      {lensConfig && isFrame && (
-        <button
-          onClick={() => { setPendingAction(null); setLensConfigOpen(true); }}
-          className="w-full text-left"
-        >
-          <LensSummaryChip
-            lensType={lensConfig.lensType}
-            fittingBooked={lensConfig.fittingBooked}
-            lensPrice={lensConfig.lensPrice}
-            className="mt-1"
-          />
-          <p className="text-xs text-muted-foreground mt-1">Tap to change lens selection</p>
-        </button>
-      )}
-
       {/* Trust Badges — compact single row */}
       <div className="flex gap-2 pt-2 border-t text-center">
         <div className="flex-1 py-1.5 bg-muted rounded-md">
