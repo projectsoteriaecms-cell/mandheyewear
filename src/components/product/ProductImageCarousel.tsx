@@ -254,6 +254,8 @@ export const ProductImageCarousel = ({
               ))}
             </div>
           )}
+          )}
+
 
           {/* 360° badge — top-left, only on the anchor slide */}
           {isAnchorLocked && selectedIndex === 0 && (
