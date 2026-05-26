@@ -235,9 +235,22 @@ const Checkout = () => {
             amount: amountInKobo,
             metadata: {
               cart_items: cartItems.map(item => ({
-                product_id: item.product_id,
-                quantity: item.quantity,
-                price: item.product?.price || 0,
+                product_id:       item.product_id,
+                quantity:         item.quantity,
+                // Total price per unit (frame + lens)
+                price:            (item.product?.price || 0) + ((item as any).lens_price || 0),
+                frame_price:      item.product?.price || 0,
+                // Lens fulfilment columns — passed through so the edge function
+                // can write them if it supports extra fields
+                lens_type:        (item as any).lens_type        ?? null,
+                lens_index:       (item as any).lens_index       ?? null,
+                lens_coatings:    (item as any).lens_coatings    ?? null,
+                lens_price:       (item as any).lens_price       ?? 0,
+                prescription_id:  (item as any).prescription_id  ?? null,
+                prescription_data: (item as any).prescription_data ?? null,
+                requires_fitting: (item as any).requires_fitting ?? false,
+                fitting_booked:   (item as any).fitting_booked   ?? false,
+                frame_only: (item as any).lens_type == null || (item as any).lens_type === "frame_only",
               })),
               shipping_address: shippingAddress,
               delivery_instructions: additionalInfo || undefined,
@@ -279,6 +292,39 @@ const Checkout = () => {
                 title: "Payment Successful! 🎉",
                 description: `Order ${verifyData.order_number} has been placed.`,
               });
+
+              // ── Lens data sync ──────────────────────────────────────────────
+              // Client-side UPDATE writes all lens columns to order_items.
+              // This is a safety net: works regardless of whether the edge
+              // function already wrote them. Non-blocking — order flow
+              // continues even if this fails.
+              const rxItems = cartItems.filter(
+                (ci) => (ci as any).lens_type && (ci as any).lens_type !== "frame_only"
+              );
+              if (rxItems.length > 0 && verifyData.order_id) {
+                Promise.allSettled(
+                  rxItems.map((ci) =>
+                    supabase
+                      .from("order_items")
+                      .update({
+                        lens_type:         (ci as any).lens_type,
+                        lens_index:        (ci as any).lens_index        ?? null,
+                        lens_coatings:     (ci as any).lens_coatings     ?? null,
+                        lens_price:        (ci as any).lens_price        ?? 0,
+                        prescription_id:   (ci as any).prescription_id   ?? null,
+                        prescription_data: (ci as any).prescription_data ?? null,
+                        requires_fitting:  (ci as any).requires_fitting  ?? false,
+                        fitting_booked:    (ci as any).fitting_booked    ?? false,
+                        frame_only:        false,
+                        price_at_purchase:
+                          (ci.product?.price || 0) + ((ci as any).lens_price || 0),
+                      })
+                      .eq("order_id", verifyData.order_id)
+                      .eq("product_id", ci.product_id)
+                  )
+                ).catch(() => {/* silent — order confirmation still proceeds */});
+              }
+              // ───────────────────────────────────────────────────────────────
 
               supabase.functions.invoke("zoho-sync", {
                 body: { action: "push_order", order_id: verifyData.order_id },

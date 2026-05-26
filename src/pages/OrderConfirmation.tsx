@@ -9,16 +9,17 @@ import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { 
-  CheckCircle, 
-  Package, 
-  Truck, 
-  MapPin, 
+import {
+  CheckCircle,
+  Package,
+  Truck,
+  MapPin,
   ArrowRight,
   ShoppingBag,
   Calendar,
   Copy,
-  Check
+  Check,
+  Glasses,
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/shared/hooks/use-toast";
@@ -48,6 +49,11 @@ const OrderConfirmation = () => {
             id,
             quantity,
             price_at_purchase,
+            lens_type,
+            lens_price,
+            lens_index,
+            frame_only,
+            requires_fitting,
             product:products (
               id,
               name,
@@ -215,32 +221,72 @@ const OrderConfirmation = () => {
             <CardContent className="p-6">
               <h2 className="font-semibold text-foreground mb-4">Order Items</h2>
               <div className="space-y-4">
-                {order.order_items?.map((item: any) => (
-                  <div key={item.id} className="flex gap-4">
-                    <div className="h-16 w-16 rounded-md overflow-hidden bg-secondary flex-shrink-0">
-                      {item.product?.image_url ? (
-                        <img
-                          src={item.product.image_url}
-                          alt={item.product.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center">
-                          <ShoppingBag className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                      )}
+                {order.order_items?.map((item: any) => {
+                  const hasLens = item.lens_type && item.lens_type !== "frame_only";
+                  const framePrice = item.price_at_purchase - (item.lens_price || 0);
+                  return (
+                    <div key={item.id} className="flex gap-4">
+                      {/* Thumbnail */}
+                      <div
+                        className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0"
+                        style={{ background: "radial-gradient(ellipse at 50% 42%, #fdfcfa 0%, #f0ede6 55%, #e4e0d8 100%)" }}
+                      >
+                        {item.product?.image_url ? (
+                          <img
+                            src={item.product.image_url}
+                            alt={item.product.name}
+                            className="h-full w-full object-contain p-[8%]"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center">
+                            <ShoppingBag className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium leading-snug">{item.product?.name || "Product"}</p>
+                        <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+
+                        {/* Lens service sub-row */}
+                        {hasLens && (
+                          <div className="mt-1.5 flex items-start gap-1.5 rounded-md bg-primary/5 border border-primary/15 px-2 py-1 w-fit">
+                            <Glasses className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-[11px] font-medium text-foreground leading-tight capitalize">
+                                {(item.lens_type as string).replace(/_/g, " ")} lenses
+                                {item.lens_index ? ` · ${item.lens_index}` : ""}
+                              </p>
+                              {item.lens_price > 0 && (
+                                <p className="text-[11px] text-accent font-semibold leading-tight">
+                                  +₦{(item.lens_price as number).toLocaleString()}
+                                </p>
+                              )}
+                              {item.requires_fitting && (
+                                <p className="text-[10px] text-muted-foreground leading-tight">
+                                  Fitting appointment required
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Price */}
+                      <div className="text-right shrink-0">
+                        <p className="font-bold text-accent">
+                          ₦{item.price_at_purchase.toLocaleString()}
+                        </p>
+                        {hasLens && item.lens_price > 0 && (
+                          <p className="text-[11px] text-muted-foreground">
+                            Frame ₦{framePrice.toLocaleString()}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{item.product?.name || "Product"}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Qty: {item.quantity}
-                      </p>
-                    </div>
-                    <p className="font-bold text-accent">
-                      ₦{item.price_at_purchase.toLocaleString()}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="border-t mt-4 pt-4">
                 <div className="flex justify-between text-lg font-bold">
