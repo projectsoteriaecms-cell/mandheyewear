@@ -1,4 +1,5 @@
 import { Separator } from "@/components/ui/separator";
+import { Eyeglasses } from "@phosphor-icons/react";
 import type { CartItem } from "@/modules/orders/hooks/useCart";
 
 // Import placeholder images
@@ -38,26 +39,49 @@ export const OrderSummary = ({
       <h3 className="text-lg font-semibold">Order Summary</h3>
 
       <div className="space-y-3 max-h-64 overflow-y-auto">
-        {cartItems.map((item) => (
-          <div key={item.id} className="flex gap-3">
-            <div className="h-16 w-16 rounded-md overflow-hidden bg-secondary flex-shrink-0">
-              <img
-                src={item.product?.image_url || getPlaceholderImage(item.product_id)}
-                alt={item.product?.name || "Product"}
-                className="h-full w-full object-cover"
-              />
+        {cartItems.map((item) => {
+          const framePrice = item.product?.price || 0;
+          const lensPrice = (item as any).lens_price || 0;
+          const lensType = (item as any).lens_type as string | undefined;
+          const hasLens = lensType && lensType !== "frame_only";
+          const itemTotal = (framePrice + lensPrice) * item.quantity;
+
+          return (
+            <div key={item.id} className="flex gap-3">
+              <div
+                className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0"
+                style={{ background: "radial-gradient(ellipse at 50% 42%, #fdfcfa 0%, #f0ede6 55%, #e4e0d8 100%)" }}
+              >
+                <img
+                  src={item.product?.image_url || getPlaceholderImage(item.product_id)}
+                  alt={item.product?.name || "Product"}
+                  className="h-full w-full object-contain p-[8%]"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium line-clamp-1">
+                  {item.product?.name}
+                </p>
+                <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+
+                {/* Lens service sub-row */}
+                {hasLens && (
+                  <div className="mt-1 flex items-center gap-1 rounded bg-primary/5 border border-primary/15 px-1.5 py-0.5">
+                    <Eyeglasses weight="duotone" className="h-3 w-3 text-primary shrink-0" />
+                    <p className="text-[10px] font-medium text-foreground capitalize truncate">
+                      {lensType!.replace(/_/g, " ")} lenses
+                      {lensPrice > 0 ? ` • +₦${lensPrice.toLocaleString()}` : ""}
+                    </p>
+                  </div>
+                )}
+
+                <p className="text-sm font-semibold text-accent mt-0.5">
+                  ₦{itemTotal.toLocaleString()}
+                </p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium line-clamp-1">
-                {item.product?.name}
-              </p>
-              <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
-              <p className="text-sm font-semibold text-accent">
-                ₦{((item.product?.price || 0) * item.quantity).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <Separator />

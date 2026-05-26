@@ -219,7 +219,8 @@ export const useCart = () => {
   const cartItems = cartQuery.data || [];
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotal = cartItems.reduce(
-    (sum, item) => sum + (item.product?.price || 0) * item.quantity,
+    (sum, item) =>
+      sum + ((item.product?.price || 0) + ((item as any).lens_price || 0)) * item.quantity,
     0
   );
 

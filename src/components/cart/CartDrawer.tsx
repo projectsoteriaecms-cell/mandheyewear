@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { Bag, Minus, Plus, Trash, CircleNotch } from "@phosphor-icons/react";
+import { Bag, Minus, Plus, Trash, CircleNotch, Eyeglasses } from "@phosphor-icons/react";
 
 // Import placeholder images
 import frame1 from "@/assets/frame-1.jpg";
@@ -98,14 +98,17 @@ export const CartDrawer = () => {
                   className="flex gap-4 p-4 border rounded-lg"
                 >
                   {/* Product Image */}
-                  <div className="h-20 w-20 rounded-md overflow-hidden bg-secondary flex-shrink-0">
+                  <div
+                    className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0"
+                    style={{ background: "radial-gradient(ellipse at 50% 42%, #fdfcfa 0%, #f0ede6 55%, #e4e0d8 100%)" }}
+                  >
                     <img
                       src={
                         item.product?.image_url ||
                         getPlaceholderImage(item.product_id)
                       }
                       alt={item.product?.name || "Product"}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain p-[8%]"
                     />
                   </div>
 
@@ -123,6 +126,25 @@ export const CartDrawer = () => {
                     <p className="font-bold text-accent mt-1">
                       ₦{(item.product?.price || 0).toLocaleString()}
                     </p>
+
+                    {/* Lens service sub-row */}
+                    {(item as any).lens_type && (item as any).lens_type !== "frame_only" && (
+                      <div className="mt-1.5 flex items-start gap-1.5 rounded-md bg-primary/5 border border-primary/15 px-2 py-1.5">
+                        <Eyeglasses weight="duotone" className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[11px] font-medium text-foreground leading-tight capitalize">
+                            {((item as any).lens_type as string).replace(/_/g, " ")} lenses
+                          </p>
+                          {(item as any).lens_price > 0 ? (
+                            <p className="text-[11px] text-accent font-semibold leading-tight">
+                              +₦{((item as any).lens_price as number).toLocaleString()}
+                            </p>
+                          ) : (
+                            <p className="text-[11px] text-muted-foreground leading-tight">Included</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Quantity Controls */}
                     <div className="flex items-center justify-between mt-2">
