@@ -113,9 +113,9 @@ export const ProductImageCarousel = ({
             // Desktop: viewport-constrained
             isPdp && "md:max-h-[calc(100vh-180px)]"
           )}
-          onMouseEnter={() => setIsZoomed(true)}
+          onMouseEnter={() => view === "2d" && setIsZoomed(true)}
           onMouseLeave={() => setIsZoomed(false)}
-          onMouseMove={handleMouseMove}
+          onMouseMove={view === "2d" ? handleMouseMove : undefined}
         >
           {view === "3d" && has3D && (
             <Suspense
