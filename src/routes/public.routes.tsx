@@ -2,31 +2,45 @@ import { lazy, Suspense } from "react";
 import { Route } from "react-router-dom";
 import { CircleNotch } from "@phosphor-icons/react";
 
+// Retry wrapper for lazy imports to handle stale chunk errors after deployments
+function lazyRetry<T extends { default: React.ComponentType<any> }>(importFn: () => Promise<T>) {
+  return lazy(() =>
+    importFn().catch(() => {
+      const key = "chunk-retry";
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+      }
+      return importFn();
+    })
+  );
+}
+
 // Lazy load public pages
-const Index = lazy(() => import("@/pages/Index"));
-const Booking = lazy(() => import("@/pages/Booking"));
-const Shop = lazy(() => import("@/pages/Shop"));
-const Branches = lazy(() => import("@/pages/Branches"));
-const About = lazy(() => import("@/pages/About"));
-const Partners = lazy(() => import("@/pages/Partners"));
-const Contact = lazy(() => import("@/pages/Contact"));
-const ShopRedirect = lazy(() => import("@/pages/ShopRedirect"));
-const FAQ = lazy(() => import("@/pages/FAQ"));
-const TryOn = lazy(() => import("@/pages/TryOn"));
-const Privacy = lazy(() => import("@/pages/Privacy"));
-const Terms = lazy(() => import("@/pages/Terms"));
-const Returns = lazy(() => import("@/pages/Returns"));
-const Login = lazy(() => import("@/pages/Login"));
-const Signup = lazy(() => import("@/pages/Signup"));
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
-const Checkout = lazy(() => import("@/pages/Checkout"));
-const OrderConfirmation = lazy(() => import("@/pages/OrderConfirmation"));
-const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
-const StyleQuiz = lazy(() => import("@/pages/StyleQuiz"));
-const Onboarding = lazy(() => import("@/pages/Onboarding"));
-const Install = lazy(() => import("@/pages/Install"));
-const NotFound = lazy(() => import("@/pages/NotFound"));
+const Index = lazyRetry(() => import("@/pages/Index"));
+const Booking = lazyRetry(() => import("@/pages/Booking"));
+const Shop = lazyRetry(() => import("@/pages/Shop"));
+const Branches = lazyRetry(() => import("@/pages/Branches"));
+const About = lazyRetry(() => import("@/pages/About"));
+const Partners = lazyRetry(() => import("@/pages/Partners"));
+const Contact = lazyRetry(() => import("@/pages/Contact"));
+const ShopRedirect = lazyRetry(() => import("@/pages/ShopRedirect"));
+const FAQ = lazyRetry(() => import("@/pages/FAQ"));
+const TryOn = lazyRetry(() => import("@/pages/TryOn"));
+const Privacy = lazyRetry(() => import("@/pages/Privacy"));
+const Terms = lazyRetry(() => import("@/pages/Terms"));
+const Returns = lazyRetry(() => import("@/pages/Returns"));
+const Login = lazyRetry(() => import("@/pages/Login"));
+const Signup = lazyRetry(() => import("@/pages/Signup"));
+const Dashboard = lazyRetry(() => import("@/pages/Dashboard"));
+const ProductDetail = lazyRetry(() => import("@/pages/ProductDetail"));
+const Checkout = lazyRetry(() => import("@/pages/Checkout"));
+const OrderConfirmation = lazyRetry(() => import("@/pages/OrderConfirmation"));
+const OrderTracking = lazyRetry(() => import("@/pages/OrderTracking"));
+const StyleQuiz = lazyRetry(() => import("@/pages/StyleQuiz"));
+const Onboarding = lazyRetry(() => import("@/pages/Onboarding"));
+const Install = lazyRetry(() => import("@/pages/Install"));
+const NotFound = lazyRetry(() => import("@/pages/NotFound"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
