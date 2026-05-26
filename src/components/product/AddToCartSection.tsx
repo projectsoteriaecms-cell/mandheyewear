@@ -113,6 +113,34 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
         )}
       </div>
 
+      {/* Lens Selection CTA — prominent for frames */}
+      {isFrame && !isOutOfStock && (
+        <button
+          type="button"
+          onClick={() => { setPendingAction(null); setLensConfigOpen(true); }}
+          className={`w-full flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-all hover:shadow-md ${
+            lensConfig
+              ? "border-accent/40 bg-accent/5"
+              : "border-dashed border-accent/60 bg-accent/5 hover:bg-accent/10"
+          }`}
+        >
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${lensConfig ? "bg-accent text-accent-foreground" : "bg-accent/10 text-accent"}`}>
+            {lensConfig ? <Check className="h-5 w-5" /> : <Glasses className="h-5 w-5" />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold">
+              {lensConfig ? "Lenses Selected" : "Select Your Lenses"}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {lensConfig
+                ? `${lensConfig.lensType === "frame_only" ? "Frame only" : lensConfig.lensType.replace(/_/g, " ")}${lensConfig.lensPrice ? ` • +₦${lensConfig.lensPrice.toLocaleString()}` : ""} • Tap to change`
+                : "Frame only or add prescription / sunglasses lenses"}
+            </p>
+          </div>
+          <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+        </button>
+      )}
+
       {/* Primary Action Buttons */}
       <div className="flex flex-col gap-2">
         {isOutOfStock ? (
