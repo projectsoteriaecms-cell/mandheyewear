@@ -5,35 +5,38 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { 
-  ProfileSection, 
-  OrderHistorySection, 
-  WishlistSection, 
+import {
+  ProfileSection,
+  OrderHistorySection,
+  WishlistSection,
   AppointmentsSection,
   AddressesSection,
   FrameProfileSection,
   SettingsSection,
   EmailVerificationBanner,
+  PrescriptionsSection,
 } from "@/components/dashboard";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useWishlist } from "@/modules/orders/hooks/useWishlist";
 import { useAppointments } from "@/modules/appointments/hooks/useAppointments";
+import { usePrescriptions } from "@/modules/prescriptions/hooks/usePrescriptions";
 import { useUserRole } from "@/modules/auth/hooks/useUserRole";
 import { useOnboardingStatus } from "@/modules/personalization/hooks/useOnboardingStatus";
 import { hasAdminAccess, isUnverifiedUser } from "@/shared/lib/permissions";
 import { useToast } from "@/shared/hooks/use-toast";
-import { 
-  Loader2, 
-  LogOut, 
-  User, 
-  ShoppingBag, 
-  Calendar, 
-  Heart, 
-  MapPin, 
-  Sparkles, 
+import {
+  Loader2,
+  LogOut,
+  User,
+  ShoppingBag,
+  Calendar,
+  Heart,
+  MapPin,
+  Sparkles,
   Settings,
   AlertCircle,
   Clock,
+  ClipboardList,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -42,13 +45,14 @@ const Dashboard = () => {
   const { needsOnboarding } = useOnboardingStatus(user?.id);
   const { wishlistCount } = useWishlist();
   const { data: appointments } = useAppointments();
+  const { activePrescriptions } = usePrescriptions();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const defaultTab = searchParams.get("tab") || "profile";
   // Allow staff to access their profile/settings tabs, redirect otherwise
-  const allowedStaffTabs = ["profile", "settings", "addresses", "frame-profile"];
+  const allowedStaffTabs = ["profile", "settings", "addresses", "frame-profile", "prescriptions"];
   const isStaffViewingAllowedTab = allowedStaffTabs.includes(defaultTab);
 
   const upcomingAppointments = appointments?.filter(
@@ -255,7 +259,7 @@ const Dashboard = () => {
           )}
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
             <div className="p-4 rounded-lg border bg-card">
               <ShoppingBag className="h-5 w-5 text-primary mb-2" />
               <p className="text-2xl font-bold">0</p>
@@ -270,6 +274,11 @@ const Dashboard = () => {
               <Heart className="h-5 w-5 text-destructive mb-2" />
               <p className="text-2xl font-bold">{wishlistCount}</p>
               <p className="text-sm text-muted-foreground">Favorites</p>
+            </div>
+            <div className="p-4 rounded-lg border bg-card">
+              <ClipboardList className="h-5 w-5 text-emerald-600 mb-2" />
+              <p className="text-2xl font-bold">{activePrescriptions.length}</p>
+              <p className="text-sm text-muted-foreground">Rx Valid</p>
             </div>
             <div className="p-4 rounded-lg border bg-card">
               <Sparkles className="h-5 w-5 text-accent mb-2" />
@@ -309,14 +318,21 @@ const Dashboard = () => {
                 <MapPin className="mr-2 h-4 w-4 hidden sm:inline" />
                 Addresses
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="wishlist"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
                 <Heart className="mr-2 h-4 w-4 hidden sm:inline" />
                 Favorites
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
+                value="prescriptions"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+              >
+                <ClipboardList className="mr-2 h-4 w-4 hidden sm:inline" />
+                Prescriptions
+              </TabsTrigger>
+              <TabsTrigger
                 value="frame-profile"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
@@ -350,6 +366,10 @@ const Dashboard = () => {
 
             <TabsContent value="wishlist">
               <WishlistSection />
+            </TabsContent>
+
+            <TabsContent value="prescriptions">
+              <PrescriptionsSection />
             </TabsContent>
 
             <TabsContent value="frame-profile">

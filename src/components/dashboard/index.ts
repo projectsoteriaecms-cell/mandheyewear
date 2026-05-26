@@ -7,3 +7,4 @@ export { FrameProfileSection } from "./FrameProfileSection";
 export { SettingsSection } from "./SettingsSection";
 export { EmailVerificationBanner } from "./EmailVerificationBanner";
 export { EmailVerificationStatusDialog } from "./EmailVerificationStatusDialog";
+export { PrescriptionsSection } from "./PrescriptionsSection";
