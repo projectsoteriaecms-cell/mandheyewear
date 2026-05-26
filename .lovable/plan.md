@@ -1,45 +1,58 @@
-## Goal
+## Problem
 
-Frames are now background-less PNGs. On the storefront they currently float directly on the page/secondary background, which makes them feel disconnected. We'll give every product image a **white surface tile** with a soft contact shadow underneath, so the frame appears to rest on a clean stage — independent of whatever section background is behind it.
+- Image 1 (PDP): frame fills the white tile nicely — correct.
+- Image 2 (Shop list/card): frame appears tiny, floating in a huge sea of white — wrong.
 
-## Visual contract
+Same image is used in both places. The PNGs have built-in transparent padding, so they render fine in the large PDP container but look lost in the smaller card/list tiles. We need **visual evenness** — the frame should occupy roughly the same proportion of its white surface everywhere.
 
-- Tile background: solid white (`bg-white`) — non-negotiable per the frame-image-enhancement skill (pure #FFFFFF studio surface).
-- Image rendering: switch from `object-cover` to `object-contain` with inner padding so the frame doesn't bleed to the tile edge.
-- Soft contact shadow: a subtle radial/ellipse shadow under the lower third of the tile (CSS gradient overlay) — mimics the studio shadow already baked into hero shots and reinforces the "resting on a surface" cue for any image that lacks one.
-- Tile chrome: keep existing `rounded-lg`, add a faint `ring-1 ring-border/40` so the white tile reads as a distinct surface on both light (Cream) and dark backgrounds.
-- No change to layout, aspect ratios, or carousel behavior.
+## Fix
 
-## Files to change (presentation only)
+Apply a per-surface scale compensation in the global `.product-surface img` rule so card/list thumbnails visually match the PDP density, while the PDP itself stays at 1.0 (it already looks right).
 
-1. **`src/modules/storefront/components/eyewear/ProductCard.tsx`**
-   - Image wrapper: `bg-secondary` → `bg-white ring-1 ring-border/40`.
-   - `<img>`: `object-cover` → `object-contain p-3 sm:p-4`.
-   - Add contact-shadow pseudo-element via an absolutely-positioned div with a radial gradient at the bottom.
+### Changes
 
-2. **`src/modules/storefront/components/eyewear/ProductListCard.tsx`**
-   - Same treatment on the left image panel.
+1. **`src/index.css`** — replace the single global rule with surface-aware variants:
 
-3. **`src/components/product/ProductImageCarousel.tsx`**
-   - Main carousel slide wrapper: `bg-secondary` → `bg-white ring-1 ring-border/40`.
-   - Slide `<img>`: `object-cover` → `object-contain p-4 md:p-6`.
-   - Zoom-lens div: keep current behavior (background-image), but on the white surface.
-   - Thumbnail buttons: white bg + contain.
-   - Fullscreen overlay: keep black (it's a viewer, not a card).
+   ```css
+   .product-surface img {
+     object-fit: contain;
+     object-position: center;
+     width: 100%;
+     height: 100%;
+     padding: 4%;
+   }
+   /* Shop grid + list cards: compensate for baked-in transparent padding */
+   .product-surface[data-surface="card"] img,
+   .product-surface[data-surface="list"] img {
+     transform: scale(1.45);
+     transform-origin: center;
+     transition: transform 400ms ease;
+   }
+   .product-surface[data-surface="card"]:hover img,
+   .product-surface[data-surface="list"]:hover img {
+     transform: scale(1.55);
+   }
+   /* PDP carousel stays at natural size (already correct) */
+   .product-surface[data-surface="pdp"] img {
+     transform: none;
+   }
+   ```
 
-4. **`src/index.css`** (optional, only if we want a reusable utility)
-   - Add `.product-surface` utility = white bg + ring + radial contact shadow. Use it across the 3 files above to keep the look in one place.
+2. **Tag the three surfaces** with `data-surface`:
+   - `src/modules/storefront/components/eyewear/ProductCard.tsx` → `data-surface="card"`
+   - `src/modules/storefront/components/eyewear/ProductListCard.tsx` → `data-surface="list"`
+   - `src/components/product/ProductImageCarousel.tsx` → `data-surface="pdp"`
 
-## Why this scope
+3. Remove any lingering per-image `scale-[...]` Tailwind classes on those three components (keep only `object-contain` + transitions) so the CSS rule is the single source of truth.
 
-- Pure CSS/presentation — no data, no schema, no edge function changes.
-- Touches only the 3 components that render product frame images on the storefront.
-- The admin compare page (`ProductImageCompare.tsx`) already shows anchor vs render at full bleed; we'll leave it alone unless you want the same surface there too.
+### Why this works
 
-## Out of scope
+- One global selector controls frame sizing for every current and future product.
+- PDP is untouched (1.0) because it already matches the reference.
+- Cards/list scale up to ~145% so the actual frame (after its transparent margin) occupies ~the same visual share as on PDP.
+- No image reprocessing needed; works for every SKU uploaded going forward.
 
-- Re-rendering or re-cropping existing images.
-- Changing the storefront page background, section spacing, or card border radius.
-- PDP zoom/fullscreen viewer styling (stays as-is).
+### Out of scope
 
-Ready to implement on approval.
+- No changes to image generation, backgrounds, or business logic.
+- No layout/spacing changes outside the white image tile.

@@ -97,7 +97,7 @@ export const ProductCard = ({ product, onQuickView }: ProductCardProps) => {
   return (
     <div className="block touch-feedback" onClick={handleCardClick} role="button" tabIndex={0}>
       <Card className="group overflow-hidden hover:shadow-gold transition-all cursor-pointer mobile-card">
-        <div className="product-surface relative h-48 sm:h-64 overflow-hidden rounded-md ring-1 ring-border/40">
+        <div data-surface="card" className="product-surface relative h-48 sm:h-64 overflow-hidden rounded-md ring-1 ring-border/40">
           <img
             src={imageUrl}
             alt={product.name}
