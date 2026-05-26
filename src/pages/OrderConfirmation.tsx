@@ -20,9 +20,11 @@ import {
   Copy,
   Check,
   Glasses,
+  Wrench,
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/shared/hooks/use-toast";
+import { FittingBookingDialog } from "@/components/fitting/FittingBookingDialog";
 
 const OrderConfirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -30,6 +32,7 @@ const OrderConfirmation = () => {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [fittingDialogOpen, setFittingDialogOpen] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -180,6 +183,39 @@ const OrderConfirmation = () => {
             </CardContent>
           </Card>
 
+          {/* Fitting Required Prompt — shown only when applicable */}
+          {order.order_items?.some((i: any) => i.requires_fitting && !i.fitting_booked) && (
+            <Card className="mb-6 border-2 border-primary/30 bg-primary/[0.03]">
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className="rounded-full bg-primary/10 p-2 shrink-0">
+                      <Wrench className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">
+                        Lens Fitting Required
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        Your prescription lenses need an in-store fitting appointment
+                        before we can dispense them. Book a free 30-minute slot at
+                        your nearest branch.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="hero"
+                    className="shrink-0 w-full sm:w-auto"
+                    onClick={() => setFittingDialogOpen(true)}
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Book Fitting Now
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Order Status Timeline */}
           <Card className="mb-6">
             <CardContent className="p-6">
@@ -329,6 +365,15 @@ const OrderConfirmation = () => {
       </div>
 
       <Footer />
+
+      {order && (
+        <FittingBookingDialog
+          open={fittingDialogOpen}
+          onOpenChange={setFittingDialogOpen}
+          orderId={order.id}
+          orderNumber={order.order_number}
+        />
+      )}
     </div>
   );
 };

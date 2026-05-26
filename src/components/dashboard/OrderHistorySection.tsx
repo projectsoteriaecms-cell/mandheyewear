@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrders } from "@/modules/orders/hooks/useOrders";
 import { EmptyState } from "@/modules/storefront/components/shared";
-import { Package, ShoppingBag, Truck, ExternalLink } from "lucide-react";
+import { Package, ShoppingBag, Truck, ExternalLink, Wrench } from "lucide-react";
 import { format } from "date-fns";
+import { FittingBookingDialog } from "@/components/fitting/FittingBookingDialog";
 
 interface OrderHistorySectionProps {
   userId: string;
@@ -40,6 +42,7 @@ const getStatusIcon = (status: string) => {
 
 export const OrderHistorySection = ({ userId }: OrderHistorySectionProps) => {
   const { data: orders, isLoading } = useOrders(userId);
+  const [fittingOrder, setFittingOrder] = useState<{ id: string; number: string } | null>(null);
 
   if (isLoading) {
     return (
@@ -157,7 +160,7 @@ export const OrderHistorySection = ({ userId }: OrderHistorySectionProps) => {
                   </div>
                 )}
 
-                <div className="flex gap-2 mt-3">
+                <div className="flex flex-wrap gap-2 mt-3">
                   <Button variant="outline" size="sm" asChild className="flex-1">
                     <Link to={`/order/${order.id}`}>View Details</Link>
                   </Button>
@@ -166,12 +169,37 @@ export const OrderHistorySection = ({ userId }: OrderHistorySectionProps) => {
                       Track
                     </Link>
                   </Button>
+                  {/* Fitting button — only when Rx items still need fitting */}
+                  {order.order_items?.some(
+                    (i: any) => i.requires_fitting && !i.fitting_booked
+                  ) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-primary/40 text-primary hover:bg-primary/5"
+                      onClick={() =>
+                        setFittingOrder({ id: order.id, number: order.order_number })
+                      }
+                    >
+                      <Wrench className="h-3.5 w-3.5 mr-1.5" />
+                      Book Fitting
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
       </CardContent>
+
+      {fittingOrder && (
+        <FittingBookingDialog
+          open={!!fittingOrder}
+          onOpenChange={(open) => !open && setFittingOrder(null)}
+          orderId={fittingOrder.id}
+          orderNumber={fittingOrder.number}
+        />
+      )}
     </Card>
   );
 };
