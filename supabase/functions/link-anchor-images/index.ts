@@ -141,7 +141,8 @@ Deno.serve(async (req) => {
       .from("products")
       .select("id, sku, brand_line")
       .in("sku", skus)
-      .eq("brand_line", "m_and_h_fashion");
+      .eq("brand_line", "m_and_h_fashion")
+      .not("primary_image_locked", "is", true); // skip already-locked anchors
 
     if (prodErr) throw prodErr;
 

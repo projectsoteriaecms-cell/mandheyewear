@@ -136,11 +136,11 @@ Deno.serve(async (req) => {
       for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
       return out;
     };
-    const productMap = new Map<string, { id: string; sku: string; image_url: string | null; additional_images: string[] | null }>();
+    const productMap = new Map<string, { id: string; sku: string; image_url: string | null; additional_images: string[] | null; primary_image_locked: boolean | null }>();
     for (const c of chunk(skus, 500)) {
       const { data, error } = await supabase
         .from("products")
-        .select("id, sku, image_url, additional_images")
+        .select("id, sku, image_url, additional_images, primary_image_locked")
         .in("sku", c);
       if (error) throw error;
       for (const row of data ?? []) productMap.set(row.sku, row as any);
@@ -225,7 +225,8 @@ Deno.serve(async (req) => {
         }
 
         // ANCHOR upload (bucket root MH-XXX.{ext} so link-anchor-images can find it)
-        if (doAnchor) {
+        // Skip products whose anchor is already locked — never overwrite the source of truth.
+        if (doAnchor && !prod.primary_image_locked) {
           const anchorPath = `${f.sku}.${f.ext}`;
           const blob2 = new Blob([f.bytes], { type: contentTypeFor(f.ext) });
           const { error: anchorErr } = await supabase.storage.from(BUCKET).upload(anchorPath, blob2, {
