@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSEO } from "@/shared/hooks/useSEO";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -41,12 +41,14 @@ import { WhatsappLogo } from "@phosphor-icons/react";
 import { buildBookingWhatsAppUrl } from "@/shared/lib/whatsappBooking";
 
 const SERVICES = [
-  { value: "comprehensive_eye_exam", label: "Comprehensive Eye Exam", duration: 45 },
-  { value: "contact_lens_fitting", label: "Contact Lens Fitting", duration: 30 },
-  { value: "pediatric_eye_exam", label: "Pediatric Eye Exam", duration: 45 },
-  { value: "diabetic_eye_screening", label: "Diabetic Eye Screening", duration: 30 },
-  { value: "glaucoma_testing", label: "Glaucoma Testing", duration: 30 },
-  { value: "specialty_consultation", label: "Specialty Consultation", duration: 60 },
+  { value: "basic_eye_test",          label: "Basic Eye Test (FREE)",          duration: 20, free: true },
+  { value: "comprehensive_eye_exam",  label: "Comprehensive Eye Exam",         duration: 45 },
+  { value: "lens_fitting_consultation",label: "Lens Fitting Consultation",     duration: 30 },
+  { value: "contact_lens_fitting",    label: "Contact Lens Fitting",           duration: 30 },
+  { value: "pediatric_eye_exam",      label: "Pediatric Eye Exam",             duration: 45 },
+  { value: "diabetic_eye_screening",  label: "Diabetic Eye Screening",         duration: 30 },
+  { value: "glaucoma_testing",        label: "Glaucoma Testing",               duration: 30 },
+  { value: "specialty_consultation",  label: "Specialty Consultation",         duration: 60 },
 ];
 
 const TIME_SLOTS = [
@@ -74,6 +76,9 @@ const Booking = () => {
   });
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
+  const preselectedService = searchParams.get("service");
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { data: profile } = useProfile(user?.id);
   const { data: role, isLoading: roleLoading } = useUserRole();
@@ -83,7 +88,12 @@ const Booking = () => {
 
   const [step, setStep] = useState(1);
   const [selectedBranchId, setSelectedBranchId] = useState("");
-  const [selectedService, setSelectedService] = useState("");
+  const [selectedService, setSelectedService] = useState(preselectedService ?? "");
+
+  // Pre-select service from query param
+  useEffect(() => {
+    if (preselectedService) setSelectedService(preselectedService);
+  }, [preselectedService]);
   const [date, setDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("");
   const [notes, setNotes] = useState("");
@@ -542,12 +552,21 @@ const Booking = () => {
                     </CardContent>
                   </Card>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    {returnTo && (
+                      <Button variant="hero" asChild>
+                        <Link to={returnTo}>
+                          Return to Your Cart
+                        </Link>
+                      </Button>
+                    )}
                     <Button variant="outline" asChild>
                       <Link to="/dashboard?tab=appointments">View My Appointments</Link>
                     </Button>
-                    <Button variant="hero" asChild>
-                      <Link to="/">Back to Home</Link>
-                    </Button>
+                    {!returnTo && (
+                      <Button variant="hero" asChild>
+                        <Link to="/">Back to Home</Link>
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}

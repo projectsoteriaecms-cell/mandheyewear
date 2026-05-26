@@ -11,6 +11,8 @@ import { StockBadge } from "@/modules/storefront/components/eyewear/StockBadge";
 import { RequestItemDialog } from "@/modules/storefront/components/eyewear/RequestItemDialog";
 import { InlineTryOnModal } from "@/components/try-on";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
+import { LensConfigurator, type LensConfig } from "@/modules/lens/components/LensConfigurator";
+import { LensSummaryChip } from "@/modules/lens/components/LensSummaryChip";
 import type { StockStatus } from "@/modules/storefront/components/eyewear/StockBadge";
 import type { Product } from "@/modules/products/hooks/useProducts";
 
@@ -20,10 +22,15 @@ interface AddToCartSectionProps {
 
 export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
   const [quantity, setQuantity] = useState(1);
+  const [lensConfigOpen, setLensConfigOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"cart" | "buyNow" | null>(null);
+  const [lensConfig, setLensConfig] = useState<LensConfig | null>(null);
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { modalOpen, targetProductId, savedPhotoUrl, triggerTryOn, setModalOpen } = useInlineTryOn();
+
+  const isFrame = product.item_type === "frames";
 
   const { data: availability } = useQuery({
     queryKey: ["product-availability", product.id],
@@ -45,6 +52,11 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
       navigate("/login", { state: { from: window.location.pathname } });
       return;
     }
+    if (isFrame) {
+      setPendingAction("cart");
+      setLensConfigOpen(true);
+      return;
+    }
     addToCart.mutate({ productId: product.id, quantity });
   };
 
@@ -53,7 +65,26 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
       navigate("/login", { state: { from: window.location.pathname } });
       return;
     }
+    if (isFrame) {
+      setPendingAction("buyNow");
+      setLensConfigOpen(true);
+      return;
+    }
     navigate(`/checkout?buyNow=${product.id}&qty=${quantity}`);
+  };
+
+  const handleLensConfirm = (config: LensConfig) => {
+    setLensConfig(config);
+    setLensConfigOpen(false);
+    addToCart.mutate(
+      { productId: product.id, quantity, lensConfig: config },
+      {
+        onSuccess: () => {
+          if (pendingAction === "buyNow") navigate("/checkout");
+        },
+      }
+    );
+    setPendingAction(null);
   };
 
   const incrementQuantity = () => setQuantity((q) => q + 1);
@@ -137,6 +168,22 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
         )}
       </div>
 
+      {/* Lens summary chip — shows after configuration */}
+      {lensConfig && isFrame && (
+        <button
+          onClick={() => { setPendingAction(null); setLensConfigOpen(true); }}
+          className="w-full text-left"
+        >
+          <LensSummaryChip
+            lensType={lensConfig.lensType}
+            fittingBooked={lensConfig.fittingBooked}
+            lensPrice={lensConfig.lensPrice}
+            className="mt-1"
+          />
+          <p className="text-xs text-muted-foreground mt-1">Tap to change lens selection</p>
+        </button>
+      )}
+
       {/* Trust Badges — compact single row */}
       <div className="flex gap-2 pt-2 border-t text-center">
         <div className="flex-1 py-1.5 bg-muted rounded-md">
@@ -148,6 +195,18 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
           <p className="text-[9px] text-muted-foreground">Easy returns</p>
         </div>
       </div>
+
+      {/* Lens Configurator modal */}
+      {isFrame && (
+        <LensConfigurator
+          open={lensConfigOpen}
+          onOpenChange={setLensConfigOpen}
+          productName={product.name}
+          productId={product.id}
+          onConfirm={handleLensConfirm}
+          isAdding={addToCart.isPending}
+        />
+      )}
     </div>
   );
 };

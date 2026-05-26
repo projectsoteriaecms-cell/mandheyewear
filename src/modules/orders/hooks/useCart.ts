@@ -4,6 +4,7 @@ import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import type { Tables } from "@/integrations/supabase/types";
+import type { LensConfig } from "@/modules/lens/components/LensConfigurator";
 
 export type CartItem = Tables<"cart_items"> & {
   product: Tables<"products"> | null;
@@ -38,44 +39,68 @@ export const useCart = () => {
     mutationFn: async ({
       productId,
       quantity = 1,
+      lensConfig,
     }: {
       productId: string;
       quantity?: number;
+      lensConfig?: LensConfig;
     }) => {
       if (!user) throw new Error("Please log in to add items to your cart");
 
-      // Check if item already exists in cart
-      const { data: existing } = await supabase
-        .from("cart_items")
-        .select("id, quantity")
-        .eq("user_id", user.id)
-        .eq("product_id", productId)
-        .maybeSingle();
+      // For prescription lens items, always insert a fresh row (different lens configs)
+      // For plain items (no lens config), upsert by product_id
+      const lensColumns = lensConfig
+        ? {
+            lens_type:        lensConfig.lensType,
+            lens_index:       lensConfig.lensIndex,
+            lens_coatings:    lensConfig.lensCoatings,
+            prescription_id:  lensConfig.prescriptionId,
+            prescription_data: lensConfig.prescriptionData,
+            requires_fitting: lensConfig.requiresFitting,
+            fitting_booked:   lensConfig.fittingBooked,
+            lens_price:       lensConfig.lensPrice,
+            frame_only:       lensConfig.frameOnly,
+          }
+        : {};
 
-      if (existing) {
-        const { data, error } = await supabase
+      const hasLens = !!lensConfig && lensConfig.lensType !== "frame_only";
+
+      if (!hasLens) {
+        // Upsert: increment quantity if same product already in cart without lens config
+        const { data: existing } = await supabase
           .from("cart_items")
-          .update({ quantity: existing.quantity + quantity })
-          .eq("id", existing.id)
-          .select()
-          .single();
+          .select("id, quantity")
+          .eq("user_id", user.id)
+          .eq("product_id", productId)
+          .is("lens_type", null)
+          .maybeSingle();
 
-        if (error) throw error;
-        return data;
-      } else {
-        const { data, error } = await supabase
-          .from("cart_items")
-          .insert({
-            user_id: user.id,
-            product_id: productId,
-            quantity,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        return data;
+        if (existing) {
+          const { data, error } = await supabase
+            .from("cart_items")
+            .update({ quantity: existing.quantity + quantity })
+            .eq("id", existing.id)
+            .select()
+            .single();
+          if (error) throw error;
+          return data;
+        }
       }
+
+      // Always insert for lens-configured items (each config is unique)
+      const { data, error } = await supabase
+        .from("cart_items")
+        .insert({
+          user_id:    user.id,
+          product_id: productId,
+          quantity,
+          ...lensColumns,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["cart", user?.id] });
