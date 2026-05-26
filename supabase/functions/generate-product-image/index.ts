@@ -61,36 +61,52 @@ function describeProduct(p: any): string {
 function buildFramePrompts(product: any, hasReference: boolean): { slug: string; prompt: string }[] {
   const desc = describeProduct(product);
   const branded = isBrandedFrame(product.brand);
-  const studioRule = "Seamless pure white studio background, soft professional commercial lighting, high resolution e-commerce product photography. No model, frame only.";
+
+  // Warby Parker-style studio aesthetic: seamless pure white (#FFFFFF) background,
+  // soft diffused overhead lighting, ultra-realistic soft contact shadow directly
+  // beneath the frame, neutral cool white balance, tack-sharp focus on the frame,
+  // no props, no reflections on the lenses, no models, no fingers, no packaging.
+  // Frame occupies ~70% of the canvas, centered, with generous white margins.
+  const studioRule = [
+    "STUDIO RULES (must follow exactly):",
+    "• Background: seamless pure white #FFFFFF, no gradient, no texture, no vignette.",
+    "• Lighting: large soft overhead softbox, neutral 5500K white balance, gentle highlights — no harsh specular hot spots.",
+    "• Shadow: a single, very soft, low-opacity contact shadow directly below the frame (subtle realistic ground shadow, not a hard drop shadow).",
+    "• Lenses: clear, fully transparent, no glare, no reflections, no tint unless the frame is sunglasses.",
+    "• Composition: frame perfectly centered, occupies ~70% of the frame width, generous white margin on all sides.",
+    "• Focus: tack-sharp across the entire frame, no depth-of-field blur, no bokeh.",
+    "• Output: square 1:1 crop, ultra high resolution, commercial e-commerce catalog quality (Warby Parker / Cubitts / Persol style).",
+    "• Absolutely no: model, face, hands, props, packaging, case, text, watermarks, logos other than what is on the frame itself.",
+  ].join(" ");
 
   if (hasReference) {
-    const baseInstruction = `This is a reference photo of the actual "${desc}" eyeglasses frame. You MUST preserve the exact color, shape, material, proportions, and design details of this specific frame. Re-render it as a professional e-commerce product photo with:`;
+    const baseInstruction = `The attached image is a reference photo of the actual "${desc}" eyeglasses frame. You MUST preserve the EXACT color, shape, material finish, proportions, hinge style, nose-bridge style, temple-tip style and every visible design detail of this specific frame — treat it as the ground truth. Re-render it as a professional Warby Parker–grade e-commerce catalog photo:`;
     const brandDetail = branded
-      ? `Maintain any original ${product.brand} logos, engravings, or serial numbers visible on the frame.`
+      ? `Preserve any original ${product.brand} logos, engravings, etched model numbers, or temple-tip markings exactly as they appear.`
       : "";
 
     return [
-      { slug: "hero", prompt: `${baseInstruction} Classic three-quarter front view — the main e-commerce thumbnail. Sharp focus on the front frame and the near temple arm. ${brandDetail} ${studioRule}` },
-      { slug: "front", prompt: `${baseInstruction} Direct head-on front view. Perfectly symmetrical composition. Temples open, extending straight back. ${brandDetail} ${studioRule}` },
-      { slug: "side", prompt: `${baseInstruction} Pure 90-degree side profile view. Sharp focus along the entire length of the visible temple arm. ${brandDetail} ${studioRule}` },
-      { slug: "rear", prompt: `${baseInstruction} Slightly elevated rear view, looking at the back of the glasses. Show the hinges, nose pads, and inside of the temple arms. ${branded ? "Show inner-temple markings like model numbers. " : ""}${studioRule}` },
-      { slug: "macro", prompt: `${baseInstruction} Extreme close-up macro shot focusing tightly on the temple hinge area or lens corner${branded ? ` where the ${product.brand} logo is located` : ""}. Use dramatic lighting to highlight texture and quality. ${studioRule}` },
-      { slug: "packaging", prompt: `${baseInstruction} The frame resting elegantly on top of a closed premium cylindrical hard case made of fine-grain leather${product.color ? ` in a color complementing ${product.color}` : ""}. ${branded ? `The brand name "${product.brand}" is cleanly featured on the leather case.` : `The brand name "M&H Opticals" is cleanly embossed onto the top surface of the leather case.`} ${studioRule}` },
+      { slug: "hero", prompt: `${baseInstruction} Classic 3/4 angle view — the main catalog thumbnail. Frame is rotated ~25° to the camera, both temples visible, the near temple in sharp focus, the far temple slightly receding. Temples are fully open at 90°. ${brandDetail} ${studioRule}` },
+      { slug: "front", prompt: `${baseInstruction} Dead-on front view, perfectly symmetrical. Camera at lens-center height, temples open and extending straight back behind the front. Both lenses fully visible, bridge centered. ${brandDetail} ${studioRule}` },
+      { slug: "side", prompt: `${baseInstruction} Pure 90° side profile view from the wearer's right. The entire length of the temple arm visible from hinge to temple tip, the front of the frame seen edge-on. ${brandDetail} ${studioRule}` },
+      { slug: "rear", prompt: `${baseInstruction} Slightly elevated rear 3/4 view from behind, showing the inside of the frame — hinges, nose pads, and the inner surface of the temple arms. ${branded ? "Show any inner-temple model number or brand markings clearly. " : ""}${studioRule}` },
+      { slug: "macro", prompt: `${baseInstruction} Tight macro detail shot of the temple hinge and the temple-tip area${branded ? ` where the ${product.brand} marking sits` : ""}. Frame fills the canvas, every screw, bevel and material grain visible. ${studioRule}` },
+      { slug: "tinted", prompt: `${baseInstruction} Same 3/4 angle as the hero shot, but with the lenses rendered as if fitted with a soft neutral grey tint (10–15% opacity) to demonstrate how the frame looks when sun lenses are fitted. Preserve everything else exactly. ${brandDetail} ${studioRule}` },
     ];
   }
 
   // Text-only fallback
   const brandNote = branded
-    ? `The frame is authentic ${product.brand}. You MUST visibly maintain any original subtle engravings, logos, or serial numbers on the frame itself. Do not remove them.`
+    ? `The frame is authentic ${product.brand}. Visibly preserve any subtle engravings, logos or model numbers on the frame.`
     : "";
 
   return [
-    { slug: "hero", prompt: `Professional product photo of ${desc} eyeglasses frame. Classic three-quarter front view — the main e-commerce thumbnail. ${brandNote} ${studioRule}` },
-    { slug: "front", prompt: `Direct head-on front view of ${desc} eyeglasses frame. Perfectly symmetrical composition. ${brandNote} ${studioRule}` },
-    { slug: "side", prompt: `Pure 90-degree side profile view of ${desc} eyeglasses frame. Sharp focus along the entire length of the visible temple arm. ${brandNote} ${studioRule}` },
-    { slug: "rear", prompt: `Slightly elevated rear view of ${desc} eyeglasses frame, looking at the back of the glasses. ${branded ? "Show inner-temple markings." : ""} ${studioRule}` },
-    { slug: "macro", prompt: `Extreme close-up macro shot of ${desc} eyeglasses frame${branded ? ` (the ${product.brand} logo)` : ""}. Use dramatic lighting to highlight texture and quality. ${studioRule}` },
-    { slug: "packaging", prompt: `Luxurious studio shot of ${desc} eyeglasses frame on a premium leather case${product.color ? ` in a color complementing ${product.color}` : ""}. ${branded ? `The brand name "${product.brand}" is on the case.` : `The brand name "M&H Opticals" is embossed on the case.`} ${studioRule}` },
+    { slug: "hero", prompt: `Warby Parker–style e-commerce catalog photo of ${desc} eyeglasses frame. Classic 3/4 angle view, ~25° rotation, both temples visible, the near temple sharp. ${brandNote} ${studioRule}` },
+    { slug: "front", prompt: `Warby Parker–style dead-on front view of ${desc} eyeglasses frame. Perfectly symmetrical, both lenses fully visible. ${brandNote} ${studioRule}` },
+    { slug: "side", prompt: `Warby Parker–style pure 90° side profile of ${desc} eyeglasses frame, full temple length visible. ${brandNote} ${studioRule}` },
+    { slug: "rear", prompt: `Warby Parker–style elevated rear 3/4 view of ${desc} eyeglasses frame, showing hinges, nose pads and inner temples. ${brandNote} ${studioRule}` },
+    { slug: "macro", prompt: `Warby Parker–style macro detail of ${desc} eyeglasses frame at the temple hinge${branded ? ` (${product.brand} marking visible)` : ""}. ${studioRule}` },
+    { slug: "tinted", prompt: `Warby Parker–style 3/4 angle of ${desc} eyeglasses frame with soft neutral grey tinted lenses (10–15% opacity) demonstrating the sun-lens look. ${brandNote} ${studioRule}` },
   ];
 }
 
