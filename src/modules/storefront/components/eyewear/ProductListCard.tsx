@@ -71,13 +71,13 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
       <Card className="group overflow-hidden hover:shadow-gold transition-all cursor-pointer">
         <div className="flex flex-col sm:flex-row">
           {/* Image Section */}
-          <div className="relative w-full sm:w-48 md:w-56 h-48 sm:h-auto flex-shrink-0 overflow-hidden bg-secondary">
+          <div className="product-surface relative w-full sm:w-48 md:w-56 h-48 sm:h-auto flex-shrink-0 overflow-hidden ring-1 ring-border/40">
             <img
               src={imageUrl}
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-contain p-3 sm:p-4 transition-transform duration-500 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all" />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
             
             {/* Wishlist button on image */}
             <div className="absolute top-3 right-3">
