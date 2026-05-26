@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, ImageOff, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageOff, X, RotateCcw } from "lucide-react";
 import { getDisplayImages } from "@/modules/products/lib/image-utils";
 
 interface ProductImageCarouselProps {
@@ -12,6 +12,8 @@ interface ProductImageCarouselProps {
   /** "pdp" = full page, "quickview" = dialog/sheet */
   variant?: "pdp" | "quickview";
   className?: string;
+  /** When true the first (anchor) image spins 360° on its Y axis */
+  isAnchorLocked?: boolean;
 }
 
 export const ProductImageCarousel = ({
@@ -20,6 +22,7 @@ export const ProductImageCarousel = ({
   productName,
   variant = "pdp",
   className,
+  isAnchorLocked = false,
 }: ProductImageCarouselProps) => {
   const images = getDisplayImages({ image_url: mainImage, additional_images: additionalImages });
   const hasImages = images.length > 0;
@@ -99,34 +102,81 @@ export const ProductImageCarousel = ({
         >
           <div ref={emblaRef} className="overflow-hidden h-full">
             <div className="flex h-full">
-              {images.map((src, i) => (
-                <div
-                  key={i}
-                  className="flex-[0_0_100%] min-w-0 h-full cursor-zoom-in"
-                  onClick={() => setFullscreenOpen(true)}
-                >
-                  <img
-                    src={src}
-                    alt={`${productName} - View ${i + 1}`}
+              {images.map((src, i) => {
+                const isAnchor = i === 0 && isAnchorLocked;
+                // Anchor slides use absolute positioning so the zoom lens can
+                // overlay the spinner without being wrapped inside it.
+                return (
+                  <div
+                    key={i}
                     className={cn(
-                      "w-full h-full object-contain transition-transform duration-300",
-                      isZoomed && selectedIndex === i && "hidden md:block"
+                      "flex-[0_0_100%] min-w-0 h-full cursor-zoom-in",
+                      isAnchor && "relative"
                     )}
-                    draggable={false}
-                  />
-                  {/* Desktop zoom lens */}
-                  {isZoomed && selectedIndex === i && (
-                    <div
-                      className="hidden md:block w-full h-full bg-no-repeat"
-                      style={{
-                        backgroundImage: `url(${src})`,
-                        backgroundSize: "200%",
-                        backgroundPosition: `${zoomPos.x}% ${zoomPos.y}%`,
-                      }}
-                    />
-                  )}
-                </div>
-              ))}
+                    onClick={() => setFullscreenOpen(true)}
+                  >
+                    {isAnchor ? (
+                      <>
+                        {/* ── Spinning wrapper ───────────────────────────
+                            Rotates on Y axis. img inside still gets the
+                            .product-surface img scale(1.2) rule so it stays
+                            visually enlarged. Pauses when zoom is active. */}
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            animation: "frame-spin-360 5s linear infinite",
+                            animationPlayState:
+                              isZoomed && selectedIndex === 0 ? "paused" : "running",
+                          }}
+                        >
+                          <img
+                            src={src}
+                            alt={`${productName} - 360° View`}
+                            className={cn(
+                              "w-full h-full",
+                              isZoomed && selectedIndex === 0 && "hidden md:block"
+                            )}
+                            draggable={false}
+                          />
+                        </div>
+                        {/* Zoom lens — outside spinner, no rotation */}
+                        {isZoomed && selectedIndex === 0 && (
+                          <div
+                            className="hidden md:block absolute inset-0 bg-no-repeat"
+                            style={{
+                              backgroundImage: `url(${src})`,
+                              backgroundSize: "200%",
+                              backgroundPosition: `${zoomPos.x}% ${zoomPos.y}%`,
+                            }}
+                          />
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <img
+                          src={src}
+                          alt={`${productName} - View ${i + 1}`}
+                          className={cn(
+                            "w-full h-full object-contain transition-transform duration-300",
+                            isZoomed && selectedIndex === i && "hidden md:block"
+                          )}
+                          draggable={false}
+                        />
+                        {isZoomed && selectedIndex === i && (
+                          <div
+                            className="hidden md:block w-full h-full bg-no-repeat"
+                            style={{
+                              backgroundImage: `url(${src})`,
+                              backgroundSize: "200%",
+                              backgroundPosition: `${zoomPos.x}% ${zoomPos.y}%`,
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -164,6 +214,21 @@ export const ProductImageCarousel = ({
                   aria-label={`Go to image ${i + 1}`}
                 />
               ))}
+            </div>
+          )}
+
+          {/* 360° badge — top-left, only on the anchor slide */}
+          {isAnchorLocked && selectedIndex === 0 && (
+            <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-background/80 backdrop-blur-sm rounded-full px-2.5 py-1 border border-border/40 shadow-sm pointer-events-none">
+              <RotateCcw className="h-3 w-3 text-primary" />
+              <span className="text-[10px] font-bold text-primary tracking-widest">360°</span>
+            </div>
+          )}
+
+          {/* "Hover to inspect" hint — desktop only, anchor slide, not zoomed */}
+          {isAnchorLocked && selectedIndex === 0 && !isZoomed && isPdp && (
+            <div className="hidden md:block absolute bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-muted-foreground/60 pointer-events-none select-none">
+              Hover to pause &amp; zoom
             </div>
           )}
 

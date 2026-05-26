@@ -214,6 +214,7 @@ const ProductDetail = () => {
                 productName={product.name}
                 productId={product.id}
                 variant="pdp"
+                isAnchorLocked={product.primary_image_locked ?? false}
               />
             </div>
 

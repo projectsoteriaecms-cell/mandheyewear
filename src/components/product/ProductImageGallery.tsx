@@ -6,6 +6,8 @@ interface ProductImageGalleryProps {
   productName: string;
   productId: string;
   variant?: "pdp" | "quickview";
+  /** When true the first (primary/locked anchor) image spins 360° */
+  isAnchorLocked?: boolean;
 }
 
 export const ProductImageGallery = ({
@@ -13,6 +15,7 @@ export const ProductImageGallery = ({
   additionalImages,
   productName,
   variant = "pdp",
+  isAnchorLocked = false,
 }: ProductImageGalleryProps) => {
   return (
     <ProductImageCarousel
@@ -20,6 +23,7 @@ export const ProductImageGallery = ({
       additionalImages={additionalImages}
       productName={productName}
       variant={variant}
+      isAnchorLocked={isAnchorLocked}
     />
   );
 };

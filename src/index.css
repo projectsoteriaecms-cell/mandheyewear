@@ -851,4 +851,25 @@ All colors MUST be HSL.
   transform-origin: center;
 }
 
+/* ── Anchor Frame 360° Turntable ────────────────────────────────────────────
+   Applied to a wrapper div that sits around the anchor img inside the PDP
+   carousel. The img's own scale(1.2) still applies inside the rotating
+   wrapper, so the frame appears naturally scaled while spinning.
+   perspective() listed first so it acts as the viewing frustum.
+   Smooth linear spin → edge-on flash at 90°/270° lasts ~80ms at 5s/rev.
+*/
+@keyframes frame-spin-360 {
+  from { transform: perspective(1200px) rotateY(0deg); }
+  to   { transform: perspective(1200px) rotateY(360deg); }
+}
+
+/* Utility applied by the carousel — pause on hover via parent group */
+.anchor-spin {
+  animation: frame-spin-360 5s linear infinite;
+  animation-play-state: running;
+}
+.anchor-spin-paused,
+.group:hover .anchor-spin-auto-pause {
+  animation-play-state: paused;
+}
 
