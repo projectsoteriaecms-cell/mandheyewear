@@ -226,6 +226,7 @@ const ProductDetail = () => {
                 productId={product.id}
                 variant="pdp"
                 isAnchorLocked={product.primary_image_locked ?? false}
+                frame3D={frame3D}
               />
             </div>
 
