@@ -99,11 +99,10 @@ export const FeaturedFrames = () => {
               style={{ animationDelay: `${0.1 + index * 0.1}s` }}
             >
               <Card className="group overflow-hidden rounded-2xl border-white/10 hover:border-mh-gold/30 card-3d-hover cursor-pointer h-full bg-white/5 backdrop-blur-sm">
-                <div className="relative h-72 overflow-hidden bg-white/5">
+                <div data-surface="card" className="product-surface relative h-72 overflow-hidden">
                   <img 
                     src={getFeaturedImage(product, index)} 
                     alt={product.name}
-                    className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
                   />
                   
                   {/* Hover overlay */}
