@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/sheet";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { Bag, Minus, Plus, Trash, CircleNotch, Eyeglasses } from "@phosphor-icons/react";
+import { usePrescriptions } from "@/modules/prescriptions/hooks/usePrescriptions";
+import { Bag, Minus, Plus, Trash, CircleNotch, Eyeglasses, Warning } from "@phosphor-icons/react";
 
 // Import placeholder images
 import frame1 from "@/assets/frame-1.jpg";
@@ -29,6 +30,12 @@ export const CartDrawer = () => {
   const { cartItems, cartCount, cartTotal, updateQuantity, removeFromCart, isLoading } =
     useCart();
   const { isAuthenticated } = useAuth();
+  const { activePrescriptions } = usePrescriptions();
+
+  const hasRxItems = cartItems.some(
+    (item) => (item as any).lens_type && (item as any).lens_type !== "frame_only"
+  );
+  const hasValidRx = activePrescriptions.length > 0;
 
   return (
     <Sheet>
@@ -200,7 +207,7 @@ export const CartDrawer = () => {
 
         {/* Footer */}
         {isAuthenticated && cartItems.length > 0 && (
-          <div className="border-t pt-4 space-y-4">
+          <div className="border-t pt-4 space-y-3">
             <div className="flex justify-between text-lg font-bold">
               <span>Subtotal</span>
               <span className="text-accent">₦{cartTotal.toLocaleString()}</span>
@@ -208,6 +215,29 @@ export const CartDrawer = () => {
             <p className="text-sm text-muted-foreground">
               Shipping and taxes calculated at checkout
             </p>
+
+            {/* Rx warning banner */}
+            {hasRxItems && !hasValidRx && (
+              <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 px-3 py-2.5">
+                <Warning weight="fill" className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="text-xs">
+                  <p className="font-semibold text-amber-800 dark:text-amber-300">
+                    Prescription required
+                  </p>
+                  <p className="text-amber-700 dark:text-amber-400 mt-0.5">
+                    Your cart includes prescription lenses.{" "}
+                    <Link
+                      to="/dashboard?tab=prescriptions"
+                      className="underline font-semibold hover:text-amber-900"
+                    >
+                      Add a prescription
+                    </Link>{" "}
+                    before checkout to avoid delays.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <Button variant="hero" className="w-full" size="lg" asChild>
               <Link to="/checkout">Proceed to Checkout</Link>
             </Button>

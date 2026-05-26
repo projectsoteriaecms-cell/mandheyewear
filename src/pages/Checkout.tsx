@@ -4,6 +4,7 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -22,6 +23,8 @@ import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useProfile } from "@/modules/personalization/hooks/useProfile";
 import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+import { usePrescriptions } from "@/modules/prescriptions/hooks/usePrescriptions";
+import { PrescriptionForm } from "@/modules/prescriptions/components/PrescriptionForm";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { canPurchase } from "@/shared/lib/permissions";
 import {
@@ -34,7 +37,7 @@ import {
 } from "@/shared/lib/shippingZones";
 import { useToast } from "@/shared/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, Clock, Phone, Mail } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, CheckCircle2, Clock, Phone, Mail, ClipboardList, AlertTriangle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const PAYSTACK_PUBLIC_KEY = "pk_test_b65019a2e28f286dd4906d6aaa80bff38f035460";
@@ -67,8 +70,10 @@ const Checkout = () => {
   const { data: role, isLoading: roleLoading } = useUserRole();
   const { cartItems, cartTotal, isLoading: cartLoading, clearCart } = useCart();
   const { data: profile } = useProfile(user?.id);
+  const { activePrescriptions, createRx } = usePrescriptions();
   const { trackInitiateCheckout } = useMetaPixel();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [rxDialogOpen, setRxDialogOpen] = useState(false);
   const [hasTrackedCheckout, setHasTrackedCheckout] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [showRetryPrompt, setShowRetryPrompt] = useState(false);
@@ -90,6 +95,12 @@ const Checkout = () => {
 
   const isNigeria = country === "Nigeria";
   const userCanPurchase = canPurchase(role ?? null);
+
+  // Prescription gate
+  const hasRxItems = cartItems.some(
+    (item) => (item as any).lens_type && (item as any).lens_type !== "frame_only"
+  );
+  const hasValidRx = activePrescriptions.length > 0;
 
   // Pre-fill from profile once loaded
   useEffect(() => {
@@ -173,6 +184,18 @@ const Checkout = () => {
         return false;
       }
     }
+
+    // Prescription gate — hard block
+    if (hasRxItems && !hasValidRx) {
+      toast({
+        title: "Prescription required",
+        description: "Please add a valid eye prescription before purchasing prescription lenses.",
+        variant: "destructive",
+      });
+      setRxDialogOpen(true);
+      return false;
+    }
+
     return true;
   };
 
@@ -586,12 +609,71 @@ const Checkout = () => {
               </CardContent>
             </Card>
 
+            {/* Prescription Step — only shown when cart has Rx lens items */}
+            {hasRxItems && (
+              <Card className={`overflow-hidden transition-all ${!hasValidRx ? "border-amber-300 dark:border-amber-700" : "border-emerald-300 dark:border-emerald-700"}`}>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-2xl">
+                    <span className={`flex items-center justify-center h-6 w-6 rounded-full text-sm font-bold shrink-0 ${!hasValidRx ? "bg-amber-500 text-white" : "bg-emerald-500 text-white"}`}>
+                      3
+                    </span>
+                    Eye Prescription
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    Required for prescription lens orders
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                  {hasValidRx ? (
+                    /* ── Valid Rx on file ── */
+                    <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30 p-4">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-emerald-800 dark:text-emerald-300">
+                          Prescription on file
+                        </p>
+                        <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-0.5">
+                          {activePrescriptions.length} valid prescription
+                          {activePrescriptions.length !== 1 ? "s" : ""} found.
+                          Our dispensing team will use your most recent one.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    /* ── No valid Rx ── */
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-4">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold text-amber-800 dark:text-amber-300">
+                            No valid prescription found
+                          </p>
+                          <p className="text-sm text-amber-700 dark:text-amber-400 mt-0.5">
+                            Your cart includes prescription lenses. Nigerian law requires a valid
+                            optometrist prescription before we can dispense Rx lenses.
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="w-full border-amber-300 text-amber-800 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300"
+                        onClick={() => setRxDialogOpen(true)}
+                      >
+                        <ClipboardList className="h-4 w-4 mr-2" />
+                        Add Prescription Now
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Payment Section */}
             <Card className="overflow-hidden">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-2xl">
                   <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold shrink-0">
-                    3
+                    {hasRxItems ? "4" : "3"}
                   </span>
                   Payment
                 </CardTitle>
@@ -650,6 +732,26 @@ const Checkout = () => {
       </main>
 
       <Footer />
+
+      {/* Inline prescription dialog — so user never has to leave checkout */}
+      <Dialog open={rxDialogOpen} onOpenChange={setRxDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display">Add Your Prescription</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground -mt-2 mb-2">
+            Enter your prescription details and then continue to pay — we'll save it to your account automatically.
+          </p>
+          <PrescriptionForm
+            onSave={(rx) => {
+              createRx.mutate(rx, {
+                onSuccess: () => setRxDialogOpen(false),
+              });
+            }}
+            isSaving={createRx.isPending}
+          />
+        </DialogContent>
+      </Dialog>
 
       {showRetryPrompt && paymentError && (
         <PaymentRetryPrompt
