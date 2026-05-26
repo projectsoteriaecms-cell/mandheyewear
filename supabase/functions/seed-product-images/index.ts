@@ -96,6 +96,11 @@ Deno.serve(async (req) => {
     const mode: "dry_run" | "commit" = body?.mode === "commit" ? "commit" : "dry_run";
     const source: "bundled" | "upload" = body?.source === "upload" ? "upload" : "bundled";
     const skipFilled: boolean = body?.skipFilled !== false;
+    const target: "seed" | "anchor" | "both" =
+      body?.target === "anchor" || body?.target === "both" ? body.target : "seed";
+    const doSeed = target === "seed" || target === "both";
+    const doAnchor = target === "anchor" || target === "both";
+
 
     // Build file list (sku, ext, bytes? only on commit for bundled; uploads always carry bytes)
     type FileEntry = { sku: string; ext: string; bytes?: Uint8Array; filename: string };
