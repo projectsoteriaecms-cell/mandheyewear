@@ -87,7 +87,7 @@ export const ProductImageCarousel = ({
         <div
           ref={imageRef}
           className={cn(
-            "relative overflow-hidden bg-secondary group rounded-lg w-full",
+            "product-surface relative overflow-hidden group rounded-lg w-full ring-1 ring-border/40",
             aspectClass,
             // Desktop: viewport-constrained
             isPdp && "md:max-h-[calc(100vh-180px)]"
@@ -108,7 +108,7 @@ export const ProductImageCarousel = ({
                     src={src}
                     alt={`${productName} - View ${i + 1}`}
                     className={cn(
-                      "w-full h-full object-cover transition-transform duration-300",
+                      "w-full h-full object-contain p-4 md:p-6 transition-transform duration-300",
                       isZoomed && selectedIndex === i && "hidden md:block"
                     )}
                     draggable={false}
