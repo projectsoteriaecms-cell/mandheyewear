@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type SeedImagesSource = "bundled" | "upload";
 export type SeedImagesMode = "dry_run" | "commit";
+export type SeedImagesTarget = "seed" | "anchor" | "both";
 
 export interface SeedImagesPlanEntry {
   sku: string;
@@ -23,12 +24,24 @@ export interface SeedImagesDryRunResult {
 
 export interface SeedImagesCommitResult {
   mode: "commit";
+  target?: SeedImagesTarget;
   matched: number;
   unmatched: string[];
   unmatchedCount: number;
   uploaded: number;
+  anchorUploaded?: number;
   uploads: Array<{ sku: string; url: string; action: string }>;
+  anchorUploads?: Array<{ sku: string; path: string }>;
   errors: Array<{ sku: string; error: string }>;
+  anchorLink?: {
+    ok: boolean;
+    scanned?: number;
+    matched?: number;
+    linked?: number;
+    skipped?: number;
+    errored?: number;
+    error?: string;
+  };
 }
 
 export interface SeedImageFile {
@@ -41,6 +54,7 @@ export interface SeedImageFile {
 interface Args {
   mode: SeedImagesMode;
   source: SeedImagesSource;
+  target?: SeedImagesTarget;
   skipFilled: boolean;
   files?: SeedImageFile[];
 }
@@ -50,10 +64,35 @@ export function useSeedImages() {
     mutationFn: async (args: Args): Promise<SeedImagesDryRunResult | SeedImagesCommitResult> => {
       const { data, error } = await supabase.functions.invoke("seed-product-images", { body: args });
       if (error) throw error;
-      return data as SeedImagesDryRunResult | SeedImagesCommitResult;
+      const result = data as SeedImagesDryRunResult | SeedImagesCommitResult;
+
+      // After a commit that uploaded anchor files, auto-run link-anchor-images
+      // with bg-removal skipped (the bundled PNGs already have transparent bg).
+      if (
+        result.mode === "commit" &&
+        (args.target === "anchor" || args.target === "both") &&
+        (result as SeedImagesCommitResult).anchorUploaded
+      ) {
+        try {
+          const { data: linkData, error: linkErr } = await supabase.functions.invoke(
+            "link-anchor-images",
+            { body: { dryRun: false, skipBgRemoval: true } }
+          );
+          if (linkErr) throw linkErr;
+          (result as SeedImagesCommitResult).anchorLink = linkData;
+        } catch (e) {
+          (result as SeedImagesCommitResult).anchorLink = {
+            ok: false,
+            error: (e as Error).message,
+          };
+        }
+      }
+
+      return result;
     },
   });
 }
+
 
 export async function fileToBase64(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
