@@ -117,6 +117,27 @@ export const ProductImageCarousel = ({
           onMouseLeave={() => setIsZoomed(false)}
           onMouseMove={handleMouseMove}
         >
+          {view === "3d" && has3D && (
+            <Suspense
+              fallback={
+                <div className="absolute inset-0 flex items-center justify-center bg-background/40">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }
+            >
+              <ProductFrame3DViewer
+                lensWidth={frame3D?.lensWidth ?? null}
+                bridgeSize={frame3D?.bridgeSize ?? null}
+                templeLength={frame3D?.templeLength ?? null}
+                frameShape={frame3D?.frameShape ?? null}
+                color={frame3D?.color ?? null}
+              />
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground/80 pointer-events-none select-none bg-background/70 backdrop-blur-sm rounded-full px-3 py-1 border border-border/40">
+                Drag to rotate • Scroll to zoom
+              </div>
+            </Suspense>
+          )}
+          {view === "2d" && (
           <div ref={emblaRef} className="overflow-hidden h-full">
             <div className="flex h-full">
               {images.map((src, i) => {
