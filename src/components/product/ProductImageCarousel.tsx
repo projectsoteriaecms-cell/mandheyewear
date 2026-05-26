@@ -86,6 +86,7 @@ export const ProductImageCarousel = ({
         {/* Main Carousel */}
         <div
           ref={imageRef}
+          data-surface="pdp"
           className={cn(
             "product-surface relative overflow-hidden group rounded-lg w-full ring-1 ring-border/40",
             aspectClass,
