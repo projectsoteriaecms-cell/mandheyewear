@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { ShoppingBag, Minus, Plus, Camera, Loader2, LogIn, Zap } from "lucide-react";
+import { ShoppingBag, Minus, Plus, Camera, Loader2, LogIn, Zap, Glasses, ChevronRight, Check } from "lucide-react";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
