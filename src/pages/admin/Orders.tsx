@@ -4,6 +4,7 @@ import { AdminLayout } from "@/shared/layouts/admin";
 import { supabase } from "@/integrations/supabase/client";
 import { useZohoSync } from "@/modules/integrations/hooks/useZohoSync";
 import { useUpdateOrderStatus } from "@/modules/orders/hooks/useUpdateOrderStatus";
+import { OrderDetailSheet } from "./orders/OrderDetailSheet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ import {
   Package,
   CheckCircle,
   XCircle,
+  Eyeglasses,
 } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -66,6 +68,8 @@ interface OrderRow {
   tracking_number: string | null;
   logistics_partner: string | null;
   estimated_delivery_date: string | null;
+  has_rx_items?: boolean;
+  needs_fitting?: boolean;
 }
 
 const useAdminOrders = () => {
@@ -74,12 +78,26 @@ const useAdminOrders = () => {
     queryFn: async () => {
       const { data: orders, error } = await supabase
         .from("orders")
-        .select("id, order_number, order_status, payment_status, total_amount, currency, created_at, user_id, tracking_number, logistics_partner, estimated_delivery_date")
+        .select(`
+          id, order_number, order_status, payment_status,
+          total_amount, currency, created_at, user_id,
+          tracking_number, logistics_partner, estimated_delivery_date,
+          order_items (lens_type, requires_fitting, fitting_booked)
+        `)
         .order("created_at", { ascending: false })
         .limit(100);
 
       if (error) throw error;
-      return (orders || []) as OrderRow[];
+
+      return (orders || []).map((o: any) => ({
+        ...o,
+        has_rx_items: o.order_items?.some(
+          (i: any) => i.lens_type && i.lens_type !== "frame_only"
+        ) ?? false,
+        needs_fitting: o.order_items?.some(
+          (i: any) => i.requires_fitting && !i.fitting_booked
+        ) ?? false,
+      })) as OrderRow[];
     },
   });
 };
@@ -153,6 +171,7 @@ const STATUS_LABELS: Partial<Record<OrderStatus, string>> = {
 
 const Orders = () => {
   const [search, setSearch] = useState("");
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [pushingOrderId, setPushingOrderId] = useState<string | null>(null);
   const [shippingDialog, setShippingDialog] = useState<{
     orderId: string;
@@ -254,6 +273,7 @@ const Orders = () => {
                   <TableHead>Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Payment</TableHead>
+                  <TableHead>Rx</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -261,13 +281,13 @@ const Orders = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       Loading orders...
                     </TableCell>
                   </TableRow>
                 ) : !filtered?.length ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       No orders found
                     </TableCell>
                   </TableRow>
@@ -275,7 +295,11 @@ const Orders = () => {
                   filtered.map((order) => {
                     const transitions = getAvailableTransitions(order.order_status);
                     return (
-                      <TableRow key={order.id}>
+                      <TableRow
+                        key={order.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => setSelectedOrderId(order.id)}
+                      >
                         <TableCell className="font-medium">{order.order_number}</TableCell>
                         <TableCell className="text-muted-foreground">
                           {format(new Date(order.created_at), "MMM d, yyyy")}
@@ -290,10 +314,25 @@ const Orders = () => {
                             {order.payment_status}
                           </Badge>
                         </TableCell>
+                        <TableCell>
+                          {order.has_rx_items && (
+                            <div className="flex items-center gap-1">
+                              <Eyeglasses
+                                weight="duotone"
+                                className={`h-4 w-4 ${order.needs_fitting ? "text-amber-500" : "text-primary"}`}
+                              />
+                              {order.needs_fitting && (
+                                <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">
+                                  Fitting
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right font-medium">
                           ₦{order.total_amount.toLocaleString()}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               size="sm"
@@ -349,6 +388,12 @@ const Orders = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Order Detail Sheet */}
+      <OrderDetailSheet
+        orderId={selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+      />
 
       {/* Shipping Details Dialog */}
       <Dialog open={!!shippingDialog} onOpenChange={(open) => !open && setShippingDialog(null)}>
