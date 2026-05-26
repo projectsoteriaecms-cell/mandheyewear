@@ -481,27 +481,29 @@ export const HeroSection = () => {
                       to={`/product/${product.id}`}
                       className="flex-shrink-0 w-[140px] sm:w-[170px] p-3 sm:p-4 border-r border-cream/5 last:border-r-0 hover:bg-cream/[0.03] transition-colors group"
                     >
-                      <div className="relative aspect-square rounded-lg overflow-hidden bg-muted mb-2">
-                        {product.image_url ? (
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-cream/5" />
-                        )}
+                      <div className="relative aspect-square rounded-lg overflow-hidden mb-2">
+                        <div data-surface="card" className="product-surface absolute inset-0">
+                          {product.image_url ? (
+                            <img
+                              src={product.image_url}
+                              alt={product.name}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-white" />
+                          )}
+                        </div>
                         {hasDiscount && (
-                          <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-flame rounded text-[10px] font-display font-bold text-cream">
+                          <div className="absolute top-1.5 left-1.5 z-10 px-1.5 py-0.5 bg-flame rounded text-[10px] font-display font-bold text-cream">
                             -{item.discount_percent}%
                           </div>
                         )}
                         {item.discount_label && (
-                          <div className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 bg-mh-gold/90 rounded text-[9px] font-display font-bold text-ink uppercase">
+                          <div className="absolute bottom-1.5 left-1.5 z-10 px-1.5 py-0.5 bg-mh-gold/90 rounded text-[9px] font-display font-bold text-ink uppercase">
                             {item.discount_label}
                           </div>
                         )}
                       </div>
+
                       <p className="text-cream/80 text-xs font-display font-semibold truncate">{product.name}</p>
                       {product.brand && (
                         <p className="text-cream/40 text-[10px] font-display truncate">{product.brand}</p>
