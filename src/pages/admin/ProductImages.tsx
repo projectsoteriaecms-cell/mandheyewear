@@ -10,7 +10,8 @@ import { QuickImageUploadModal } from "@/modules/products/components/QuickImageU
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Images } from "@phosphor-icons/react";
-import { Loader2, Anchor } from "lucide-react";
+import { Loader2, Anchor, GitCompare } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageStatsCards, ImageFilterBar, SelectionActionBar } from "./product-images";
@@ -203,6 +204,12 @@ const ProductImages = () => {
               <p className="text-muted-foreground">Manage product images for your catalog</p>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/admin/products/images/compare">
+                  <GitCompare className="h-4 w-4 mr-2" />
+                  Compare Renders
+                </Link>
+              </Button>
               <Button
                 variant="outline"
                 size="sm"

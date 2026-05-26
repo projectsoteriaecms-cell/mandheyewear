@@ -27,6 +27,7 @@ const InventoryTransactions = lazyRetry(() => import("@/pages/admin/InventoryTra
 const Suppliers = lazyRetry(() => import("@/pages/admin/Suppliers"));
 const Products = lazyRetry(() => import("@/pages/admin/Products"));
 const ProductImages = lazyRetry(() => import("@/pages/admin/ProductImages"));
+const ProductImageCompare = lazyRetry(() => import("@/pages/admin/ProductImageCompare"));
 const Services = lazyRetry(() => import("@/pages/admin/Services"));
 const AdminBranches = lazyRetry(() => import("@/pages/admin/AdminBranches"));
 const AdminUsers = lazyRetry(() => import("@/pages/admin/AdminUsers"));
@@ -62,6 +63,7 @@ export const adminRoutes = [
   <Route key="/admin/suppliers" path="/admin/suppliers" element={withSuspense(Suppliers)} />,
   <Route key="/admin/products" path="/admin/products" element={withSuspense(Products)} />,
   <Route key="/admin/products/images" path="/admin/products/images" element={withSuspense(ProductImages)} />,
+  <Route key="/admin/products/images/compare" path="/admin/products/images/compare" element={withSuspense(ProductImageCompare)} />,
   <Route key="/admin/services" path="/admin/services" element={withSuspense(Services)} />,
   <Route key="/admin/appointments" path="/admin/appointments" element={withSuspense(AdminAppointments)} />,
   <Route key="/admin/branches" path="/admin/branches" element={withSuspense(AdminBranches)} />,
