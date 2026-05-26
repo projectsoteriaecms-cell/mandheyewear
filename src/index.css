@@ -821,3 +821,16 @@ All colors MUST be HSL.
   z-index: 0;
 }
 .product-surface > * { position: relative; z-index: 1; }
+
+/* Holistic frame sizing: any <img> placed inside a .product-surface tile
+   is auto-fitted to fill ~90% of the tile centered on its epicenter.
+   This is the single source of truth — applies to every current and future
+   frame image (cards, list, carousel, thumbnails, fullscreen). */
+.product-surface img {
+  object-fit: contain;
+  object-position: center;
+  width: 100%;
+  height: 100%;
+  padding: 6%;
+}
+
