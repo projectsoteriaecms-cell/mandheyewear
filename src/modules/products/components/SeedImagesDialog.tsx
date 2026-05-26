@@ -30,7 +30,9 @@ export const SeedImagesDialog = ({ open, onOpenChange }: Props) => {
   const seed = useSeedImages();
 
   const [source, setSource] = useState<SeedImagesSource>("bundled");
+  const [target, setTarget] = useState<SeedImagesTarget>("both");
   const [skipFilled, setSkipFilled] = useState(true);
+
   const [uploadedFiles, setUploadedFiles] = useState<SeedImageFile[]>([]);
   const [dryRun, setDryRun] = useState<SeedImagesDryRunResult | null>(null);
   const [commitResult, setCommitResult] = useState<SeedImagesCommitResult | null>(null);
