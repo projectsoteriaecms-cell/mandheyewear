@@ -24,6 +24,7 @@ import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
 import { useTrackActivity } from "@/shared/hooks/useTrackActivity";
 import { setCurrentProduct } from "@/shared/hooks/useCurrentProduct";
+import { useFrameAttributes } from "@/shared/hooks/useFrameAttributes";
 import { ArrowLeft, Star, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -59,6 +60,16 @@ function ReviewStarsSummary({ productId }: { productId: string }) {
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
   const { data: product, isLoading, error } = useProduct(productId || "");
+  const { data: frameAttrs } = useFrameAttributes(productId || null);
+  const frame3D = frameAttrs
+    ? {
+        lensWidth: frameAttrs.lens_width,
+        bridgeSize: frameAttrs.bridge_size,
+        templeLength: frameAttrs.temple_length,
+        frameShape: frameAttrs.frame_shape,
+        color: frameAttrs.front_color,
+      }
+    : null;
 
   useSEO({
     title: product ? `${product.name}${product.brand ? ` – ${product.brand}` : ""} | M&H Eyewear` : "Loading... | M&H Eyewear",
@@ -215,6 +226,7 @@ const ProductDetail = () => {
                 productId={product.id}
                 variant="pdp"
                 isAnchorLocked={product.primary_image_locked ?? false}
+                frame3D={frame3D}
               />
             </div>
 

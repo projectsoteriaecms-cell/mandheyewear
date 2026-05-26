@@ -1,9 +1,21 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, lazy, Suspense } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, ImageOff, X, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageOff, X, RotateCcw, Box, Image as ImageIcon, Loader2 } from "lucide-react";
 import { getDisplayImages } from "@/modules/products/lib/image-utils";
+
+const ProductFrame3DViewer = lazy(() =>
+  import("./ProductFrame3DViewer").then((m) => ({ default: m.ProductFrame3DViewer }))
+);
+
+export interface Frame3DAttributes {
+  lensWidth?: number | null;
+  bridgeSize?: number | null;
+  templeLength?: number | null;
+  frameShape?: string | null;
+  color?: string | null;
+}
 
 interface ProductImageCarouselProps {
   mainImage: string | null;
@@ -14,6 +26,8 @@ interface ProductImageCarouselProps {
   className?: string;
   /** When true the first (anchor) image spins 360° on its Y axis */
   isAnchorLocked?: boolean;
+  /** When provided, enables a "3D" toggle that swaps the main view for an interactive parametric model */
+  frame3D?: Frame3DAttributes | null;
 }
 
 export const ProductImageCarousel = ({
@@ -23,10 +37,13 @@ export const ProductImageCarousel = ({
   variant = "pdp",
   className,
   isAnchorLocked = false,
+  frame3D = null,
 }: ProductImageCarouselProps) => {
   const images = getDisplayImages({ image_url: mainImage, additional_images: additionalImages });
   const hasImages = images.length > 0;
+  const has3D = !!(frame3D && (frame3D.lensWidth || frame3D.frameShape));
 
+  const [view, setView] = useState<"2d" | "3d">("2d");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
@@ -96,11 +113,34 @@ export const ProductImageCarousel = ({
             // Desktop: viewport-constrained
             isPdp && "md:max-h-[calc(100vh-180px)]"
           )}
-          onMouseEnter={() => setIsZoomed(true)}
+          onMouseEnter={() => view === "2d" && setIsZoomed(true)}
           onMouseLeave={() => setIsZoomed(false)}
-          onMouseMove={handleMouseMove}
+          onMouseMove={view === "2d" ? handleMouseMove : undefined}
         >
+          {view === "3d" && has3D && (
+            <Suspense
+              fallback={
+                <div className="absolute inset-0 flex items-center justify-center bg-background/40">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }
+            >
+              <ProductFrame3DViewer
+                lensWidth={frame3D?.lensWidth ?? null}
+                bridgeSize={frame3D?.bridgeSize ?? null}
+                templeLength={frame3D?.templeLength ?? null}
+                frameShape={frame3D?.frameShape ?? null}
+                color={frame3D?.color ?? null}
+              />
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground/80 pointer-events-none select-none bg-background/70 backdrop-blur-sm rounded-full px-3 py-1 border border-border/40">
+                Drag to rotate • Scroll to zoom
+              </div>
+            </Suspense>
+          )}
+          {view === "2d" && (
+          <>
           <div ref={emblaRef} className="overflow-hidden h-full">
+
             <div className="flex h-full">
               {images.map((src, i) => {
                 const isAnchor = i === 0 && isAnchorLocked;
@@ -216,6 +256,10 @@ export const ProductImageCarousel = ({
               ))}
             </div>
           )}
+          </>
+          )}
+
+
 
           {/* 360° badge — top-left, only on the anchor slide */}
           {isAnchorLocked && selectedIndex === 0 && (
@@ -232,10 +276,44 @@ export const ProductImageCarousel = ({
             </div>
           )}
 
-          {/* Image counter */}
-          <div className="absolute top-3 right-3 bg-background/70 backdrop-blur-sm text-xs font-medium px-2 py-1 rounded-full">
-            {selectedIndex + 1}/{images.length}
-          </div>
+          {/* Image counter — 2D only */}
+          {view === "2d" && (
+            <div className="absolute top-3 right-3 bg-background/70 backdrop-blur-sm text-xs font-medium px-2 py-1 rounded-full">
+              {selectedIndex + 1}/{images.length}
+            </div>
+          )}
+
+          {/* 2D / 3D toggle */}
+          {has3D && (
+            <div className="absolute top-3 right-3 z-20 flex items-center gap-1 bg-background/85 backdrop-blur-md rounded-full p-1 border border-border/50 shadow-md"
+              style={view === "2d" ? { top: "2.75rem" } : undefined}
+            >
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setView("2d"); }}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors",
+                  view === "2d" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-label="Photo view"
+              >
+                <ImageIcon className="h-3 w-3" />
+                Photo
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setView("3d"); }}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors",
+                  view === "3d" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-label="3D view"
+              >
+                <Box className="h-3 w-3" />
+                3D
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Thumbnail strip — desktop only (PDP) */}
