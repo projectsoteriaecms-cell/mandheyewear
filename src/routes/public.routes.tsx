@@ -25,6 +25,7 @@ const About = lazyRetry(() => import("@/pages/About"));
 const Partners = lazyRetry(() => import("@/pages/Partners"));
 const Contact = lazyRetry(() => import("@/pages/Contact"));
 const ShopRedirect = lazyRetry(() => import("@/pages/ShopRedirect"));
+const EyeCare = lazyRetry(() => import("@/pages/EyeCare"));
 const FAQ = lazyRetry(() => import("@/pages/FAQ"));
 const TryOn = lazyRetry(() => import("@/pages/TryOn"));
 const Privacy = lazyRetry(() => import("@/pages/Privacy"));
