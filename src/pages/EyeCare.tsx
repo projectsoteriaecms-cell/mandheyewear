@@ -70,9 +70,26 @@ const EyeCare = () => {
     "Flexible Appointment Scheduling"
   ];
 
+  const servicesJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": services.map((s) => ({
+      "@type": "MedicalProcedure",
+      name: s.title,
+      description: s.description,
+      procedureType: "https://schema.org/DiagnosticProcedure",
+      provider: {
+        "@type": "Optician",
+        name: "M&H Eyewear",
+        url: "https://mandheyewear.com",
+      },
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <JsonLd data={servicesJsonLd} />
       <Navigation />
+      
       
       <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
