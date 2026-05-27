@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { Image, Upload } from "@phosphor-icons/react";
+import { Image, Upload, Sparkle } from "@phosphor-icons/react";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   getImageReadiness,
   READINESS_LABELS,
@@ -22,6 +26,7 @@ interface ProductImageCardProps {
   selectable?: boolean;
   selected?: boolean;
   onSelectionToggle?: (id: string) => void;
+  onEnhanced?: (productId: string, newUrl: string) => void;
 }
 
 export const ProductImageCard = ({
@@ -30,7 +35,10 @@ export const ProductImageCard = ({
   selectable = false,
   selected = false,
   onSelectionToggle,
+  onEnhanced,
 }: ProductImageCardProps) => {
+  const [isEnhancing, setIsEnhancing] = useState(false);
+
   const readiness = getImageReadiness(
     product.brand,
     product.image_url,
@@ -43,6 +51,32 @@ export const ProductImageCard = ({
       onSelectionToggle(product.id);
     } else {
       onClick();
+    }
+  };
+
+  const handleEnhance = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isEnhancing || !product.image_url) return;
+
+    setIsEnhancing(true);
+    toast.loading(`Enhancing anchor for ${product.sku}…`, { id: `enhance-${product.id}` });
+
+    try {
+      const { data, error } = await supabase.functions.invoke("enhance-anchor-image", {
+        body: { product_id: product.id },
+      });
+
+      if (error || !data?.ok) {
+        throw new Error(data?.error || error?.message || "Enhancement failed");
+      }
+
+      toast.success(`${product.sku} — anchor enhanced ✓`, { id: `enhance-${product.id}` });
+      onEnhanced?.(product.id, data.enhancedUrl);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Enhancement failed: ${msg}`, { id: `enhance-${product.id}` });
+    } finally {
+      setIsEnhancing(false);
     }
   };
 
@@ -95,16 +129,41 @@ export const ProductImageCard = ({
         {!selectable && (
           <div
             className={cn(
-              "absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity",
+              "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity",
               "group-hover:opacity-100"
             )}
           >
             <div className="flex flex-col items-center text-white">
-              <Upload className="h-6 w-6 mb-1" />
+              <Upload className="h-5 w-5 mb-0.5" />
               <span className="text-xs font-medium">
                 {hasNoImages ? "Add Images" : "Manage Images"}
               </span>
             </div>
+
+            {/* Enhance Anchor button — only when an anchor image exists */}
+            {product.image_url && (
+              <button
+                onClick={handleEnhance}
+                disabled={isEnhancing}
+                title="Enhance anchor image with AI — makes it crystal clear"
+                className="flex items-center gap-1 rounded-full bg-amber-500 hover:bg-amber-400 disabled:opacity-50 px-2.5 py-1 text-[11px] font-semibold text-white transition-colors"
+              >
+                {isEnhancing ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Sparkle className="h-3 w-3" weight="fill" />
+                )}
+                {isEnhancing ? "Enhancing…" : "Enhance"}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Enhancing spinner overlay (full card) */}
+        {isEnhancing && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 z-20">
+            <Loader2 className="h-8 w-8 text-amber-400 animate-spin mb-2" />
+            <span className="text-xs text-white font-medium">Enhancing…</span>
           </div>
         )}
       </AspectRatio>

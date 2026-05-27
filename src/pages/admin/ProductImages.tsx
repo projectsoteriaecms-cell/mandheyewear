@@ -10,8 +10,9 @@ import { GenerateImagesDialog } from "@/modules/products/components/GenerateImag
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Images, Lightning } from "@phosphor-icons/react";
+import { Images, Lightning, Sparkle } from "@phosphor-icons/react";
 import { Loader2, Anchor, GitCompare } from "lucide-react";
+import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -170,6 +171,66 @@ const ProductImages = () => {
   const exitSelectMode = useCallback(() => { setSelectMode(false); setSelectedIds(new Set()); }, []);
 
   const [isGenerateImagesOpen, setIsGenerateImagesOpen] = useState(false);
+  const [isEnhancingAll, setIsEnhancingAll] = useState(false);
+  const [enhanceProgress, setEnhanceProgress] = useState<{ done: number; total: number } | null>(null);
+
+  // Handle single-card enhance result — refresh its image_url in the grid without full reload
+  const handleSingleEnhanced = useCallback((productId: string, newUrl: string) => {
+    queryClient.setQueryData(["admin-products"], (old: any[] | undefined) => {
+      if (!old) return old;
+      return old.map((p) => p.id === productId ? { ...p, image_url: newUrl } : p);
+    });
+  }, [queryClient]);
+
+  const handleEnhanceAll = useCallback(async () => {
+    const targets = products.filter((p) => p.image_url);
+    if (targets.length === 0) {
+      toast.info("No products with anchor images to enhance.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Enhance all ${targets.length} anchor images with AI?\n\nThis will make each one crystal clear. Originals are backed up automatically. This may take several minutes.`
+    );
+    if (!confirmed) return;
+
+    setIsEnhancingAll(true);
+    setEnhanceProgress({ done: 0, total: targets.length });
+
+    // Process in chunks of 3 to balance speed vs rate limits
+    const CHUNK = 3;
+    let done = 0;
+
+    for (let i = 0; i < targets.length; i += CHUNK) {
+      const chunk = targets.slice(i, i + CHUNK);
+      const { data, error } = await supabase.functions.invoke("enhance-anchor-image", {
+        body: { batch: chunk.map((p) => ({ product_id: p.id })) },
+      });
+
+      if (error) {
+        toast.error(`Batch error: ${error.message}`);
+      } else if (data?.results) {
+        // Update query cache for successfully enhanced products
+        for (const r of data.results) {
+          if (r.status === "enhanced" && r.enhancedUrl) {
+            queryClient.setQueryData(["admin-products"], (old: any[] | undefined) =>
+              old?.map((p) => p.id === r.product_id ? { ...p, image_url: r.enhancedUrl } : p)
+            );
+          }
+        }
+      }
+
+      done += chunk.length;
+      setEnhanceProgress({ done, total: targets.length });
+    }
+
+    setIsEnhancingAll(false);
+    setEnhanceProgress(null);
+
+    toast.success("All anchors enhanced — catalog images updated.");
+    queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    queryClient.invalidateQueries({ queryKey: ["product-image-stats"] });
+  }, [products, queryClient]);
 
   // Build the product list for the GenerateImagesDialog when in selection mode
   const selectedProductsForGenerate = useMemo(() => {
@@ -225,7 +286,6 @@ const ProductImages = () => {
                 variant="outline"
                 size="sm"
                 onClick={async () => {
-                  const { toast } = await import("sonner");
                   const t = toast.loading("Scanning bucket for MH-XXX anchor images…");
                   try {
                     const { data, error } = await supabase.functions.invoke("link-anchor-images", { body: {} });
@@ -249,8 +309,34 @@ const ProductImages = () => {
                 }}
               >
                 <Anchor className="h-4 w-4 mr-2" />
-                Link Anchor Images
+                Link Anchors
               </Button>
+
+              {/* Enhance All Anchors — the foundation step */}
+              {products.some((p) => p.image_url) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEnhanceAll}
+                  disabled={isEnhancingAll}
+                  className="border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/20"
+                >
+                  {isEnhancingAll ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {enhanceProgress
+                        ? `Enhancing ${enhanceProgress.done}/${enhanceProgress.total}…`
+                        : "Enhancing…"}
+                    </>
+                  ) : (
+                    <>
+                      <Sparkle className="h-4 w-4 mr-2" weight="fill" />
+                      Enhance All Anchors
+                    </>
+                  )}
+                </Button>
+              )}
+
               {stats.missingPrimary > 0 && (
                 <Button
                   variant="default"
@@ -314,6 +400,7 @@ const ProductImages = () => {
                       selectable={selectMode}
                       selected={selectedIds.has(product.id)}
                       onSelectionToggle={toggleSelection}
+                      onEnhanced={handleSingleEnhanced}
                     />
                   ))}
                 </div>
