@@ -232,7 +232,7 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
             <ReviewCard
               key={r.id}
               review={r}
-              isOwn={r.user_id === user?.id}
+              isOwn={!!userReview && r.id === userReview.id}
               onDelete={() => deleteReview.mutate({ reviewId: r.id, productId })}
             />
           ))}
