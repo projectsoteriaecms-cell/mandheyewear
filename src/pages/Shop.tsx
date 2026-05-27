@@ -170,7 +170,7 @@ const Eyewear = () => {
     priceTierFilter: priceTierFilter as string | null,
     onGenderChange: handleFilterChange(setGenderFilter),
     onStyleChange: handleFilterChange(setStyleFilter),
-    onPriceSortChange: handleFilterChange(setPriceSort),
+    onPriceSortChange: handleFilterChange(setPriceSort as (value: string) => void),
     onPriceTierChange: (val: string | null) => {
       setPriceTierFilter(val as PriceTier | null);
       if (val) {
