@@ -8,6 +8,8 @@ interface ProductImageGalleryProps {
   variant?: "pdp" | "quickview";
   /** Frame measurements/shape for the interactive 3D viewer */
   frame3D?: Frame3DAttributes | null;
+  /** Whether the primary image is locked (manual anchor) — currently informational only */
+  isAnchorLocked?: boolean;
 }
 
 export const ProductImageGallery = ({
