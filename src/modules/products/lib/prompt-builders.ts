@@ -188,74 +188,114 @@ ${brandDetail}`;
   const bridgeVal      = br ? `${br}mm`  : null;
   const templeVal      = tl ? `${tl}mm`  : null;
 
-  // Derive endpiece contribution when all three components are known
+  // ── Product-specific silhouette context ──
+  const shapeDesc = product.frame_shape
+    ? `The frame has a ${product.frame_shape} lens shape — the silhouette you draw must faithfully reflect this shape.`
+    : `Trace the exact lens shape visible in the reference photo — do not substitute a generic shape.`;
+
+  const materialDesc = product.frame_material || product.material
+    ? `Frame material: ${product.frame_material || product.material}. Reflect appropriate structural characteristics — acetate = thick rims, metal = thin wire rims, rimless = no lens border.`
+    : ``;
+
+  const styleDesc = product.style ? `Frame style: ${product.style}.` : ``;
+
+  // ── Smart lens tint detection from actual product fields ──
+  const colorLower = (product.color    || "").toLowerCase();
+  const styleLower = (product.style    || "").toLowerCase();
+  const nameLower  = (product.name     || "").toLowerCase();
+  const matLower   = (product.frame_material || product.material || "").toLowerCase();
+
+  const tintKeywords  = ["brown", "amber", "grey", "gray", "smoke", "green", "blue", "rose",
+                         "gold tint", "gradient", "tinted", "dark", "mirror", "flash", "polarized", "sunglass", "sun"];
+  const clearKeywords = ["clear", "transparent", "crystal", "optical", "reading", "prescription"];
+
+  const looksLikeSunglass = tintKeywords.some(k  => colorLower.includes(k) || styleLower.includes(k) || nameLower.includes(k) || matLower.includes(k));
+  const looksLikeClear    = clearKeywords.some(k => colorLower.includes(k) || styleLower.includes(k) || nameLower.includes(k));
+  const isTinted = looksLikeSunglass && !looksLikeClear;
+
+  const tintColor = (() => {
+    if (colorLower.includes("brown") || colorLower.includes("amber")) return "warm gradient brown (darker at top, lighter at bottom)";
+    if (colorLower.includes("grey") || colorLower.includes("gray") || colorLower.includes("smoke")) return "neutral smoke grey gradient";
+    if (colorLower.includes("green")) return "soft green tint";
+    if (colorLower.includes("blue"))  return "subtle blue tint";
+    if (colorLower.includes("rose") || colorLower.includes("pink")) return "soft rose/pink tint";
+    if (colorLower.includes("mirror") || colorLower.includes("flash")) return "mirrored reflective finish";
+    if (colorLower.includes("gold"))  return "warm amber-gold tint";
+    return product.color ? `${product.color} tint matching the product colour` : "neutral grey gradient tint";
+  })();
+
+  const lensRendering = isTinted
+    ? `LENSES: Render the lenses with a semi-transparent ${tintColor} — light enough that the frame outline is still visible, but clearly coloured. This is specific to this product.`
+    : `LENSES: Render the lenses as clean empty outlines only — no fill, no tint, fully transparent inside the lens rim.`;
+
+  // ── Endpiece geometry formula ──
   const endpieceNote = (tw && lw && br)
     ? (() => {
         const endpiece = Math.round((tw - (2 * lw) - br) / 2);
         return endpiece > 0
-          ? `\n  IMPORTANT — The TOTAL WIDTH (${tw}mm) is NOT just 2×Lens + Bridge (which would equal ${2*lw + br}mm). The remaining ${endpiece * 2}mm comes from the two endpiece/lug extensions (≈${endpiece}mm each side) at the outer hinges. The TOTAL WIDTH arrow must therefore span visibly wider than the area covered by the two lenses and bridge combined.`
+          ? `GEOMETRY NOTE — Total Width is NOT (2 × Lens Width) + Bridge:\n  (2 × ${lw}mm) + ${br}mm = ${2*lw + br}mm, but actual Total Width = ${tw}mm.\n  The difference (${tw - (2*lw + br)}mm ÷ 2 ≈ ${endpiece}mm per side) is the endpiece/lug hardware.\n  The TOTAL WIDTH arrow MUST extend ≈${endpiece}mm beyond the outer lens edge on each side.`
           : "";
       })()
-    : `\n  NOTE — Total frame width is NOT simply (2 × Lens Width) + Bridge. Real frames add endpiece/lug extensions of roughly 6–12mm total at the outer hinges, so the TOTAL WIDTH arrow must always span noticeably wider than just the lens+bridge area.`;
-
-  const isSunglass = (product.style || "").toLowerCase().includes("sun") ||
-                     (product.name  || "").toLowerCase().includes("sun") ||
-                     (product.color || "").toLowerCase().includes("tint");
-  const lensRendering = isSunglass
-    ? `Lenses: filled with a soft gradient tint matching the product colour (gradient brown, smoke grey, green tint, etc.) — semi-transparent so the frame outline remains visible, like Ray-Ban spec diagrams.`
-    : `Lenses: left as clean empty outlines (clear/transparent) — do not fill with any colour.`;
+    : `GEOMETRY NOTE — Total frame width is NOT (2 × Lens Width) + Bridge. Endpiece/lug hardware adds ≈3–6mm per side. The TOTAL WIDTH arrow must always extend visibly beyond the outer lens edges.`;
 
   const hasMeasurements = totalWidthVal || lensWidthVal || lensHeightVal || bridgeVal || templeVal;
 
   const measurementBlock = hasMeasurements
-    ? `USE THESE EXACT MEASUREMENTS from the product database — they must appear as the label values on the diagram:\n` +
-      (totalWidthVal ? `  • TOTAL WIDTH   = ${totalWidthVal}  (full outer span including endpieces — longest arrow, above the frame)\n` : "") +
-      (lensWidthVal  ? `  • LENS WIDTH    = ${lensWidthVal}   (horizontal width of ONE single lens opening only — shorter arrow, inside left lens)\n` : "") +
-      (bridgeVal     ? `  • BRIDGE        = ${bridgeVal}      (gap between the two lenses at the nose bridge — small arrow between lenses)\n` : "") +
-      (lensHeightVal ? `  • LENS HEIGHT   = ${lensHeightVal}  (vertical height of one lens opening — vertical arrow outside the left edge of the frame)\n` : "") +
-      (templeVal     ? `  • TEMPLE LENGTH = ${templeVal}      (full length of one temple arm from hinge to tip — arrow on the side view)\n` : "") +
-      `Do not invent, round, or approximate these numbers. Render them exactly as shown above.`
-    : `No exact measurements on file. Estimate from the reference image using standard conventions: total width 128–145mm, lens width 48–58mm, bridge 14–22mm, lens height 35–50mm, temple length 135–155mm.`;
+    ? `EXACT MEASUREMENTS from the product database:\n` +
+      (totalWidthVal ? `  • TOTAL WIDTH   = ${totalWidthVal}  → full outer span including endpiece hardware\n` : "") +
+      (lensWidthVal  ? `  • LENS WIDTH    = ${lensWidthVal}   → interior width of ONE single lens opening\n` : "") +
+      (bridgeVal     ? `  • BRIDGE        = ${bridgeVal}      → gap between the two lenses at the nose\n` : "") +
+      (lensHeightVal ? `  • LENS HEIGHT   = ${lensHeightVal}  → vertical interior height of one lens opening\n` : "") +
+      (templeVal     ? `  • TEMPLE LENGTH = ${templeVal}      → full temple arm length, hinge to tip\n` : "") +
+      `Use ONLY these numbers. Do not round, invent, or substitute.`
+    : `No measurements on file. Estimate from the reference image based on visible proportions (total width 128–145mm, lens width 48–58mm, bridge 14–22mm, lens height 35–50mm, temple 135–155mm).`;
 
   const specDiagramPrompt = `${frameAnchor}
 
-Create a TECHNICAL SPECIFICATION DIAGRAM for this frame — exactly like the product diagrams used by Ray-Ban, Oakley, and SmartBuyGlasses. This is a TECHNICAL ILLUSTRATION, not a product photo.
+Create a TECHNICAL SPECIFICATION DIAGRAM for THIS specific frame — a precise product illustration driven entirely by the reference photo and the product attributes below. This is NOT a generic template; the silhouette, lens shape, rim thickness, and tint must reflect this actual product.
+
+PRODUCT ATTRIBUTES:
+• ${shapeDesc}
+• ${materialDesc || "Draw rim thickness consistent with what is visible in the reference."}
+• ${styleDesc || ""}
+• ${lensRendering}
 
 ${measurementBlock}
+
 ${endpieceNote}
 
-═══════════════════════════════════════════
-LAYOUT — landscape canvas, two drawings side by side:
-═══════════════════════════════════════════
+══════════════════════════════════════════════════
+LAYOUT — wide landscape canvas, two drawings:
+══════════════════════════════════════════════════
 
-LEFT DRAWING — FRONT VIEW (≈65% of canvas width):
-Draw an accurate outline silhouette of the frame front based on the reference. Include the two lens openings, nose bridge, nose pads, and outer hinges/endpieces.
-${lensRendering}
+LEFT — FRONT VIEW (≈65% of canvas width):
+  Trace the EXACT silhouette of this frame from the reference. Round lenses → draw circles; cat-eye → draw cat-eye curves; rectangular → draw rectangles; aviator → draw teardrop shape. Do NOT substitute a generic shape.
+  Include: both lens openings, nose bridge, nose pads, outer hinge/endpiece tabs.
 
-Annotate with these 5 measurements exactly as shown in Ray-Ban/Oakley spec diagrams:
+  5 measurement arrows:
 
-1. TOTAL WIDTH arrow — long double-headed horizontal arrow positioned ABOVE the top rim of the frame, spanning from the outermost left edge to the outermost right edge (including endpieces). Label above the arrow: "TOTAL WIDTH ${totalWidthVal || ""}". This is the LONGEST horizontal arrow.
+  1. TOTAL WIDTH — LONGEST arrow. Double-headed horizontal, above the top rim, outermost left to outermost right (past the hinge tabs). Label: "TOTAL WIDTH ${totalWidthVal || ""}".
 
-2. LENS WIDTH arrow — double-headed horizontal arrow placed INSIDE the left lens opening, spanning only the interior width of that one lens. Label inside or below it: "LENS WIDTH ${lensWidthVal || ""}". This arrow is clearly SHORTER than the TOTAL WIDTH arrow above — they must look visibly different in length.
+  2. LENS WIDTH — shorter than TOTAL WIDTH. Double-headed horizontal inside the LEFT lens only. Label: "LENS WIDTH ${lensWidthVal || ""}". Visibly shorter than arrow 1.
 
-3. BRIDGE arrow — small double-headed horizontal arrow in the nose bridge gap between the two lenses, at the bottom centre. Label below it: "BRIDGE ${bridgeVal || ""}". This is the SHORTEST horizontal arrow.
+  3. BRIDGE — SHORTEST horizontal arrow. Between the two lenses at the nose. Label: "BRIDGE ${bridgeVal || ""}".
 
-4. LENS HEIGHT arrow — double-headed VERTICAL arrow positioned to the LEFT OUTSIDE of the frame (not inside a lens), aligned with the full vertical height of the left lens opening. Label to its left: "LENS HEIGHT ${lensHeightVal || ""}". Additionally, show the same LENS HEIGHT measurement as a second arrow INSIDE the right lens for clarity (as Ray-Ban does).
+  4. LENS HEIGHT — double-headed VERTICAL arrow, OUTSIDE the frame to the LEFT, spanning the full vertical interior height of the left lens. Label left: "LENS HEIGHT ${lensHeightVal || ""}". Also repeat this arrow inside the right lens for readability.
 
-RIGHT DRAWING — TEMPLE ARM VIEW (≈30% of canvas width):
-Draw a clean top-down profile outline of both temple arms as seen from above — they appear as a gentle U-shape or two parallel curved arms extending outward, showing the bend at the ear tip.
+RIGHT — TEMPLE ARM VIEW (≈30% of canvas width):
+  Top-down overhead view of both temple arms — two gently curved parallel bars with a slight downward bend at the ear tip. Temple thickness/style must match the reference.
 
-5. TEMPLE LENGTH arrow — double-headed horizontal arrow spanning the full length of one arm from hinge end to tip. Label: "TEMPLE LENGTH ${templeVal || ""}".
+  5. TEMPLE LENGTH — double-headed horizontal arrow, full arm length hinge to tip. Label: "TEMPLE LENGTH ${templeVal || ""}".
 
-═══════════════════════════════════════════
+══════════════════════════════════════════════════
 VISUAL STYLE:
-═══════════════════════════════════════════
-• Background: pure white #FFFFFF.
-• Frame lines: thin precise black outlines (1–1.5px). Consistent weight throughout.
-• Dimension lines: thin lines with small flat double arrowheads. Use short dashed extension lines where needed.
-• Labels: clean sans-serif font (Helvetica/Gill Sans), 8–10pt, never overlapping frame lines.
+══════════════════════════════════════════════════
+• Canvas: pure white #FFFFFF. No shadow, border, or grey wash.
+• Outlines: thin precise black lines (1–1.5px). Rim thickness reflects the material.
+• Dimension lines: thin black with small flat double arrowheads. Dashed extension lines where needed.
+• Labels: clean sans-serif (Helvetica/Arial/Gill Sans), 8–10pt, never overlapping frame lines.
 • Clear white space between the two drawings.
-• Professional, minimal, precise — as if created in Adobe Illustrator by a product designer.`;
+• Precise, minimal, product-specific — as if made in Adobe Illustrator for this exact frame.`;
 
   return [
     { slug: "hero",             label: SHOT_LABELS.hero,             prompt: heroPrompt },
