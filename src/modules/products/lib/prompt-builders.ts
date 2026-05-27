@@ -25,6 +25,12 @@ export interface ProductForPrompt {
   model_code?: string | null;
   frame_shape?: string | null;
   frame_material?: string | null;
+  // Measurements (mm) from frame_attributes
+  total_width?: number | null;
+  lens_width?: number | null;
+  lens_height?: number | null;
+  bridge_size?: number | null;
+  temple_length?: number | null;
 }
 
 export interface ShotPrompt {
@@ -170,29 +176,51 @@ MOOD: Sophisticated, confident, aspirational — the standard of a premium Afric
 ${brandDetail}`;
 
   // ── Shot 6: Technical Spec Diagram ──────────────────────────────────────
+  const totalWidthVal  = product.total_width  ? `${product.total_width}mm`  : null;
+  const lensWidthVal   = product.lens_width   ? `${product.lens_width}mm`   : null;
+  const lensHeightVal  = product.lens_height  ? `${product.lens_height}mm`  : null;
+  const bridgeVal      = product.bridge_size  ? `${product.bridge_size}mm`  : null;
+  const templeVal      = product.temple_length ? `${product.temple_length}mm` : null;
+
+  const hasMeasurements = totalWidthVal || lensWidthVal || lensHeightVal || bridgeVal || templeVal;
+
+  const measurementBlock = hasMeasurements
+    ? `\nUSE THESE EXACT MEASUREMENTS (from product database — render them as label values on the diagram):\n` +
+      (totalWidthVal ? `  • TOTAL WIDTH    = ${totalWidthVal}  ← outermost edge of left temple to outermost edge of right temple\n` : "") +
+      (lensWidthVal  ? `  • LENS WIDTH     = ${lensWidthVal}   ← horizontal width of one single lens opening only\n` : "") +
+      (bridgeVal     ? `  • BRIDGE         = ${bridgeVal}      ← gap between the two lens openings across the nose bridge\n` : "") +
+      (lensHeightVal ? `  • LENS HEIGHT    = ${lensHeightVal}  ← vertical height of one lens opening\n` : "") +
+      (templeVal     ? `  • TEMPLE LENGTH  = ${templeVal}      ← full length of one temple arm from hinge to tip\n` : "") +
+      `\nThese are the numbers that must appear on the diagram — do not invent or approximate different values.`
+    : `\nNo exact measurements on file — estimate from reference image using standard conventions (total width 125–145mm, lens width 48–58mm, bridge 14–22mm, lens height 35–50mm, temple length 135–155mm).`;
+
   const specDiagramPrompt = `${frameAnchor}
 
-Using this reference to accurately trace the frame's silhouette and proportions, create a TECHNICAL SPECIFICATION DIAGRAM in the style used by premium eyewear brands like Zeelool, Mister Spex, and SmartBuyGlasses.
+Using this reference to accurately trace the frame's silhouette and proportions, create a TECHNICAL SPECIFICATION DIAGRAM — the kind shown on Zeelool, SmartBuyGlasses, and Oakley product pages.
 
-This is a TECHNICAL ILLUSTRATION — NOT a product photo. It must look like a precise engineering or product design drawing.
+This is a TECHNICAL ILLUSTRATION — NOT a product photo. It must look like a precise product design drawing made in Adobe Illustrator.
+${measurementBlock}
 
-CONTENT — include ALL of the following:
-1. FRONT VIEW OUTLINE: A clean, precise outline drawing of the frame front (no shading, no colour fill — outlines only). Add dimension annotation arrows:
-   • Double-headed horizontal arrow spanning the full width at the top → label "TOTAL WIDTH"
-   • Double-headed arrow across one lens opening (horizontal) → label "LENS WIDTH"
-   • Double-headed arrow across the nose bridge → label "BRIDGE"
-   • Double-headed arrow showing vertical lens height → label "LENS HEIGHT"
-2. SIDE VIEW: A small outline of one temple arm (side profile) below or beside the front view, with a horizontal arrow → label "TEMPLE LENGTH"
+LAYOUT — two drawings side by side on a pure white canvas:
+
+LEFT — FRONT VIEW (larger, occupying ~65% of canvas width):
+  • Clean outline drawing of the complete frame front — two lens openings, bridge, nose pads, hinges. Outlines only, no shading, no colour fill.
+  • TOTAL WIDTH arrow: a long double-headed horizontal arrow above the frame spanning the FULL outer width (temple hinge to temple hinge). Label: "TOTAL WIDTH${totalWidthVal ? ` ${totalWidthVal}` : ""}". This arrow is LONGER than the LENS WIDTH arrow.
+  • LENS WIDTH arrow: a shorter double-headed horizontal arrow INSIDE one lens opening (left lens), spanning only the interior width of that single lens. Label: "LENS WIDTH${lensWidthVal ? ` ${lensWidthVal}` : ""}". This arrow must visibly be SHORTER than the TOTAL WIDTH arrow above — they are different measurements and must not look the same.
+  • BRIDGE arrow: a small double-headed horizontal arrow across the nose bridge gap between the two lenses. Label: "BRIDGE${bridgeVal ? ` ${bridgeVal}` : ""}".
+  • LENS HEIGHT arrow: a double-headed vertical arrow along the side of one lens opening showing its vertical height. Label: "LENS HEIGHT${lensHeightVal ? ` ${lensHeightVal}` : ""}".
+
+RIGHT — SIDE VIEW (smaller, occupying ~30% of canvas width):
+  • Clean outline of one temple arm in profile — showing the arm from the hinge end to the curved ear tip.
+  • TEMPLE LENGTH arrow: a double-headed horizontal arrow spanning the full length of the temple arm. Label: "TEMPLE LENGTH${templeVal ? ` ${templeVal}` : ""}".
 
 VISUAL STYLE:
-• Pure white background (#FFFFFF)
-• Thin precise black lines only (1–2px weight, consistent)
-• Dimension lines: standard technical drawing style — thin lines with small flat arrowheads at each end
-• Labels: clean sans-serif font (Helvetica/Gill Sans style), small, positioned cleanly beside each arrow
-• NO colour fill, NO shading, NO gradients — clean outline illustration only
-• Minimal and professional — as if drawn in Adobe Illustrator by a product designer
-
-PROPORTIONS: The silhouette must accurately reflect the shape and relative proportions of the frame from the reference. Estimate measurements based on the visible proportions and standard eyewear sizing conventions.`;
+• Pure white background (#FFFFFF) — no grey, no shadow, no border.
+• Thin precise black lines only (1–1.5px weight, consistent throughout).
+• Dimension lines: standard technical drawing style — thin lines with small flat arrowheads at each end, using dotted or dashed extension lines where needed.
+• Labels: clean sans-serif font (Helvetica or similar), small (8–10pt equivalent), positioned neatly beside each arrow with clear spacing.
+• NO colour fill, NO shading, NO gradients, NO photographic elements — pure outline technical illustration only.
+• The two drawings (front view + side view) should be clearly separated with clean white space between them.`;
 
   return [
     { slug: "hero",             label: SHOT_LABELS.hero,             prompt: heroPrompt },

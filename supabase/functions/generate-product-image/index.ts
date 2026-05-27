@@ -159,29 +159,52 @@ MOOD: Sophisticated, confident, aspirational — the standard of a premium Afric
 ${brandDetail}`;
 
   // ── Shot 6: Technical Spec Diagram ────────────────────────────────────────
+  // Build measurement block from real product data when available
+  const totalWidthVal   = product.total_width   ? `${product.total_width}mm`   : null;
+  const lensWidthVal    = product.lens_width     ? `${product.lens_width}mm`    : null;
+  const lensHeightVal   = product.lens_height    ? `${product.lens_height}mm`   : null;
+  const bridgeVal       = product.bridge_size    ? `${product.bridge_size}mm`   : null;
+  const templeVal       = product.temple_length  ? `${product.temple_length}mm` : null;
+
+  const hasMeasurements = totalWidthVal || lensWidthVal || lensHeightVal || bridgeVal || templeVal;
+
+  const measurementBlock = hasMeasurements
+    ? `\nUSE THESE EXACT MEASUREMENTS (taken from product database — render them as the label values on the diagram):\n` +
+      (totalWidthVal  ? `  • TOTAL WIDTH    = ${totalWidthVal}  ← outermost edge of left temple to outermost edge of right temple\n` : "") +
+      (lensWidthVal   ? `  • LENS WIDTH     = ${lensWidthVal}   ← horizontal width of one single lens opening only\n` : "") +
+      (bridgeVal      ? `  • BRIDGE         = ${bridgeVal}      ← gap between the two lens openings across the nose bridge\n` : "") +
+      (lensHeightVal  ? `  • LENS HEIGHT    = ${lensHeightVal}  ← vertical height of one lens opening\n` : "") +
+      (templeVal      ? `  • TEMPLE LENGTH  = ${templeVal}      ← full length of one temple arm from hinge to tip\n` : "") +
+      `\nThese are the numbers that must appear on the diagram — do not invent or approximate different values.`
+    : `\nNo exact measurements are on file — estimate proportions from the reference image using standard eyewear sizing conventions (typical frames: total width 125–145mm, lens width 48–58mm, bridge 14–22mm, lens height 35–50mm, temple length 135–155mm).`;
+
   const specDiagramPrompt = `${frameAnchor}
 
-Using this reference to accurately trace the frame's silhouette and proportions, create a TECHNICAL SPECIFICATION DIAGRAM in the style used by premium eyewear brands like Zeelool, Mister Spex, and SmartBuyGlasses.
+Using this reference to accurately trace the frame's silhouette and proportions, create a TECHNICAL SPECIFICATION DIAGRAM — the kind shown on Zeelool, SmartBuyGlasses, and Oakley product pages.
 
-This is a TECHNICAL ILLUSTRATION — NOT a product photo. It must look like a precise engineering or product design drawing.
+This is a TECHNICAL ILLUSTRATION — NOT a product photo. It must look like a precise product design drawing made in Adobe Illustrator.
+${measurementBlock}
 
-CONTENT — include ALL of the following:
-1. FRONT VIEW OUTLINE: A clean, precise outline drawing of the frame front (no shading, no colour fill — outlines only). Add dimension annotation arrows:
-   • Double-headed horizontal arrow spanning the full width at the top → label "TOTAL WIDTH"
-   • Double-headed arrow across one lens opening (horizontal) → label "LENS WIDTH"
-   • Double-headed arrow across the nose bridge → label "BRIDGE"
-   • Double-headed arrow showing vertical lens height → label "LENS HEIGHT"
-2. SIDE VIEW: A small outline of one temple arm (side profile) below or beside the front view, with a horizontal arrow → label "TEMPLE LENGTH"
+LAYOUT — two drawings side by side on a pure white canvas:
+
+LEFT — FRONT VIEW (larger, occupying ~65% of canvas width):
+  • Clean outline drawing of the complete frame front — two lens openings, bridge, nose pads, hinges. Outlines only, no shading, no colour fill.
+  • TOTAL WIDTH arrow: a long double-headed horizontal arrow above the frame spanning the FULL outer width (temple hinge to temple hinge). Label: "TOTAL WIDTH${totalWidthVal ? ` ${totalWidthVal}` : ""}". This arrow is LONGER than the LENS WIDTH arrow.
+  • LENS WIDTH arrow: a shorter double-headed horizontal arrow INSIDE one lens opening (left lens), spanning only the interior width of that single lens. Label: "LENS WIDTH${lensWidthVal ? ` ${lensWidthVal}` : ""}". This arrow must visibly be SHORTER than the TOTAL WIDTH arrow above — they are different measurements and must not look the same.
+  • BRIDGE arrow: a small double-headed horizontal arrow across the nose bridge gap between the two lenses. Label: "BRIDGE${bridgeVal ? ` ${bridgeVal}` : ""}".
+  • LENS HEIGHT arrow: a double-headed vertical arrow along the side of one lens opening showing its vertical height. Label: "LENS HEIGHT${lensHeightVal ? ` ${lensHeightVal}` : ""}".
+
+RIGHT — SIDE VIEW (smaller, occupying ~30% of canvas width):
+  • Clean outline of one temple arm in profile — showing the arm from the hinge end to the curved ear tip.
+  • TEMPLE LENGTH arrow: a double-headed horizontal arrow spanning the full length of the temple arm. Label: "TEMPLE LENGTH${templeVal ? ` ${templeVal}` : ""}".
 
 VISUAL STYLE:
-• Pure white background (#FFFFFF)
-• Thin precise black lines only (1–2px weight, consistent)
-• Dimension lines: standard technical drawing style — thin lines with small flat arrowheads at each end
-• Labels: clean sans-serif font (Helvetica/Gill Sans style), small, positioned cleanly beside each arrow
-• NO colour fill, NO shading, NO gradients — clean outline illustration only
-• Minimal and professional — as if drawn in Adobe Illustrator by a product designer
-
-PROPORTIONS: The silhouette must accurately reflect the shape and relative proportions of the frame from the reference. Estimate measurements based on the visible proportions and standard eyewear sizing conventions.`;
+• Pure white background (#FFFFFF) — no grey, no shadow, no border.
+• Thin precise black lines only (1–1.5px weight, consistent throughout).
+• Dimension lines: standard technical drawing style — thin lines with small flat arrowheads at each end, using dotted or dashed extension lines where needed.
+• Labels: clean sans-serif font (Helvetica or similar), small (8–10pt equivalent), positioned neatly beside each arrow with clear spacing.
+• NO colour fill, NO shading, NO gradients, NO photographic elements — pure outline technical illustration only.
+• The two drawings (front view + side view) should be clearly separated with clean white space between them.`;
 
   return [
     { slug: "hero",             prompt: heroPrompt },
@@ -566,7 +589,7 @@ serve(async (req) => {
       console.log(`🔄 Regenerating single shot "${shotSlug}" for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase
         .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color)")
+        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color, total_width, lens_width, lens_height, bridge_size, temple_length)")
         .eq("id", productId)
         .single();
 
@@ -590,7 +613,7 @@ serve(async (req) => {
       }
       // Flatten frame_attributes into product for prompt building
       const fa = Array.isArray(product.frame_attributes) ? product.frame_attributes[0] : product.frame_attributes;
-      if (fa) { Object.assign(product, { model_code: fa.model_code, frame_shape: fa.frame_shape, frame_material: fa.frame_material }); }
+      if (fa) { Object.assign(product, { model_code: fa.model_code, frame_shape: fa.frame_shape, frame_material: fa.frame_material, total_width: fa.total_width, lens_width: fa.lens_width, lens_height: fa.lens_height, bridge_size: fa.bridge_size, temple_length: fa.temple_length }); }
 
       const SHOT_SLUGS = ["hero", "front", "mannequin", "lifestyle_male", "lifestyle_female", "spec_diagram"];
       const shotIndex = SHOT_SLUGS.indexOf(shotSlug);
@@ -668,7 +691,7 @@ serve(async (req) => {
       console.log(`🔄 Regenerating images for product: ${productId}`);
       const { data: product, error: fetchErr } = await supabase
         .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color)")
+        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color, total_width, lens_width, lens_height, bridge_size, temple_length)")
         .eq("id", productId)
         .single();
 
@@ -676,7 +699,7 @@ serve(async (req) => {
         return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
       }
       const fa2 = Array.isArray(product.frame_attributes) ? product.frame_attributes[0] : product.frame_attributes;
-      if (fa2) { Object.assign(product, { model_code: fa2.model_code, frame_shape: fa2.frame_shape, frame_material: fa2.frame_material }); }
+      if (fa2) { Object.assign(product, { model_code: fa2.model_code, frame_shape: fa2.frame_shape, frame_material: fa2.frame_material, total_width: fa2.total_width, lens_width: fa2.lens_width, lens_height: fa2.lens_height, bridge_size: fa2.bridge_size, temple_length: fa2.temple_length }); }
 
       // PDCA gate: ALL products need reference photos for frames
       const isFrame = product.item_type === "frames";
@@ -744,7 +767,7 @@ serve(async (req) => {
 
     let productQuery = supabase
       .from("products")
-      .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color)")
+      .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color, total_width, lens_width, lens_height, bridge_size, temple_length)")
       .eq("is_active", true)
       .or("image_url.is.null,image_url.eq.")
       .order("item_type", { ascending: true })
@@ -769,7 +792,7 @@ serve(async (req) => {
     // Flatten frame_attributes for each product
     for (const p of products) {
       const fa = Array.isArray(p.frame_attributes) ? p.frame_attributes[0] : p.frame_attributes;
-      if (fa) { Object.assign(p, { model_code: fa.model_code, frame_shape: fa.frame_shape, frame_material: fa.frame_material }); }
+      if (fa) { Object.assign(p, { model_code: fa.model_code, frame_shape: fa.frame_shape, frame_material: fa.frame_material, total_width: fa.total_width, lens_width: fa.lens_width, lens_height: fa.lens_height, bridge_size: fa.bridge_size, temple_length: fa.temple_length }); }
     }
 
     const results: Array<{ productId: string; sku: string; name: string; brand: string | null; success: boolean; error?: string; shots?: number; skipped?: boolean }> = [];
