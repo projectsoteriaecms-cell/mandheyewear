@@ -7,11 +7,13 @@ import { Eye, Activity, Droplet, Glasses, Stethoscope, Users, Calendar } from "l
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { buildBookingWhatsAppUrl } from "@/shared/lib/whatsappBooking";
+import { JsonLd } from "@/components/seo";
 
 const EyeCare = () => {
   useSEO({
     title: "Eye Care Services – Eye Exams & Vision Tests | M&H Eyewear",
     description: "Comprehensive eye care: eye exams, vision tests, contact lens fitting, glaucoma testing. Book your appointment at M&H Eyewear Nigeria today.",
+    canonical: "https://mandheyewear.com/eye-care",
   });
 
   const services = [
