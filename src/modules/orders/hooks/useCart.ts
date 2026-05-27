@@ -220,7 +220,7 @@ export const useCart = () => {
     }) => {
       const { error } = await supabase
         .from("cart_items")
-        .update(lensConfig)
+        .update(lensConfig as never)
         .eq("id", cartItemId);
 
       if (error) throw error;
