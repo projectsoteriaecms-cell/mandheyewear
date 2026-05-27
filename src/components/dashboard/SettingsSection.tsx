@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -9,13 +10,19 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useProfile, useUpdateProfile } from "@/modules/personalization/hooks/useProfile";
-import { Loader2, Save, Key, Monitor, Moon, Sun } from "lucide-react";
+import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+import { usePaystackMode } from "@/shared/hooks/usePaystackMode";
+import { isAtLeast } from "@/shared/lib/permissions";
+import { Loader2, Save, Key, Monitor, Moon, Sun, CreditCard, FlaskConical, Zap, AlertTriangle } from "lucide-react";
 
 export const SettingsSection = () => {
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile(user?.id);
   const updateProfile = useUpdateProfile();
   const { toast } = useToast();
+  const { data: role } = useUserRole();
+  const { mode: paystackMode, setMode: setPaystackMode, isLive: paystackIsLive } = usePaystackMode();
+  const [confirmingLive, setConfirmingLive] = useState(false);
 
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || "",
@@ -300,6 +307,110 @@ export const SettingsSection = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* ── Payment Mode (admin-only) ───────────────────────────── */}
+      {isAtLeast(role ?? null, "admin") && (
+        <Card className={paystackIsLive
+          ? "border-green-300 dark:border-green-700"
+          : "border-amber-300 dark:border-amber-700"
+        }>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CreditCard className="h-4 w-4 shrink-0" />
+              Payment Mode
+              {paystackIsLive ? (
+                <Badge className="bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border border-green-300 dark:border-green-700 font-bold uppercase text-[10px] tracking-wider">
+                  <Zap className="h-2.5 w-2.5 mr-1" />
+                  Live
+                </Badge>
+              ) : (
+                <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300 dark:border-amber-700 font-bold uppercase text-[10px] tracking-wider">
+                  <FlaskConical className="h-2.5 w-2.5 mr-1" />
+                  Test
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription>
+              Controls which Paystack key is used at checkout. Visible to admins only.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            {/* Toggle row */}
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">
+                  {paystackIsLive ? "Live mode — real charges" : "Test mode — no real charges"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {paystackIsLive
+                    ? "Customers are being charged real money. Switch to Test before debugging."
+                    : "Safe for development. Switch to Live only when ready to accept real payments."}
+                </p>
+              </div>
+              <Switch
+                checked={paystackIsLive}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setConfirmingLive(true);
+                  } else {
+                    setPaystackMode("test");
+                    toast({ title: "Switched to Test mode", description: "No real charges will be made." });
+                  }
+                }}
+              />
+            </div>
+
+            {/* Live confirmation panel */}
+            {confirmingLive && (
+              <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4 space-y-3">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-red-800 dark:text-red-300">Switch to Live mode?</p>
+                    <p className="text-xs text-red-700 dark:text-red-400 mt-0.5">
+                      Real payments will be processed. Make sure <code className="font-mono">VITE_PAYSTACK_LIVE_KEY</code> is set in your environment before proceeding.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() => {
+                      setPaystackMode("live");
+                      setConfirmingLive(false);
+                      toast({
+                        title: "Switched to Live mode",
+                        description: "Real payments are now active.",
+                      });
+                    }}
+                  >
+                    Yes, go Live
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setConfirmingLive(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Live mode warning banner */}
+            {paystackIsLive && !confirmingLive && (
+              <div className="flex items-start gap-2 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 px-3 py-2.5">
+                <Zap className="h-4 w-4 text-green-700 dark:text-green-400 mt-0.5 shrink-0" />
+                <p className="text-xs text-green-800 dark:text-green-300">
+                  <strong>Live mode is active.</strong> Customers will be charged real money. Toggle off to return to Test mode.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Save Button */}
       <div className="flex justify-end">

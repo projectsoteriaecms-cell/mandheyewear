@@ -26,6 +26,7 @@ import { useUserRole } from "@/modules/auth/hooks/useUserRole";
 import { usePrescriptions } from "@/modules/prescriptions/hooks/usePrescriptions";
 import { PrescriptionForm } from "@/modules/prescriptions/components/PrescriptionForm";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
+import { usePaystackMode } from "@/shared/hooks/usePaystackMode";
 import { canPurchase } from "@/shared/lib/permissions";
 import {
   detectShippingZone,
@@ -40,10 +41,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, CheckCircle2, Clock, Phone, Mail, ClipboardList, AlertTriangle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// Use live key in production, fall back to test key in development
-const PAYSTACK_PUBLIC_KEY =
-  import.meta.env.VITE_PAYSTACK_PUBLIC_KEY ||
-  "pk_test_b65019a2e28f286dd4906d6aaa80bff38f035460";
+// Paystack key is resolved at runtime via usePaystackMode (see below)
 
 const loadPaystackScript = (): Promise<void> => {
   return new Promise((resolve, reject) => {
@@ -75,6 +73,7 @@ const Checkout = () => {
   const { data: profile } = useProfile(user?.id);
   const { activePrescriptions, createRx } = usePrescriptions();
   const { trackInitiateCheckout } = useMetaPixel();
+  const { publicKey: PAYSTACK_PUBLIC_KEY, isTest: paystackIsTest } = usePaystackMode();
   const [isProcessing, setIsProcessing] = useState(false);
   const [rxDialogOpen, setRxDialogOpen] = useState(false);
   const [hasTrackedCheckout, setHasTrackedCheckout] = useState(false);
@@ -754,13 +753,24 @@ const Checkout = () => {
               <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
                 <div className="flex items-center gap-3 p-4 bg-secondary/50 rounded-lg">
                   <CreditCard className="h-8 w-8 text-primary" />
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium">Pay with Paystack</p>
                     <p className="text-sm text-muted-foreground">
                       Cards, Bank Transfer, USSD
                     </p>
                   </div>
+                  {paystackIsTest && (
+                    <span className="shrink-0 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border border-amber-300 dark:border-amber-700">
+                      Test Mode
+                    </span>
+                  )}
                 </div>
+
+                {paystackIsTest && (
+                  <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-2">
+                    ⚠️ <strong>Test mode active.</strong> No real charges will be made. Use Paystack test card numbers only.
+                  </p>
+                )}
 
                 <PriceLockBadge />
 
