@@ -51,6 +51,7 @@ const Branches = () => {
     title: "Our Locations – M&H Eyewear Branches in Nigeria",
     description:
       "Find an M&H Eyewear branch near you in Lagos, Delta, and Uyo. Visit us for eye exams, frame fittings, and premium eyewear.",
+    canonical: "https://mandheyewear.com/branches",
   });
 
   const { data: branches, isLoading, error } = useBranches();
