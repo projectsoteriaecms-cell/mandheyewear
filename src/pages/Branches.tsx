@@ -8,7 +8,43 @@ import { BranchMap } from "@/components/branches/BranchMap";
 import { BranchExpansionCTA } from "@/components/branches/BranchExpansionCTA";
 import { useBranches } from "@/modules/branches/hooks/useBranches";
 import { Skeleton } from "@/components/ui/skeleton";
+import { JsonLd } from "@/components/seo";
 import type { Branch } from "@/modules/branches/types";
+
+const DAY_MAP: Record<"weekdays" | "saturday" | "sunday", string[]> = {
+  weekdays: ["Mo", "Tu", "We", "Th", "Fr"],
+  saturday: ["Sa"],
+  sunday: ["Su"],
+};
+
+function parseHours(label: string | null | undefined): { open: string; close: string } | null {
+  if (!label) return null;
+  const m = label.match(/(\d{1,2}):?(\d{2})?\s*(am|pm)?\s*[–-]\s*(\d{1,2}):?(\d{2})?\s*(am|pm)?/i);
+  if (!m) return null;
+  const to24 = (h: string, mm: string | undefined, ap: string | undefined) => {
+    let hh = parseInt(h, 10);
+    const min = mm ? parseInt(mm, 10) : 0;
+    if (ap) {
+      const lower = ap.toLowerCase();
+      if (lower === "pm" && hh < 12) hh += 12;
+      if (lower === "am" && hh === 12) hh = 0;
+    }
+    return `${String(hh).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+  };
+  return { open: to24(m[1], m[2], m[3]), close: to24(m[4], m[5], m[6]) };
+}
+
+function buildOpeningHours(branch: Branch): string[] {
+  const specs: string[] = [];
+  (Object.keys(DAY_MAP) as Array<keyof typeof DAY_MAP>).forEach((key) => {
+    const raw = (branch as any)[`hours_${key}`] as string | null;
+    if (!raw || /closed/i.test(raw)) return;
+    const parsed = parseHours(raw);
+    if (!parsed) return;
+    specs.push(`${DAY_MAP[key].join(",")} ${parsed.open}-${parsed.close}`);
+  });
+  return specs;
+}
 
 const Branches = () => {
   useSEO({
