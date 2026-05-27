@@ -495,10 +495,18 @@ async function generateFullGallery(
   const refUrl = useReference ? referenceImageUrls![0] : null;
 
   const urls: string[] = [];
-  let heroUrl = "";
+  // If anchor is locked, carry the existing image_url forward — never overwrite it
+  let heroUrl = product.primary_image_locked && product.image_url ? product.image_url : "";
 
   for (let i = 0; i < shots.length; i++) {
     const shot = shots[i];
+
+    // Skip hero generation when the anchor is locked — preserve it as-is
+    if (shot.slug === "hero" && product.primary_image_locked) {
+      console.log(`  🔒 ${product.sku} — hero locked, skipping (using existing anchor)`);
+      continue;
+    }
+
     console.log(`  📸 ${product.sku} — ${useReference ? "ref-editing" : "generating"} ${shot.slug} (${i + 1}/6)`);
 
     let imageData: { data: string; mimeType: string } | null = null;
@@ -562,15 +570,17 @@ serve(async (req) => {
         .eq("id", productId)
         .single();
 
-      // Anchor lock: skip hero regeneration if primary is locked (treat as success so bulk loops continue)
+      // Anchor lock: skip hero gracefully — treat as success so bulk loops continue
       if (shotSlug === "hero" && product?.primary_image_locked) {
-        console.log(`⏭️  Skipping hero for ${product.sku} — primary image is locked (manual anchor).`);
+        console.log(`🔒 ${product?.sku} — hero anchor locked, skipping (returning existing image_url)`);
         return json({
           processed: 1, succeeded: 1, failed: 0, remaining: 0,
+          skipped: true,
           results: [{
             productId: product.id, sku: product.sku, success: true,
-            shots: 0, shotSlug, skipped: true, reason: "ANCHOR_LOCKED",
-            imageUrl: product.image_url,
+            skipped: true, shotSlug: "hero", reason: "ANCHOR_LOCKED",
+            url: product.image_url,
+            note: "Hero anchor is locked — existing image preserved",
           }],
         });
       }
