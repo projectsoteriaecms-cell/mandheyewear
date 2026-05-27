@@ -95,7 +95,7 @@ export const FramePicker = ({
               <CardContent className="p-3 space-y-2">
                 <div
                   className="aspect-[4/3] rounded-md overflow-hidden relative"
-                  style={{ background: "radial-gradient(ellipse at 50% 42%, #fdfcfa 0%, #f0ede6 55%, #e4e0d8 100%)" }}
+                  style={{ background: "#FFFFFF" }}
                 >
                   {product.image_url ? (
                     <img

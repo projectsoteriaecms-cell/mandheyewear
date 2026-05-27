@@ -85,7 +85,7 @@ export const ProductImageListView = ({
             {/* Thumbnail */}
             <div
               className="relative h-14 w-14 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
-              style={{ background: "radial-gradient(ellipse at 50% 42%, #fdfcfa 0%, #f0ede6 55%, #e4e0d8 100%)" }}
+              style={{ background: "#FFFFFF" }}
             >
               {product.image_url ? (
                 <img

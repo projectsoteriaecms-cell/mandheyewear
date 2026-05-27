@@ -269,7 +269,7 @@ export const ProductImageCarousel = ({
                   src={src}
                   alt={`${productName} thumbnail ${i + 1}`}
                   className="w-full h-full object-contain p-1"
-                  style={{ background: "radial-gradient(ellipse at 50% 42%, #fdfcfa 0%, #f0ede6 55%, #e4e0d8 100%)" }}
+                  style={{ background: "#FFFFFF" }}
                 />
               </button>
             ))}

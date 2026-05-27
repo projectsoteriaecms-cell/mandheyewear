@@ -109,7 +109,7 @@ export const ProductImageCard = ({
         {product.image_url ? (
           <div
             className="w-full h-full"
-            style={{ background: "radial-gradient(ellipse at 50% 42%, #fdfcfa 0%, #f0ede6 55%, #e4e0d8 100%)" }}
+            style={{ background: "#FFFFFF" }}
           >
             <img
               src={product.image_url}
