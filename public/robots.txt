@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://soteriaeyeclinic.lovable.app/sitemap.xml
+Sitemap: https://mandheyewear.com/sitemap.xml
