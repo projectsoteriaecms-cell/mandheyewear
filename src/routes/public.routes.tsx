@@ -25,6 +25,7 @@ const About = lazyRetry(() => import("@/pages/About"));
 const Partners = lazyRetry(() => import("@/pages/Partners"));
 const Contact = lazyRetry(() => import("@/pages/Contact"));
 const ShopRedirect = lazyRetry(() => import("@/pages/ShopRedirect"));
+const EyeCare = lazyRetry(() => import("@/pages/EyeCare"));
 const FAQ = lazyRetry(() => import("@/pages/FAQ"));
 const TryOn = lazyRetry(() => import("@/pages/TryOn"));
 const Privacy = lazyRetry(() => import("@/pages/Privacy"));
@@ -59,7 +60,7 @@ export const publicRoutes = [
   <Route key="/booking" path="/booking" element={withSuspense(Booking)} />,
   <Route key="/shop" path="/shop" element={withSuspense(Shop)} />,
   <Route key="/eyewear" path="/eyewear" element={withSuspense(ShopRedirect)} />,
-  <Route key="/eye-care" path="/eye-care" element={withSuspense(ShopRedirect)} />,
+  <Route key="/eye-care" path="/eye-care" element={withSuspense(EyeCare)} />,
   <Route key="/branches" path="/branches" element={withSuspense(Branches)} />,
   <Route key="/about" path="/about" element={withSuspense(About)} />,
   <Route key="/partners" path="/partners" element={withSuspense(Partners)} />,

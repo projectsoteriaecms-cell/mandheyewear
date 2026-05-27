@@ -7,11 +7,13 @@ import { Eye, Activity, Droplet, Glasses, Stethoscope, Users, Calendar } from "l
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { buildBookingWhatsAppUrl } from "@/shared/lib/whatsappBooking";
+import { JsonLd } from "@/components/seo";
 
 const EyeCare = () => {
   useSEO({
     title: "Eye Care Services – Eye Exams & Vision Tests | M&H Eyewear",
     description: "Comprehensive eye care: eye exams, vision tests, contact lens fitting, glaucoma testing. Book your appointment at M&H Eyewear Nigeria today.",
+    canonical: "https://mandheyewear.com/eye-care",
   });
 
   const services = [
@@ -68,9 +70,26 @@ const EyeCare = () => {
     "Flexible Appointment Scheduling"
   ];
 
+  const servicesJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": services.map((s) => ({
+      "@type": "MedicalProcedure",
+      name: s.title,
+      description: s.description,
+      procedureType: "https://schema.org/DiagnosticProcedure",
+      provider: {
+        "@type": "Optician",
+        name: "M&H Eyewear",
+        url: "https://mandheyewear.com",
+      },
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <JsonLd data={servicesJsonLd} />
       <Navigation />
+      
       
       <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
