@@ -2326,6 +2326,22 @@ export type Database = {
       }
       get_product_image_category_stats: { Args: never; Returns: Json }
       get_product_image_stats: { Args: never; Returns: Json }
+      get_product_reviews: {
+        Args: { p_product_id: string }
+        Returns: {
+          body: string
+          created_at: string
+          id: string
+          is_verified_purchase: boolean
+          product_id: string
+          rating: number
+          reviewer_avatar_url: string
+          reviewer_name: string
+          status: string
+          title: string
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
