@@ -6,7 +6,8 @@ import { toast } from "sonner";
 export interface ProductReview {
   id: string;
   product_id: string;
-  user_id: string;
+  /** Only present on the viewer's own review (via useUserReview). Public list never includes user_id. */
+  user_id?: string;
   rating: number;
   title: string | null;
   body: string | null;
@@ -27,23 +28,27 @@ export function useProductReviews(productId: string | undefined) {
   return useQuery({
     queryKey: ["product-reviews", productId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("product_reviews")
-        .select("*")
-        .eq("product_id", productId!)
-        .order("created_at", { ascending: false });
+      // Uses SECURITY DEFINER RPC that returns approved reviews enriched with
+      // reviewer display name + avatar — without leaking user_id publicly.
+      const { data, error } = await supabase.rpc("get_product_reviews", {
+        p_product_id: productId!,
+      });
       if (error) throw error;
-      
-      // Fetch profile names separately
-      const userIds = [...new Set((data ?? []).map((r: any) => r.user_id))];
-      const { data: profiles } = userIds.length > 0
-        ? await supabase.from("profiles").select("user_id, full_name, avatar_url").in("user_id", userIds)
-        : { data: [] };
-      
-      const profileMap = new Map((profiles ?? []).map((p: any) => [p.user_id, p]));
-      return (data ?? []).map((r: any) => ({
-        ...r,
-        profiles: profileMap.get(r.user_id) || null,
+
+      return ((data ?? []) as any[]).map((r) => ({
+        id: r.id,
+        product_id: r.product_id,
+        rating: r.rating,
+        title: r.title,
+        body: r.body,
+        is_verified_purchase: r.is_verified_purchase,
+        status: r.status,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+        profiles: {
+          full_name: r.reviewer_name ?? null,
+          avatar_url: r.reviewer_avatar_url ?? null,
+        },
       })) as ProductReview[];
     },
     enabled: !!productId,
