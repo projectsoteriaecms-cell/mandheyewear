@@ -562,12 +562,17 @@ serve(async (req) => {
         .eq("id", productId)
         .single();
 
-      // Anchor lock: refuse to overwrite primary if it's locked
+      // Anchor lock: skip hero regeneration if primary is locked (treat as success so bulk loops continue)
       if (shotSlug === "hero" && product?.primary_image_locked) {
+        console.log(`⏭️  Skipping hero for ${product.sku} — primary image is locked (manual anchor).`);
         return json({
-          error: "Primary image is locked (manual anchor). Regenerate a non-hero shot instead.",
-          code: "ANCHOR_LOCKED",
-        }, 400);
+          processed: 1, succeeded: 1, failed: 0, remaining: 0,
+          results: [{
+            productId: product.id, sku: product.sku, success: true,
+            shots: 0, shotSlug, skipped: true, reason: "ANCHOR_LOCKED",
+            imageUrl: product.image_url,
+          }],
+        });
       }
 
       if (fetchErr || !product) {
