@@ -36,7 +36,7 @@ function isBrandedFrame(brand: string | null): boolean {
   return LUXURY_BRANDS.has(brand.toUpperCase().trim());
 }
 
-const MIN_REFERENCE_PHOTOS = 2;
+const MIN_REFERENCE_PHOTOS = 1;
 const MIN_REFERENCE_PHOTOS_KNOWN = 1;
 
 // ── Prompt builders for the 6-shot gallery ──
