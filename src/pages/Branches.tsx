@@ -74,9 +74,46 @@ const Branches = () => {
     setSelectedBranch(branch);
   };
 
+  const branchesJsonLd = useMemo(() => {
+    const items = (branches ?? []).filter((b) => b.is_active && b.is_mh_location);
+    if (items.length === 0) return null;
+    return {
+      "@context": "https://schema.org",
+      "@graph": items.map((b) => {
+        const hours = buildOpeningHours(b);
+        const node: Record<string, unknown> = {
+          "@type": ["Optician", "LocalBusiness"],
+          "@id": `https://mandheyewear.com/branches#${b.id}`,
+          name: b.name,
+          url: "https://mandheyewear.com/branches",
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: b.address,
+            addressLocality: b.city,
+            addressRegion: b.state,
+            addressCountry: "NG",
+          },
+        };
+        if (b.phone) node.telephone = b.phone;
+        if (b.email) node.email = b.email;
+        if (hours.length) node.openingHours = hours;
+        if (b.latitude != null && b.longitude != null) {
+          node.geo = {
+            "@type": "GeoCoordinates",
+            latitude: b.latitude,
+            longitude: b.longitude,
+          };
+        }
+        return node;
+      }),
+    };
+  }, [branches]);
+
   return (
     <div className="min-h-screen bg-background">
+      {branchesJsonLd && <JsonLd data={branchesJsonLd} />}
       <Navigation />
+
 
       <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
