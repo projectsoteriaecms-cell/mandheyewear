@@ -3,7 +3,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { Image, Upload, Sparkle } from "@phosphor-icons/react";
+import { Image, Upload, Sparkle, SquaresFour } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ interface ProductImageCardProps {
   selected?: boolean;
   onSelectionToggle?: (id: string) => void;
   onEnhanced?: (productId: string, newUrl: string) => void;
+  onGalleryOpen?: (productId: string) => void;
 }
 
 export const ProductImageCard = ({
@@ -36,6 +37,7 @@ export const ProductImageCard = ({
   selected = false,
   onSelectionToggle,
   onEnhanced,
+  onGalleryOpen,
 }: ProductImageCardProps) => {
   const [isEnhancing, setIsEnhancing] = useState(false);
 
@@ -139,6 +141,18 @@ export const ProductImageCard = ({
                 {hasNoImages ? "Add Images" : "Manage Images"}
               </span>
             </div>
+
+            {/* Gallery review button */}
+            {onGalleryOpen && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onGalleryOpen(product.id); }}
+                title="Review & regenerate individual shots"
+                className="flex items-center gap-1 rounded-full bg-primary hover:bg-primary/80 px-2.5 py-1 text-[11px] font-semibold text-primary-foreground transition-colors"
+              >
+                <SquaresFour className="h-3 w-3" weight="fill" />
+                Gallery
+              </button>
+            )}
 
             {/* Enhance Anchor button — only when an anchor image exists */}
             {product.image_url && (

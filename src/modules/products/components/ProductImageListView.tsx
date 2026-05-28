@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DotsThree, Upload, Image, CheckCircle, Lightning } from "@phosphor-icons/react";
+import { DotsThree, Upload, Image, CheckCircle, Lightning, SquaresFour } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 interface ProductImageListViewProps {
@@ -22,6 +22,7 @@ interface ProductImageListViewProps {
   }[];
   onUploadClick: (productId: string) => void;
   onRegenerateClick?: (productId: string) => void;
+  onGalleryClick?: (productId: string) => void;
   maxImages?: number;
   selectable?: boolean;
   selectedIds?: Set<string>;
@@ -34,6 +35,7 @@ export const ProductImageListView = ({
   products,
   onUploadClick,
   onRegenerateClick,
+  onGalleryClick,
   maxImages = 6,
   selectable = false,
   selectedIds = new Set(),
@@ -138,10 +140,16 @@ export const ProductImageListView = ({
                     <Upload className="mr-2 h-4 w-4" weight="light" />
                     {hasNoImages ? "Add Images" : "Manage Images"}
                   </DropdownMenuItem>
+                  {onGalleryClick && (
+                    <DropdownMenuItem onClick={() => onGalleryClick(product.id)}>
+                      <SquaresFour className="mr-2 h-4 w-4" weight="fill" />
+                      Review Gallery (6 shots)
+                    </DropdownMenuItem>
+                  )}
                   {onRegenerateClick && (
                     <DropdownMenuItem onClick={() => onRegenerateClick(product.id)}>
                       <Lightning className="mr-2 h-4 w-4" weight="fill" />
-                      Regenerate with AI
+                      Regenerate All (AI)
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>

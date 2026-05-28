@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageStatsCards, ImageFilterBar, SelectionActionBar } from "./product-images";
+import { ShotGalleryModal } from "@/components/admin/products/ShotGalleryModal";
 
 const ITEM_TYPE_LABELS: Record<string, string> = {
   frames: "Frames",
@@ -171,6 +172,7 @@ const ProductImages = () => {
   const exitSelectMode = useCallback(() => { setSelectMode(false); setSelectedIds(new Set()); }, []);
 
   const [isGenerateImagesOpen, setIsGenerateImagesOpen] = useState(false);
+  const [galleryProductId, setGalleryProductId] = useState<string | null>(null);
   const [isEnhancingAll, setIsEnhancingAll] = useState(false);
   const [enhanceProgress, setEnhanceProgress] = useState<{ done: number; total: number } | null>(null);
 
@@ -401,6 +403,7 @@ const ProductImages = () => {
                       selected={selectedIds.has(product.id)}
                       onSelectionToggle={toggleSelection}
                       onEnhanced={handleSingleEnhanced}
+                      onGalleryOpen={setGalleryProductId}
                     />
                   ))}
                 </div>
@@ -409,6 +412,7 @@ const ProductImages = () => {
                   products={visibleProducts}
                   onUploadClick={(id) => setSelectedProductId(id)}
                   onRegenerateClick={handleRegenerateProduct}
+                  onGalleryClick={setGalleryProductId}
                   maxImages={MAX_ADDITIONAL + 1}
                   selectable={selectMode}
                   selectedIds={selectedIds}
@@ -442,6 +446,15 @@ const ProductImages = () => {
           product={selectedProduct ?? null}
           open={!!selectedProductId}
           onOpenChange={(open) => { if (!open) setSelectedProductId(null); }}
+        />
+
+        <ShotGalleryModal
+          productId={galleryProductId}
+          open={!!galleryProductId}
+          onOpenChange={(open) => { if (!open) setGalleryProductId(null); }}
+          onComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+          }}
         />
 
         <GenerateImagesDialog
