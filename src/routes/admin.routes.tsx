@@ -5,14 +5,14 @@ import { Loader2 } from "lucide-react";
 // Retry wrapper for lazy imports to handle stale chunk errors after deployments
 function lazyRetry(importFn: () => Promise<any>) {
   return lazy(() =>
-    importFn().catch(() => {
-      // Force reload on stale chunk errors (only once per session)
-      const key = "chunk-retry";
+    importFn().catch((err) => {
+      const key = `chunk-retry:${importFn.toString()}`;
       if (!sessionStorage.getItem(key)) {
         sessionStorage.setItem(key, "1");
         window.location.reload();
+        return new Promise(() => {});
       }
-      return importFn();
+      throw err;
     })
   );
 }

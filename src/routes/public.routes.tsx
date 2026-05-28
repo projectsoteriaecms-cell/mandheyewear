@@ -5,13 +5,15 @@ import { CircleNotch } from "@phosphor-icons/react";
 // Retry wrapper for lazy imports to handle stale chunk errors after deployments
 function lazyRetry<T extends { default: React.ComponentType<any> }>(importFn: () => Promise<T>) {
   return lazy(() =>
-    importFn().catch(() => {
-      const key = "chunk-retry";
+    importFn().catch((err) => {
+      const key = `chunk-retry:${importFn.toString()}`;
       if (!sessionStorage.getItem(key)) {
         sessionStorage.setItem(key, "1");
         window.location.reload();
+        // Return a never-resolving promise so Suspense keeps showing fallback until reload
+        return new Promise<T>(() => {});
       }
-      return importFn();
+      throw err;
     })
   );
 }
