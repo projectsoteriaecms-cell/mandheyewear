@@ -452,13 +452,15 @@ Before generating the final output, verify each of the following:
 □ No label, arrow, or text overlaps any frame line or lens rim?
 If any answer is NO — correct it before outputting the image.`;
 
+  // spec_diagram removed from batch/full-gallery generation — unreliable AI output.
+  // It can still be individually requested via shotSlug="spec_diagram" from the gallery modal.
   return [
     { slug: "hero",             prompt: heroPrompt },
     { slug: "front",            prompt: frontPrompt },
     { slug: "mannequin",        prompt: mannequinPrompt },
     { slug: "lifestyle_male",   prompt: lifestyleMalePrompt },
     { slug: "lifestyle_female", prompt: lifestyleFemalePrompt },
-    { slug: "spec_diagram",     prompt: specDiagramPrompt },
+    // spec_diagram intentionally omitted
   ];
 }
 
@@ -872,7 +874,7 @@ serve(async (req) => {
       const fa = Array.isArray(product.frame_attributes) ? product.frame_attributes[0] : product.frame_attributes;
       if (fa) { Object.assign(product, { model_code: fa.model_code, frame_shape: fa.frame_shape, frame_material: fa.frame_material, total_width: fa.total_width, lens_width: fa.lens_width, lens_height: fa.lens_height, bridge_size: fa.bridge_size, temple_length: fa.temple_length }); }
 
-      const SHOT_SLUGS = ["hero", "front", "mannequin", "lifestyle_male", "lifestyle_female", "spec_diagram"];
+      const SHOT_SLUGS = ["hero", "front", "mannequin", "lifestyle_male", "lifestyle_female", "spec_diagram"]; // spec_diagram kept here so single-shot regen still works via gallery modal
       const shotIndex = SHOT_SLUGS.indexOf(shotSlug);
       if (shotIndex === -1) {
         return json({ error: `Invalid shotSlug "${shotSlug}". Must be one of: ${SHOT_SLUGS.join(", ")}` }, 400);
@@ -1022,11 +1024,15 @@ serve(async (req) => {
     // ── Batch mode ──
     const itemTypeFilter = Array.isArray(itemTypes) && itemTypes.length > 0 ? itemTypes : null;
 
+    // Only process products that HAVE an anchor image but are missing gallery shots.
+    // Products with no anchor are excluded — they must have an image uploaded first.
     let remainingQuery = supabase
       .from("products")
       .select("id", { count: "exact", head: true })
       .eq("is_active", true)
-      .or("image_url.is.null,image_url.eq.");
+      .not("image_url", "is", null)
+      .neq("image_url", "")
+      .is("additional_images", null);
     if (itemTypeFilter) remainingQuery = remainingQuery.in("item_type", itemTypeFilter);
     const { count: remaining } = await remainingQuery;
 
@@ -1038,7 +1044,9 @@ serve(async (req) => {
       .from("products")
       .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color, total_width, lens_width, lens_height, bridge_size, temple_length)")
       .eq("is_active", true)
-      .or("image_url.is.null,image_url.eq.")
+      .not("image_url", "is", null)
+      .neq("image_url", "")
+      .is("additional_images", null)
       .order("item_type", { ascending: true })
       .limit(limit);
     if (itemTypeFilter) productQuery = productQuery.in("item_type", itemTypeFilter);

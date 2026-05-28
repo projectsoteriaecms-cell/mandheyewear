@@ -36,7 +36,6 @@ const SHOT_SLUGS = [
   "mannequin",
   "lifestyle_male",
   "lifestyle_female",
-  "spec_diagram",
 ] as const;
 
 type ShotSlug = (typeof SHOT_SLUGS)[number];
@@ -112,22 +111,6 @@ const SHOTS: ShotDef[] = [
       "Close-up bust portrait, face and frame equally sharp",
       "Warm flattering light — renders dark skin tones beautifully",
       "Sophisticated, authentic African editorial aesthetic",
-    ],
-  },
-  {
-    slug: "spec_diagram",
-    label: "Spec Diagram",
-    description: "Technical dimension illustration",
-    criteria: [
-      "Wide landscape canvas — two drawings",
-      "LEFT: exact frame silhouette matching this product's shape",
-      "TOTAL WIDTH arrow is the LONGEST — spans past outer hinge tabs",
-      "LENS WIDTH arrow visibly shorter than total width",
-      "BRIDGE arrow is the shortest horizontal arrow",
-      "LENS HEIGHT arrow is vertical, placed outside the frame to the left",
-      "RIGHT: top-down temple arm view with TEMPLE LENGTH arrow",
-      "All measurement values match the database spec exactly",
-      "Clean white canvas, thin precise black lines, no shadows",
     ],
   },
 ];

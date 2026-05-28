@@ -314,12 +314,14 @@ export const GenerateImagesDialog = ({
         setSucceeded(totalSucceeded);
         setFailed(totalFailed);
 
-        const batchErrors = (data.results || []).filter((r: BatchResult) => !r.success);
+        // Skipped items (no anchor image) are not real failures — don't count toward auto-pause
+        const batchErrors = (data.results || []).filter((r: BatchResult) => !r.success && !r.skipped);
+        const batchSkipped = (data.results || []).filter((r: BatchResult) => r.skipped);
         if (batchErrors.length > 0) {
           consecutiveFailures += batchErrors.length;
           allErrors.push(...batchErrors);
           setErrors([...allErrors]);
-        } else {
+        } else if (batchSkipped.length === 0) {
           consecutiveFailures = 0;
         }
 
