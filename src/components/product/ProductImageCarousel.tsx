@@ -48,7 +48,7 @@ export const ProductImageCarousel = ({
   const imageRef = useRef<HTMLDivElement>(null);
 
   const autoplayPlugin = useCallback(
-    () => Autoplay({ delay: 3000, stopOnInteraction: true, stopOnMouseEnter: true }),
+    () => Autoplay({ delay: 2000, stopOnInteraction: true, stopOnMouseEnter: true }),
     []
   );
 
