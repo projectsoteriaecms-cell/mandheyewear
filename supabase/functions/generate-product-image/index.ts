@@ -36,8 +36,8 @@ function isBrandedFrame(brand: string | null): boolean {
   return LUXURY_BRANDS.has(brand.toUpperCase().trim());
 }
 
-const MIN_REFERENCE_PHOTOS = 0;
-const MIN_REFERENCE_PHOTOS_KNOWN = 0;
+const MIN_REFERENCE_PHOTOS = 1;
+const MIN_REFERENCE_PHOTOS_KNOWN = 1;
 
 // ── Spec diagram minimum measurements requirement ─────────────────────────────
 // Requires at least lens_width + bridge_size + total_width for a meaningful diagram.
