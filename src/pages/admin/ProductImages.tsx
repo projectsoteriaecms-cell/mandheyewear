@@ -63,19 +63,22 @@ const ProductImages = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const categoryCounts = useMemo(() => {
+    const GALLERY_SHOT_COUNT = 4; // front + mannequin + lifestyle_male + lifestyle_female
     const counts: Record<string, number> = {};
     products.forEach((p) => {
-      if (!p.image_url) {
-        const type = p.item_type || "other";
-        counts[type] = (counts[type] || 0) + 1;
-      }
+      // Only count products that HAVE an anchor image but are missing gallery shots
+      if (!p.image_url) return;
+      const validAdditional = (p.additional_images || []).filter(Boolean).length;
+      if (validAdditional >= GALLERY_SHOT_COUNT) return; // already complete
+      const type = p.item_type || "other";
+      counts[type] = (counts[type] || 0) + 1;
     });
     return Object.entries(counts)
       .map(([type, missing]) => ({
         type,
         label: ITEM_TYPE_LABELS[type] || type,
         missing,
-        shots: type === "frames" ? 6 : 1,
+        shots: type === "frames" ? 5 : 1,
       }))
       .sort((a, b) => b.missing - a.missing);
   }, [products]);

@@ -113,7 +113,7 @@ export const GenerateImagesDialog = ({
     if (!selectedProducts) return null;
     const frames = selectedProducts.filter((p) => p.item_type === "frames");
     const nonFrames = selectedProducts.filter((p) => p.item_type !== "frames");
-    const frameShots = frames.length * 6;
+    const frameShots = frames.length * 5;
     const nonFrameShots = nonFrames.length * 1;
     // Count house brand frames that will be skipped (no way to know image count here, edge function handles it)
     const houseBrandFrames = frames.filter((p) => !isKnownBrand(p.brand)).length;

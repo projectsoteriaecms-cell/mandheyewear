@@ -1022,43 +1022,47 @@ serve(async (req) => {
     }
 
     // ── Batch mode ──
+    // Strategy: fetch all anchor-ready products (image_url set), then filter in-memory
+    // for those missing a complete gallery. This reliably handles NULL, [] (empty array),
+    // and partial arrays — DB-level array-length filtering is not reliable in PostgREST.
+    const GALLERY_SHOT_COUNT = 4; // hero lives in image_url; 4 additional: front, mannequin, lifestyle_male, lifestyle_female
     const itemTypeFilter = Array.isArray(itemTypes) && itemTypes.length > 0 ? itemTypes : null;
-
-    // Only process products that HAVE an anchor image but are missing gallery shots.
-    // Products with no anchor are excluded — they must have an image uploaded first.
-    let remainingQuery = supabase
-      .from("products")
-      .select("id", { count: "exact", head: true })
-      .eq("is_active", true)
-      .not("image_url", "is", null)
-      .neq("image_url", "")
-      .is("additional_images", null);
-    if (itemTypeFilter) remainingQuery = remainingQuery.in("item_type", itemTypeFilter);
-    const { count: remaining } = await remainingQuery;
 
     const limit = typeof maxProducts === "number" && maxProducts > 0
       ? Math.min(maxProducts, batchSize)
       : batchSize;
 
+    // Fetch a pool of anchor-ready candidates — large enough to find work after in-memory filter
+    const CANDIDATE_POOL = Math.max(limit * 10, 50);
     let productQuery = supabase
       .from("products")
       .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color, total_width, lens_width, lens_height, bridge_size, temple_length)")
       .eq("is_active", true)
       .not("image_url", "is", null)
       .neq("image_url", "")
-      .is("additional_images", null)
       .order("item_type", { ascending: true })
-      .limit(limit);
+      .limit(CANDIDATE_POOL);
     if (itemTypeFilter) productQuery = productQuery.in("item_type", itemTypeFilter);
-    const { data: products, error: fetchErr } = await productQuery;
+    const { data: candidates, error: fetchErr } = await productQuery;
 
     if (fetchErr) {
       return json({ error: "Failed to fetch products: " + fetchErr.message }, 500);
     }
 
-    if (!products || products.length === 0) {
+    // In-memory filter: only products that need gallery work (< 4 valid additional shots)
+    const needsGallery = (candidates || []).filter((p: any) => {
+      const validAdditional = (p.additional_images || []).filter((u: any) => u && u.length > 0).length;
+      return validAdditional < GALLERY_SHOT_COUNT;
+    });
+
+    if (needsGallery.length === 0) {
       return json({ processed: 0, succeeded: 0, failed: 0, remaining: 0, results: [] });
     }
+
+    // Accurate remaining count = how many still need work after this batch
+    const remaining = Math.max(0, needsGallery.length - limit);
+
+    const products = needsGallery.slice(0, limit);
 
     products.sort((a: any, b: any) => {
       const pa = ITEM_TYPE_PRIORITY[a.item_type || "other"] || 99;
