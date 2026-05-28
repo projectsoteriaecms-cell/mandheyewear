@@ -248,54 +248,109 @@ ${brandDetail}`;
       (lensHeightVal ? `  • LENS HEIGHT   = ${lensHeightVal}  → vertical interior height of one lens opening\n` : "") +
       (templeVal     ? `  • TEMPLE LENGTH = ${templeVal}      → full temple arm length, hinge to tip\n` : "") +
       `Use ONLY these numbers. Do not round, invent, or substitute.`
-    : `No measurements on file. Estimate from the reference image based on visible proportions (total width 128–145mm, lens width 48–58mm, bridge 14–22mm, lens height 35–50mm, temple 135–155mm).`;
+    : `No measurements on file — a placeholder diagram will be used. Add lens_width, bridge_size, and total_width under Frame Attributes to enable AI generation.`;
 
   const specDiagramPrompt = `${frameAnchor}
 
-Create a TECHNICAL SPECIFICATION DIAGRAM for THIS specific frame — a precise product illustration driven entirely by the reference photo and the product attributes below. This is NOT a generic template; the silhouette, lens shape, rim thickness, and tint must reflect this actual product.
+══════════════════════════════════════════════════════════════════
+TECHNICAL SPECIFICATION DIAGRAM — PRECISION ENGINEERING DRAW
+Product: ${describeProduct(product)}
+══════════════════════════════════════════════════════════════════
 
-PRODUCT ATTRIBUTES:
-• ${shapeDesc}
-• ${materialDesc || "Draw rim thickness consistent with what is visible in the reference."}
-• ${styleDesc || ""}
-• ${lensRendering}
+╔══════════════════════════════════════════════════════════════╗
+║          MEASUREMENT ACCURACY CONTRACT — READ FIRST          ║
+╚══════════════════════════════════════════════════════════════╝
+Every measurement value below is FIXED and ABSOLUTE.
+Do NOT round, adjust, estimate, or substitute any value.
+Do NOT invent any value not present in this list.
 
 ${measurementBlock}
 
+╔══════════════════════════════════════════════════════════════╗
+║              ARROW SIZE HIERARCHY — CRITICAL RULE            ║
+╚══════════════════════════════════════════════════════════════╝
+${tw && lw && br ? `The three horizontal measurements have a strict visual size order:
+
+  TOTAL WIDTH  (${tw}mm)  ══════════════════════════════════  ← LONGEST arrow
+  LENS WIDTH   (${lw}mm)  ══════════════════                 ← SHORTER — visibly smaller
+  BRIDGE       (${br}mm)  ════                               ← SHORTEST horizontal arrow
+
+  TOTAL WIDTH must be at least 35–45% longer than LENS WIDTH arrow.
+  If they look the same length → the diagram is WRONG.` :
+  `TOTAL WIDTH must always be the longest horizontal arrow. BRIDGE must be the shortest.`}
+
 ${endpieceNote}
 
-══════════════════════════════════════════════════
-LAYOUT — wide landscape canvas, two drawings:
-══════════════════════════════════════════════════
+╔══════════════════════════════════════════════════════════════╗
+║               FRAME SILHOUETTE — PRODUCT-SPECIFIC           ║
+╚══════════════════════════════════════════════════════════════╝
+${shapeDesc}
+${materialDesc || "Draw rim thickness consistent with what is visible in the reference."}
+${styleDesc || ""}
+${lensRendering}
 
-LEFT — FRONT VIEW (≈65% of canvas width):
-  Trace the EXACT silhouette of this frame from the reference. Round lenses → draw circles; cat-eye → draw cat-eye curves; rectangular → draw rectangles; aviator → draw teardrop shape. Do NOT substitute a generic shape.
-  Include: both lens openings, nose bridge, nose pads, outer hinge/endpiece tabs.
+╔══════════════════════════════════════════════════════════════╗
+║                        CANVAS LAYOUT                         ║
+╚══════════════════════════════════════════════════════════════╝
+Output: wide landscape canvas (~3:2 ratio), pure white #FFFFFF background.
 
-  5 measurement arrows:
+━━━ LEFT PANEL — FRONT VIEW (65% of canvas width) ━━━━━━━━━━━━
+Trace the EXACT silhouette of this specific frame. Match the actual product shape:
+  Round → draw true circles · Cat-eye → lifted outer corners · Rectangular → rectangles
+  Aviator → teardrop shapes · Browline → brow bar + lighter lower rim
+  DO NOT substitute a generic rectangle.
 
-  1. TOTAL WIDTH — LONGEST arrow. Double-headed horizontal, above the top rim, outermost left to outermost right (past the hinge tabs). Label: "TOTAL WIDTH ${totalWidthVal || ""}".
+Five measurement annotations:
 
-  2. LENS WIDTH — shorter than TOTAL WIDTH. Double-headed horizontal inside the LEFT lens only. Label: "LENS WIDTH ${lensWidthVal || ""}". Visibly shorter than arrow 1.
+  ➊ TOTAL WIDTH ARROW — above the top rim, LONGEST horizontal arrow
+     Spans: outermost LEFT edge to outermost RIGHT edge (past hinge/endpiece lugs)
+     Label: "TOTAL WIDTH ${totalWidthVal || ""}" above the arrow
 
-  3. BRIDGE — SHORTEST horizontal arrow. Between the two lenses at the nose. Label: "BRIDGE ${bridgeVal || ""}".
+  ➋ LENS WIDTH ARROW — INSIDE the left lens opening, SHORTER than TOTAL WIDTH
+     Spans: interior width of one lens only — does not touch the rim or hinge
+     Label: "LENS WIDTH ${lensWidthVal || ""}" below the arrow inside the lens
 
-  4. LENS HEIGHT — double-headed VERTICAL arrow, OUTSIDE the frame to the LEFT, spanning the full vertical interior height of the left lens. Label left: "LENS HEIGHT ${lensHeightVal || ""}". Also repeat this arrow inside the right lens for readability.
+  ➌ BRIDGE ARROW — between the two lenses, SHORTEST horizontal arrow
+     Spans: gap between innermost lens edges only
+     Label: "BRIDGE ${bridgeVal || ""}" below the arrow
 
-RIGHT — TEMPLE ARM VIEW (≈30% of canvas width):
-  Top-down overhead view of both temple arms — two gently curved parallel bars with a slight downward bend at the ear tip. Temple thickness/style must match the reference.
+  ➍ LENS HEIGHT ARROW — OUTSIDE the frame, to the LEFT (never inside a lens)
+     Vertical double-headed arrow spanning full interior lens height
+     Use dashed extension lines from lens edges to the arrow
+     Label: "LENS HEIGHT ${lensHeightVal || ""}" rotated 90° to the left
 
-  5. TEMPLE LENGTH — double-headed horizontal arrow, full arm length hinge to tip. Label: "TEMPLE LENGTH ${templeVal || ""}".
+━━━ RIGHT PANEL — TEMPLE ARM VIEW (30% of canvas width) ━━━━━━━
+Top-down OVERHEAD bird's-eye view of both temple arms (NOT a side view):
+  Two parallel bars curving gently at the ear tip — thickness matches reference
 
-══════════════════════════════════════════════════
-VISUAL STYLE:
-══════════════════════════════════════════════════
-• Canvas: pure white #FFFFFF. No shadow, border, or grey wash.
-• Outlines: thin precise black lines (1–1.5px). Rim thickness reflects the material.
-• Dimension lines: thin black with small flat double arrowheads. Dashed extension lines where needed.
-• Labels: clean sans-serif (Helvetica/Arial/Gill Sans), 8–10pt, never overlapping frame lines.
-• Clear white space between the two drawings.
-• Precise, minimal, product-specific — as if made in Adobe Illustrator for this exact frame.`;
+  ➎ TEMPLE LENGTH ARROW — hinge pivot to tip of one arm
+     Label: "TEMPLE LENGTH ${templeVal || ""}"
+
+╔══════════════════════════════════════════════════════════════╗
+║          FORBIDDEN — INSTANT FAILURE CONDITIONS              ║
+╚══════════════════════════════════════════════════════════════╝
+✗ TOTAL WIDTH arrow the same length as or shorter than LENS WIDTH arrow
+✗ Any label value different from the exact numbers in the contract above
+✗ Estimating, rounding, or inventing measurement values
+✗ Generic rectangular silhouette when shape is specified otherwise
+✗ LENS HEIGHT arrow inside a lens opening — must be OUTSIDE to the LEFT
+✗ Temple arm drawn as a side view — must be TOP-DOWN overhead only
+✗ Any label overlapping frame lines, rims, or arrows
+✗ Background other than pure white #FFFFFF — no shadows, gradients, or textures
+✗ Missing any arrow whose measurement is provided above
+
+╔══════════════════════════════════════════════════════════════╗
+║              FINAL SELF-CHECK BEFORE OUTPUTTING              ║
+╚══════════════════════════════════════════════════════════════╝
+□ TOTAL WIDTH arrow is visibly the LONGEST horizontal arrow?
+□ LENS WIDTH arrow is visibly SHORTER than TOTAL WIDTH?
+□ BRIDGE arrow is the SHORTEST horizontal arrow?
+□ Every label shows the EXACT value from the contract above?
+□ Frame silhouette MATCHES the specified shape?
+□ LENS HEIGHT arrow is OUTSIDE the frame, to the LEFT?
+□ Temple arm panel shows a TOP-DOWN (overhead) perspective?
+□ No label overlaps any frame line or lens rim?
+Correct any NO before outputting.`;
 
   return [
     { slug: "hero",             label: SHOT_LABELS.hero,             prompt: heroPrompt },

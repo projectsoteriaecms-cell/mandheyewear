@@ -39,6 +39,67 @@ function isBrandedFrame(brand: string | null): boolean {
 const MIN_REFERENCE_PHOTOS = 1;
 const MIN_REFERENCE_PHOTOS_KNOWN = 1;
 
+// ── Spec diagram minimum measurements requirement ─────────────────────────────
+// Requires at least lens_width + bridge_size + total_width for a meaningful diagram.
+// Without these three, the AI will estimate and produce inaccurate output.
+function hasMinMeasurements(p: any): boolean {
+  return !!(p.lens_width && p.bridge_size && p.total_width);
+}
+
+// ── Spec diagram placeholder SVG ─────────────────────────────────────────────
+// Uploaded directly when measurements are missing — no API call needed.
+const SPEC_DIAGRAM_PLACEHOLDER_SVG = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="600" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg" font-family="Arial,Helvetica,sans-serif">
+  <rect width="1200" height="600" fill="#FFFFFF"/>
+  <ellipse cx="350" cy="220" rx="108" ry="88" fill="none" stroke="#D4D4D4" stroke-width="5" stroke-dasharray="12 6"/>
+  <ellipse cx="640" cy="220" rx="108" ry="88" fill="none" stroke="#D4D4D4" stroke-width="5" stroke-dasharray="12 6"/>
+  <line x1="458" y1="208" x2="532" y2="208" stroke="#D4D4D4" stroke-width="4" stroke-dasharray="8 4"/>
+  <line x1="242" y1="193" x2="150" y2="212" stroke="#D4D4D4" stroke-width="4" stroke-dasharray="8 4"/>
+  <line x1="748" y1="193" x2="840" y2="212" stroke="#D4D4D4" stroke-width="4" stroke-dasharray="8 4"/>
+  <line x1="150" y1="100" x2="840" y2="100" stroke="#E0E0E0" stroke-width="2"/>
+  <line x1="150" y1="93" x2="150" y2="107" stroke="#E0E0E0" stroke-width="2"/>
+  <line x1="840" y1="93" x2="840" y2="107" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="495" y="86" text-anchor="middle" font-size="13" fill="#C0C0C0">TOTAL WIDTH</text>
+  <line x1="248" y1="345" x2="452" y2="345" stroke="#E0E0E0" stroke-width="2"/>
+  <line x1="248" y1="338" x2="248" y2="352" stroke="#E0E0E0" stroke-width="2"/>
+  <line x1="452" y1="338" x2="452" y2="352" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="350" y="368" text-anchor="middle" font-size="13" fill="#C0C0C0">LENS WIDTH</text>
+  <line x1="462" y1="328" x2="530" y2="328" stroke="#E0E0E0" stroke-width="2"/>
+  <line x1="462" y1="321" x2="462" y2="335" stroke="#E0E0E0" stroke-width="2"/>
+  <line x1="530" y1="321" x2="530" y2="335" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="496" y="318" text-anchor="middle" font-size="11" fill="#C0C0C0">BRIDGE</text>
+  <line x1="110" y1="134" x2="110" y2="306" stroke="#E0E0E0" stroke-width="2"/>
+  <line x1="103" y1="134" x2="117" y2="134" stroke="#E0E0E0" stroke-width="2"/>
+  <line x1="103" y1="306" x2="117" y2="306" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="80" y="225" text-anchor="middle" font-size="11" fill="#C0C0C0" transform="rotate(-90,80,225)">LENS HEIGHT</text>
+  <line x1="930" y1="70" x2="930" y2="440" stroke="#F0F0F0" stroke-width="1"/>
+  <line x1="960" y1="188" x2="1150" y2="178" stroke="#D4D4D4" stroke-width="7" stroke-dasharray="10 5" stroke-linecap="round"/>
+  <line x1="960" y1="238" x2="1150" y2="228" stroke="#D4D4D4" stroke-width="7" stroke-dasharray="10 5" stroke-linecap="round"/>
+  <line x1="960" y1="266" x2="1150" y2="256" stroke="#E0E0E0" stroke-width="2"/>
+  <line x1="960" y1="259" x2="960" y2="273" stroke="#E0E0E0" stroke-width="2"/>
+  <line x1="1150" y1="249" x2="1150" y2="263" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="1055" y="290" text-anchor="middle" font-size="12" fill="#C0C0C0">TEMPLE LENGTH</text>
+  <rect x="130" y="418" width="730" height="148" rx="8" fill="#FAFAFA" stroke="#EFEFEF" stroke-width="1"/>
+  <text x="495" y="462" text-anchor="middle" font-size="22" font-weight="700" fill="#3D3D3D">Measurements Not on File</text>
+  <text x="495" y="494" text-anchor="middle" font-size="14" fill="#888888">Add frame measurements to generate a precise technical specification diagram</text>
+  <text x="495" y="522" text-anchor="middle" font-size="12" fill="#BBBBBB">Required: lens_width · bridge_size · total_width · lens_height · temple_length</text>
+  <text x="495" y="546" text-anchor="middle" font-size="12" fill="#CCCCCC">Admin › Products › Edit › Frame Attributes</text>
+</svg>`;
+
+async function uploadSpecPlaceholder(
+  supabase: any,
+  supabaseUrl: string,
+  productId: string
+): Promise<string> {
+  const svgBytes = new TextEncoder().encode(SPEC_DIAGRAM_PLACEHOLDER_SVG);
+  const filePath = `${productId}/spec_diagram.svg`;
+  const { error } = await supabase.storage
+    .from("product-images")
+    .upload(filePath, svgBytes, { contentType: "image/svg+xml", upsert: true });
+  if (error) throw new Error("Placeholder upload failed: " + error.message);
+  return `${supabaseUrl}/storage/v1/object/public/product-images/${filePath}`;
+}
+
 // ── Prompt builders for the 6-shot gallery ──
 
 function describeProduct(p: any): string {
@@ -238,54 +299,153 @@ ${brandDetail}`;
 
   const specDiagramPrompt = `${frameAnchor}
 
-Create a TECHNICAL SPECIFICATION DIAGRAM for THIS specific frame — a precise product illustration driven entirely by the reference photo and the product attributes listed below. This is NOT a generic template; every detail of the silhouette, lens shape, rim thickness, and tint must reflect this actual product.
+══════════════════════════════════════════════════════════════════
+TECHNICAL SPECIFICATION DIAGRAM — PRECISION ENGINEERING DRAW
+Product: ${desc}
+══════════════════════════════════════════════════════════════════
 
-PRODUCT ATTRIBUTES TO DRIVE THE DIAGRAM:
-• ${shapeDesc}
-• ${materialDesc || "Draw rim thickness consistent with what is visible in the reference."}
-• ${styleDesc || ""}
-• ${lensRendering}
+╔══════════════════════════════════════════════════════════════╗
+║          MEASUREMENT ACCURACY CONTRACT — READ FIRST          ║
+╚══════════════════════════════════════════════════════════════╝
+You are generating a precision technical specification diagram.
+Every measurement value below is FIXED and ABSOLUTE.
+You MUST NOT round, adjust, estimate, or substitute any value.
+You MUST NOT invent any value not present in this list.
 
 ${measurementBlock}
 
+╔══════════════════════════════════════════════════════════════╗
+║              ARROW SIZE HIERARCHY — CRITICAL RULE            ║
+╚══════════════════════════════════════════════════════════════╝
+${tw && lw && br ? `The three horizontal measurements have a strict visual size order:
+
+  TOTAL WIDTH  (${tw}mm)  ══════════════════════════════════  ← LONGEST arrow on the entire diagram
+  LENS WIDTH   (${lw}mm)  ══════════════════                 ← SHORTER — visibly smaller than TOTAL WIDTH
+  BRIDGE       (${br}mm)  ════                               ← SHORTEST horizontal arrow
+
+  TOTAL WIDTH must be at least 35–45% longer than the LENS WIDTH arrow.
+  If TOTAL WIDTH and LENS WIDTH arrows look the same length → the diagram is WRONG.
+  The LENS WIDTH arrow fits ENTIRELY within the left lens opening.
+  The TOTAL WIDTH arrow extends BEYOND the outer lens edges on both sides (endpiece hardware).
+  These two arrows DO NOT share the same start or end points.` :
+  `Draw arrows proportional to their actual millimetre values. TOTAL WIDTH must always be the longest horizontal arrow.`}
+
 ${endpieceNote}
 
-══════════════════════════════════════════════════
-LAYOUT — wide landscape canvas, two drawings:
-══════════════════════════════════════════════════
+╔══════════════════════════════════════════════════════════════╗
+║               FRAME SILHOUETTE — PRODUCT-SPECIFIC           ║
+╚══════════════════════════════════════════════════════════════╝
+${shapeDesc}
+${materialDesc || "Draw rim thickness consistent with what is visible in the reference photo."}
+${styleDesc || ""}
+${lensRendering}
 
-LEFT — FRONT VIEW (≈65% of canvas width):
-  Trace the EXACT silhouette of this frame from the reference. The outline must match the real shape — if it is round, draw circles; if cat-eye, draw cat-eye curves; if rectangular, draw rectangular lenses; if aviator, draw the teardrop/aviator shape. Do not substitute a generic rectangle.
-  Include: both lens openings, nose bridge, nose pads (if visible in reference), and the outer hinge/endpiece tabs.
+╔══════════════════════════════════════════════════════════════╗
+║                        CANVAS LAYOUT                         ║
+╚══════════════════════════════════════════════════════════════╝
+Output: wide landscape canvas (~3:2 ratio), pure white #FFFFFF background.
+No grey wash, no shadows, no vignette, no texture — white only.
 
-  Annotate with 5 measurement arrows:
+━━━ LEFT PANEL — FRONT VIEW (65% of canvas width) ━━━━━━━━━━━━
 
-  1. TOTAL WIDTH — the LONGEST arrow. Double-headed horizontal, positioned above the top rim, stretching from the outermost left edge to the outermost right edge (beyond the outer hinge tabs). Label above: "TOTAL WIDTH ${totalWidthVal || ""}".
+Trace the EXACT silhouette of this specific frame from the reference image.
+The outline must match the actual product shape:
+  • Round frame → draw true circles
+  • Oval → draw ovals
+  • Cat-eye → draw cat-eye curves with lifted outer corners
+  • Rectangular → draw rectangles (slightly rounded corners if acetate)
+  • Aviator / teardrop → draw teardrop shapes
+  • Browline → draw brow bar above a lighter lower rim
+  DO NOT substitute a generic rectangle for any other shape.
 
-  2. LENS WIDTH — shorter than TOTAL WIDTH. Double-headed horizontal arrow inside the LEFT lens opening, spanning only the interior of that one lens. Label: "LENS WIDTH ${lensWidthVal || ""}". Must look visibly shorter than the TOTAL WIDTH arrow — these are different measurements.
+Include: both lens openings, nose bridge, nose pads (if visible in reference), outer hinge/endpiece tabs.
 
-  3. BRIDGE — the SHORTEST horizontal arrow. Double-headed, spanning the nose bridge gap between the two lenses. Label below: "BRIDGE ${bridgeVal || ""}".
+Five measurement annotations (all required if the value is provided above):
 
-  4. LENS HEIGHT — double-headed VERTICAL arrow, placed OUTSIDE the frame to the LEFT, spanning the full vertical interior height of the left lens. Label to its left: "LENS HEIGHT ${lensHeightVal || ""}". Also show the same arrow and label a second time INSIDE the right lens (as product spec diagrams conventionally do for readability).
+  ➊ TOTAL WIDTH ARROW
+     Position: ABOVE the top rim, spanning the full outermost width
+     Type: double-headed horizontal arrow — THE LONGEST HORIZONTAL ARROW
+     Starts: outermost LEFT edge (past the left hinge/endpiece lug)
+     Ends: outermost RIGHT edge (past the right hinge/endpiece lug)
+     Label: "TOTAL WIDTH ${totalWidthVal || ""}" — placed ABOVE the arrow
+     Note: this arrow is WIDER than the frame lens area by the endpiece amount on each side
 
-LEFT OF FRONT VIEW:
-  No additional elements — keep white space clean.
+  ➋ LENS WIDTH ARROW
+     Position: INSIDE the left lens opening
+     Type: double-headed horizontal arrow — SHORTER THAN TOTAL WIDTH
+     Spans: the interior horizontal width of one (left) lens only
+     Does NOT touch or exceed the lens rim or hinge
+     Label: "LENS WIDTH ${lensWidthVal || ""}" — below the arrow, inside the lens
+     Critical: this arrow must be visibly shorter than the TOTAL WIDTH arrow
 
-RIGHT — TEMPLE ARM VIEW (≈30% of canvas width):
-  Draw a top-down overhead view of both temple arms — they appear as two gently curved parallel bars extending outward with a slight downward curve at the ear tip. This is the view from above, not from the side.
-  The temple style (thick acetate, thin metal wire, spring-hinged) must match the reference frame.
+  ➌ BRIDGE ARROW
+     Position: in the nose bridge gap between the two lenses
+     Type: double-headed horizontal arrow — THE SHORTEST horizontal arrow
+     Spans: the gap between the innermost edge of each lens only
+     Label: "BRIDGE ${bridgeVal || ""}" — below the arrow
 
-  5. TEMPLE LENGTH — double-headed horizontal arrow spanning one full temple arm from hinge end to tip. Label: "TEMPLE LENGTH ${templeVal || ""}".
+  ➍ LENS HEIGHT ARROW
+     Position: OUTSIDE the frame, to the LEFT of the front view
+     Type: double-headed VERTICAL arrow
+     Spans: the full interior vertical height of the left lens
+     Use short dashed extension lines from the lens edges to the arrow
+     Label: "LENS HEIGHT ${lensHeightVal || ""}" — to the left of the arrow, rotated 90°
+     Critical: this arrow MUST be outside the frame outline — never inside a lens
 
-══════════════════════════════════════════════════
-VISUAL STYLE:
-══════════════════════════════════════════════════
-• Canvas: pure white #FFFFFF — no shadow, no border, no grey wash.
-• Outlines: thin precise black lines (1–1.5px), consistent weight. Rim thickness should reflect the actual material (thick for acetate, thin for metal).
-• Dimension lines: thin black lines with small flat double arrowheads. Use short dashed extension lines to bridge the gap between the frame edge and the arrow when needed.
-• Labels: clean sans-serif font (Helvetica, Arial, or Gill Sans style), 8–10pt. Positioned neatly with clear breathing room — never overlapping any frame line or arrow.
-• The two drawings (front view and temple view) must have clear white space separation.
-• Result must look like it was produced by a professional product designer in Adobe Illustrator — precise, clean, minimal, and specific to THIS frame.`;
+━━━ RIGHT PANEL — TEMPLE ARM VIEW (30% of canvas width) ━━━━━━━
+
+Draw the temple arms from a TOP-DOWN OVERHEAD perspective (bird's-eye view):
+  • Both arms appear as two parallel bars that gently curve at the ear tip
+  • The curve bends DOWNWARD toward the wearer's head
+  • This is NOT a side profile — it is a view from directly above
+  • Arm thickness/style must match the reference (thick acetate, thin metal wire, etc.)
+
+  ➎ TEMPLE LENGTH ARROW
+     Type: double-headed horizontal arrow
+     Spans: one full temple arm from hinge pivot to the very tip
+     Label: "TEMPLE LENGTH ${templeVal || ""}"
+
+╔══════════════════════════════════════════════════════════════╗
+║                      VISUAL STYLE                            ║
+╚══════════════════════════════════════════════════════════════╝
+• Frame outlines: precise black lines, 1.5–2px weight, consistent
+• Rim thickness: thick for acetate, thin wire for metal, none for rimless
+• Dimension lines: thin black with small flat double arrowheads
+  Use short dashed extension lines to bridge gap from frame edge to arrow
+• Labels: clean sans-serif (Helvetica / Arial), 9–11pt
+  NO label overlaps any frame line, lens rim, or arrow
+• Clear white space between the two panels
+• Standard: a diagram a senior product designer would put in a specification sheet
+
+╔══════════════════════════════════════════════════════════════╗
+║          FORBIDDEN — INSTANT FAILURE CONDITIONS              ║
+╚══════════════════════════════════════════════════════════════╝
+✗ TOTAL WIDTH arrow the same length as, or shorter than, LENS WIDTH arrow
+✗ Any measurement label showing a value different from the exact numbers above
+✗ Estimating, rounding, or inventing measurement values not in the contract
+✗ A generic rectangular silhouette when the frame shape is specified otherwise
+✗ LENS HEIGHT arrow placed INSIDE a lens opening (must be OUTSIDE to the LEFT)
+✗ Temple arm drawn as a SIDE VIEW — must be TOP-DOWN overhead only
+✗ Any measurement label overlapping a frame line, rim, or another arrow
+✗ Background colour other than pure white #FFFFFF
+✗ Shadows, gradients, textures, vignettes, or borders anywhere on the canvas
+✗ Clear lenses when the product colour/name indicates a tinted/sunglass frame
+✗ Tinted lenses when the product is clearly an optical/clear-lens frame
+✗ Missing any measurement arrow whose value is provided in the contract above
+
+╔══════════════════════════════════════════════════════════════╗
+║              FINAL SELF-CHECK BEFORE OUTPUTTING              ║
+╚══════════════════════════════════════════════════════════════╝
+Before generating the final output, verify each of the following:
+□ TOTAL WIDTH arrow is visibly the LONGEST horizontal arrow on the diagram?
+□ LENS WIDTH arrow is visibly SHORTER than the TOTAL WIDTH arrow?
+□ BRIDGE arrow is the SHORTEST horizontal arrow?
+□ Every label shows the EXACT value from the measurement contract above?
+□ Frame silhouette MATCHES the specified shape — not a substituted generic shape?
+□ LENS HEIGHT arrow is placed OUTSIDE the frame, to the LEFT?
+□ Temple arm panel shows a TOP-DOWN (overhead) perspective?
+□ No label, arrow, or text overlaps any frame line or lens rim?
+If any answer is NO — correct it before outputting the image.`;
 
   return [
     { slug: "hero",             prompt: heroPrompt },
@@ -611,6 +771,15 @@ async function generateFullGallery(
       continue;
     }
 
+    // Spec diagram: use placeholder SVG when measurements are insufficient
+    if (shot.slug === "spec_diagram" && !hasMinMeasurements(product)) {
+      console.log(`  📐 ${product.sku} — spec_diagram: no measurements, uploading placeholder`);
+      const placeholderUrl = await uploadSpecPlaceholder(supabase, supabaseUrl, product.id);
+      urls.push(placeholderUrl);
+      if (i < shots.length - 1) await new Promise((r) => setTimeout(r, 500));
+      continue;
+    }
+
     console.log(`  📸 ${product.sku} — ${useReference ? "ref-editing" : "generating"} ${shot.slug} (${i + 1}/6)`);
 
     let imageData: { data: string; mimeType: string } | null = null;
@@ -703,12 +872,24 @@ serve(async (req) => {
       }
 
       try {
+        // Spec diagram single-shot: use placeholder when measurements are missing
+        if (shotSlug === "spec_diagram" && !hasMinMeasurements(product)) {
+          console.log(`  📐 ${product.sku} — spec_diagram single-shot: no measurements, uploading placeholder`);
+          const placeholderUrl = await uploadSpecPlaceholder(supabase, SUPABASE_URL, product.id);
+          // Save to additional_images[4] (spec_diagram is index 5, so additionalImages[4])
+          const currentAdditional: string[] = product.additional_images || [];
+          while (currentAdditional.length < 5) currentAdditional.push("");
+          currentAdditional[4] = placeholderUrl;
+          await supabase.from("products").update({ additional_images: currentAdditional }).eq("id", product.id);
+          return json({ processed: 1, succeeded: 1, failed: 0, remaining: 0, results: [{ productId: product.id, sku: product.sku, success: true, shots: 1, shotSlug: "spec_diagram", note: "Placeholder uploaded — add measurements for AI diagram" }] });
+        }
+
         // Determine reference image: explicit refs > product's own primary image
         const explicitRefs = Array.isArray(referenceImageUrls) && referenceImageUrls.length > 0 ? referenceImageUrls : null;
         const primaryRef = product.image_url ? [product.image_url] : null;
         const effectiveRefs = explicitRefs || primaryRef;
         const useReference = effectiveRefs && effectiveRefs.length > 0;
-        
+
         const shots = buildFramePrompts(product, !!useReference);
         const shot = shots[shotIndex];
         // Use custom prompt if provided, otherwise use auto-generated
