@@ -179,10 +179,11 @@ ${studioRule}`;
 
 Create a MANNEQUIN DISPLAY SHOT — the frame fitted on a professional eyewear display mannequin head, exactly as seen in premium optical boutiques and brand lookbooks.
 
-MANNEQUIN: A matte black or dark charcoal plastic eyewear display bust head — abstract, sculptural, no hair, no expression (similar to a luxury retail display form). The head occupies the upper 60–70% of the frame. The glasses sit naturally on the mannequin: nose pads resting on the nose bridge, temples running back over where the ears would be, sitting at the correct angle.
+MANNEQUIN: A matte black or dark charcoal plastic eyewear display bust head — abstract, sculptural, no hair, no expression (similar to a luxury retail display form). The head occupies the upper 60–70% of the canvas. The glasses sit naturally on the mannequin: nose pads resting on the nose bridge, temples running back over where the ears would be, sitting at the correct angle.
 FRAME ACCURACY: The frame must be IDENTICAL to the reference — exact colours, shape, and proportions. The mannequin simply provides wearing context.
-COMPOSITION: Portrait crop, mannequin centred, frame clearly the visual hero. Show the 3/4 front angle naturally as it would appear when displayed.
-BACKGROUND: Pure white or very light neutral grey studio background. Soft professional lighting that shows both the mannequin form and the frame detail equally well.
+CANVAS: Perfectly square 1:1 format. The mannequin head is centred horizontally and vertically, with equal white margin on all four sides. The entire bust including the neck/shoulder base must be fully visible — nothing cropped.
+COMPOSITION: 3/4 front angle, mannequin and frame both fully within the square canvas — frame clearly the visual hero.
+BACKGROUND: Pure white (#FFFFFF) seamless studio background — no grey, no gradient, no texture, no vignette. Background must match the store's white card background exactly.
 ${brandDetail}
 DO NOT show a human face — the mannequin must be an abstract sculptural display form only.`;
 
@@ -197,11 +198,12 @@ FRAME ACCURACY (critical): The eyewear worn in the output must be IDENTICAL to t
 PERSON: A well-groomed Black/African man, approximately 28–35 years old. Dark skin tone. Confident, composed expression — looking slightly off-camera or directly at the viewer. Natural, modern appearance.
 STYLING: Smart casual or professional — clean contemporary style that reflects a modern African professional or lifestyle aesthetic.
 EYEWEAR FIT: Frame sitting level on the nose bridge, nose pads correctly positioned, temples running straight back over the ears. Properly and comfortably worn.
-COMPOSITION: Close-up bust or portrait shot. Both the person's face and the frame are in sharp, equal focus. The frame is clearly readable as the product hero.
-BACKGROUND: Pure white (#FFFFFF) studio seamless background — no exceptions. No grey, no bokeh, no blurred environments, no gradients, no shadows on the wall behind the subject. The background must be completely flat, bright white from edge to edge.
+CANVAS: Perfectly square 1:1 format. Compose so the subject's full face, the eyewear, and upper torso/shoulders are entirely visible and centred within the square — no part of the face or frame may be cropped by any edge. Leave a small equal margin at the top above the head and at the bottom below the chest. The subject must fully fit inside the square.
+COMPOSITION: Head and shoulders portrait within a square frame — from just above the top of the head to the mid-chest, all visible. Both the person's face and the frame are in sharp, equal focus. The frame is clearly readable as the product hero.
+BACKGROUND: Pure white (#FFFFFF) studio seamless background — no exceptions. No grey, no bokeh, no blurred environments, no gradients, no shadows on the wall behind the subject. The background must be completely flat, bright white from edge to edge, blending seamlessly with any white page or card it sits on.
 LIGHTING: Professional portrait lighting that beautifully renders deep/dark skin tones — warm, flattering, luminous. No harsh facial shadows. The frame must remain clearly visible and sharp against the face.
 MOOD: Confident, stylish, aspirational. The standard of a premium African eyewear brand's editorial campaign.
-FORBIDDEN: grey background, coloured background, bokeh background, blurred office or cafe or outdoor setting, any environment or scene behind the subject, vignette, gradient wash.
+FORBIDDEN: face or frame cropped by the image edge, grey background, coloured background, bokeh background, blurred office or cafe or outdoor setting, any environment or scene behind the subject, vignette, gradient wash, portrait/rectangular output.
 ${brandDetail}`;
 
   // ── Shot 5: Lifestyle — Black/African Female Model ────────────────────────
@@ -214,11 +216,12 @@ FRAME ACCURACY (critical): The eyewear worn in the output must be IDENTICAL to t
 PERSON: A stylish Black/African woman, approximately 25–35 years old. Dark skin tone. Confident, elegant expression — looking slightly off-camera or directly at the viewer. Natural beauty — could have natural hair, braids, locs, or a headwrap. Modern and authentic.
 STYLING: Elegant and contemporary — reflects premium modern African fashion sensibility. Could be smart casual, professional, or high-fashion editorial. Not stereotyped or traditional.
 EYEWEAR FIT: Frame sitting level on the nose bridge, nose pads correctly positioned, temples running straight back. Properly and comfortably worn.
-COMPOSITION: Close-up bust or portrait shot. Both the person's face and the frame are in sharp, equal focus. The frame is clearly readable as the product hero.
-BACKGROUND: Pure white (#FFFFFF) studio seamless background — no exceptions. No grey, no bokeh, no blurred environments, no gradients, no shadows on the wall behind the subject. The background must be completely flat, bright white from edge to edge.
+CANVAS: Perfectly square 1:1 format. Compose so the subject's full face, the eyewear, and upper torso/shoulders are entirely visible and centred within the square — no part of the face or frame may be cropped by any edge. Leave a small equal margin at the top above the head and at the bottom below the chest. The subject must fully fit inside the square.
+COMPOSITION: Head and shoulders portrait within a square frame — from just above the top of the head to the mid-chest, all visible. Both the person's face and the frame are in sharp, equal focus. The frame is clearly readable as the product hero.
+BACKGROUND: Pure white (#FFFFFF) studio seamless background — no exceptions. No grey, no bokeh, no blurred environments, no gradients, no shadows on the wall behind the subject. The background must be completely flat, bright white from edge to edge, blending seamlessly with any white page or card it sits on.
 LIGHTING: Professional portrait lighting that beautifully renders deep/dark skin tones — warm, flattering, luminous. No harsh shadows. The frame must remain clearly visible and sharp.
 MOOD: Sophisticated, confident, aspirational — the standard of a premium African eyewear brand lookbook. Authentic representation, not a generic stock photo aesthetic.
-FORBIDDEN: grey background, coloured background, bokeh background, blurred lifestyle environment, any scene or setting behind the subject, vignette, gradient wash.
+FORBIDDEN: face or frame cropped by the image edge, grey background, coloured background, bokeh background, blurred lifestyle environment, any scene or setting behind the subject, vignette, gradient wash, portrait/rectangular output.
 ${brandDetail}`;
 
   // ── Shot 6: Technical Spec Diagram ────────────────────────────────────────
@@ -500,6 +503,7 @@ async function generateImageViaGemini(
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           responseModalities: ["IMAGE", "TEXT"],
+          imageGenerationConfig: { aspectRatio: "1:1" },
         },
       }),
     }
@@ -557,6 +561,7 @@ async function editImageViaGemini(
         }],
         generationConfig: {
           responseModalities: ["IMAGE", "TEXT"],
+          imageGenerationConfig: { aspectRatio: "1:1" },
         },
       }),
     }
