@@ -198,9 +198,10 @@ PERSON: A well-groomed Black/African man, approximately 28–35 years old. Dark 
 STYLING: Smart casual or professional — clean contemporary style that reflects a modern African professional or lifestyle aesthetic.
 EYEWEAR FIT: Frame sitting level on the nose bridge, nose pads correctly positioned, temples running straight back over the ears. Properly and comfortably worn.
 COMPOSITION: Close-up bust or portrait shot. Both the person's face and the frame are in sharp, equal focus. The frame is clearly readable as the product hero.
-BACKGROUND: Clean light grey or soft white studio backdrop. Alternatively: subtly blurred neutral lifestyle environment (soft bokeh — office, cafe, outdoor natural light).
+BACKGROUND: Pure white (#FFFFFF) studio seamless background — no exceptions. No grey, no bokeh, no blurred environments, no gradients, no shadows on the wall behind the subject. The background must be completely flat, bright white from edge to edge.
 LIGHTING: Professional portrait lighting that beautifully renders deep/dark skin tones — warm, flattering, luminous. No harsh facial shadows. The frame must remain clearly visible and sharp against the face.
 MOOD: Confident, stylish, aspirational. The standard of a premium African eyewear brand's editorial campaign.
+FORBIDDEN: grey background, coloured background, bokeh background, blurred office or cafe or outdoor setting, any environment or scene behind the subject, vignette, gradient wash.
 ${brandDetail}`;
 
   // ── Shot 5: Lifestyle — Black/African Female Model ────────────────────────
@@ -214,9 +215,10 @@ PERSON: A stylish Black/African woman, approximately 25–35 years old. Dark ski
 STYLING: Elegant and contemporary — reflects premium modern African fashion sensibility. Could be smart casual, professional, or high-fashion editorial. Not stereotyped or traditional.
 EYEWEAR FIT: Frame sitting level on the nose bridge, nose pads correctly positioned, temples running straight back. Properly and comfortably worn.
 COMPOSITION: Close-up bust or portrait shot. Both the person's face and the frame are in sharp, equal focus. The frame is clearly readable as the product hero.
-BACKGROUND: Clean light grey or soft white studio backdrop. Alternatively: subtly blurred neutral lifestyle environment with elegant warmth.
+BACKGROUND: Pure white (#FFFFFF) studio seamless background — no exceptions. No grey, no bokeh, no blurred environments, no gradients, no shadows on the wall behind the subject. The background must be completely flat, bright white from edge to edge.
 LIGHTING: Professional portrait lighting that beautifully renders deep/dark skin tones — warm, flattering, luminous. No harsh shadows. The frame must remain clearly visible and sharp.
 MOOD: Sophisticated, confident, aspirational — the standard of a premium African eyewear brand lookbook. Authentic representation, not a generic stock photo aesthetic.
+FORBIDDEN: grey background, coloured background, bokeh background, blurred lifestyle environment, any scene or setting behind the subject, vignette, gradient wash.
 ${brandDetail}`;
 
   // ── Shot 6: Technical Spec Diagram ────────────────────────────────────────
