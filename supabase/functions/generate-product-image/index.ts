@@ -295,7 +295,7 @@ ${brandDetail}`;
       (lensHeightVal ? `  • LENS HEIGHT   = ${lensHeightVal}  → vertical interior height of one lens opening\n` : "") +
       (templeVal     ? `  • TEMPLE LENGTH = ${templeVal}      → full length of one temple arm, hinge to tip\n` : "") +
       `Use ONLY these numbers. Do not round, invent, or substitute different values.`
-    : `No measurements on file. Estimate from the reference image based on the frame's visible proportions and standard sizing conventions (total width 128–145mm, lens width 48–58mm, bridge 14–22mm, lens height 35–50mm, temple 135–155mm).`;
+    : `No measurements on file — DO NOT estimate, guess, or invent values. A placeholder diagram will be used instead. Do not generate this image.`;
 
   const specDiagramPrompt = `${frameAnchor}
 
