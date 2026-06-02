@@ -188,14 +188,29 @@ const ProductImages = () => {
   }, [queryClient]);
 
   const handleEnhanceAll = useCallback(async () => {
-    const targets = products.filter((p) => p.image_url);
+    // Only enhance anchors that have NOT been enhanced yet.
+    // Enhanced outputs live at `{productId}/anchor_enhanced.{ext}` — skip those
+    // to avoid re-enhancing (wastes quota and degrades quality).
+    const targets = products.filter(
+      (p) => p.image_url && !/anchor_enhanced\.[a-z0-9]+(\?|$)/i.test(p.image_url)
+    );
+    const alreadyEnhanced = products.filter(
+      (p) => p.image_url && /anchor_enhanced\.[a-z0-9]+(\?|$)/i.test(p.image_url)
+    ).length;
+
     if (targets.length === 0) {
-      toast.info("No products with anchor images to enhance.");
+      toast.info(
+        alreadyEnhanced > 0
+          ? `All ${alreadyEnhanced} anchor images are already enhanced.`
+          : "No products with anchor images to enhance."
+      );
       return;
     }
 
     const confirmed = window.confirm(
-      `Enhance all ${targets.length} anchor images with AI?\n\nThis will make each one crystal clear. Originals are backed up automatically. This may take several minutes.`
+      `Enhance ${targets.length} new anchor image${targets.length === 1 ? "" : "s"} with AI?` +
+        (alreadyEnhanced > 0 ? `\n\n(${alreadyEnhanced} already-enhanced anchors will be skipped.)` : "") +
+        `\n\nThis makes each one crystal clear. Originals are backed up automatically. This may take several minutes.`
     );
     if (!confirmed) return;
 
