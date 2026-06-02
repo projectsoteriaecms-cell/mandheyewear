@@ -674,20 +674,14 @@ async function generateImageViaLovable(
   return { mimeType: match[1], data: match[2] };
 }
 
-async function generateImage(
-  prompt: string,
-  geminiApiKey: string | null,
-  lovableApiKey: string | null
-): Promise<{ data: string; mimeType: string }> {
+async function generateImage(prompt, geminiApiKey, lovableApiKey) {
   if (geminiApiKey) {
-    try {
-      const result = await generateImageViaGemini(prompt, geminiApiKey);
-      console.log("  ✓ Generated via direct Gemini API");
-      return result;
-    } catch (err: any) {
-      console.warn("  ⚠ Direct Gemini failed:", err?.message || err);
-    }
+    const result = await generateImageViaGemini(prompt, geminiApiKey);
+    console.log("✓ Generated via direct Gemini API");
+    return result;
   }
+  throw new Error("GEMINI_API_KEY not set");
+}
   if (lovableApiKey) {
     console.log("  → Falling back to Lovable AI gateway");
     return generateImageViaLovable(prompt, lovableApiKey);
