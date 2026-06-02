@@ -54,6 +54,7 @@ interface BatchResult {
   success: boolean;
   error?: string;
   shots?: number;
+  skipped?: boolean;
 }
 
 const BATCH_LIMITS = [
