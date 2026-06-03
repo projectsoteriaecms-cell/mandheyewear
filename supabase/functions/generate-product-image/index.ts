@@ -687,22 +687,12 @@ async function editImage(
   prompt: string,
   referenceImageUrl: string,
   geminiApiKey: string | null,
-  lovableApiKey: string | null
+  _lovableApiKey: string | null
 ): Promise<{ data: string; mimeType: string }> {
-  if (geminiApiKey) {
-    try {
-      const result = await editImageViaGemini(prompt, referenceImageUrl, geminiApiKey);
-      console.log("  ✓ Edited via direct Gemini API");
-      return result;
-    } catch (err: any) {
-      console.warn("  ⚠ Direct Gemini edit failed:", err?.message || err);
-    }
-  }
-  if (lovableApiKey) {
-    console.log("  → Falling back to Lovable AI gateway (edit)");
-    return editImageViaLovable(prompt, referenceImageUrl, lovableApiKey);
-  }
-  throw new Error("No API keys available for image editing");
+  if (!geminiApiKey) throw new Error("GEMINI_API_KEY not set");
+  const result = await editImageViaGemini(prompt, referenceImageUrl, geminiApiKey);
+  console.log("  ✓ Edited via direct Gemini API");
+  return result;
 }
 
 async function uploadImage(
