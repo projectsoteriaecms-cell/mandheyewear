@@ -1,0 +1,342 @@
+{
+  "generated_at": "2026-06-02T05:47:08.902982+00:00",
+  "source_folder": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images",
+  "output_folder": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images",
+  "total_processed": 66,
+  "converted": 66,
+  "skipped": 0,
+  "failed": 0,
+  "no_sku_count": 0,
+  "images": [
+    {
+      "sku": "MH-107",
+      "filename": "MH-107.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-107.jpg"
+    },
+    {
+      "sku": "MH-111",
+      "filename": "MH-111.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-111.jpg"
+    },
+    {
+      "sku": "MH-131",
+      "filename": "MH-131.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-131.jpg"
+    },
+    {
+      "sku": "MH-1371",
+      "filename": "MH-1371.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1371.jpg"
+    },
+    {
+      "sku": "MH-1372",
+      "filename": "MH-1372.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1372.jpg"
+    },
+    {
+      "sku": "MH-1380",
+      "filename": "MH-1380.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1380.jpg"
+    },
+    {
+      "sku": "MH-1381",
+      "filename": "MH-1381.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1381.jpg"
+    },
+    {
+      "sku": "MH-1399",
+      "filename": "MH-1399.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1399.jpg"
+    },
+    {
+      "sku": "MH-1400",
+      "filename": "MH-1400.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1400.jpg"
+    },
+    {
+      "sku": "MH-1403",
+      "filename": "MH-1403.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1403.jpg"
+    },
+    {
+      "sku": "MH-1405",
+      "filename": "MH-1405.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1405.jpg"
+    },
+    {
+      "sku": "MH-1443",
+      "filename": "MH-1443.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1443.jpg"
+    },
+    {
+      "sku": "MH-1444",
+      "filename": "MH-1444.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1444.jpg"
+    },
+    {
+      "sku": "MH-1446",
+      "filename": "MH-1446.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1446.jpg"
+    },
+    {
+      "sku": "MH-1476",
+      "filename": "MH-1476.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1476.jpg"
+    },
+    {
+      "sku": "MH-1480",
+      "filename": "MH-1480.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1480.jpg"
+    },
+    {
+      "sku": "MH-1482",
+      "filename": "MH-1482.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1482.jpg"
+    },
+    {
+      "sku": "MH-1483",
+      "filename": "MH-1483.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1483.jpg"
+    },
+    {
+      "sku": "MH-1503",
+      "filename": "MH-1503.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1503.jpg"
+    },
+    {
+      "sku": "MH-1510",
+      "filename": "MH-1510.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1510.jpg"
+    },
+    {
+      "sku": "MH-1512",
+      "filename": "MH-1512.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1512.jpg"
+    },
+    {
+      "sku": "MH-1595",
+      "filename": "MH-1595.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1595.jpg"
+    },
+    {
+      "sku": "MH-1651",
+      "filename": "MH-1651.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1651.jpg"
+    },
+    {
+      "sku": "MH-1654",
+      "filename": "MH-1654.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1654.jpg"
+    },
+    {
+      "sku": "MH-1703",
+      "filename": "MH-1703.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1703.jpg"
+    },
+    {
+      "sku": "MH-1720",
+      "filename": "MH-1720.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1720.jpg"
+    },
+    {
+      "sku": "MH-1739",
+      "filename": "MH-1739.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1739.jpg"
+    },
+    {
+      "sku": "MH-1779",
+      "filename": "MH-1779.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1779.jpg"
+    },
+    {
+      "sku": "MH-1780",
+      "filename": "MH-1780.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-1780.jpg"
+    },
+    {
+      "sku": "MH-212",
+      "filename": "MH-212.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-212.jpg"
+    },
+    {
+      "sku": "MH-220",
+      "filename": "MH-220.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-220.jpg"
+    },
+    {
+      "sku": "MH-323",
+      "filename": "MH-323.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-323.jpg"
+    },
+    {
+      "sku": "MH-328",
+      "filename": "MH-328.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-328.jpg"
+    },
+    {
+      "sku": "MH-330",
+      "filename": "MH-330.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-330.jpg"
+    },
+    {
+      "sku": "MH-337",
+      "filename": "MH-337.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-337.jpg"
+    },
+    {
+      "sku": "MH-338",
+      "filename": "MH-338.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-338.jpg"
+    },
+    {
+      "sku": "MH-344",
+      "filename": "MH-344.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-344.jpg"
+    },
+    {
+      "sku": "MH-350",
+      "filename": "MH-350.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-350.jpg"
+    },
+    {
+      "sku": "MH-354",
+      "filename": "MH-354.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-354.jpg"
+    },
+    {
+      "sku": "MH-355",
+      "filename": "MH-355.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-355.jpg"
+    },
+    {
+      "sku": "MH-357",
+      "filename": "MH-357.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-357.jpg"
+    },
+    {
+      "sku": "MH-358",
+      "filename": "MH-358.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-358.jpg"
+    },
+    {
+      "sku": "MH-361",
+      "filename": "MH-361.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-361.jpg"
+    },
+    {
+      "sku": "MH-362",
+      "filename": "MH-362.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-362.jpg"
+    },
+    {
+      "sku": "MH-367",
+      "filename": "MH-367.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-367.jpg"
+    },
+    {
+      "sku": "MH-370",
+      "filename": "MH-370.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-370.jpg"
+    },
+    {
+      "sku": "MH-372",
+      "filename": "MH-372.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-372.jpg"
+    },
+    {
+      "sku": "MH-396",
+      "filename": "MH-396.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-396.jpg"
+    },
+    {
+      "sku": "MH-398",
+      "filename": "MH-398.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-398.jpg"
+    },
+    {
+      "sku": "MH-399",
+      "filename": "MH-399.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-399.jpg"
+    },
+    {
+      "sku": "MH-400",
+      "filename": "MH-400.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-400.jpg"
+    },
+    {
+      "sku": "MH-406",
+      "filename": "MH-406.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-406.jpg"
+    },
+    {
+      "sku": "MH-414",
+      "filename": "MH-414.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-414.jpg"
+    },
+    {
+      "sku": "MH-448",
+      "filename": "MH-448.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-448.jpg"
+    },
+    {
+      "sku": "MH-449",
+      "filename": "MH-449.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-449.jpg"
+    },
+    {
+      "sku": "MH-470",
+      "filename": "MH-470.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-470.jpg"
+    },
+    {
+      "sku": "MH-471",
+      "filename": "MH-471.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-471.jpg"
+    },
+    {
+      "sku": "MH-474",
+      "filename": "MH-474.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-474.jpg"
+    },
+    {
+      "sku": "MH-504",
+      "filename": "MH-504.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-504.jpg"
+    },
+    {
+      "sku": "MH-506",
+      "filename": "MH-506.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-506.jpg"
+    },
+    {
+      "sku": "MH-507",
+      "filename": "MH-507.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-507.jpg"
+    },
+    {
+      "sku": "MH-51",
+      "filename": "MH-51.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-51.jpg"
+    },
+    {
+      "sku": "MH-551",
+      "filename": "MH-551.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-551.jpg"
+    },
+    {
+      "sku": "MH-569",
+      "filename": "MH-569.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-569.jpg"
+    },
+    {
+      "sku": "MH-576",
+      "filename": "MH-576.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-576.jpg"
+    },
+    {
+      "sku": "MH-9",
+      "filename": "MH-9.jpg",
+      "local_path": "C:\\Users\\DELL\\soteriaeyeclinic\\frame_images\\MH-9.jpg"
+    }
+  ]
+}
