@@ -505,7 +505,6 @@ async function generateImageViaGemini(
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           responseModalities: ["IMAGE", "TEXT"],
-          imageGenerationConfig: { aspectRatio: "1:1" },
         },
       }),
     }
