@@ -682,12 +682,6 @@ async function generateImage(prompt, geminiApiKey, lovableApiKey) {
   }
   throw new Error("GEMINI_API_KEY not set");
 }
-  if (lovableApiKey) {
-    console.log("  → Falling back to Lovable AI gateway");
-    return generateImageViaLovable(prompt, lovableApiKey);
-  }
-  throw new Error("No API keys available for image generation");
-}
 
 async function editImage(
   prompt: string,
