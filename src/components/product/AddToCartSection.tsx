@@ -142,25 +142,41 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
       )}
 
       {/* Primary Action Buttons */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2.5">
         {isOutOfStock ? (
-          <RequestItemDialog productId={product.id} productName={product.name} />
+          <>
+            {/* Out-of-stock: Request + prominent Try-On */}
+            <RequestItemDialog productId={product.id} productName={product.name} />
+            <div className="flex gap-2">
+              <Button
+                variant="gold"
+                className="flex-1 gap-2"
+                onClick={() => triggerTryOn(product.id)}
+              >
+                <Camera className="h-4 w-4" />
+                Virtual Try-On
+              </Button>
+              <WishlistButton productId={product.id} />
+            </div>
+          </>
         ) : (
           <>
-            {/* Buy Now + Add to Cart — side by side on desktop */}
-            <div className="flex flex-col lg:flex-row gap-2">
-              <Button
-                variant="hero"
-                className="flex-1 gap-2"
-                onClick={handleBuyNow}
-                disabled={addToCart.isPending}
-              >
-                {!isAuthenticated ? (
-                  <><LogIn className="h-4 w-4" /> Sign In to Buy</>
-                ) : (
-                  <><Zap className="h-4 w-4" /> Buy Now</>
-                )}
-              </Button>
+            {/* Buy Now — primary CTA, full width */}
+            <Button
+              variant="hero"
+              className="w-full gap-2"
+              onClick={handleBuyNow}
+              disabled={addToCart.isPending}
+            >
+              {!isAuthenticated ? (
+                <><LogIn className="h-4 w-4" /> Sign In to Buy</>
+              ) : (
+                <><Zap className="h-4 w-4" /> Buy Now</>
+              )}
+            </Button>
+
+            {/* Add to Cart + Wishlist on same row */}
+            <div className="flex gap-2">
               <Button
                 variant="outline"
                 className="flex-1 gap-2"
@@ -173,18 +189,20 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
                   <><ShoppingBag className="h-4 w-4" /> Add to Cart</>
                 )}
               </Button>
+              <WishlistButton productId={product.id} />
             </div>
+
+            {/* Virtual Try-On — full-width prominent feature CTA */}
+            <Button
+              variant="gold"
+              className="w-full gap-2"
+              onClick={() => triggerTryOn(product.id)}
+            >
+              <Camera className="h-4 w-4" />
+              Virtual Try-On
+            </Button>
           </>
         )}
-
-        {/* Secondary actions row */}
-        <div className="flex gap-2">
-          <Button variant="gold" size="sm" className="flex-1" onClick={() => triggerTryOn(product.id)}>
-            <Camera className="mr-1.5 h-4 w-4" />
-            Virtual Try-On
-          </Button>
-          <WishlistButton productId={product.id} />
-        </div>
 
         {savedPhotoUrl && (
           <InlineTryOnModal
@@ -196,15 +214,15 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
         )}
       </div>
 
-      {/* Trust Badges — compact single row */}
+      {/* Trust Badges */}
       <div className="flex gap-2 pt-2 border-t text-center">
-        <div className="flex-1 py-1.5 bg-muted rounded-md">
-          <p className="font-semibold text-[10px]">Free Shipping</p>
-          <p className="text-[9px] text-muted-foreground">Over ₦100k</p>
+        <div className="flex-1 py-2 bg-muted rounded-md">
+          <p className="font-semibold text-xs">Free Shipping</p>
+          <p className="text-[10px] text-muted-foreground">Over ₦100k</p>
         </div>
-        <div className="flex-1 py-1.5 bg-muted rounded-md">
-          <p className="font-semibold text-[10px]">30-Day Returns</p>
-          <p className="text-[9px] text-muted-foreground">Easy returns</p>
+        <div className="flex-1 py-2 bg-muted rounded-md">
+          <p className="font-semibold text-xs">30-Day Returns</p>
+          <p className="text-[10px] text-muted-foreground">Easy returns</p>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSEO } from "@/shared/hooks/useSEO";
 import { JsonLd } from "@/components/seo";
 import { useParams, Link, useNavigate } from "react-router-dom";
@@ -34,6 +34,30 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+
+/** Inline short description with read-more toggle */
+function DescriptionSnippet({ description }: { description: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const MAX = 190;
+  const needsTruncation = description.length > MAX;
+  const displayText =
+    expanded || !needsTruncation
+      ? description
+      : `${description.slice(0, MAX).trimEnd()}…`;
+  return (
+    <p className="text-sm text-muted-foreground leading-relaxed">
+      {displayText}
+      {needsTruncation && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="ml-1 text-accent font-semibold hover:underline focus:outline-none"
+        >
+          {expanded ? "Show less" : "Read more"}
+        </button>
+      )}
+    </p>
+  );
+}
 
 function ReviewStarsSummary({ productId }: { productId: string }) {
   const stats = useReviewStats(productId);
@@ -231,7 +255,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Right: Product Info — sticky on desktop */}
-            <div className="md:sticky md:top-24 md:self-start space-y-2">
+            <div className="md:sticky md:top-24 md:self-start space-y-3">
               {/* Badges */}
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary" className="text-xs">
@@ -253,21 +277,19 @@ const ProductDetail = () => {
               {/* Social Proof */}
               <SocialProofBadge productId={product.id} />
 
-              {/* Add to Cart Section (contains price, qty, Buy Now, Add to Cart, Try-On, Wishlist, trust badges) */}
+              {/* ─── Price + Stock (inside AddToCartSection, rendered first) ─── */}
+              {/* Short description — always visible, before buy buttons */}
+              {product.description && (
+                <div className="py-2 border-t border-b border-border/40">
+                  <DescriptionSnippet description={product.description} />
+                </div>
+              )}
+
+              {/* Add to Cart Section (price, lens selector, qty, Buy Now, Add to Cart, Try-On, Wishlist, trust) */}
               <AddToCartSection product={product} />
 
-              {/* Collapsible Details */}
+              {/* Specifications — collapsible */}
               <Accordion type="multiple" className="w-full">
-                {product.description && (
-                  <AccordionItem value="description">
-                    <AccordionTrigger className="text-sm font-semibold">Description</AccordionTrigger>
-                    <AccordionContent>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {product.description}
-                      </p>
-                    </AccordionContent>
-                  </AccordionItem>
-                )}
                 <AccordionItem value="specs">
                   <AccordionTrigger className="text-sm font-semibold">Specifications</AccordionTrigger>
                   <AccordionContent>
