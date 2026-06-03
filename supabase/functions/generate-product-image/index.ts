@@ -562,7 +562,6 @@ async function editImageViaGemini(
         }],
         generationConfig: {
           responseModalities: ["IMAGE", "TEXT"],
-          imageGenerationConfig: { aspectRatio: "1:1" },
         },
       }),
     }
