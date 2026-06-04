@@ -64,7 +64,7 @@ export const ImageFilterBar = ({
           <SelectItem value="all">All Products</SelectItem>
           <SelectItem value="with_images">With Images</SelectItem>
           <SelectItem value="missing_primary">Missing Primary</SelectItem>
-          <SelectItem value="complete">Complete (6/6)</SelectItem>
+          <SelectItem value="complete">Complete (5+ images)</SelectItem>
         </SelectContent>
       </Select>
       <Select

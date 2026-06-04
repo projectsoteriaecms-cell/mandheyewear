@@ -50,7 +50,7 @@ export const ImageStatsCards = ({ stats, filteredStats }: ImageStatsCardsProps) 
       <div className="bg-card rounded-lg border p-4">
         <div className="flex items-center gap-2 text-muted-foreground text-sm">
           <CheckCircle className="h-4 w-4 text-primary" />
-          Complete (6/6)
+          Complete (5+ images)
         </div>
         <p className="text-2xl font-bold mt-1 text-primary">
           {stats.isLoading ? <Loader2 className="h-5 w-5 animate-spin inline" /> : (filteredStats?.complete ?? stats.complete)}
