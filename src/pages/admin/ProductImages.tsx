@@ -35,7 +35,7 @@ type ImageFilter = "all" | "with_images" | "missing_primary" | "complete";
 type ViewMode = "grid" | "list";
 
 const ITEMS_PER_PAGE = 24;
-const MAX_ADDITIONAL = 5;
+const MAX_ADDITIONAL = 4; // Complete = primary + 4 additional = 5 total
 
 const ProductImages = () => {
   const { products, isLoading } = useAdminProducts();

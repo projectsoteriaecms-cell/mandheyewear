@@ -1,7 +1,7 @@
 /**
  * Shared brand classification for PDCA image quality gate.
- * Known brands can use text-to-image AI generation (with at least 1 reference).
- * House brands (M&H, etc.) require at least 2 reference photos first.
+ * All brands need at least 1 reference (the anchor) to start AI generation.
+ * A product is "complete" once it has 5 or more total images.
  */
 
 export const LUXURY_BRANDS = new Set([
@@ -27,10 +27,13 @@ export function isKnownBrand(brand: string | null | undefined): boolean {
 }
 
 /** Minimum reference photos required for house brand AI generation */
-export const MIN_REFERENCE_PHOTOS = 2;
+export const MIN_REFERENCE_PHOTOS = 1;
 
 /** Minimum reference photos required for known brand AI generation */
 export const MIN_REFERENCE_PHOTOS_KNOWN = 1;
+
+/** Total images at which a product gallery is considered complete */
+export const COMPLETE_IMAGE_THRESHOLD = 5;
 
 /** Returns true if the product is a house brand (M&H, unknown, or no brand) */
 export function isHouseBrand(brand: string | null | undefined): boolean {
@@ -41,11 +44,10 @@ export function isHouseBrand(brand: string | null | undefined): boolean {
 }
 
 export type ImageReadinessStatus =
-  | "complete"           // Full gallery exists
-  | "ready_ai"           // Has enough references, can generate
-  | "ready_ai_ref"       // House brand with 2+ references
-  | "needs_photos_0"     // No references uploaded yet
-  | "needs_photos_1";    // Needs more reference(s)
+  | "complete"           // 5+ images
+  | "ready_ai"           // Has anchor (known brand), can generate
+  | "ready_ai_ref"       // House brand with anchor, can generate
+  | "needs_photos_0";    // No anchor uploaded yet — must engage manually
 
 export function getImageReadiness(
   brand: string | null | undefined,
@@ -54,28 +56,18 @@ export function getImageReadiness(
 ): ImageReadinessStatus {
   const totalImages = (imageUrl ? 1 : 0) + (additionalImages?.length ?? 0);
 
-  if (totalImages >= 6) return "complete";
+  if (totalImages >= COMPLETE_IMAGE_THRESHOLD) return "complete";
 
-  const isKnown = isKnownBrand(brand);
+  if (totalImages < 1) return "needs_photos_0";
 
-  if (isKnown) {
-    // Known brands need at least 1 reference
-    if (totalImages >= MIN_REFERENCE_PHOTOS_KNOWN) return "ready_ai";
-    return "needs_photos_0";
-  }
-
-  // House brand needs at least 2 references
-  if (totalImages >= MIN_REFERENCE_PHOTOS) return "ready_ai_ref";
-  if (totalImages === 1) return "needs_photos_1";
-  return "needs_photos_0";
+  return isKnownBrand(brand) ? "ready_ai" : "ready_ai_ref";
 }
 
 export const READINESS_LABELS: Record<ImageReadinessStatus, string> = {
   complete: "Complete",
   ready_ai: "Ready for AI",
   ready_ai_ref: "Ready for AI (ref)",
-  needs_photos_0: "Needs Reference",
-  needs_photos_1: "Needs Photos (1/2)",
+  needs_photos_0: "Needs Anchor",
 };
 
 export const READINESS_COLORS: Record<ImageReadinessStatus, string> = {
@@ -83,5 +75,4 @@ export const READINESS_COLORS: Record<ImageReadinessStatus, string> = {
   ready_ai: "bg-primary/80 hover:bg-primary text-primary-foreground",
   ready_ai_ref: "bg-blue-600 hover:bg-blue-700 text-white",
   needs_photos_0: "bg-destructive hover:bg-destructive/80 text-destructive-foreground",
-  needs_photos_1: "bg-amber-500 hover:bg-amber-600 text-white",
 };
