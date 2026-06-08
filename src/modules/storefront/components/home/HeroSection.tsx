@@ -509,7 +509,7 @@ export const HeroSection = () => {
                         <p className="text-cream/40 text-[10px] font-display truncate">{product.brand}</p>
                       )}
                       <div className="mt-1 flex items-baseline gap-1.5 flex-wrap">
-                        <span className="font-display font-extrabold text-sm text-flame">
+                        <span className={`font-display font-extrabold text-sm ${hasDiscount ? "text-flame" : "text-mh-gold"}`}>
                           {formatPrice(discountedPrice)}
                         </span>
                         {hasDiscount && (
@@ -527,9 +527,9 @@ export const HeroSection = () => {
         )}
       </div>
 
-      {/* Scroll indicator */}
+      {/* Scroll indicator — hidden on mobile (nav bar covers bottom-24) */}
       <div
-        className={`absolute bottom-24 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 transition-all duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}
+        className={`hidden sm:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center gap-2 transition-all duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}
         style={{ transitionDelay: "2200ms" }}
       >
         <span className="text-xs font-display tracking-[0.2em] uppercase text-cream/30">Scroll</span>

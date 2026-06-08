@@ -454,7 +454,7 @@ const Checkout = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-8 pb-24 sm:pb-8">
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-8 pb-8">
         <Button
           variant="ghost"
           className="mb-4 sm:mb-6"
@@ -491,6 +491,17 @@ const Checkout = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          {/* Order Summary — shown at TOP on mobile so user can see what they're paying */}
+          <div className="lg:hidden">
+            <OrderSummary
+              cartItems={cartItems}
+              subtotal={cartTotal}
+              shippingFee={shippingFee}
+              shippingZoneLabel={zoneInfo.label}
+              deliveryEstimate={deliveryEstimate}
+            />
+          </div>
+
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
 
             {/* Contact Information */}
@@ -805,8 +816,8 @@ const Checkout = () => {
             </Card>
           </div>
 
-          {/* Right Column - Order Summary */}
-          <div className="lg:col-span-1">
+          {/* Right Column - Order Summary (desktop only — mobile version rendered above) */}
+          <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24">
               <OrderSummary
                 cartItems={cartItems}

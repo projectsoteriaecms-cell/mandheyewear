@@ -179,13 +179,14 @@ export const ProductCard = ({ product, onQuickView }: ProductCardProps) => {
                 <RequestItemDialog productId={product.id} productName={product.name} />
               </div>
             ) : (
-              <Button 
-                variant="gold" 
-                size="sm" 
+              <Button
+                variant="gold"
+                size="sm"
                 className="flex-1 text-xs sm:text-sm h-9 sm:h-10 touch-target"
                 onClick={handleAddToCart}
               >
                 <ShoppingCart className="h-3.5 w-3.5 mr-1" />
+                <span className="sm:hidden">Cart</span>
                 <span className="hidden sm:inline">Add to Cart</span>
               </Button>
             )}

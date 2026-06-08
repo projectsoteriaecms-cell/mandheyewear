@@ -200,7 +200,7 @@ const Eyewear = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <div className="pt-36 pb-16">
+      <div className="pt-20 sm:pt-28 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <Breadcrumb className="mb-4">
@@ -239,12 +239,12 @@ const Eyewear = () => {
             </BreadcrumbList>
           </Breadcrumb>
 
-          {/* Header */}
-          <div className="text-center mb-2">
-            <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-3">
+          {/* Header — left-aligned to match the product grid below */}
+          <div className="mb-2">
+            <h1 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-1">
               {pageTitle}
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Designer frames, lenses, accessories & more
             </p>
           </div>

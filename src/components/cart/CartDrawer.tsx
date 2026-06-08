@@ -111,8 +111,7 @@ export const CartDrawer = () => {
                 >
                   {/* Product Image */}
                   <div
-                    className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0"
-                    style={{ background: "radial-gradient(ellipse at 50% 42%, #fdfcfa 0%, #f0ede6 55%, #e4e0d8 100%)" }}
+                    className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-muted"
                   >
                     <img
                       src={
@@ -166,10 +165,10 @@ export const CartDrawer = () => {
                     ) : item.product?.item_type === "frames" ? (
                       /* Frame without lens config — invite user to add lenses */
                       <button
-                        className="mt-1.5 text-[11px] text-primary/60 hover:text-primary flex items-center gap-1"
+                        className="mt-1.5 text-xs text-primary font-medium hover:underline flex items-center gap-1 bg-primary/5 px-2 py-1 rounded-md border border-primary/15"
                         onClick={() => setEditingItemId(item.id)}
                       >
-                        <PencilSimple className="h-3 w-3" />
+                        <PencilSimple className="h-3.5 w-3.5" />
                         Add prescription lenses
                       </button>
                     ) : null}
@@ -262,7 +261,7 @@ export const CartDrawer = () => {
             <Button variant="hero" className="w-full" size="lg" asChild>
               <Link to="/checkout">Proceed to Checkout</Link>
             </Button>
-            <Button variant="outline" className="w-full" asChild>
+            <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground" asChild>
               <Link to="/shop">Continue Shopping</Link>
             </Button>
           </div>
