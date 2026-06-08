@@ -1,4 +1,4 @@
-export const WHATSAPP_NUMBER = "2349169849266";
+export const WHATSAPP_NUMBER = "2347064470221";
 
 export interface BookingWhatsAppParams {
   branchName?: string | null;
