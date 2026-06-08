@@ -163,6 +163,7 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
           <>
             {/* Buy Now — primary CTA, full width */}
             <Button
+              data-tour="pdp-buy-now"
               variant="hero"
               className="w-full gap-2"
               onClick={handleBuyNow}
@@ -194,6 +195,7 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
 
             {/* Virtual Try-On — full-width prominent feature CTA */}
             <Button
+              data-tour="pdp-tryon"
               variant="gold"
               className="w-full gap-2"
               onClick={() => triggerTryOn(product.id)}

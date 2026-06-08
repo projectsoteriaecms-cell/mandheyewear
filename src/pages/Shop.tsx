@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSEO } from "@/shared/hooks/useSEO";
 import { Link, useSearchParams } from "react-router-dom";
+import { useTour, SHOP_TOUR, TOUR_IDS, TourFloatingButton } from "@/components/tour";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
@@ -85,6 +86,17 @@ const Eyewear = () => {
     setSearchParams(searchParams);
     setCurrentPage(1);
   };
+
+  // ── Tour auto-trigger when arriving from onboarding ────────────────────────
+  const { startTour, hasSeenTour } = useTour();
+  useEffect(() => {
+    const fromOnboarding = searchParams.get("from") === "onboarding";
+    if (fromOnboarding && !hasSeenTour(TOUR_IDS.SHOP)) {
+      // Small delay so products can render first
+      const t = setTimeout(() => startTour(TOUR_IDS.SHOP, SHOP_TOUR), 900);
+      return () => clearTimeout(t);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: products, isLoading, error } = useProducts("m_and_h_fashion");
   const { data: categoryCounts = {} } = useProductCategoryCounts();
@@ -334,8 +346,10 @@ const Eyewear = () => {
                 <>
                   {viewMode === "grid" ? (
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {paginatedProducts.map((product) => (
-                        <ProductCard key={product.id} product={product} onQuickView={handleQuickView} />
+                      {paginatedProducts.map((product, idx) => (
+                        <div key={product.id} {...(idx === 0 ? { "data-tour": "shop-first-product" } : {})}>
+                          <ProductCard product={product} onQuickView={handleQuickView} />
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -372,6 +386,7 @@ const Eyewear = () => {
       />
 
       <Footer />
+      <TourFloatingButton tourId={TOUR_IDS.SHOP} tourSteps={SHOP_TOUR} />
     </div>
   );
 };

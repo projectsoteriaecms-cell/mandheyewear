@@ -8,6 +8,7 @@ import { AppRoutes } from "@/routes";
 import { InstallPrompt, OfflineIndicator } from "@/components/pwa";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { useMetaPixelPageView } from "@/shared/hooks/useMetaPixel";
+import { TourProvider, TourTooltip } from "@/components/tour";
 
 const queryClient = new QueryClient();
 
@@ -33,15 +34,18 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <OfflineIndicator />
-        <InstallPrompt variant="toast" />
-        <BrowserRouter>
-          <MetaPixelTracker />
-          <AppRoutes />
-          <WhatsAppButton />
-        </BrowserRouter>
+        <TourProvider>
+          <Toaster />
+          <Sonner />
+          <OfflineIndicator />
+          <InstallPrompt variant="toast" />
+          <TourTooltip />
+          <BrowserRouter>
+            <MetaPixelTracker />
+            <AppRoutes />
+            <WhatsAppButton />
+          </BrowserRouter>
+        </TourProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

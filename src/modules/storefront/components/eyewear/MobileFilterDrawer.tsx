@@ -21,7 +21,7 @@ export const MobileFilterDrawer = (props: MobileFilterDrawerProps) => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 lg:hidden">
+        <Button data-tour="shop-filter-btn" variant="outline" size="sm" className="gap-2 lg:hidden">
           <Faders weight="bold" className="h-4 w-4" />
           Filters & Sort
           {props.activeFilterCount > 0 && (

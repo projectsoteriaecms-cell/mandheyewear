@@ -113,9 +113,17 @@ const Signup = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-20 sm:pt-28 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md mx-auto">
-          <Card>
+          {/* Benefits strip — shown only to regular sign-ups (not invited team members) */}
+          {!invitedEmail && (
+            <div className="mb-5 flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
+              <span className="flex items-center gap-1.5">✦ Free virtual try-on</span>
+              <span className="flex items-center gap-1.5">✦ Personalised style picks</span>
+              <span className="flex items-center gap-1.5">✦ Order tracking & history</span>
+            </div>
+          )}
+          <Card data-tour="signup-form">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-display">
                 {invitedEmail ? "Complete Your Registration" : "Create Account"}

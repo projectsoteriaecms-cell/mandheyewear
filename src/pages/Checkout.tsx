@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTour, CHECKOUT_TOUR, TOUR_IDS, TourFloatingButton } from "@/components/tour";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -133,6 +134,15 @@ const Checkout = () => {
   useEffect(() => {
     loadPaystackScript().catch(console.error);
   }, []);
+
+  // Auto-trigger checkout tour once
+  const { startTour, hasSeenTour } = useTour();
+  useEffect(() => {
+    if (!hasSeenTour(TOUR_IDS.CHECKOUT) && !cartLoading && cartItems.length > 0) {
+      const t = setTimeout(() => startTour(TOUR_IDS.CHECKOUT, CHECKOUT_TOUR), 700);
+      return () => clearTimeout(t);
+    }
+  }, [cartLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!hasTrackedCheckout && cartItems.length > 0 && !cartLoading && isAuthenticated) {
@@ -492,7 +502,7 @@ const Checkout = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Order Summary — shown at TOP on mobile so user can see what they're paying */}
-          <div className="lg:hidden">
+          <div data-tour="checkout-order-summary" className="lg:hidden">
             <OrderSummary
               cartItems={cartItems}
               subtotal={cartTotal}
@@ -505,7 +515,7 @@ const Checkout = () => {
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
 
             {/* Contact Information */}
-            <Card className="overflow-hidden">
+            <Card data-tour="checkout-contact" className="overflow-hidden">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-2xl">
                   <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold shrink-0">
@@ -786,6 +796,7 @@ const Checkout = () => {
                 <PriceLockBadge />
 
                 <Button
+                  data-tour="checkout-pay-btn"
                   variant="hero"
                   size="lg"
                   className="w-full"
@@ -818,7 +829,7 @@ const Checkout = () => {
 
           {/* Right Column - Order Summary (desktop only — mobile version rendered above) */}
           <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-24">
+            <div data-tour="checkout-order-summary" className="sticky top-24">
               <OrderSummary
                 cartItems={cartItems}
                 subtotal={cartTotal}
@@ -831,6 +842,7 @@ const Checkout = () => {
         </div>
       </main>
 
+      <TourFloatingButton tourId={TOUR_IDS.CHECKOUT} tourSteps={CHECKOUT_TOUR} />
       <Footer />
 
       {/* Inline prescription dialog — so user never has to leave checkout */}

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useTour, CART_TOUR, TOUR_IDS } from "@/components/tour";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
@@ -34,6 +35,16 @@ export const CartDrawer = () => {
   const { isAuthenticated } = useAuth();
   const { activePrescriptions } = usePrescriptions();
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const { startTour, hasSeenTour } = useTour();
+
+  // Auto-trigger cart tour the first time the drawer is opened with items
+  useEffect(() => {
+    if (sheetOpen && cartItems.length > 0 && !hasSeenTour(TOUR_IDS.CART)) {
+      const t = setTimeout(() => startTour(TOUR_IDS.CART, CART_TOUR), 600);
+      return () => clearTimeout(t);
+    }
+  }, [sheetOpen, cartItems.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const editingItem = editingItemId ? cartItems.find(i => i.id === editingItemId) : null;
 
@@ -43,7 +54,7 @@ export const CartDrawer = () => {
   const hasValidRx = activePrescriptions.length > 0;
 
   return (
-    <Sheet>
+    <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <Tooltip>
         <TooltipTrigger asChild>
           <SheetTrigger asChild>
@@ -104,9 +115,10 @@ export const CartDrawer = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {cartItems.map((item) => (
+              {cartItems.map((item, idx) => (
                 <div
                   key={item.id}
+                  {...(idx === 0 ? { "data-tour": "cart-item" } : {})}
                   className="flex gap-4 p-4 border rounded-lg"
                 >
                   {/* Product Image */}
@@ -165,6 +177,7 @@ export const CartDrawer = () => {
                     ) : item.product?.item_type === "frames" ? (
                       /* Frame without lens config — invite user to add lenses */
                       <button
+                        data-tour="cart-lens-upsell"
                         className="mt-1.5 text-xs text-primary font-medium hover:underline flex items-center gap-1 bg-primary/5 px-2 py-1 rounded-md border border-primary/15"
                         onClick={() => setEditingItemId(item.id)}
                       >
@@ -258,7 +271,7 @@ export const CartDrawer = () => {
               </div>
             )}
 
-            <Button variant="hero" className="w-full" size="lg" asChild>
+            <Button data-tour="cart-checkout-btn" variant="hero" className="w-full" size="lg" asChild>
               <Link to="/checkout">Proceed to Checkout</Link>
             </Button>
             <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground" asChild>

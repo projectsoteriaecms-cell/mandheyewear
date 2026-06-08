@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSEO } from "@/shared/hooks/useSEO";
 import { JsonLd } from "@/components/seo";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useTour, PRODUCT_TOUR, TOUR_IDS, TourFloatingButton } from "@/components/tour";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -108,10 +109,17 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { modalOpen, targetProductId, savedPhotoUrl, triggerTryOn, setModalOpen } = useInlineTryOn();
   const { track } = useTrackActivity();
+  const { startTour, hasSeenTour } = useTour();
 
   useEffect(() => {
     if (product && !isLoading) {
       setCurrentProduct({ id: product.id, name: product.name });
+
+      // Auto-trigger product tour once per device
+      if (!hasSeenTour(TOUR_IDS.PRODUCT)) {
+        const t = setTimeout(() => startTour(TOUR_IDS.PRODUCT, PRODUCT_TOUR), 1000);
+        return () => clearTimeout(t);
+      }
       trackViewContent({
         content_ids: [product.id],
         content_name: product.name,
@@ -242,7 +250,7 @@ const ProductDetail = () => {
           {/* Product Hero Grid — Amazon-style above-the-fold */}
           <div className="grid md:grid-cols-2 gap-5 md:gap-6 lg:gap-8 mb-10 lg:mb-16">
             {/* Left: Image Carousel — near full-bleed on mobile */}
-            <div>
+            <div data-tour="pdp-gallery">
               <ProductImageGallery
                 mainImage={product.image_url}
                 additionalImages={product.additional_images}
@@ -280,7 +288,7 @@ const ProductDetail = () => {
               {/* ─── Price + Stock (inside AddToCartSection, rendered first) ─── */}
               {/* Short description — always visible, before buy buttons */}
               {product.description && (
-                <div className="py-2 border-t border-b border-border/40">
+                <div data-tour="pdp-description" className="py-2 border-t border-b border-border/40">
                   <DescriptionSnippet description={product.description} />
                 </div>
               )}
@@ -342,6 +350,7 @@ const ProductDetail = () => {
         isLoading={addToCart.isPending}
       />
 
+      <TourFloatingButton tourId={TOUR_IDS.PRODUCT} tourSteps={PRODUCT_TOUR} />
       <Footer />
 
       {savedPhotoUrl && (

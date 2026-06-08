@@ -34,7 +34,7 @@ export const ShopCategoryBar = ({
   );
 
   return (
-    <div className="flex justify-center gap-6 lg:gap-8 overflow-x-auto py-6 px-4 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+    <div data-tour="shop-category-bar" className="flex justify-center gap-6 lg:gap-8 overflow-x-auto py-6 px-4 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
       {visibleCategories.map((cat) => {
         const Icon = cat.icon;
         const isActive = activeCategory === cat.value;
