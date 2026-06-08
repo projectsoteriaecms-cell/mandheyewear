@@ -9,6 +9,7 @@ import { InstallPrompt, OfflineIndicator } from "@/components/pwa";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { useMetaPixelPageView } from "@/shared/hooks/useMetaPixel";
 import { TourProvider, TourTooltip } from "@/components/tour";
+import { FeedbackWidget } from "@/components/feedback";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => {
           <OfflineIndicator />
           <InstallPrompt variant="toast" />
           <TourTooltip />
+          <FeedbackWidget />
           <BrowserRouter>
             <MetaPixelTracker />
             <AppRoutes />

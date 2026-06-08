@@ -40,6 +40,7 @@ const Orders = lazyRetry(() => import("@/pages/admin/Orders"));
 const PromoBanner = lazyRetry(() => import("@/pages/admin/PromoBanner"));
 const SlideshowManager = lazyRetry(() => import("@/pages/admin/SlideshowManager"));
 const SystemStatus = lazyRetry(() => import("@/pages/admin/SystemStatus"));
+const QAFeedback = lazyRetry(() => import("@/pages/admin/QAFeedback"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -76,4 +77,5 @@ export const adminRoutes = [
   <Route key="/admin/promo-banner" path="/admin/promo-banner" element={withSuspense(PromoBanner)} />,
   <Route key="/admin/slideshow" path="/admin/slideshow" element={withSuspense(SlideshowManager)} />,
   <Route key="/admin/system-status" path="/admin/system-status" element={withSuspense(SystemStatus)} />,
+  <Route key="/admin/qa-feedback" path="/admin/qa-feedback" element={withSuspense(QAFeedback)} />,
 ];
