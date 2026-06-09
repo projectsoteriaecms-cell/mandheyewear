@@ -22,7 +22,7 @@ const EyeCare = () => {
       title: "Comprehensive Eye Exams",
       description: "Complete evaluation of your eye health and vision, including refraction, eye pressure testing, and retinal examination. Recommended annually for adults.",
       duration: "45-60 minutes",
-      price: "From ₦25,000"
+      price: "From ₦20,000"
     },
     {
       icon: Activity,
@@ -65,9 +65,9 @@ const EyeCare = () => {
     "Board-Certified Ophthalmologists & Optometrists",
     "State-of-the-Art Diagnostic Equipment",
     "Same-Day Emergency Eye Care",
-    "HMO & Health Insurance Accepted",
     "Convenient Online Booking",
-    "Flexible Appointment Scheduling"
+    "Flexible Appointment Scheduling",
+    "Transparent Pricing & Payment Plans"
   ];
 
   const servicesJsonLd = {
@@ -169,44 +169,24 @@ const EyeCare = () => {
             </CardContent>
           </Card>
 
-          {/* Insurance Info */}
-          <div className="grid md:grid-cols-2 gap-6 mb-16">
-            <Card>
-              <CardContent className="p-8 space-y-4">
-                <h3 className="text-2xl font-display font-bold text-foreground">
-                  Insurance & Payment
-                </h3>
-                <p className="text-muted-foreground">
-                  We accept most major HMO and health insurance plans. 
-                  Our team will work with you to maximize your benefits and minimize out-of-pocket costs.
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Flexible payment plans available</li>
-                  <li>• Major HMO plans accepted</li>
-                  <li>• Transparent pricing with no hidden fees</li>
-                  <li>• Insurance verification before your visit</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-8 space-y-4">
-                <h3 className="text-2xl font-display font-bold text-foreground">
-                  What to Expect
-                </h3>
-                <p className="text-muted-foreground">
-                  Your visit begins with a thorough assessment of your vision and eye health. 
-                  Our specialists use advanced diagnostic technology to ensure accurate results.
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Detailed patient history review</li>
-                  <li>• Comprehensive eye examination</li>
-                  <li>• Personalized treatment recommendations</li>
-                  <li>• Prescription updates when needed</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
+          {/* What to Expect */}
+          <Card className="mb-16">
+            <CardContent className="p-8 space-y-4">
+              <h3 className="text-2xl font-display font-bold text-foreground">
+                What to Expect
+              </h3>
+              <p className="text-muted-foreground">
+                Your visit begins with a thorough assessment of your vision and eye health.
+                Our specialists use advanced diagnostic technology to ensure accurate results.
+              </p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• Detailed patient history review</li>
+                <li>• Comprehensive eye examination</li>
+                <li>• Personalized treatment recommendations</li>
+                <li>• Prescription updates when needed</li>
+              </ul>
+            </CardContent>
+          </Card>
 
           {/* CTA */}
           <Card className="gradient-hero overflow-hidden">
