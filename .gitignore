@@ -30,3 +30,12 @@ dist-ssr
 
 # Word temp files
 ~$*
+.vercel
+
+# Migration / upload utilities (contain service keys, not for repo)
+products_export.json
+import_products.py
+upload_images_new.py
+frame_images_converted/
+frame_images_converted.zip
+supabase/.temp/
