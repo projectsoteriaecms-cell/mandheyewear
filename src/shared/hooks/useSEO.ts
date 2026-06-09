@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-const BASE_URL = "https://soteriaeyeclinic.lovable.app";
+const BASE_URL = "https://mandheyewear.com";
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
 
 interface SEOProps {

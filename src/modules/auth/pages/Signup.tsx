@@ -12,7 +12,9 @@ import { useToast } from "@/shared/hooks/use-toast";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
+import { GoogleLogo } from "@phosphor-icons/react";
 import type { AppRole } from "../hooks/useUserRole";
 
 const PHONE_REGEX = /^\+?[0-9\s\-()]{7,20}$/;
@@ -32,10 +34,22 @@ const Signup = () => {
   const [dataConsent, setDataConsent] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [consentError, setConsentError] = useState("");
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { signUp } = useAuth();
   const { toast } = useToast();
   const { trackCompleteRegistration } = useMetaPixel();
   const navigate = useNavigate();
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (error) {
+      setIsGoogleLoading(false);
+      toast({ title: "Google Sign In Failed", description: error.message, variant: "destructive" });
+    }
+  };
 
   useEffect(() => {
     if (invitedEmail) setEmail(invitedEmail);
@@ -135,6 +149,35 @@ const Signup = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Google sign-up — only for regular (non-invited) users */}
+              {!invitedEmail && (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleGoogleSignIn}
+                    disabled={isLoading || isGoogleLoading}
+                  >
+                    {isGoogleLoading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <GoogleLogo weight="bold" className="mr-2 h-4 w-4" />
+                    )}
+                    Continue with Google
+                  </Button>
+
+                  <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-2 text-muted-foreground">Or sign up with email</span>
+                    </div>
+                  </div>
+                </>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name</Label>

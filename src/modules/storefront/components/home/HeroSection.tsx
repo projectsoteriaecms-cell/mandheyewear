@@ -7,16 +7,20 @@ import heroEyewear from "@/assets/hero-eyewear.jpg";
 
 /** Single glasses frame with two lens holes for the "OO" in OUTLOOK */
 const GlassesOO = ({ src, className = "" }: { src: string; className?: string }) => (
-  <span className={`relative inline-flex items-center align-middle border-[2.5px] border-mh-gold/60 rounded-[999px] px-[0.08em] py-[0.06em] bg-transparent shadow-[0_0_12px_hsl(var(--mh-gold)/0.15)] ${className}`}>
+  <span
+    aria-label="OO"
+    role="img"
+    className={`relative inline-flex items-center align-middle border-[2.5px] border-mh-gold/60 rounded-[999px] px-[0.08em] py-[0.06em] bg-transparent shadow-[0_0_12px_hsl(var(--mh-gold)/0.15)] ${className}`}
+  >
     {/* Left lens */}
     <span className="relative w-[0.48em] h-[0.48em] rounded-full overflow-hidden">
-      <img src={src} alt="Left lens" className="absolute inset-0 w-full h-full object-cover" />
+      <img src={src} alt="" className="absolute inset-0 w-full h-full object-cover" />
     </span>
     {/* Bridge */}
     <span className="w-[0.08em] h-[0.06em] rounded-sm bg-mh-gold/50 mx-[0.02em]" />
     {/* Right lens */}
     <span className="relative w-[0.48em] h-[0.48em] rounded-full overflow-hidden">
-      <img src={src} alt="Right lens" className="absolute inset-0 w-full h-full object-cover" />
+      <img src={src} alt="" className="absolute inset-0 w-full h-full object-cover" />
     </span>
   </span>
 );

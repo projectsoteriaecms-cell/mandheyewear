@@ -14,7 +14,7 @@ const detectEnvironment = (): "production" | "preview" | "local" => {
   if (typeof window === "undefined") return "production";
   const host = window.location.hostname;
   if (host === "localhost" || host.startsWith("127.")) return "local";
-  if (host.includes("lovable.app") || host.includes("vercel.app")) return "preview";
+  if (host.includes("vercel.app")) return "preview";
   return "production";
 };
 

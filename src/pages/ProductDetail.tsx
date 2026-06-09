@@ -176,7 +176,7 @@ const ProductDetail = () => {
       price: product.price,
       priceCurrency: "NGN",
       availability: "https://schema.org/InStock",
-      url: `https://soteriaeyeclinic.lovable.app/product/${product.id}`,
+      url: `https://mandheyewear.com/product/${product.id}`,
     },
   }) : null, [product]);
 

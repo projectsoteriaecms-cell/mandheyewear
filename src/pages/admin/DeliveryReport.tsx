@@ -348,7 +348,7 @@ const DeliveryReport = () => {
                 ["Google Search Console", "HTML verification code", "Google cannot crawl/index the site properly"],
                 ["TikTok Pixel", "TikTok Business account + Pixel ID", "No TikTok ad tracking"],
                 ["Snap AR Lenses", "Snap developer account + Lens Studio 3D models", "Live AR try-on mode shows demo only"],
-                ["Custom Domain", "Domain purchase + DNS configuration", "Currently on soteriaeyeclinic.lovable.app"],
+                ["Custom Domain", "Domain purchase + DNS configuration", "Live on mandheyewear.com ✓"],
                 ["Product Photography", "Photos for ~1,000 products", "Most product pages show placeholder images"],
                 ["Initial Stock Count", "Stock quantities from all 5 branches", "Inventory dashboard shows mostly zeros"],
                 ["Supplier Data", "Supplier names, contacts, payment terms", "Cannot create purchase orders without suppliers"],

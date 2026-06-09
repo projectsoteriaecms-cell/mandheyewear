@@ -34,8 +34,8 @@ const Index = () => {
         "@context": "https://schema.org",
         "@type": "Organization",
         name: "M&H Eyewear",
-        url: "https://soteriaeyeclinic.lovable.app",
-        logo: "https://soteriaeyeclinic.lovable.app/lovable-uploads/c6bc733f-cada-4635-b01a-c1aa00c8ba32.png",
+        url: "https://mandheyewear.com",
+        logo: "https://mandheyewear.com/og-image.png",
         description: "Premium eye care services and designer eyewear in Nigeria.",
         contactPoint: { "@type": "ContactPoint", telephone: "08063363506", contactType: "customer service" },
       }} />
