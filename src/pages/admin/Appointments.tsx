@@ -6,7 +6,7 @@ import {
   AppointmentStats,
   AppointmentFilters,
   AppointmentsTable,
-} from "./appointments";
+} from "./appointments/index";
 
 const AdminAppointments = () => {
   const [searchQuery, setSearchQuery] = useState("");

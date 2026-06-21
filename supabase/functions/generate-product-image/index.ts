@@ -822,11 +822,37 @@ serve(async (req) => {
     // ── Single-shot regeneration mode ──
     if (productId && shotSlug) {
       console.log(`🔄 Regenerating single shot "${shotSlug}" for product: ${productId}`);
-      const { data: product, error: fetchErr } = await supabase
-        .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color, total_width, lens_width, lens_height, bridge_size, temple_length)")
-        .eq("id", productId)
-        .single();
+
+      let product;
+      try {
+        // Query product and frame_attributes separately to avoid schema cache issues
+        const { data: prod, error: fetchErr } = await supabase
+          .from("products")
+          .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked")
+          .eq("id", productId)
+          .single();
+
+        if (fetchErr || !prod) {
+          return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
+        }
+
+        product = prod;
+
+        // Query frame_attributes separately
+        if (product.item_type === "frames") {
+          const { data: frameAttrs } = await supabase
+            .from("frame_attributes")
+            .select("model_code, frame_shape, frame_material, front_color, total_width, lens_width, lens_height, bridge_size, temple_length")
+            .eq("product_id", productId)
+            .single();
+
+          if (frameAttrs) {
+            Object.assign(product, frameAttrs);
+          }
+        }
+      } catch (err) {
+        return json({ error: "Product fetch failed: " + (err instanceof Error ? err.message : String(err)) }, 500);
+      }
 
       // Anchor lock: skip hero gracefully — treat as success so bulk loops continue
       if (shotSlug === "hero" && product?.primary_image_locked) {
@@ -843,10 +869,10 @@ serve(async (req) => {
         });
       }
 
-      if (fetchErr || !product) {
-        return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
+      if (!product) {
+        return json({ error: "Product not found" }, 404);
       }
-      // Flatten frame_attributes into product for prompt building
+      // Frame attributes already flattened into product above
       const fa = Array.isArray(product.frame_attributes) ? product.frame_attributes[0] : product.frame_attributes;
       if (fa) { Object.assign(product, { model_code: fa.model_code, frame_shape: fa.frame_shape, frame_material: fa.frame_material, total_width: fa.total_width, lens_width: fa.lens_width, lens_height: fa.lens_height, bridge_size: fa.bridge_size, temple_length: fa.temple_length }); }
 
@@ -936,17 +962,37 @@ serve(async (req) => {
     // ── Single product full regeneration mode ──
     if (productId) {
       console.log(`🔄 Regenerating images for product: ${productId}`);
-      const { data: product, error: fetchErr } = await supabase
-        .from("products")
-        .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color, total_width, lens_width, lens_height, bridge_size, temple_length)")
-        .eq("id", productId)
-        .single();
 
-      if (fetchErr || !product) {
-        return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
+      let product;
+      try {
+        // Query product and frame_attributes separately to avoid schema cache issues
+        const { data: prod, error: fetchErr } = await supabase
+          .from("products")
+          .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked")
+          .eq("id", productId)
+          .single();
+
+        if (fetchErr || !prod) {
+          return json({ error: "Product not found: " + (fetchErr?.message || "unknown") }, 404);
+        }
+
+        product = prod;
+
+        // Query frame_attributes separately
+        if (product.item_type === "frames") {
+          const { data: frameAttrs } = await supabase
+            .from("frame_attributes")
+            .select("model_code, frame_shape, frame_material, front_color, total_width, lens_width, lens_height, bridge_size, temple_length")
+            .eq("product_id", productId)
+            .single();
+
+          if (frameAttrs) {
+            Object.assign(product, frameAttrs);
+          }
+        }
+      } catch (err) {
+        return json({ error: "Product fetch failed: " + (err instanceof Error ? err.message : String(err)) }, 500);
       }
-      const fa2 = Array.isArray(product.frame_attributes) ? product.frame_attributes[0] : product.frame_attributes;
-      if (fa2) { Object.assign(product, { model_code: fa2.model_code, frame_shape: fa2.frame_shape, frame_material: fa2.frame_material, total_width: fa2.total_width, lens_width: fa2.lens_width, lens_height: fa2.lens_height, bridge_size: fa2.bridge_size, temple_length: fa2.temple_length }); }
 
       // PDCA gate: ALL products need reference photos for frames
       const isFrame = product.item_type === "frames";
@@ -1012,7 +1058,7 @@ serve(async (req) => {
     const CANDIDATE_POOL = Math.max(limit * 10, 50);
     let productQuery = supabase
       .from("products")
-      .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked, frame_attributes(model_code, frame_shape, frame_material, front_color, total_width, lens_width, lens_height, bridge_size, temple_length)")
+      .select("id, name, brand, color, material, item_type, style, sku, image_url, additional_images, gender, primary_image_locked")
       .eq("is_active", true)
       .not("image_url", "is", null)
       .neq("image_url", "")
@@ -1046,10 +1092,19 @@ serve(async (req) => {
       return pa - pb;
     });
 
-    // Flatten frame_attributes for each product
+    // Query frame_attributes separately for frame products
     for (const p of products) {
-      const fa = Array.isArray(p.frame_attributes) ? p.frame_attributes[0] : p.frame_attributes;
-      if (fa) { Object.assign(p, { model_code: fa.model_code, frame_shape: fa.frame_shape, frame_material: fa.frame_material, total_width: fa.total_width, lens_width: fa.lens_width, lens_height: fa.lens_height, bridge_size: fa.bridge_size, temple_length: fa.temple_length }); }
+      if (p.item_type === "frames") {
+        const { data: frameAttrs } = await supabase
+          .from("frame_attributes")
+          .select("model_code, frame_shape, frame_material, front_color, total_width, lens_width, lens_height, bridge_size, temple_length")
+          .eq("product_id", p.id)
+          .single();
+
+        if (frameAttrs) {
+          Object.assign(p, frameAttrs);
+        }
+      }
     }
 
     const results: Array<{ productId: string; sku: string; name: string; brand: string | null; success: boolean; error?: string; shots?: number; skipped?: boolean }> = [];

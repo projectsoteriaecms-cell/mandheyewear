@@ -41,6 +41,10 @@ const PromoBanner = lazyRetry(() => import("@/pages/admin/PromoBanner"));
 const SlideshowManager = lazyRetry(() => import("@/pages/admin/SlideshowManager"));
 const SystemStatus = lazyRetry(() => import("@/pages/admin/SystemStatus"));
 const QAFeedback = lazyRetry(() => import("@/pages/admin/QAFeedback"));
+const CrmCustomers = lazyRetry(() => import("@/pages/admin/crm/Customers"));
+const CrmSegments = lazyRetry(() => import("@/pages/admin/crm/Segments"));
+const CrmCampaigns = lazyRetry(() => import("@/pages/admin/crm/Campaigns"));
+const CrmAnalytics = lazyRetry(() => import("@/pages/admin/crm/Analytics"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -78,4 +82,8 @@ export const adminRoutes = [
   <Route key="/admin/slideshow" path="/admin/slideshow" element={withSuspense(SlideshowManager)} />,
   <Route key="/admin/system-status" path="/admin/system-status" element={withSuspense(SystemStatus)} />,
   <Route key="/admin/qa-feedback" path="/admin/qa-feedback" element={withSuspense(QAFeedback)} />,
+  <Route key="/admin/crm/customers" path="/admin/crm/customers" element={withSuspense(CrmCustomers)} />,
+  <Route key="/admin/crm/segments" path="/admin/crm/segments" element={withSuspense(CrmSegments)} />,
+  <Route key="/admin/crm/campaigns" path="/admin/crm/campaigns" element={withSuspense(CrmCampaigns)} />,
+  <Route key="/admin/crm/analytics" path="/admin/crm/analytics" element={withSuspense(CrmAnalytics)} />,
 ];

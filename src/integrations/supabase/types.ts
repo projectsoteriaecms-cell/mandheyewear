@@ -14,6 +14,543 @@ export type Database = {
   }
   public: {
     Tables: {
+      crm_campaign_runs: {
+        Row: {
+          bounced_count: number
+          campaign_id: string
+          clicked_count: number
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          opened_count: number
+          sent_count: number
+          started_at: string
+          total_recipients: number
+        }
+        Insert: {
+          bounced_count?: number
+          campaign_id: string
+          clicked_count?: number
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          opened_count?: number
+          sent_count?: number
+          started_at?: string
+          total_recipients?: number
+        }
+        Update: {
+          bounced_count?: number
+          campaign_id?: string
+          clicked_count?: number
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          opened_count?: number
+          sent_count?: number
+          started_at?: string
+          total_recipients?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_campaign_runs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "crm_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_campaign_sent_ledger: {
+        Row: {
+          campaign_run_id: string
+          contact_email: string
+          id: string
+          resend_message_id: string | null
+          sent_at: string
+        }
+        Insert: {
+          campaign_run_id: string
+          contact_email: string
+          id?: string
+          resend_message_id?: string | null
+          sent_at?: string
+        }
+        Update: {
+          campaign_run_id?: string
+          contact_email?: string
+          id?: string
+          resend_message_id?: string | null
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_campaign_sent_ledger_campaign_run_id_fkey"
+            columns: ["campaign_run_id"]
+            isOneToOne: false
+            referencedRelation: "crm_campaign_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_campaign_whatsapp_ledger: {
+        Row: {
+          campaign_id: string
+          contact_phone: string
+          created_at: string
+          error_message: string | null
+          id: string
+          status: string
+          twilio_message_sid: string | null
+        }
+        Insert: {
+          campaign_id: string
+          contact_phone: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          status?: string
+          twilio_message_sid?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          contact_phone?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          status?: string
+          twilio_message_sid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_campaign_whatsapp_ledger_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "crm_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_campaigns: {
+        Row: {
+          active_run_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          preview_text: string | null
+          scheduled_at: string | null
+          segment_id: string | null
+          send_heartbeat_at: string | null
+          started_at: string | null
+          status: string
+          subject_line: string | null
+          template_id: string | null
+          updated_at: string
+          whatsapp_body: string | null
+          whatsapp_completed_at: string | null
+          whatsapp_content_sid: string | null
+          whatsapp_enabled: boolean
+          whatsapp_failed_count: number
+          whatsapp_heartbeat_at: string | null
+          whatsapp_sent_count: number
+        }
+        Insert: {
+          active_run_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          preview_text?: string | null
+          scheduled_at?: string | null
+          segment_id?: string | null
+          send_heartbeat_at?: string | null
+          started_at?: string | null
+          status?: string
+          subject_line?: string | null
+          template_id?: string | null
+          updated_at?: string
+          whatsapp_body?: string | null
+          whatsapp_completed_at?: string | null
+          whatsapp_content_sid?: string | null
+          whatsapp_enabled?: boolean
+          whatsapp_failed_count?: number
+          whatsapp_heartbeat_at?: string | null
+          whatsapp_sent_count?: number
+        }
+        Update: {
+          active_run_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          preview_text?: string | null
+          scheduled_at?: string | null
+          segment_id?: string | null
+          send_heartbeat_at?: string | null
+          started_at?: string | null
+          status?: string
+          subject_line?: string | null
+          template_id?: string | null
+          updated_at?: string
+          whatsapp_body?: string | null
+          whatsapp_completed_at?: string | null
+          whatsapp_content_sid?: string | null
+          whatsapp_enabled?: boolean
+          whatsapp_failed_count?: number
+          whatsapp_heartbeat_at?: string | null
+          whatsapp_sent_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_campaigns_active_run_id_fkey"
+            columns: ["active_run_id"]
+            isOneToOne: false
+            referencedRelation: "crm_campaign_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_campaigns_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "crm_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_daily_send_quota: {
+        Row: {
+          date: string
+          quota_limit: number
+          sent_count: number
+          updated_at: string
+        }
+        Insert: {
+          date?: string
+          quota_limit?: number
+          sent_count?: number
+          updated_at?: string
+        }
+        Update: {
+          date?: string
+          quota_limit?: number
+          sent_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_email_events: {
+        Row: {
+          campaign_id: string | null
+          campaign_run_id: string | null
+          contact_email: string | null
+          event_type: string
+          id: string
+          link_clicked: string | null
+          metadata: Json | null
+          occurred_at: string
+          provider_event_id: string | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          campaign_run_id?: string | null
+          contact_email?: string | null
+          event_type: string
+          id?: string
+          link_clicked?: string | null
+          metadata?: Json | null
+          occurred_at?: string
+          provider_event_id?: string | null
+        }
+        Update: {
+          campaign_id?: string | null
+          campaign_run_id?: string | null
+          contact_email?: string | null
+          event_type?: string
+          id?: string
+          link_clicked?: string | null
+          metadata?: Json | null
+          occurred_at?: string
+          provider_event_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_email_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "crm_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_email_events_campaign_run_id_fkey"
+            columns: ["campaign_run_id"]
+            isOneToOne: false
+            referencedRelation: "crm_campaign_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_email_preference_categories: {
+        Row: {
+          description: string | null
+          id: string
+          is_opt_in_default: boolean
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          description?: string | null
+          id: string
+          is_opt_in_default?: boolean
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          is_opt_in_default?: boolean
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      crm_email_preferences: {
+        Row: {
+          category_id: string
+          email: string
+          opted_in: boolean
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          email: string
+          opted_in?: boolean
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          email?: string
+          opted_in?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_email_preferences_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "crm_email_preference_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_preference_tokens: {
+        Row: {
+          created_at: string
+          email: string
+          refreshed_at: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          refreshed_at?: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          refreshed_at?: string
+          token?: string
+        }
+        Relationships: []
+      }
+      crm_reengagement_triggers: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          last_campaign_id: string | null
+          last_contact_count: number
+          last_run_at: string | null
+          name: string
+          template_subject: string | null
+          threshold_days: number
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_campaign_id?: string | null
+          last_contact_count?: number
+          last_run_at?: string | null
+          name: string
+          template_subject?: string | null
+          threshold_days?: number
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_campaign_id?: string | null
+          last_contact_count?: number
+          last_run_at?: string | null
+          name?: string
+          template_subject?: string | null
+          threshold_days?: number
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_reengagement_triggers_last_campaign_id_fkey"
+            columns: ["last_campaign_id"]
+            isOneToOne: false
+            referencedRelation: "crm_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_segment_eval_queue: {
+        Row: {
+          attempt_count: number
+          completed_at: string | null
+          enqueued_at: string
+          last_error: string | null
+          max_attempts: number
+          next_retry_at: string | null
+          segment_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          completed_at?: string | null
+          enqueued_at?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_retry_at?: string | null
+          segment_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          completed_at?: string | null
+          enqueued_at?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_retry_at?: string | null
+          segment_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_segment_eval_queue_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: true
+            referencedRelation: "crm_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_segments: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_dynamic: boolean
+          last_computed_at: string | null
+          last_evaluated_at: string | null
+          member_count: number
+          name: string
+          rules_json: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_dynamic?: boolean
+          last_computed_at?: string | null
+          last_evaluated_at?: string | null
+          member_count?: number
+          name: string
+          rules_json?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_dynamic?: boolean
+          last_computed_at?: string | null
+          last_evaluated_at?: string | null
+          member_count?: number
+          name?: string
+          rules_json?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_service_health: {
+        Row: {
+          failure_count: number
+          last_failure_at: string | null
+          service_name: string
+          state: string
+          tripped_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          failure_count?: number
+          last_failure_at?: string | null
+          service_name: string
+          state?: string
+          tripped_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          failure_count?: number
+          last_failure_at?: string | null
+          service_name?: string
+          state?: string
+          tripped_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_warm_up_schedule: {
+        Row: {
+          daily_limit: number
+          day_from: number
+          day_to: number
+          id: number
+        }
+        Insert: {
+          daily_limit: number
+          day_from: number
+          day_to: number
+          id?: number
+        }
+        Update: {
+          daily_limit?: number
+          day_from?: number
+          day_to?: number
+          id?: number
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           branch_id: string
@@ -2275,9 +2812,305 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      crm_contacts: {
+        Row: {
+          email: string | null
+          first_seen: string | null
+          frame_preferences: Json | null
+          full_name: string | null
+          is_newsletter_subscriber: boolean | null
+          is_registered: boolean | null
+          is_suppressed: boolean | null
+          is_vto_lead: boolean | null
+          last_activity_at: string | null
+          last_frame_name: string | null
+          last_order_at: string | null
+          last_try_on_image_url: string | null
+          lifetime_value: number | null
+          marketing_consent: boolean | null
+          newsletter_active: boolean | null
+          order_count: number | null
+          phone: string | null
+          prescription_on_file: boolean | null
+          profile_id: string | null
+          try_on_count: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      crm_apply_email_preferences: {
+        Args: { p_email: string; p_prefs: Json; p_unsubscribe_all?: boolean }
+        Returns: undefined
+      }
+      crm_build_trigger_rules: {
+        Args: { p_threshold_days: number; p_type: string }
+        Returns: Json
+      }
+      crm_build_where_clause: { Args: { p_node: Json }; Returns: string }
+      crm_check_and_claim_send_quota: {
+        Args: { p_count: number }
+        Returns: {
+          allowed: boolean
+          quota_limit: number
+          remaining: number
+          today_sent: number
+        }[]
+      }
+      crm_claim_campaign_for_send: {
+        Args: { p_campaign_id?: string }
+        Returns: {
+          campaign_id: string
+          campaign_name: string
+          is_new_run: boolean
+          rules_json: Json
+          run_id: string
+          segment_id: string
+          subject_line: string
+          template_id: string
+        }[]
+      }
+      crm_claim_segment_eval_job: {
+        Args: never
+        Returns: {
+          attempt_count: number
+          completed_at: string | null
+          enqueued_at: string
+          last_error: string | null
+          max_attempts: number
+          next_retry_at: string | null
+          segment_id: string
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "crm_segment_eval_queue"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      crm_cohort_grid: {
+        Args: { p_months?: number }
+        Returns: {
+          active_count: number
+          cohort_month: string
+          cohort_size: number
+          months_after: number
+          retention_pct: number
+        }[]
+      }
+      crm_complete_campaign_run: {
+        Args: { p_campaign_id: string; p_run_id: string }
+        Returns: undefined
+      }
+      crm_complete_whatsapp: {
+        Args: { p_campaign_id: string }
+        Returns: undefined
+      }
+      crm_contact_stats: {
+        Args: never
+        Returns: {
+          paying_customers: number
+          registered: number
+          subscribers: number
+          suppressed: number
+          total_contacts: number
+          vto_leads: number
+        }[]
+      }
+      crm_count_segment_members: {
+        Args: { p_rules_json: Json }
+        Returns: number
+      }
+      crm_count_whatsapp_recipients: {
+        Args: { p_rules_json: Json }
+        Returns: number
+      }
+      crm_enqueue_segment_eval: {
+        Args: { p_segment_id: string }
+        Returns: string
+      }
+      crm_ensure_preference_token: {
+        Args: { p_email: string }
+        Returns: string
+      }
+      crm_eval_segment_rules: {
+        Args: { p_rules: Json }
+        Returns: {
+          email: string
+          first_seen: string
+          full_name: string
+          is_newsletter_subscriber: boolean
+          is_registered: boolean
+          is_suppressed: boolean
+          is_vto_lead: boolean
+          last_activity_at: string
+          last_frame_name: string
+          last_order_at: string
+          lifetime_value: number
+          marketing_consent: boolean
+          newsletter_active: boolean
+          order_count: number
+          phone: string
+          prescription_on_file: boolean
+          try_on_count: number
+        }[]
+      }
+      crm_fire_reengagement_trigger: {
+        Args: { p_trigger_id: string }
+        Returns: {
+          campaign_id: string
+          contact_count: number
+        }[]
+      }
+      crm_get_preference_stats: {
+        Args: never
+        Returns: {
+          category_id: string
+          category_label: string
+          opted_in_count: number
+          opted_out_count: number
+          sort_order: number
+          total_eligible: number
+          unsubscribed_total: number
+        }[]
+      }
+      crm_get_send_quota_status: {
+        Args: never
+        Returns: {
+          global_kill: boolean
+          pct_used: number
+          quota_limit: number
+          today_date: string
+          today_sent: number
+          warmup_day: number
+        }[]
+      }
+      crm_get_unsent_batch: {
+        Args: { p_batch_size?: number; p_rules_json: Json; p_run_id: string }
+        Returns: {
+          email: string
+          full_name: string
+          preference_token: string
+        }[]
+      }
+      crm_get_unsent_whatsapp_batch: {
+        Args: {
+          p_batch_size?: number
+          p_campaign_id: string
+          p_rules_json: Json
+        }
+        Returns: {
+          full_name: string
+          phone: string
+        }[]
+      }
+      crm_handle_email_event: {
+        Args: {
+          p_event_type: string
+          p_link_clicked?: string
+          p_metadata?: Json
+          p_occurred_at?: string
+          p_provider_event_id: string
+          p_resend_email_id: string
+        }
+        Returns: Json
+      }
+      crm_list_triggers: {
+        Args: never
+        Returns: {
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          last_campaign_id: string
+          last_campaign_name: string
+          last_campaign_status: string
+          last_contact_count: number
+          last_run_at: string
+          name: string
+          template_subject: string
+          threshold_days: number
+          trigger_type: string
+        }[]
+      }
+      crm_ltv_by_channel: {
+        Args: never
+        Returns: {
+          avg_ltv: number
+          channel: string
+          contact_count: number
+          conversion_rate: number
+          converted_count: number
+          total_revenue: number
+        }[]
+      }
+      crm_ltv_summary: {
+        Args: never
+        Returns: {
+          avg_ltv_converted: number
+          conversion_rate: number
+          converted_count: number
+          median_ltv: number
+          p90_ltv: number
+          total_contacts: number
+          total_revenue: number
+        }[]
+      }
+      crm_monthly_revenue_trend: {
+        Args: { p_months?: number }
+        Returns: {
+          month: string
+          new_customers: number
+          order_count: number
+          revenue: number
+        }[]
+      }
+      crm_pause_campaign: {
+        Args: { p_campaign_id: string; p_reason?: string }
+        Returns: undefined
+      }
+      crm_preview_campaign_recipients: {
+        Args: { p_campaign_id: string; p_sample_limit?: number }
+        Returns: {
+          sample_emails: string[]
+          total_count: number
+        }[]
+      }
+      crm_rls_preflight: { Args: never; Returns: Json }
+      crm_rotate_preference_token: {
+        Args: { p_email: string }
+        Returns: string
+      }
+      crm_set_global_kill_switch: {
+        Args: { p_active: boolean }
+        Returns: undefined
+      }
+      crm_update_send_progress: {
+        Args: { p_campaign_id: string; p_run_id: string; p_sent_delta: number }
+        Returns: undefined
+      }
+      crm_update_whatsapp_progress: {
+        Args: {
+          p_campaign_id: string
+          p_failed_delta?: number
+          p_sent_delta: number
+        }
+        Returns: undefined
+      }
+      crm_whatsapp_campaign_config: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          campaign_id: string
+          campaign_name: string
+          content_sid: string
+          rules_json: Json
+          whatsapp_body: string
+          whatsapp_enabled: boolean
+        }[]
+      }
       branch_ids_for_user: {
         Args: { _user_id: string }
         Returns: {

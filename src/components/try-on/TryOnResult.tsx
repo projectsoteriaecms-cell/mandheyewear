@@ -60,7 +60,6 @@ export const TryOnResult = ({
     initiateCapture,
     closeModal,
     handleSubmit,
-    skipCapture,
   } = useVTOEmailCapture();
 
   // Download a single image
@@ -97,21 +96,16 @@ export const TryOnResult = ({
     });
   };
 
-  // Handle download button click - show email capture for guests
+  // Handle download button click.
+  // Logged-in users: silently captured + download starts immediately.
+  // Guests: gate modal opens; download triggers after successful capture.
   const handleDownload = () => {
     if (result) {
       const { shouldShowModal } = initiateCapture(result, "download");
-      // Always allow download (after modal or directly)
       if (!shouldShowModal) {
         performDownload();
       }
     }
-  };
-
-  // Handle skip and download
-  const handleSkipAndDownload = () => {
-    skipCapture();
-    performDownload();
   };
 
   const handleShare = async () => {
@@ -242,8 +236,11 @@ export const TryOnResult = ({
         <EmailCaptureModal
           isOpen={captureState.isOpen}
           onClose={closeModal}
-          onSubmit={handleSubmit}
-          onSkip={handleSkipAndDownload}
+          onSubmit={async (email, phone, marketing) => {
+            const res = await handleSubmit(email, phone, marketing);
+            if (res.success) performDownload();
+            return res;
+          }}
           result={captureState.result}
           isSubmitting={isSubmitting}
         />
@@ -497,8 +494,11 @@ export const TryOnResult = ({
           <EmailCaptureModal
             isOpen={captureState.isOpen}
             onClose={closeModal}
-            onSubmit={handleSubmit}
-            onSkip={handleSkipAndDownload}
+            onSubmit={async (email, phone, marketing) => {
+              const res = await handleSubmit(email, phone, marketing);
+              if (res.success) performDownload();
+              return res;
+            }}
             result={captureState.result}
             isSubmitting={isSubmitting}
           />

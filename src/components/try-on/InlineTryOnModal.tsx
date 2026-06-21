@@ -10,11 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ShoppingBag, Heart, Camera, ExternalLink, Download } from "lucide-react";
 import { useProduct } from "@/modules/products/hooks/useProducts";
 import { useVirtualTryOn, type FrameDetails } from "@/modules/personalization/hooks/useVirtualTryOn";
+import { useVTOEmailCapture } from "@/modules/personalization/hooks/useVTOEmailCapture";
 import { useCart } from "@/modules/orders/hooks/useCart";
 import { useWishlist } from "@/modules/orders/hooks/useWishlist";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
 import { TryOnGenerationExperience } from "./TryOnGenerationExperience";
+import { EmailCaptureModal } from "./EmailCaptureModal";
 
 interface InlineTryOnModalProps {
   productId: string | null;
@@ -42,6 +44,14 @@ export const InlineTryOnModal = ({
     isGeneratingAngles,
     clearResult,
   } = useVirtualTryOn();
+  const {
+    captureState,
+    isSubmitting: captureSubmitting,
+    initiateCapture,
+    closeModal: closeCaptureModal,
+    handleSubmit: handleCaptureSubmit,
+  } = useVTOEmailCapture();
+
   const hasTriggered = useRef(false);
   const [generationStarted, setGenerationStarted] = useState(false);
 
@@ -99,6 +109,32 @@ export const InlineTryOnModal = ({
     navigate(`/try-on?product=${productId}`);
   };
 
+  const performDownload = () => {
+    const images: { url: string; label: string }[] = [];
+    if (multiAngleResults.front || currentResult?.compositeImage) {
+      images.push({ url: multiAngleResults.front || currentResult!.compositeImage!, label: "front" });
+    }
+    if (multiAngleResults.left) images.push({ url: multiAngleResults.left, label: "left" });
+    if (multiAngleResults.right) images.push({ url: multiAngleResults.right, label: "right" });
+    images.forEach((img, i) => {
+      setTimeout(() => {
+        const link = document.createElement("a");
+        link.href = img.url;
+        link.download = `try-on-${product?.name || "frame"}-${img.label}-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, i * 300);
+    });
+  };
+
+  const handleDownload = () => {
+    if (currentResult) {
+      const { shouldShowModal } = initiateCapture(currentResult, "download");
+      if (!shouldShowModal) performDownload();
+    }
+  };
+
   const showLoading = productLoading || isGenerating || (!currentResult && generationStarted);
 
   // Build carousel slides
@@ -124,6 +160,7 @@ export const InlineTryOnModal = ({
   ];
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -199,24 +236,7 @@ export const InlineTryOnModal = ({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => {
-                    const images: { url: string; label: string }[] = [];
-                    if (multiAngleResults.front || currentResult?.compositeImage) {
-                      images.push({ url: multiAngleResults.front || currentResult.compositeImage!, label: "front" });
-                    }
-                    if (multiAngleResults.left) images.push({ url: multiAngleResults.left, label: "left" });
-                    if (multiAngleResults.right) images.push({ url: multiAngleResults.right, label: "right" });
-                    images.forEach((img, i) => {
-                      setTimeout(() => {
-                        const link = document.createElement("a");
-                        link.href = img.url;
-                        link.download = `try-on-${product?.name || "frame"}-${img.label}-${Date.now()}.png`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                      }, i * 300);
-                    });
-                  }}
+                  onClick={handleDownload}
                   title={multiAngleResults.left || multiAngleResults.right ? "Download all angles" : "Download"}
                 >
                   <Download className="h-4 w-4" />
@@ -252,5 +272,18 @@ export const InlineTryOnModal = ({
         </div>
       </DialogContent>
     </Dialog>
+
+    <EmailCaptureModal
+      isOpen={captureState.isOpen}
+      onClose={closeCaptureModal}
+      onSubmit={async (email, phone, marketing) => {
+        const res = await handleCaptureSubmit(email, phone, marketing);
+        if (res.success) performDownload();
+        return res;
+      }}
+      result={captureState.result}
+      isSubmitting={captureSubmitting}
+    />
+    </>
   );
 };

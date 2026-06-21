@@ -1,9 +1,38 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+// ════════════════════════════════════════════════════════════════
+// MONITORING: Logging Functions
+// ════════════════════════════════════════════════════════════════
+
+async function logGeneration(supabase: any, logData: any) {
+  try {
+    await supabase.from("image_generation_logs").insert([logData]);
+  } catch (err) {
+    console.error("Logging failed (non-critical):", err);
+  }
+}
+
+async function logError(supabase: any, logId: string, errorData: any) {
+  try {
+    await supabase.from("image_generation_errors").insert([
+      {
+        log_id: logId,
+        ...errorData,
+        user_visible: true,
+      },
+    ]);
+  } catch (err) {
+    console.error("Error logging failed (non-critical):", err);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
 
 type TryOnAngle = "front" | "three_quarter_left" | "three_quarter_right";
 
@@ -327,15 +356,32 @@ const withRetry = async <T>(
 };
 
 serve(async (req) => {
+  const startTime = Date.now();
+  const logId = crypto.randomUUID();
+
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 
     const { userPhoto, frameDetails, angle = "front" }: TryOnRequest = await req.json();
+
+    // ✅ LOG: Virtual try-on started
+    await logGeneration(supabase, {
+      product_id: frameDetails?.name ? crypto.randomUUID() : null,
+      generation_type: "virtual_tryon",
+      shot_type: angle,
+      status: "started",
+      start_time: new Date().toISOString(),
+      attempt_number: 1,
+    });
 
     if (!userPhoto) {
       return json({ success: false, error: "User photo is required" }, 400);
@@ -413,9 +459,22 @@ serve(async (req) => {
       }, isTransient ? 200 : primary.status);
     }
 
-    console.log("Virtual try-on generated successfully", { 
+    console.log("Virtual try-on generated successfully", {
       provider: generated.provider,
-      usedFrameReference: generated.usedFrameReference 
+      usedFrameReference: generated.usedFrameReference
+    });
+
+    // ✅ LOG: Success
+    const duration = Date.now() - startTime;
+    await logGeneration(supabase, {
+      product_id: frameDetails?.name ? crypto.randomUUID() : null,
+      generation_type: "virtual_tryon",
+      shot_type: angle,
+      status: "success",
+      start_time: new Date(Date.now() - duration).toISOString(),
+      end_time: new Date().toISOString(),
+      duration_ms: duration,
+      attempt_number: 1,
     });
 
     return json({
@@ -428,8 +487,34 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Virtual try-on error:", error);
+
+    // ❌ LOG: Error
+    const duration = Date.now() - startTime;
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+
+    await logError(supabase, logId, {
+      error_type: "virtual_tryon_generation",
+      error_code: "500",
+      error_message: errorMsg.substring(0, 300),
+      severity: "high",
+      suspected_cause: "generation_failed",
+    });
+
+    await logGeneration(supabase, {
+      product_id: frameDetails?.name ? crypto.randomUUID() : null,
+      generation_type: "virtual_tryon",
+      shot_type: angle || "front",
+      status: "failed",
+      start_time: new Date(Date.now() - duration).toISOString(),
+      end_time: new Date().toISOString(),
+      duration_ms: duration,
+      error_code: "500",
+      error_message: errorMsg.substring(0, 300),
+      attempt_number: 1,
+    });
+
     return json(
-      { success: false, error: error instanceof Error ? error.message : "An unexpected error occurred" },
+      { success: false, error: errorMsg },
       500
     );
   }

@@ -1,6 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import {
+  checkCircuit,
+  recordFailure,
+  recordSuccess,
+} from "../_shared/resend-circuit-breaker.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SLACK_WEBHOOK_URL = Deno.env.get("SLACK_WEBHOOK_URL");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +27,29 @@ interface TryOnEmailRequest {
   email: string;
   frameDetails?: FrameDetails;
   tryOnImageBase64?: string;
+  /** Set by the client when the vto_email_leads DB insert failed (Gap 1). */
+  dbInsertFailed?: boolean;
+  dbErrorMessage?: string;
+}
+
+/** Fire-and-forget Slack alert. Never throws — alert failures must not block the user. */
+async function sendSlackAlert(message: string): Promise<void> {
+  if (!SLACK_WEBHOOK_URL) {
+    console.warn("SLACK_WEBHOOK_URL not configured — alert suppressed:", message);
+    return;
+  }
+  try {
+    const res = await fetch(SLACK_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: message }),
+    });
+    if (!res.ok) {
+      console.error("Slack alert HTTP error:", res.status, await res.text());
+    }
+  } catch (err) {
+    console.error("Slack alert delivery failed:", err);
+  }
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -34,20 +63,39 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY is not configured");
     }
 
-    const { email, frameDetails, tryOnImageBase64 }: TryOnEmailRequest = await req.json();
+    const {
+      email,
+      frameDetails,
+      tryOnImageBase64,
+      dbInsertFailed,
+      dbErrorMessage,
+    }: TryOnEmailRequest = await req.json();
 
     // Validate required fields
     if (!email) {
       throw new Error("Email is required");
     }
 
+    // Gap 1 alert: DB insert failed on the client — user still gets their result
+    // but we need ops visibility. Fire-and-forget so it never blocks email send.
+    if (dbInsertFailed) {
+      void sendSlackAlert(
+        `🚨 *VTO Lead DB Insert Failed*\n` +
+          `• Email: ${email}\n` +
+          `• Frame: ${frameDetails?.name ?? "unknown"}\n` +
+          `• Error: ${dbErrorMessage ?? "unknown error"}\n` +
+          `• Time: ${new Date().toISOString()}\n` +
+          `_User received their result but this lead was NOT saved to vto_email_leads._`,
+      );
+    }
+
     const frameName = frameDetails?.name || "Your Frame";
-    const framePrice = frameDetails?.price 
-      ? `₦${frameDetails.price.toLocaleString()}` 
+    const framePrice = frameDetails?.price
+      ? `₦${frameDetails.price.toLocaleString()}`
       : "";
     const frameColor = frameDetails?.color || "";
-    const productLink = frameDetails?.id 
-      ? `https://soteriaeyeclinic.lovable.app/eyewear/${frameDetails.id}` 
+    const productLink = frameDetails?.id
+      ? `https://soteriaeyeclinic.lovable.app/eyewear/${frameDetails.id}`
       : "https://soteriaeyeclinic.lovable.app/eyewear";
 
     // Build email HTML
@@ -61,7 +109,7 @@ const handler = async (req: Request): Promise<Response> => {
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
   <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-    
+
     <!-- Header -->
     <tr>
       <td style="padding: 30px 20px; text-align: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
@@ -77,14 +125,14 @@ const handler = async (req: Request): Promise<Response> => {
         <img src="${tryOnImageBase64}" alt="Your Virtual Try-On" style="width: 100%; height: auto; display: block;">
       </td>
     </tr>
-    ` : ''}
+    ` : ""}
 
     <!-- Frame Details -->
     <tr>
       <td style="padding: 30px 20px; text-align: center;">
         <h2 style="margin: 0 0 8px; color: #1a1a2e; font-size: 22px; font-weight: 600;">${frameName}</h2>
-        ${frameColor ? `<p style="margin: 0 0 8px; color: #666666; font-size: 14px;">${frameColor}</p>` : ''}
-        ${framePrice ? `<p style="margin: 0; color: #d4af37; font-size: 20px; font-weight: 600;">${framePrice}</p>` : ''}
+        ${frameColor ? `<p style="margin: 0 0 8px; color: #666666; font-size: 14px;">${frameColor}</p>` : ""}
+        ${framePrice ? `<p style="margin: 0; color: #d4af37; font-size: 20px; font-weight: 600;">${framePrice}</p>` : ""}
       </td>
     </tr>
 
@@ -142,6 +190,22 @@ const handler = async (req: Request): Promise<Response> => {
 </html>
     `;
 
+    // Circuit breaker check — open after 3 consecutive Resend failures
+    const circuit = await checkCircuit("resend");
+    if (!circuit.allowed) {
+      console.warn("Resend circuit open — rejecting call:", circuit.reason);
+      void sendSlackAlert(
+        `⚠️ *VTO Email Skipped — Resend Circuit Open*\n` +
+          `• Recipient: ${email}\n` +
+          `• Reason: ${circuit.reason}\n` +
+          `• Time: ${new Date().toISOString()}`,
+      );
+      return new Response(
+        JSON.stringify({ error: circuit.reason, circuitOpen: true }),
+        { status: 503, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
     // Send email via Resend API
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -158,13 +222,25 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (!res.ok) {
-      const error = await res.text();
-      console.error("Resend API error:", error);
-      throw new Error(`Failed to send email: ${error}`);
+      const errorText = await res.text();
+      console.error("Resend API error:", errorText);
+      const { tripped } = await recordFailure("resend");
+      if (tripped) {
+        void sendSlackAlert(
+          `🚨 *Resend Circuit Tripped — VTO Emails Paused*\n` +
+            `• 3 consecutive failures — circuit is now OPEN\n` +
+            `• Last error: ${errorText}\n` +
+            `• Cooldown: 30 minutes\n` +
+            `• Time: ${new Date().toISOString()}\n` +
+            `_Manually reset: update crm_service_health set state='closed', failure_count=0 where service_name='resend'_`,
+        );
+      }
+      throw new Error(`Failed to send email: ${errorText}`);
     }
 
     const emailResponse = await res.json();
     console.log("VTO email sent successfully:", emailResponse);
+    void recordSuccess("resend");
 
     return new Response(JSON.stringify({ success: true, ...emailResponse }), {
       status: 200,
@@ -180,7 +256,7 @@ const handler = async (req: Request): Promise<Response> => {
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      },
     );
   }
 };

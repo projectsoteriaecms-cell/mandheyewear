@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { SupplierForm, SuppliersTable } from "./suppliers";
+import { SupplierForm, SuppliersTable } from "./suppliers/index";
 
 const Suppliers = () => {
   const [showDialog, setShowDialog] = useState(false);

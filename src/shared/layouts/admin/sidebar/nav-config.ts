@@ -15,6 +15,7 @@ import {
   Receipt,
   Megaphone,
   Slideshow,
+  UsersThree,
 } from "@phosphor-icons/react";
 
 export interface NavItem {
@@ -83,6 +84,17 @@ export const navItems: NavItem[] = [
     title: "Appointments",
     href: "/admin/appointments",
     icon: CalendarCheck,
+  },
+  {
+    title: "CRM",
+    href: "/admin/crm/customers",
+    icon: UsersThree,
+    children: [
+      { title: "Customers", href: "/admin/crm/customers" },
+      { title: "Segments",  href: "/admin/crm/segments" },
+      { title: "Campaigns", href: "/admin/crm/campaigns" },
+      { title: "Analytics", href: "/admin/crm/analytics" },
+    ],
   },
   {
     title: "Branches",

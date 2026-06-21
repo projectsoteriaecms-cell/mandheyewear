@@ -9,7 +9,7 @@ import {
   InventoryTrendChart,
   CategoryPieChart,
   QuickInsights,
-} from "./reports";
+} from "./reports/index";
 
 const Reports = () => {
   const { stats, isLoading, categoryData, monthlySalesData, inventoryTrendData } = useReportsData();

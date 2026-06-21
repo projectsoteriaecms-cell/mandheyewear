@@ -30,7 +30,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { Database } from "@/integrations/supabase/types";
-import { ProductsToolbar, ProductsFilterBar, ProductsTable, useEnrichProducts } from "./products";
+import { ProductsToolbar, ProductsFilterBar, ProductsTable, useEnrichProducts } from "./products/index";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 type ViewMode = "grid" | "list";

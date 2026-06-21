@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
   Select,
@@ -21,6 +22,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Lightning, Warning, CheckCircle, XCircle, Camera, Pause, DownloadSimple, SkipForward } from "@phosphor-icons/react";
 import { isKnownBrand, MIN_REFERENCE_PHOTOS } from "@/modules/products/lib/brand-classification";
+import { ProductSelector } from "./ProductSelector";
 
 interface CategoryCount {
   type: string;
@@ -94,6 +96,8 @@ export const GenerateImagesDialog = ({
   onComplete,
   selectedProducts,
 }: GenerateImagesDialogProps) => {
+  const [mode, setMode] = useState<"bulk" | "select">("bulk");
+  const [manualSelectedProducts, setManualSelectedProducts] = useState<SelectedProduct[]>([]);
   const [status, setStatus] = useState<"idle" | "running" | "done" | "cancelled" | "paused">("idle");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [batchLimit, setBatchLimit] = useState("10");
@@ -107,7 +111,8 @@ export const GenerateImagesDialog = ({
   const [pauseReason, setPauseReason] = useState<string | null>(null);
   const cancelRef = useRef(false);
 
-  const isSelectionMode = !!selectedProducts && selectedProducts.length > 0;
+  const effectiveSelectedProducts = mode === "select" ? manualSelectedProducts : (selectedProducts || []);
+  const isSelectionMode = effectiveSelectedProducts.length > 0;
 
   // Selection mode: compute summary (including house brand skip count)
   const selectionSummary = useMemo(() => {
@@ -393,49 +398,14 @@ export const GenerateImagesDialog = ({
 
         {status === "idle" && (
           <div className="space-y-4">
-            {isSelectionMode ? (
-              /* Selection mode summary */
-              <div className="space-y-3">
-                <div className="rounded-lg border p-3 space-y-2">
-                  <p className="text-sm font-medium text-foreground">Selected products:</p>
-                  <div className="max-h-32 overflow-y-auto space-y-1">
-                    {selectedProducts!.map((p) => (
-                      <div key={p.id} className="flex items-center justify-between text-sm">
-                        <span className="truncate">{p.name}</span>
-                        <span className="text-xs text-muted-foreground font-mono ml-2">{p.sku}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            {/* Mode Tabs */}
+            <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="bulk">📦 Bulk by Category</TabsTrigger>
+                <TabsTrigger value="select">🎯 Select Products</TabsTrigger>
+              </TabsList>
 
-                {selectionSummary && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-                    <div className="flex items-start gap-2">
-                      <Warning className="h-4 w-4 mt-0.5 flex-shrink-0" weight="fill" />
-                      <div>
-                        <p className="font-medium">
-                          {selectionSummary.total} product{selectionSummary.total !== 1 ? "s" : ""}
-                        </p>
-                        <p className="text-xs opacity-80 mt-0.5">
-                          {selectionSummary.frames > 0 && `${selectionSummary.frames} frame${selectionSummary.frames !== 1 ? "s" : ""} (${selectionSummary.frames * 6} shots)`}
-                          {selectionSummary.frames > 0 && selectionSummary.nonFrames > 0 && " + "}
-                          {selectionSummary.nonFrames > 0 && `${selectionSummary.nonFrames} other${selectionSummary.nonFrames !== 1 ? "s" : ""} (${selectionSummary.nonFrames} shot${selectionSummary.nonFrames !== 1 ? "s" : ""})`}
-                          {" = "}~{selectionSummary.totalShots} API calls • ~{estimatedMinutes} min
-                        </p>
-                        {selectionSummary.houseBrandFrames > 0 && (
-                          <p className="text-xs mt-1 flex items-center gap-1">
-                            <SkipForward className="h-3 w-3" />
-                            {selectionSummary.houseBrandFrames} house brand frame{selectionSummary.houseBrandFrames !== 1 ? "s" : ""} may be skipped if missing reference photos
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* Bulk category mode */
-              <>
+              <TabsContent value="bulk" className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-foreground">Product category:</p>
                   {categoryCounts.filter((c) => c.missing > 0).length === 0 ? (
@@ -492,8 +462,33 @@ export const GenerateImagesDialog = ({
                     </div>
                   </div>
                 )}
-              </>
-            )}
+              </TabsContent>
+
+              <TabsContent value="select" className="space-y-4 mt-4">
+                <ProductSelector
+                  onSelect={(products) => {
+                    setManualSelectedProducts(products as SelectedProduct[]);
+                  }}
+                  isLoading={status === "running"}
+                />
+
+                {manualSelectedProducts.length > 0 && (
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" weight="fill" />
+                      <div>
+                        <p className="font-medium">
+                          {manualSelectedProducts.length} product{manualSelectedProducts.length !== 1 ? "s" : ""} selected
+                        </p>
+                        <p className="text-xs opacity-80 mt-0.5">
+                          Ready to generate. Click Start below to begin.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         )}
 
