@@ -91,7 +91,7 @@ export const navItems: NavItem[] = [
     icon: UsersThree,
     children: [
       { title: "Customers", href: "/admin/crm/customers" },
-      { title: "Segments",  href: "/admin/crm/segments" },
+      { title: "Segments", href: "/admin/crm/segments" },
       { title: "Campaigns", href: "/admin/crm/campaigns" },
       { title: "Analytics", href: "/admin/crm/analytics" },
     ],
