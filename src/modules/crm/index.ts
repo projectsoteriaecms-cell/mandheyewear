@@ -1,5 +1,6 @@
 export { SegmentRetryButton } from "./components/SegmentRetryButton";
 export { CrmAccessGate } from "./components/CrmAccessGate";
+export { RankBadge, RankBadgeWithDetail } from "./components/RankBadge";
 
 // Rule tree builder UI (T16)
 export { RuleTreeBuilder } from "./components/RuleTreeBuilder/index";
@@ -132,6 +133,20 @@ export type {
   FireTriggerResult,
   TriggerType,
 } from "./hooks/useReengagementTriggers";
+
+// Customer ranking system (Phase 2)
+export {
+  useCustomerRank,
+  useCustomerRanks,
+  useRankHistory,
+  useComputeAllRanks,
+  RANK_LABELS,
+} from "./hooks/useCustomerRanks";
+export type {
+  CustomerRank,
+  RankHistoryEntry,
+  UseCustomerRanksParams,
+} from "./hooks/useCustomerRanks";
 
 // Behavioral analytics (Phase 1 — event tracking + behavior analysis)
 export {

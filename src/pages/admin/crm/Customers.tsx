@@ -22,6 +22,9 @@ import {
   useContactStats,
   useContactPreferenceLink,
   PreferenceLinkCopier,
+  useCustomerRank,
+  useComputeAllRanks,
+  RankBadge,
   type CrmContact,
   type ContactFilter,
 } from "@/modules/crm";
@@ -78,6 +81,7 @@ function StatCards() {
 
 function ContactDetail({ contact, onClose }: { contact: CrmContact | null; onClose: () => void }) {
   const { data: url, isLoading } = useContactPreferenceLink(contact?.email ?? undefined);
+  const { data: rank } = useCustomerRank(contact?.email);
 
   if (!contact) return null;
   return (
@@ -96,6 +100,16 @@ function ContactDetail({ contact, onClose }: { contact: CrmContact | null; onClo
             {contact.marketing_consent && <Badge variant="outline">Marketing OK</Badge>}
             {contact.is_suppressed && <Badge variant="destructive">Suppressed</Badge>}
           </div>
+
+          {rank && (
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="mb-2 text-xs font-medium text-muted-foreground">Rank</p>
+              <div className="flex items-center justify-between">
+                <RankBadge rank={rank.current_rank} />
+                <span className="text-xs text-muted-foreground">Score: {rank.engagement_score.toFixed(1)}</span>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3 text-sm">
             <Field label="Lifetime Value" value={naira(contact.lifetime_value)} />
@@ -123,6 +137,38 @@ function Field({ label, value }: { label: string; value: string }) {
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="font-medium">{value}</p>
     </div>
+  );
+}
+
+// ── Table row with rank display ──────────────────────────────────────────────
+
+function ContactTableRow({ contact, onSelect }: { contact: CrmContact; onSelect: (c: CrmContact) => void }) {
+  const { data: rank } = useCustomerRank(contact.email);
+
+  return (
+    <TableRow className="cursor-pointer" onClick={() => onSelect(contact)}>
+      <TableCell>
+        <div className="font-medium">{contact.full_name || "—"}</div>
+        <div className="text-xs text-muted-foreground">{contact.email}</div>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-wrap gap-1">
+          {contact.is_vto_lead && <Badge variant="secondary" className="text-[10px]">VTO</Badge>}
+          {contact.is_newsletter_subscriber && <Badge variant="secondary" className="text-[10px]">News</Badge>}
+          {contact.is_registered && <Badge variant="secondary" className="text-[10px]">User</Badge>}
+          {contact.is_suppressed && <Badge variant="destructive" className="text-[10px]">Supp</Badge>}
+        </div>
+      </TableCell>
+      <TableCell>
+        {rank ? <RankBadge rank={rank.current_rank} size="sm" /> : <span className="text-xs text-muted-foreground">—</span>}
+      </TableCell>
+      <TableCell className="text-right tabular-nums">{naira(contact.lifetime_value)}</TableCell>
+      <TableCell className="text-right tabular-nums">{contact.order_count}</TableCell>
+      <TableCell className="text-sm text-muted-foreground">{fmtDate(contact.last_activity_at)}</TableCell>
+      <TableCell>
+        <Eye className="h-4 w-4 text-muted-foreground" />
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -199,6 +245,7 @@ const CrmCustomers = () => {
                     <TableRow>
                       <TableHead>Contact</TableHead>
                       <TableHead>Type</TableHead>
+                      <TableHead>Rank</TableHead>
                       <TableHead className="text-right">LTV</TableHead>
                       <TableHead className="text-right">Orders</TableHead>
                       <TableHead>Last activity</TableHead>
@@ -214,26 +261,7 @@ const CrmCustomers = () => {
                       ))
                     ) : data && data.rows.length > 0 ? (
                       data.rows.map((c) => (
-                        <TableRow key={c.email} className="cursor-pointer" onClick={() => setSelected(c)}>
-                          <TableCell>
-                            <div className="font-medium">{c.full_name || "—"}</div>
-                            <div className="text-xs text-muted-foreground">{c.email}</div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap gap-1">
-                              {c.is_vto_lead && <Badge variant="secondary" className="text-[10px]">VTO</Badge>}
-                              {c.is_newsletter_subscriber && <Badge variant="secondary" className="text-[10px]">News</Badge>}
-                              {c.is_registered && <Badge variant="secondary" className="text-[10px]">User</Badge>}
-                              {c.is_suppressed && <Badge variant="destructive" className="text-[10px]">Supp</Badge>}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums">{naira(c.lifetime_value)}</TableCell>
-                          <TableCell className="text-right tabular-nums">{c.order_count}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{fmtDate(c.last_activity_at)}</TableCell>
-                          <TableCell>
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                          </TableCell>
-                        </TableRow>
+                        <ContactTableRow key={c.email} contact={c} onSelect={setSelected} />
                       ))
                     ) : (
                       <TableRow>
