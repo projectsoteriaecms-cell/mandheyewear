@@ -50,6 +50,13 @@ export type {
   UseCrmContactsParams,
 } from "./hooks/useCrmContacts";
 export {
+  useAddCustomer,
+} from "./hooks/useAddCustomer";
+export type {
+  AddCustomerInput,
+  AddCustomerResponse,
+} from "./hooks/useAddCustomer";
+export {
   useCrmSegments,
   useSegmentRulesCount,
   useCreateSegment,

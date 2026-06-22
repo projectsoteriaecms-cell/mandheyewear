@@ -13,7 +13,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Search, ChevronLeft, ChevronRight, Users, Eye, Mail, Sparkles, UserCheck, ShoppingBag, Ban,
+  Search, ChevronLeft, ChevronRight, Users, Eye, Mail, Sparkles, UserCheck, ShoppingBag, Ban, Plus,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import {
@@ -26,6 +26,7 @@ import {
   type ContactFilter,
 } from "@/modules/crm";
 import { CrmTabs } from "./CrmTabs";
+import { AddCustomerDialog } from "./AddCustomerDialog";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────────
 
@@ -132,6 +133,7 @@ const CrmCustomers = () => {
   const [filter, setFilter]   = useState<ContactFilter>("all");
   const [page, setPage]       = useState(0);
   const [selected, setSelected] = useState<CrmContact | null>(null);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const { data, isLoading, isFetching } = useCrmContacts({ search, filter, page });
 
@@ -153,7 +155,7 @@ const CrmCustomers = () => {
             <div className="space-y-4">
               <StatCards />
 
-              {/* Search + filters */}
+              {/* Search + filters + add button */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="relative w-full sm:max-w-xs">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -164,7 +166,7 @@ const CrmCustomers = () => {
                     className="pl-9"
                   />
                 </div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                   {FILTERS.map((f) => (
                     <button
                       key={f.key}
@@ -179,6 +181,14 @@ const CrmCustomers = () => {
                       {f.label}
                     </button>
                   ))}
+                  <Button
+                    onClick={() => setAddDialogOpen(true)}
+                    size="sm"
+                    className="ml-auto"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Customer
+                  </Button>
                 </div>
               </div>
 
@@ -263,6 +273,7 @@ const CrmCustomers = () => {
         </div>
 
         <ContactDetail contact={selected} onClose={() => setSelected(null)} />
+        <AddCustomerDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} />
       </AdminLayout>
     </RoleGuard>
   );

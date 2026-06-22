@@ -39,3 +39,4 @@ upload_images_new.py
 frame_images_converted/
 frame_images_converted.zip
 supabase/.temp/
+.env*
