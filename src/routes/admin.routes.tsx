@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Route } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
+// Force rebuild - CRM routes enabled
 // Retry wrapper for lazy imports to handle stale chunk errors after deployments
 function lazyRetry(importFn: () => Promise<any>) {
   return lazy(() =>
