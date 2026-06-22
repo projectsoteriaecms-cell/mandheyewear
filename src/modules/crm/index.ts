@@ -148,6 +148,25 @@ export type {
   UseCustomerRanksParams,
 } from "./hooks/useCustomerRanks";
 
+// Compliance framework (Phase 3)
+export {
+  useConsentHistory,
+  useSuppressionHistory,
+  useCampaignSendHistory,
+  useAccessLog,
+  useLogConsentChange,
+  useSuppressEmail,
+  useGdprExport,
+  useGdprDelete,
+} from "./hooks/useCompliance";
+export type {
+  ConsentAuditEntry,
+  SuppressionAuditEntry,
+  CampaignSendAuditEntry,
+  ContactAccessLogEntry,
+  GdprExportData,
+} from "./hooks/useCompliance";
+
 // Behavioral analytics (Phase 1 — event tracking + behavior analysis)
 export {
   useUserJourney,
