@@ -9,7 +9,9 @@ export { CampaignSearchFilter } from "./components/CampaignSearchFilter";
 export { CampaignsTabContent } from "./components/CampaignsTabContent";
 export { CampaignListItem } from "./components/CampaignListItem";
 export { CampaignBulkActionsBar } from "./components/CampaignBulkActionsBar";
+export { CampaignAnalyticsCard } from "./components/CampaignAnalyticsCard";
 export { useDuplicateCampaign, useArchiveCampaigns, useDeleteCampaignsBulk } from "./hooks/useBulkCampaignActions";
+export { useCampaignAnalytics, useCampaignMetrics, type CampaignAnalytics } from "./hooks/useCampaignAnalytics";
 
 // Rule tree builder UI (T16)
 export { RuleTreeBuilder } from "./components/RuleTreeBuilder/index";

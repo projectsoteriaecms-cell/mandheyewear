@@ -5,6 +5,8 @@ import { cn } from "@/shared/lib/utils";
 import { ChevronRight } from "lucide-react";
 import type { CrmCampaign } from "@/modules/crm";
 import { memo } from "react";
+import { useCampaignAnalytics } from "../hooks/useCampaignAnalytics";
+import { CampaignAnalyticsCard } from "./CampaignAnalyticsCard";
 
 interface CampaignListItemProps {
   campaign: CrmCampaign;
@@ -34,6 +36,9 @@ function CampaignListItemComponent({
     day: "numeric",
   });
 
+  const analytics = useCampaignAnalytics(campaign.id);
+  const showAnalytics = campaign.status === "running" || campaign.status === "completed" || campaign.status === "paused";
+
   return (
     <Card
       onClick={onClick}
@@ -43,41 +48,53 @@ function CampaignListItemComponent({
         showCheckbox && "hover:border-primary/50"
       )}
     >
-      <div className="flex items-start justify-between gap-4">
-        {showCheckbox && (
-          <div className="flex-none pt-1" onClick={(e) => e.stopPropagation()}>
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={(checked) => onSelect?.(checked === true)}
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-4">
+          {showCheckbox && (
+            <div className="flex-none pt-1" onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={(checked) => onSelect?.(checked === true)}
+              />
+            </div>
+          )}
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="font-semibold truncate">{campaign.name}</h3>
+              <Badge
+                className={cn(
+                  "text-xs capitalize whitespace-nowrap",
+                  STATUS_STYLES[campaign.status]
+                )}
+              >
+                {campaign.status}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground truncate mb-2">
+              {campaign.subject_line || "No subject"}
+            </p>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span>{campaign.segment_name || "No segment"}</span>
+              <span>•</span>
+              <span>Created {createdAt}</span>
+            </div>
+          </div>
+
+          <div className="flex-none">
+            <ChevronRight className="h-5 w-5 text-muted-foreground transition-colors" />
+          </div>
+        </div>
+
+        {showAnalytics && (
+          <div className="border-t pt-3">
+            <CampaignAnalyticsCard
+              analytics={analytics.data}
+              isLoading={analytics.isLoading}
+              isCompact={true}
             />
           </div>
         )}
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-semibold truncate">{campaign.name}</h3>
-            <Badge
-              className={cn(
-                "text-xs capitalize whitespace-nowrap",
-                STATUS_STYLES[campaign.status]
-              )}
-            >
-              {campaign.status}
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground truncate mb-2">
-            {campaign.subject_line || "No subject"}
-          </p>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span>{campaign.segment_name || "No segment"}</span>
-            <span>•</span>
-            <span>Created {createdAt}</span>
-          </div>
-        </div>
-
-        <div className="flex-none">
-          <ChevronRight className="h-5 w-5 text-muted-foreground transition-colors" />
-        </div>
       </div>
     </Card>
   );

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Mail, Send, Pause, Play, X } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { useCampaignSendStatus, usePauseCampaign, useResumeCampaign, useTriggerCampaignSend } from "@/modules/crm";
+import { useCampaignSendStatus, usePauseCampaign, useResumeCampaign, useTriggerCampaignSend, useCampaignAnalytics, CampaignAnalyticsCard } from "@/modules/crm";
 import type { CrmCampaign } from "@/modules/crm";
 import { Loader2 } from "lucide-react";
 
@@ -41,6 +41,7 @@ export function CampaignDetailModal({
   const pause = usePauseCampaign();
   const resume = useResumeCampaign();
   const trigger = useTriggerCampaignSend();
+  const analytics = useCampaignAnalytics(campaign?.id || null);
 
   if (!campaign) return null;
 
@@ -107,6 +108,15 @@ export function CampaignDetailModal({
               </div>
             </div>
           </Card>
+
+          {/* Analytics Section */}
+          {(isRunning || isPaused || campaign.status === "completed") && (
+            <CampaignAnalyticsCard
+              analytics={analytics.data}
+              isLoading={analytics.isLoading}
+              isCompact={false}
+            />
+          )}
 
           {/* Progress Section (if running/paused/completed) */}
           {(isRunning || isPaused || campaign.status === "completed") && status.totalRecipients > 0 && (
