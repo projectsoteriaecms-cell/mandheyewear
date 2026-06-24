@@ -29,6 +29,13 @@ function db() {
   );
 }
 
+function sanitizeTagValue(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "_")
+    .substring(0, 100);
+}
+
 function buildCampaignEmailHtml(
   campaignName: string,
   subject: string,
@@ -327,7 +334,7 @@ serve(async (req) => {
           tags: [
             { name: "campaign_id", value: campaign_id },
             { name: "is_test", value: "true" },
-            { name: "campaign_name", value: campaign.name },
+            { name: "campaign_name", value: sanitizeTagValue(campaign.name) },
           ],
         },
       ]),
