@@ -23,6 +23,7 @@ import {
   useTestSendCampaign,
   EmailTemplateTester,
   CampaignDetailModal,
+  CampaignActionDialog,
   CampaignSearchFilter,
   CampaignsTabContent,
   CampaignBulkActionsBar,
@@ -185,6 +186,8 @@ const CrmCampaigns = () => {
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<CrmCampaign | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<CrmCampaign | null>(null);
+  const [actionCampaign, setActionCampaign] = useState<CrmCampaign | null>(null);
+  const [actionType, setActionType] = useState<'send' | 'test' | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -237,6 +240,18 @@ const CrmCampaigns = () => {
 
   const handleClearSelection = () => {
     setSelectedIds(new Set());
+  };
+
+  const openAction = (type: 'send' | 'test') => {
+    // selectedCampaign is the one shown in the modal; carry it into the action dialog
+    setActionCampaign(selectedCampaign);
+    setActionType(type);
+    setSelectedCampaign(null); // close the detail modal
+  };
+
+  const closeAction = () => {
+    setActionCampaign(null);
+    setActionType(null);
   };
 
   return (
@@ -386,8 +401,15 @@ const CrmCampaigns = () => {
           campaign={selectedCampaign}
           isOpen={!!selectedCampaign}
           onClose={() => setSelectedCampaign(null)}
-          onSendClick={() => setSelectedCampaign(null)}
-          onTestClick={() => setSelectedCampaign(null)}
+          onSendClick={() => openAction('send')}
+          onTestClick={() => openAction('test')}
+        />
+
+        {/* Send / Test Action Dialog */}
+        <CampaignActionDialog
+          campaign={actionCampaign}
+          action={actionType}
+          onClose={closeAction}
         />
 
         {/* Delete Confirmation */}
