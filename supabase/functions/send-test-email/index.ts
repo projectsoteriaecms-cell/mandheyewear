@@ -1,9 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// React Email components via CDN
-const REACT_EMAIL_URL = "https://cdn.jsdelivr.net/npm/@react-email/render@0.0.12";
-
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -12,14 +9,18 @@ const CORS = {
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
 const FROM_EMAIL = Deno.env.get("CAMPAIGN_FROM_EMAIL") || "M&H Eyewear <campaigns@mandheyewear.com>";
 
+// M&H Logo - using a CDN-hosted version (update with your actual URL)
+const LOGO_URL = "https://soteriaeyeclinic.vercel.app/mh-logo.png";
+
 // Brand colors matching M&H
 const BRAND_COLORS = {
   primary: "#0F1B2E",      // Navy blue
   accent: "#D4AF37",       // Gold
-  text: "#333333",
+  text: "#2C2C2C",
   lightText: "#666666",
-  background: "#F5F5F5",
+  background: "#F8F8F8",
   white: "#FFFFFF",
+  lightGold: "rgba(212, 175, 55, 0.1)",
 };
 
 function db() {
@@ -47,224 +48,282 @@ function buildCampaignEmailHtml(
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>${subject || "Campaign from M&H Eyewear & Opticals"}</title>
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
           line-height: 1.6;
           color: ${BRAND_COLORS.text};
+          background-color: ${BRAND_COLORS.background};
+        }
+        .email-wrapper {
+          background-color: ${BRAND_COLORS.background};
+          padding: 20px;
         }
         .container {
           max-width: 600px;
           margin: 0 auto;
-          background-color: ${BRAND_COLORS.background};
-          padding: 20px 0;
+          background-color: ${BRAND_COLORS.white};
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
+
+        /* Header Section */
         .header {
-          background-color: ${BRAND_COLORS.primary};
-          padding: 40px 20px;
+          background: linear-gradient(135deg, ${BRAND_COLORS.primary} 0%, ${BRAND_COLORS.primary}dd 100%);
+          padding: 40px 30px;
           text-align: center;
+          border-bottom: 4px solid ${BRAND_COLORS.accent};
         }
-        .logo {
-          color: ${BRAND_COLORS.accent};
-          font-size: 32px;
-          font-weight: bold;
-          margin-bottom: 10px;
+        .logo-img {
+          max-width: 280px;
+          height: auto;
+          margin-bottom: 20px;
+          display: block;
         }
-        .logo-subtitle {
+        .header-tagline {
           color: ${BRAND_COLORS.accent};
           font-size: 14px;
           letter-spacing: 2px;
+          font-weight: 500;
+          margin-top: 15px;
         }
+
+        /* Content Area */
         .content {
-          background-color: ${BRAND_COLORS.white};
-          padding: 40px 20px;
+          padding: 40px 30px;
         }
-        .hero {
-          background-color: ${BRAND_COLORS.primary};
-          color: ${BRAND_COLORS.accent};
-          padding: 30px 20px;
-          text-align: center;
-          margin-bottom: 30px;
+
+        /* Test Badge */
+        .test-badge {
+          display: inline-block;
+          background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+          color: white;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+          margin-bottom: 25px;
         }
-        .hero-title {
-          font-size: 28px;
-          font-weight: bold;
-          margin: 0;
-        }
-        .section {
-          margin-bottom: 30px;
-        }
-        .section-title {
-          font-size: 18px;
-          font-weight: bold;
-          color: ${BRAND_COLORS.accent};
-          margin-bottom: 15px;
-        }
+
+        /* Greeting */
         .greeting {
-          font-size: 16px;
-          font-weight: bold;
+          font-size: 18px;
+          font-weight: 600;
           color: ${BRAND_COLORS.text};
           margin-bottom: 15px;
         }
+
+        /* Body Text */
         .body-text {
           font-size: 15px;
-          color: ${BRAND_COLORS.text};
-          line-height: 1.6;
-          margin-bottom: 15px;
+          color: ${BRAND_COLORS.lightText};
+          line-height: 1.8;
+          margin-bottom: 20px;
+        }
+
+        /* Section Title */
+        .section-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: ${BRAND_COLORS.primary};
+          margin: 30px 0 15px 0;
+          border-left: 4px solid ${BRAND_COLORS.accent};
+          padding-left: 15px;
+        }
+
+        /* Call to Action */
+        .cta-section {
+          text-align: center;
+          margin: 35px 0;
         }
         .cta-button {
           display: inline-block;
-          background-color: ${BRAND_COLORS.accent};
+          background: linear-gradient(135deg, ${BRAND_COLORS.accent} 0%, #c9a227 100%);
           color: ${BRAND_COLORS.primary};
-          padding: 14px 40px;
-          font-size: 16px;
-          font-weight: bold;
+          padding: 14px 45px;
+          font-size: 15px;
+          font-weight: 700;
           text-decoration: none;
           border-radius: 6px;
-          margin: 20px 0;
+          transition: transform 0.2s, box-shadow 0.2s;
+          box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
         }
+        .cta-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(212, 175, 55, 0.35);
+        }
+
+        /* Benefits Section */
         .benefits {
-          background-color: ${BRAND_COLORS.background};
-          padding: 30px 20px;
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 20px;
-          text-align: center;
+          margin: 35px 0;
+          padding: 30px;
+          background: ${BRAND_COLORS.lightGold};
+          border-radius: 8px;
         }
         .benefit-item {
-          padding: 15px;
+          text-align: center;
         }
         .benefit-icon {
-          font-size: 32px;
+          font-size: 36px;
           display: block;
-          margin-bottom: 10px;
+          margin-bottom: 12px;
         }
         .benefit-title {
-          font-size: 16px;
-          font-weight: bold;
-          color: ${BRAND_COLORS.accent};
+          font-size: 15px;
+          font-weight: 700;
+          color: ${BRAND_COLORS.primary};
           margin-bottom: 8px;
         }
         .benefit-text {
           font-size: 13px;
           color: ${BRAND_COLORS.lightText};
+          line-height: 1.5;
         }
+
+        /* Divider */
+        .divider {
+          border: 0;
+          border-top: 2px solid ${BRAND_COLORS.lightGold};
+          margin: 30px 0;
+        }
+
+        /* Footer */
         .footer {
-          background-color: ${BRAND_COLORS.primary};
-          padding: 30px 20px;
+          background: linear-gradient(135deg, ${BRAND_COLORS.primary} 0%, ${BRAND_COLORS.primary}dd 100%);
+          padding: 35px 30px;
           text-align: center;
           color: ${BRAND_COLORS.accent};
-          font-size: 12px;
+          border-top: 4px solid ${BRAND_COLORS.accent};
+        }
+        .footer-text {
+          font-size: 13px;
+          line-height: 1.8;
+          margin-bottom: 15px;
         }
         .footer-links {
-          margin-top: 10px;
+          font-size: 12px;
         }
         .footer-links a {
           color: ${BRAND_COLORS.accent};
           text-decoration: none;
-          margin: 0 10px;
+          margin: 0 8px;
+          transition: opacity 0.2s;
         }
-        .test-badge {
-          display: inline-block;
-          background-color: #4CAF50;
-          color: white;
-          padding: 6px 12px;
-          border-radius: 4px;
-          font-size: 12px;
-          font-weight: bold;
-          margin-bottom: 15px;
+        .footer-links a:hover {
+          opacity: 0.8;
         }
+
+        /* Responsive */
         @media (max-width: 600px) {
+          .container {
+            border-radius: 0;
+          }
+          .header {
+            padding: 30px 20px;
+          }
+          .content {
+            padding: 30px 20px;
+          }
           .benefits {
             grid-template-columns: 1fr;
+            padding: 20px;
+            gap: 15px;
           }
-          .hero-title {
-            font-size: 20px;
+          .section-title {
+            font-size: 18px;
           }
-          .logo {
-            font-size: 24px;
+          .logo-img {
+            max-width: 200px;
+          }
+          .cta-button {
+            font-size: 14px;
+            padding: 12px 35px;
           }
         }
       </style>
     </head>
     <body>
-      <div class="container">
-        <!-- Header -->
-        <div class="header">
-          <div class="logo">👁️ M&H</div>
-          <div class="logo-subtitle">EYEWEAR & OPTICALS</div>
-        </div>
-
-        <!-- Hero Section -->
-        <div class="hero">
-          <h1 class="hero-title">Test Email - Campaign Preview</h1>
-        </div>
-
-        <!-- Content -->
-        <div class="content">
-          <!-- Test Badge -->
-          <div style="text-align: center;">
-            <span class="test-badge">✓ TEST EMAIL</span>
+      <div class="email-wrapper">
+        <div class="container">
+          <!-- Header with Logo -->
+          <div class="header">
+            <img src="${LOGO_URL}" alt="M&H Eyewear & Opticals" class="logo-img" style="width: 280px; max-width: 100%;">
+            <div class="header-tagline">PREMIUM EYE CARE & DESIGNER FRAMES</div>
           </div>
 
-          <!-- Greeting -->
-          <div class="section">
+          <!-- Content -->
+          <div class="content">
+            <!-- Test Badge -->
+            <div>
+              <span class="test-badge">✓ TEST EMAIL PREVIEW</span>
+            </div>
+
+            <!-- Greeting -->
             <p class="greeting">Hello,</p>
             <p class="body-text">
-              This is a test preview of your campaign: <strong>"${campaignName}"</strong>
+              This is a preview of your campaign: <strong>"${campaignName}"</strong>. If you're seeing this, your email delivery system is working perfectly!
             </p>
-          </div>
 
-          <!-- Campaign Info -->
-          <div class="section">
+            <!-- Campaign Title -->
             <h2 class="section-title">${subject || "Campaign Preview"}</h2>
+
+            <!-- Campaign Description -->
             <p class="body-text">
-              If you're seeing this email, it means your campaign is ready to send!
-              The email delivery system is working perfectly.
+              This test email demonstrates the professional M&H Eyewear & Opticals brand template that will be used for all your campaigns. The template is fully responsive and optimized for all devices and email clients.
+            </p>
+
+            <!-- CTA Button -->
+            <div class="cta-section">
+              <a href="https://mandheyewear.com" class="cta-button">Explore Our Collection</a>
+            </div>
+
+            <!-- Benefits -->
+            <div class="benefits">
+              <div class="benefit-item">
+                <span class="benefit-icon">👓</span>
+                <div class="benefit-title">Premium Frames</div>
+                <div class="benefit-text">Designer eyewear for every style</div>
+              </div>
+              <div class="benefit-item">
+                <span class="benefit-icon">👁️</span>
+                <div class="benefit-title">Expert Care</div>
+                <div class="benefit-text">Professional optometric services</div>
+              </div>
+              <div class="benefit-item">
+                <span class="benefit-icon">✨</span>
+                <div class="benefit-title">Quality Service</div>
+                <div class="benefit-text">Excellence in everything we do</div>
+              </div>
+            </div>
+
+            <!-- Divider -->
+            <hr class="divider">
+
+            <!-- Closing -->
+            <p class="body-text" style="text-align: center; font-weight: 500; color: ${BRAND_COLORS.text};">
+              Thank you for choosing M&H Eyewear & Opticals<br>
+              <span style="color: ${BRAND_COLORS.accent}; font-size: 14px;">Your Vision, Our Mission</span>
             </p>
           </div>
 
-          <!-- CTA -->
-          <div style="text-align: center;">
-            <a href="https://mandheyewear.com" class="cta-button">Visit Our Website</a>
-          </div>
-
-          <!-- Benefits -->
-          <div class="benefits">
-            <div class="benefit-item">
-              <span class="benefit-icon">👓</span>
-              <div class="benefit-title">Premium Frames</div>
-              <div class="benefit-text">Designer eyewear curated for style</div>
-            </div>
-            <div class="benefit-item">
-              <span class="benefit-icon">👁️</span>
-              <div class="benefit-title">Expert Care</div>
-              <div class="benefit-text">Professional eye care services</div>
-            </div>
-            <div class="benefit-item">
-              <span class="benefit-icon">✨</span>
-              <div class="benefit-title">Quality Service</div>
-              <div class="benefit-text">Excellence in every interaction</div>
-            </div>
-          </div>
-
-          <!-- Closing -->
-          <div class="section" style="padding-top: 20px; text-align: center;">
-            <p class="body-text">
-              Best regards,<br>
-              <strong style="color: ${BRAND_COLORS.accent};">M&H Eyewear & Opticals Team</strong>
+          <!-- Footer -->
+          <div class="footer">
+            <p class="footer-text">
+              © 2026 M&H Eyewear & Opticals. All rights reserved.
             </p>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-          <p style="margin-bottom: 10px;">© 2026 M&H Eyewear & Opticals. All rights reserved.</p>
-          <div class="footer-links">
-            <a href="https://mandheyewear.com">Website</a> •
-            <a href="mailto:contact@mandheyewear.com">Contact</a> •
-            <a href="https://mandheyewear.com/unsubscribe">Unsubscribe</a>
+            <div class="footer-links">
+              <a href="https://mandheyewear.com">Website</a> •
+              <a href="https://mandheyewear.com/locations">Store Locator</a> •
+              <a href="https://mandheyewear.com/contact">Contact</a> •
+              <a href="https://mandheyewear.com/unsubscribe">Unsubscribe</a>
+            </div>
           </div>
         </div>
       </div>
