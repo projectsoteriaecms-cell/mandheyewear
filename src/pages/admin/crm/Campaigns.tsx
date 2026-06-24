@@ -1,27 +1,14 @@
-import { useState } from "react";
-import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
-import { useIsSuperAdmin } from "@/modules/auth/hooks/useUserRole";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Plus, Megaphone, Send, Pause, Play, Trash2, Loader2, ShieldAlert, Gauge, Zap, Mail,
-} from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+import { useState, useMemo } from 'react';
+import { AdminLayout } from '@/shared/layouts/admin';
+import { RoleGuard } from '@/modules/auth/components/RoleGuard';
+import { useIsSuperAdmin } from '@/modules/auth/hooks/useUserRole';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Plus, Loader2, ShieldAlert, Gauge, Zap, Mail, Megaphone } from 'lucide-react';
+import { cn } from '@/shared/lib/utils';
 import {
   CrmAccessGate,
   TriggerCard,
@@ -29,37 +16,27 @@ import {
   useCrmSegments,
   useCreateCampaign,
   useDeleteCampaign,
-  useScheduleCampaign,
   useTriggerCampaignSend,
-  useCampaignSendStatus,
   useSendQuotaStatus,
   useGlobalKillSwitch,
-  usePauseCampaign,
-  useResumeCampaign,
   useReengagementTriggers,
   useTestSendCampaign,
+  EmailTemplateTester,
+  CampaignDetailModal,
+  CampaignSearchFilter,
+  CampaignsTabContent,
+  CampaignBulkActionsBar,
+  useDuplicateCampaign,
+  useArchiveCampaigns,
+  useDeleteCampaignsBulk,
   type CrmCampaign,
-} from "@/modules/crm";
-import { TestEmailDialog } from "@/modules/crm/components/TestEmailDialog";
-import { SendScheduleDialog, type SendScheduleOptions } from "@/modules/crm/components/SendScheduleDialog";
-import { CrmTabs } from "./CrmTabs";
+} from '@/modules/crm';
+import { CrmTabs } from './CrmTabs';
 
-// ── Status badge ─────────────────────────────────────────────────────────────────
+type TabType = 'drafts' | 'active' | 'completed' | 'templates' | 'triggers';
+type DateFilterType = 'all' | 'week' | 'month';
 
-const STATUS_STYLES: Record<string, string> = {
-  draft:     "bg-muted text-muted-foreground",
-  scheduled: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-  running:   "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
-  paused:    "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
-  completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
-};
-
-function StatusBadge({ status }: { status: string }) {
-  return <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium capitalize", STATUS_STYLES[status])}>{status}</span>;
-}
-
-// ── Quota + kill switch banner ───────────────────────────────────────────────────
-
+// Send Control Bar
 function SendControlBar() {
   const q = useSendQuotaStatus();
   const { isSuperAdmin } = useIsSuperAdmin();
@@ -78,7 +55,6 @@ function SendControlBar() {
               {q.todaySent.toLocaleString()} / {q.quotaLimit.toLocaleString()} · day {q.warmupDay}
             </span>
           </div>
-          <Progress value={q.pctUsed} className="mt-1.5 h-1.5" />
         </div>
       </Card>
 
@@ -91,29 +67,26 @@ function SendControlBar() {
 
       {isSuperAdmin && (
         <Button
-          variant={q.globalKill ? "outline" : "destructive"}
+          variant={q.globalKill ? 'outline' : 'destructive'}
           onClick={() => kill.mutate(!q.globalKill)}
           disabled={kill.isPending}
           className="sm:self-stretch"
         >
           {kill.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldAlert className="mr-2 h-4 w-4" />}
-          {q.globalKill ? "Re-enable sends" : "Emergency stop"}
+          {q.globalKill ? 'Re-enable sends' : 'Emergency stop'}
         </Button>
       )}
     </div>
   );
 }
 
-// ── Create dialog ────────────────────────────────────────────────────────────────
-
+// Create Campaign Dialog
 function CreateCampaign({ onClose }: { onClose: () => void }) {
   const { data: segments } = useCrmSegments();
   const create = useCreateCampaign();
-  const [name, setName]         = useState("");
-  const [subject, setSubject]   = useState("");
-  const [segmentId, setSegmentId] = useState<string>("");
-
-  const selected = segments?.find((s) => s.id === segmentId);
+  const [name, setName] = useState('');
+  const [subject, setSubject] = useState('');
+  const [segmentId, setSegmentId] = useState('');
 
   function save() {
     if (!name.trim() || !segmentId) return;
@@ -126,37 +99,31 @@ function CreateCampaign({ onClose }: { onClose: () => void }) {
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>New campaign</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>New campaign</DialogTitle>
+        </DialogHeader>
         <div className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium">Name</label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. June frame sale" />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. June frame sale"
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Subject line</label>
-            <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Shown in the inbox" />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">Audience segment</label>
-            <Select value={segmentId} onValueChange={setSegmentId}>
-              <SelectTrigger><SelectValue placeholder="Select a segment" /></SelectTrigger>
-              <SelectContent>
-                {segments?.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.name} ({s.member_count.toLocaleString()})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {selected && (
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                ≈ {selected.member_count.toLocaleString()} contacts (cached count; live count shown before send)
-              </p>
-            )}
+            <Input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Shown in the inbox"
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
           <Button onClick={save} disabled={!name.trim() || !segmentId || create.isPending}>
             {create.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create draft
@@ -167,168 +134,121 @@ function CreateCampaign({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ── Campaign row ─────────────────────────────────────────────────────────────────
+// Filter campaigns helper
+function filterAndSearchCampaigns(
+  campaigns: CrmCampaign[] | undefined,
+  status: 'draft' | 'active' | 'completed',
+  searchQuery: string,
+  dateFilter: DateFilterType,
+) {
+  if (!campaigns) return [];
 
-function CampaignRow({ campaign, onDelete }: { campaign: CrmCampaign; onDelete: (c: CrmCampaign) => void }) {
-  const status    = useCampaignSendStatus(campaign.id);
-  const schedule  = useScheduleCampaign();
-  const trigger   = useTriggerCampaignSend();
-  const pause     = usePauseCampaign();
-  const resume    = useResumeCampaign();
-  const testSend  = useTestSendCampaign();
+  let filtered = campaigns.filter((c) => {
+    if (status === 'draft') return c.status === 'draft';
+    if (status === 'active') return c.status === 'running' || c.status === 'scheduled';
+    if (status === 'completed') return c.status === 'completed';
+    return false;
+  });
 
-  const [showTestEmail, setShowTestEmail] = useState(false);
-  const [showSendSchedule, setShowSendSchedule] = useState(false);
+  if (dateFilter !== 'all') {
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    const daysAgo = dateFilter === 'week' ? 7 : dateFilter === 'month' ? 30 : 0;
+    const cutoff = now - daysAgo * dayMs;
 
-  const isRunning = campaign.status === "running";
-  const isDraft   = campaign.status === "draft";
-  const isPaused  = campaign.status === "paused";
-  const busy = schedule.isPending || trigger.isPending || pause.isPending || resume.isPending || testSend.isPending;
+    filtered = filtered.filter((c) => new Date(c.created_at).getTime() >= cutoff);
+  }
 
-  const handleTestEmailSubmit = (testEmail: string, options: SendScheduleOptions) => {
-    testSend.mutate({
-      campaignId: campaign.id,
-      testEmail,
-      sendNow: options.sendNow,
-      scheduledAt: options.scheduledAt,
-    });
-    setShowTestEmail(false);
-  };
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.segment_name?.toLowerCase().includes(q) ||
+        c.subject_line?.toLowerCase().includes(q)
+    );
+  }
 
-  const handleSendScheduleSubmit = (options: SendScheduleOptions) => {
-    trigger.mutate({
-      campaignId: campaign.id,
-      sendNow: options.sendNow,
-      scheduledAt: options.scheduledAt,
-    });
-    setShowSendSchedule(false);
-  };
-
-  return (
-    <>
-      <Card className="p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="truncate font-semibold">{campaign.name}</h3>
-              <StatusBadge status={campaign.status} />
-            </div>
-            <p className="truncate text-sm text-muted-foreground">
-              {campaign.subject_line || "No subject"} · {campaign.segment_name || "no segment"}
-            </p>
-          </div>
-
-          <div className="flex flex-none gap-2">
-            {isDraft && (
-              <>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowTestEmail(true)}
-                  disabled={busy}
-                  title="Send a test copy before sending to all recipients"
-                >
-                  <Mail className="mr-1.5 h-3.5 w-3.5" /> Test
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setShowSendSchedule(true)}
-                  disabled={busy}
-                >
-                  <Send className="mr-1.5 h-3.5 w-3.5" /> Send
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => onDelete(campaign)}>
-                  <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                </Button>
-              </>
-            )}
-            {isRunning && (
-              <Button variant="outline" size="sm" onClick={() => pause.mutate(campaign.id)} disabled={busy}>
-                <Pause className="mr-1.5 h-3.5 w-3.5" /> Pause
-              </Button>
-            )}
-            {isPaused && (
-              <Button size="sm" onClick={() => { resume.mutate(campaign.id); trigger.mutate({ campaignId: campaign.id, sendNow: true }); }} disabled={busy}>
-                <Play className="mr-1.5 h-3.5 w-3.5" /> Resume
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Live progress while running/paused */}
-        {(isRunning || isPaused || campaign.status === "completed") && status.totalRecipients > 0 && (
-          <div className="mt-3">
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{status.sentCount.toLocaleString()} / {status.totalRecipients.toLocaleString()} sent</span>
-              <span>{status.percentDone}%</span>
-            </div>
-            <Progress value={status.percentDone} className="mt-1 h-1.5" />
-            {status.errorMessage && (
-              <p className="mt-1 text-xs text-destructive">{status.errorMessage}</p>
-            )}
-          </div>
-        )}
-      </Card>
-
-      {/* Test Email Dialog */}
-      <TestEmailDialog
-        campaignId={campaign.id}
-        campaignName={campaign.name}
-        isOpen={showTestEmail}
-        onClose={() => setShowTestEmail(false)}
-        onSubmit={handleTestEmailSubmit}
-        isPending={testSend.isPending}
-      />
-
-      {/* Send Schedule Dialog */}
-      <SendScheduleDialog
-        title="When to send campaign?"
-        description={`Send "${campaign.name}" to ${campaign.segment_name || "segment"} now or schedule for later`}
-        isOpen={showSendSchedule}
-        onClose={() => setShowSendSchedule(false)}
-        onSubmit={handleSendScheduleSubmit}
-        isPending={trigger.isPending}
-      />
-    </>
-  );
+  return filtered;
 }
 
-// ── Re-engagement triggers ───────────────────────────────────────────────────────
-
-function TriggersSection() {
-  const { data: triggers, isLoading } = useReengagementTriggers();
-  if (isLoading) return <Skeleton className="h-40" />;
-  if (!triggers?.length) return null;
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Zap className="h-4 w-4 text-amber-500" />
-        <h2 className="font-semibold">Re-engagement triggers</h2>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {triggers.map((t) => <TriggerCard key={t.id} trigger={t} />)}
-      </div>
-    </div>
-  );
-}
-
-// ── Page ─────────────────────────────────────────────────────────────────────────
-
+// Main Campaigns Component
 const CrmCampaigns = () => {
   const { data: campaigns, isLoading } = useCrmCampaigns();
+  const { data: triggers } = useReengagementTriggers();
   const del = useDeleteCampaign();
+  const duplicateCampaign = useDuplicateCampaign();
+  const archiveCampaigns = useArchiveCampaigns();
+  const deleteBulk = useDeleteCampaignsBulk();
+
+  const [currentTab, setCurrentTab] = useState<TabType>('drafts');
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<CrmCampaign | null>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<CrmCampaign | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const draftCampaigns = useMemo(
+    () => filterAndSearchCampaigns(campaigns, 'draft', searchQuery, dateFilter),
+    [campaigns, searchQuery, dateFilter],
+  );
+  const activeCampaigns = useMemo(
+    () => filterAndSearchCampaigns(campaigns, 'active', searchQuery, dateFilter),
+    [campaigns, searchQuery, dateFilter],
+  );
+  const completedCampaigns = useMemo(
+    () => filterAndSearchCampaigns(campaigns, 'completed', searchQuery, dateFilter),
+    [campaigns, searchQuery, dateFilter],
+  );
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setDateFilter('all');
+  };
+
+  const handleSelectionChange = (campaignId: string, selected: boolean) => {
+    const newSelected = new Set(selectedIds);
+    if (selected) {
+      newSelected.add(campaignId);
+    } else {
+      newSelected.delete(campaignId);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleDuplicateSelected = async () => {
+    const selectedArray = Array.from(selectedIds);
+    for (const id of selectedArray) {
+      await duplicateCampaign.mutateAsync(id);
+    }
+    setSelectedIds(new Set());
+  };
+
+  const handleArchiveSelected = () => {
+    archiveCampaigns.mutate(Array.from(selectedIds));
+    setSelectedIds(new Set());
+  };
+
+  const handleDeleteSelected = () => {
+    deleteBulk.mutate(Array.from(selectedIds));
+    setSelectedIds(new Set());
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
 
   return (
-    <RoleGuard allowedRoles={["super_admin", "admin", "branch_manager"]}>
+    <RoleGuard allowedRoles={['super_admin', 'admin', 'branch_manager']}>
       <AdminLayout>
         <div className="space-y-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold">CRM Campaigns</h1>
-              <p className="text-muted-foreground">Create, schedule, and send email campaigns to your segments.</p>
+              <p className="text-muted-foreground">
+                Create, schedule, and send email campaigns to your segments.
+              </p>
             </div>
             <Button onClick={() => setCreating(true)}>
               <Plus className="mr-2 h-4 w-4" /> New Campaign
@@ -338,47 +258,153 @@ const CrmCampaigns = () => {
           <CrmTabs />
 
           <CrmAccessGate>
-            <div className="space-y-6">
-              <SendControlBar />
+            <SendControlBar />
 
-              {isLoading ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
-                </div>
-              ) : campaigns && campaigns.length > 0 ? (
-                <div className="space-y-3">
-                  {campaigns.map((c) => <CampaignRow key={c.id} campaign={c} onDelete={setDeleting} />)}
-                </div>
-              ) : (
-                <Card className="flex flex-col items-center justify-center py-16 text-center">
-                  <Megaphone className="mb-3 h-10 w-10 text-muted-foreground/50" />
-                  <p className="font-medium">No campaigns yet</p>
-                  <p className="mb-4 text-sm text-muted-foreground">Build a segment first, then create a campaign to reach it.</p>
-                  <Button onClick={() => setCreating(true)}>
-                    <Plus className="mr-2 h-4 w-4" /> New Campaign
-                  </Button>
-                </Card>
+            {/* Tab Navigation */}
+            <div className="flex gap-2 border-b">
+              {[
+                { id: 'drafts' as const, label: 'Drafts', icon: '📝' },
+                { id: 'active' as const, label: 'Active', icon: '📤' },
+                { id: 'completed' as const, label: 'Completed', icon: '✅' },
+                { id: 'templates' as const, label: 'Templates', icon: '🧪' },
+                { id: 'triggers' as const, label: 'Triggers', icon: '⚡' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setCurrentTab(tab.id);
+                    setSearchQuery('');
+                    setDateFilter('all');
+                  }}
+                  className={cn(
+                    'px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors',
+                    currentTab === tab.id
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {tab.icon} {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Content Area */}
+            <div className="space-y-4">
+              {/* Search/Filter Bar */}
+              {(currentTab === 'drafts' || currentTab === 'active' || currentTab === 'completed') && (
+                <CampaignSearchFilter
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  dateFilter={dateFilter}
+                  onDateFilterChange={setDateFilter}
+                  onClearFilters={handleClearFilters}
+                />
               )}
 
-              <TriggersSection />
+              {/* Bulk Actions Bar */}
+              {selectedIds.size > 0 && (currentTab === 'drafts' || currentTab === 'active' || currentTab === 'completed') && (
+                <CampaignBulkActionsBar
+                  selectedCount={selectedIds.size}
+                  onDuplicate={handleDuplicateSelected}
+                  onArchive={handleArchiveSelected}
+                  onDelete={handleDeleteSelected}
+                  onClearSelection={handleClearSelection}
+                  isDuplicating={duplicateCampaign.isPending}
+                  isArchiving={archiveCampaigns.isPending}
+                  isDeleting={deleteBulk.isPending}
+                />
+              )}
+
+              {/* Drafts Tab */}
+              {currentTab === 'drafts' && (
+                <CampaignsTabContent
+                  campaigns={draftCampaigns}
+                  isLoading={isLoading}
+                  emptyMessage="No draft campaigns. Create one to get started."
+                  onCampaignClick={setSelectedCampaign}
+                  selectedIds={selectedIds}
+                  onSelectionChange={handleSelectionChange}
+                  showCheckboxes={true}
+                />
+              )}
+
+              {/* Active Tab */}
+              {currentTab === 'active' && (
+                <CampaignsTabContent
+                  campaigns={activeCampaigns}
+                  isLoading={isLoading}
+                  emptyMessage="No active campaigns. Send a draft to get started."
+                  onCampaignClick={setSelectedCampaign}
+                  selectedIds={selectedIds}
+                  onSelectionChange={handleSelectionChange}
+                  showCheckboxes={true}
+                />
+              )}
+
+              {/* Completed Tab */}
+              {currentTab === 'completed' && (
+                <CampaignsTabContent
+                  campaigns={completedCampaigns}
+                  isLoading={isLoading}
+                  emptyMessage="No completed campaigns yet."
+                  onCampaignClick={setSelectedCampaign}
+                  selectedIds={selectedIds}
+                  onSelectionChange={handleSelectionChange}
+                  showCheckboxes={true}
+                />
+              )}
+
+              {/* Templates Tab */}
+              {currentTab === 'templates' && <EmailTemplateTester />}
+
+              {/* Triggers Tab */}
+              {currentTab === 'triggers' && (
+                <div className="space-y-3">
+                  {triggers && triggers.length > 0 ? (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {triggers.map((t) => (
+                        <TriggerCard key={t.id} trigger={t} />
+                      ))}
+                    </div>
+                  ) : (
+                    <Card className="flex flex-col items-center justify-center py-16 text-center">
+                      <Zap className="mb-3 h-10 w-10 text-muted-foreground/50" />
+                      <p className="font-medium">No triggers set up yet</p>
+                    </Card>
+                  )}
+                </div>
+              )}
             </div>
           </CrmAccessGate>
         </div>
 
+        {/* Create Campaign Dialog */}
         {creating && <CreateCampaign onClose={() => setCreating(false)} />}
 
+        {/* Campaign Detail Modal */}
+        <CampaignDetailModal
+          campaign={selectedCampaign}
+          isOpen={!!selectedCampaign}
+          onClose={() => setSelectedCampaign(null)}
+          onSendClick={() => setSelectedCampaign(null)}
+          onTestClick={() => setSelectedCampaign(null)}
+        />
+
+        {/* Delete Confirmation */}
         <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete “{deleting?.name}”?</AlertDialogTitle>
+              <AlertDialogTitle>Delete {deleting?.name}?</AlertDialogTitle>
               <AlertDialogDescription>
-                Only draft campaigns can be deleted. This can't be undone.
+                Only draft campaigns can be deleted. This cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => { if (deleting) del.mutate(deleting.id, { onSuccess: () => setDeleting(null) }); }}
+                onClick={() => {
+                  if (deleting) del.mutate(deleting.id, { onSuccess: () => setDeleting(null) });
+                }}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Delete

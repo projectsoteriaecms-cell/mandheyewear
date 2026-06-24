@@ -3,6 +3,13 @@ export { CrmAccessGate } from "./components/CrmAccessGate";
 export { RankBadge, RankBadgeWithDetail } from "./components/RankBadge";
 export { TestEmailDialog } from "./components/TestEmailDialog";
 export { SendScheduleDialog, type SendScheduleOptions } from "./components/SendScheduleDialog";
+export { EmailTemplateTester } from "./components/EmailTemplateTester";
+export { CampaignDetailModal } from "./components/CampaignDetailModal";
+export { CampaignSearchFilter } from "./components/CampaignSearchFilter";
+export { CampaignsTabContent } from "./components/CampaignsTabContent";
+export { CampaignListItem } from "./components/CampaignListItem";
+export { CampaignBulkActionsBar } from "./components/CampaignBulkActionsBar";
+export { useDuplicateCampaign, useArchiveCampaigns, useDeleteCampaignsBulk } from "./hooks/useBulkCampaignActions";
 
 // Rule tree builder UI (T16)
 export { RuleTreeBuilder } from "./components/RuleTreeBuilder/index";
