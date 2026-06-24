@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { classifySbError } from "@/lib/supabase-errors";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
 import type { RuleTree } from "../lib/rule-tree";
@@ -86,7 +85,7 @@ export function useCreateSegment() {
       toast.success("Segment created.");
       qc.invalidateQueries({ queryKey: ["crm_segments"] });
     },
-    onError: (err) => toast.error(classifySbError(err).detail),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to create segment"),
   });
 }
 
@@ -108,7 +107,7 @@ export function useUpdateSegment() {
       toast.success("Segment updated.");
       qc.invalidateQueries({ queryKey: ["crm_segments"] });
     },
-    onError: (err) => toast.error(classifySbError(err).detail),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to update segment"),
   });
 }
 
@@ -127,11 +126,11 @@ export function useDeleteSegment() {
     },
     onError: (err) => {
       // FK restrict: a campaign still references this segment
-      const c = classifySbError(err);
+      const message = err instanceof Error ? err.message : "Failed to delete segment";
       toast.error(
-        c.detail.includes("foreign key") || err.message.includes("violates foreign key")
+        message.includes("foreign key") || message.includes("violates foreign key")
           ? "Can't delete — a campaign still uses this segment."
-          : c.detail,
+          : message,
       );
     },
   });

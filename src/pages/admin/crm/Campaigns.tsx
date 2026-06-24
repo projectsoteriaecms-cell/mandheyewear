@@ -19,7 +19,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Plus, Megaphone, Send, Pause, Play, Trash2, Loader2, ShieldAlert, Gauge, Zap,
+  Plus, Megaphone, Send, Pause, Play, Trash2, Loader2, ShieldAlert, Gauge, Zap, Mail,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import {
@@ -37,8 +37,11 @@ import {
   usePauseCampaign,
   useResumeCampaign,
   useReengagementTriggers,
+  useTestSendCampaign,
   type CrmCampaign,
 } from "@/modules/crm";
+import { TestEmailDialog } from "@/modules/crm/components/TestEmailDialog";
+import { SendScheduleDialog, type SendScheduleOptions } from "@/modules/crm/components/SendScheduleDialog";
 import { CrmTabs } from "./CrmTabs";
 
 // ── Status badge ─────────────────────────────────────────────────────────────────
@@ -167,68 +170,126 @@ function CreateCampaign({ onClose }: { onClose: () => void }) {
 // ── Campaign row ─────────────────────────────────────────────────────────────────
 
 function CampaignRow({ campaign, onDelete }: { campaign: CrmCampaign; onDelete: (c: CrmCampaign) => void }) {
-  const status   = useCampaignSendStatus(campaign.id);
-  const schedule = useScheduleCampaign();
-  const trigger  = useTriggerCampaignSend();
-  const pause    = usePauseCampaign();
-  const resume   = useResumeCampaign();
+  const status    = useCampaignSendStatus(campaign.id);
+  const schedule  = useScheduleCampaign();
+  const trigger   = useTriggerCampaignSend();
+  const pause     = usePauseCampaign();
+  const resume    = useResumeCampaign();
+  const testSend  = useTestSendCampaign();
+
+  const [showTestEmail, setShowTestEmail] = useState(false);
+  const [showSendSchedule, setShowSendSchedule] = useState(false);
 
   const isRunning = campaign.status === "running";
   const isDraft   = campaign.status === "draft";
   const isPaused  = campaign.status === "paused";
-  const busy = schedule.isPending || trigger.isPending || pause.isPending || resume.isPending;
+  const busy = schedule.isPending || trigger.isPending || pause.isPending || resume.isPending || testSend.isPending;
+
+  const handleTestEmailSubmit = (testEmail: string, options: SendScheduleOptions) => {
+    testSend.mutate({
+      campaignId: campaign.id,
+      testEmail,
+      sendNow: options.sendNow,
+      scheduledAt: options.scheduledAt,
+    });
+    setShowTestEmail(false);
+  };
+
+  const handleSendScheduleSubmit = (options: SendScheduleOptions) => {
+    trigger.mutate({
+      campaignId: campaign.id,
+      sendNow: options.sendNow,
+      scheduledAt: options.scheduledAt,
+    });
+    setShowSendSchedule(false);
+  };
 
   return (
-    <Card className="p-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="truncate font-semibold">{campaign.name}</h3>
-            <StatusBadge status={campaign.status} />
+    <>
+      <Card className="p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="truncate font-semibold">{campaign.name}</h3>
+              <StatusBadge status={campaign.status} />
+            </div>
+            <p className="truncate text-sm text-muted-foreground">
+              {campaign.subject_line || "No subject"} · {campaign.segment_name || "no segment"}
+            </p>
           </div>
-          <p className="truncate text-sm text-muted-foreground">
-            {campaign.subject_line || "No subject"} · {campaign.segment_name || "no segment"}
-          </p>
+
+          <div className="flex flex-none gap-2">
+            {isDraft && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowTestEmail(true)}
+                  disabled={busy}
+                  title="Send a test copy before sending to all recipients"
+                >
+                  <Mail className="mr-1.5 h-3.5 w-3.5" /> Test
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setShowSendSchedule(true)}
+                  disabled={busy}
+                >
+                  <Send className="mr-1.5 h-3.5 w-3.5" /> Send
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onDelete(campaign)}>
+                  <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                </Button>
+              </>
+            )}
+            {isRunning && (
+              <Button variant="outline" size="sm" onClick={() => pause.mutate(campaign.id)} disabled={busy}>
+                <Pause className="mr-1.5 h-3.5 w-3.5" /> Pause
+              </Button>
+            )}
+            {isPaused && (
+              <Button size="sm" onClick={() => { resume.mutate(campaign.id); trigger.mutate({ campaignId: campaign.id, sendNow: true }); }} disabled={busy}>
+                <Play className="mr-1.5 h-3.5 w-3.5" /> Resume
+              </Button>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-none gap-2">
-          {isDraft && (
-            <>
-              <Button size="sm" onClick={() => { schedule.mutate({ campaignId: campaign.id }); trigger.mutate(campaign.id); }} disabled={busy}>
-                <Send className="mr-1.5 h-3.5 w-3.5" /> Send now
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => onDelete(campaign)}>
-                <Trash2 className="h-3.5 w-3.5 text-destructive" />
-              </Button>
-            </>
-          )}
-          {isRunning && (
-            <Button variant="outline" size="sm" onClick={() => pause.mutate(campaign.id)} disabled={busy}>
-              <Pause className="mr-1.5 h-3.5 w-3.5" /> Pause
-            </Button>
-          )}
-          {isPaused && (
-            <Button size="sm" onClick={() => { resume.mutate(campaign.id); trigger.mutate(campaign.id); }} disabled={busy}>
-              <Play className="mr-1.5 h-3.5 w-3.5" /> Resume
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Live progress while running/paused */}
-      {(isRunning || isPaused || campaign.status === "completed") && status.totalRecipients > 0 && (
-        <div className="mt-3">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{status.sentCount.toLocaleString()} / {status.totalRecipients.toLocaleString()} sent</span>
-            <span>{status.percentDone}%</span>
+        {/* Live progress while running/paused */}
+        {(isRunning || isPaused || campaign.status === "completed") && status.totalRecipients > 0 && (
+          <div className="mt-3">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{status.sentCount.toLocaleString()} / {status.totalRecipients.toLocaleString()} sent</span>
+              <span>{status.percentDone}%</span>
+            </div>
+            <Progress value={status.percentDone} className="mt-1 h-1.5" />
+            {status.errorMessage && (
+              <p className="mt-1 text-xs text-destructive">{status.errorMessage}</p>
+            )}
           </div>
-          <Progress value={status.percentDone} className="mt-1 h-1.5" />
-          {status.errorMessage && (
-            <p className="mt-1 text-xs text-destructive">{status.errorMessage}</p>
-          )}
-        </div>
-      )}
-    </Card>
+        )}
+      </Card>
+
+      {/* Test Email Dialog */}
+      <TestEmailDialog
+        campaignId={campaign.id}
+        campaignName={campaign.name}
+        isOpen={showTestEmail}
+        onClose={() => setShowTestEmail(false)}
+        onSubmit={handleTestEmailSubmit}
+        isPending={testSend.isPending}
+      />
+
+      {/* Send Schedule Dialog */}
+      <SendScheduleDialog
+        title="When to send campaign?"
+        description={`Send "${campaign.name}" to ${campaign.segment_name || "segment"} now or schedule for later`}
+        isOpen={showSendSchedule}
+        onClose={() => setShowSendSchedule(false)}
+        onSubmit={handleSendScheduleSubmit}
+        isPending={trigger.isPending}
+      />
+    </>
   );
 }
 

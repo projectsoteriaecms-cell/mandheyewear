@@ -1,6 +1,8 @@
 export { SegmentRetryButton } from "./components/SegmentRetryButton";
 export { CrmAccessGate } from "./components/CrmAccessGate";
 export { RankBadge, RankBadgeWithDetail } from "./components/RankBadge";
+export { TestEmailDialog } from "./components/TestEmailDialog";
+export { SendScheduleDialog, type SendScheduleOptions } from "./components/SendScheduleDialog";
 
 // Rule tree builder UI (T16)
 export { RuleTreeBuilder } from "./components/RuleTreeBuilder/index";
@@ -28,6 +30,7 @@ export type {
   CampaignStatus,
   CampaignSendProgress,
   TriggerResult,
+  CampaignSendOptions,
 } from "./hooks/useCampaignSend";
 
 // Campaign controls + send quota (T15)
@@ -70,8 +73,9 @@ export {
   useCreateCampaign,
   useUpdateCampaign,
   useDeleteCampaign,
+  useTestSendCampaign,
 } from "./hooks/useCrmCampaigns";
-export type { CrmCampaign, CampaignInput } from "./hooks/useCrmCampaigns";
+export type { CrmCampaign, CampaignInput, TestSendOptions } from "./hooks/useCrmCampaigns";
 
 // WhatsApp channel (T20)
 export {

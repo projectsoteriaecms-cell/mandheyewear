@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { classifySbError } from "@/shared/lib/supabase-error-utils";
 
 export interface AddCustomerInput {
   email: string;
@@ -40,8 +39,7 @@ export function useAddCustomer() {
     },
 
     onError: (error: any) => {
-      const classified = classifySbError(error);
-      console.error("Add customer error:", classified);
+      console.error("Add customer error:", error);
     },
   });
 }

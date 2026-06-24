@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { classifySbError } from "@/lib/supabase-errors";
 import { toast } from "sonner";
 import type { CampaignStatus } from "./useCampaignSend";
 
@@ -58,6 +57,7 @@ export function useCrmCampaigns() {
         template_id:  row.template_id,
         segment_id:   row.segment_id,
         segment_name: row.crm_segments?.name ?? null,
+        test_email:   row.test_email,
         status:       row.status,
         scheduled_at: row.scheduled_at,
         started_at:   row.started_at,
@@ -94,7 +94,7 @@ export function useCreateCampaign() {
       toast.success("Campaign created as draft.");
       qc.invalidateQueries({ queryKey: ["crm_campaigns"] });
     },
-    onError: (err) => toast.error(classifySbError(err).detail),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to create campaign"),
   });
 }
 
@@ -123,7 +123,7 @@ export function useUpdateCampaign() {
       toast.success("Campaign updated.");
       qc.invalidateQueries({ queryKey: ["crm_campaigns"] });
     },
-    onError: (err) => toast.error(classifySbError(err).detail),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to update campaign"),
   });
 }
 
@@ -144,6 +144,72 @@ export function useDeleteCampaign() {
       toast.success("Draft campaign deleted.");
       qc.invalidateQueries({ queryKey: ["crm_campaigns"] });
     },
-    onError: (err) => toast.error(classifySbError(err).detail),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to delete campaign"),
+  });
+}
+
+// ── useTestSendCampaign ────────────────────────────────────────────────────────
+
+export interface TestSendOptions {
+  campaignId: string;
+  testEmail: string;
+  sendNow: boolean;
+  scheduledAt?: string;
+}
+
+export function useTestSendCampaign() {
+  const qc = useQueryClient();
+  return useMutation<void, Error, TestSendOptions>({
+    mutationFn: async ({ campaignId, testEmail, sendNow, scheduledAt }) => {
+      if (sendNow) {
+        // Send immediately via Edge Function
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-test-email`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+              "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({
+              campaign_id: campaignId,
+              test_email: testEmail,
+            }),
+          }
+        );
+
+        const body = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+
+        if (!res.ok) {
+          throw new Error(body?.error ?? `Failed to send test email (${res.status})`);
+        }
+      } else {
+        // Schedule for later
+        if (!scheduledAt) throw new Error("Scheduled time is required");
+
+        const { error } = await supabase
+          .from("campaign_test_queue")
+          .insert({
+            campaign_id: campaignId,
+            test_email: testEmail,
+            scheduled_at: scheduledAt,
+            created_at: new Date().toISOString(),
+          });
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_, { testEmail, sendNow }) => {
+      if (sendNow) {
+        toast.success(`Test email sent to ${testEmail}`);
+      } else {
+        toast.success(`Test email scheduled to ${testEmail}`);
+      }
+      qc.invalidateQueries({ queryKey: ["crm_campaigns"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to send test email"),
   });
 }
