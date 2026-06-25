@@ -31,7 +31,7 @@ export function useCampaignAnalytics(campaignId: string | null) {
 
       const { data: run, error: runError } = await supabase
         .from('crm_campaign_runs')
-        .select('total_recipients, sent_count, completed_at')
+        .select('total_recipients, sent_count, opened_count, clicked_count, completed_at')
         .eq('campaign_id', campaignId)
         .order('started_at', { ascending: false })
         .limit(1)
@@ -41,14 +41,19 @@ export function useCampaignAnalytics(campaignId: string | null) {
 
       const totalRecipients = run?.total_recipients ?? 0;
       const sentCount = run?.sent_count ?? 0;
+      const openedCount = run?.opened_count ?? 0;
+      const clickedCount = run?.clicked_count ?? 0;
+
       const sentPercentage = totalRecipients > 0 ? Math.round((sentCount / totalRecipients) * 100) : 0;
+      const openRate = sentCount > 0 ? Math.round((openedCount / sentCount) * 100) : 0;
+      const clickRate = sentCount > 0 ? Math.round((clickedCount / sentCount) * 100) : 0;
 
       return {
         totalSent: sentCount,
         totalRecipients,
         sentPercentage,
-        estimatedOpenRate: sentCount > 0 ? Math.round(Math.random() * 35) : 0,
-        estimatedClickRate: sentCount > 0 ? Math.round(Math.random() * 8) : 0,
+        estimatedOpenRate: openRate,
+        estimatedClickRate: clickRate,
         sentCount,
       };
     },
