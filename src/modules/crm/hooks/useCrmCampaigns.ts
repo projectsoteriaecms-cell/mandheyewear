@@ -5,29 +5,84 @@ import type { CampaignStatus } from "./useCampaignSend";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+export interface EmailBlock {
+  id:   string;
+  type: 'hero' | 'text' | 'button' | 'divider' | 'spacer' | 'columns2';
+  data: Record<string, string>;
+}
+
 export interface CrmCampaign {
-  id:            string;
-  name:          string;
-  subject_line:  string | null;
-  preview_text:  string | null;
-  template_id:   string | null;
-  segment_id:    string | null;
-  segment_name:  string | null;
-  status:        CampaignStatus;
-  is_archived:   boolean;
-  scheduled_at:  string | null;
-  started_at:    string | null;
-  completed_at:  string | null;
-  created_at:    string;
-  updated_at:    string;
+  id:               string;
+  name:             string;
+  subject_line:     string | null;
+  subject_line_b:   string | null;
+  ab_enabled:       boolean;
+  preview_text:     string | null;
+  template_id:      string | null;
+  segment_id:       string | null;
+  segment_name:     string | null;
+  status:           CampaignStatus;
+  is_archived:      boolean;
+  body_blocks:      EmailBlock[];
+  body_html:        string | null;
+  scheduled_at:     string | null;
+  started_at:       string | null;
+  completed_at:     string | null;
+  created_at:       string;
+  updated_at:       string;
 }
 
 export interface CampaignInput {
-  name:         string;
-  subject_line?: string | null;
-  preview_text?: string | null;
-  template_id?:  string | null;
-  segment_id:    string;
+  name:            string;
+  subject_line?:   string | null;
+  subject_line_b?: string | null;
+  ab_enabled?:     boolean;
+  preview_text?:   string | null;
+  template_id?:    string | null;
+  segment_id:      string;
+  body_blocks?:    EmailBlock[];
+  body_html?:      string | null;
+}
+
+// ── useGetCampaign — single campaign by id ────────────────────────────────────
+
+export function useGetCampaign(id: string | null) {
+  return useQuery({
+    queryKey: ["crm_campaign", id],
+    enabled: !!id,
+    staleTime: 15_000,
+    queryFn: async (): Promise<CrmCampaign> => {
+      const { data, error } = await supabase
+        .from("crm_campaigns")
+        .select(
+          "id, name, subject_line, subject_line_b, ab_enabled, preview_text, template_id, segment_id, status, is_archived, body_blocks, body_html, scheduled_at, started_at, completed_at, created_at, updated_at, crm_segments(name)",
+        )
+        .eq("id", id!)
+        .single();
+      if (error) throw error;
+      const row = data as any;
+      return {
+        id:             row.id,
+        name:           row.name,
+        subject_line:   row.subject_line,
+        subject_line_b: row.subject_line_b,
+        ab_enabled:     row.ab_enabled ?? false,
+        preview_text:   row.preview_text,
+        template_id:    row.template_id,
+        segment_id:     row.segment_id,
+        segment_name:   row.crm_segments?.name ?? null,
+        status:         row.status,
+        is_archived:    row.is_archived ?? false,
+        body_blocks:    row.body_blocks ?? [],
+        body_html:      row.body_html,
+        scheduled_at:   row.scheduled_at,
+        started_at:     row.started_at,
+        completed_at:   row.completed_at,
+        created_at:     row.created_at,
+        updated_at:     row.updated_at,
+      } as CrmCampaign;
+    },
+  });
 }
 
 // ── useCrmCampaigns — list (with segment name) ─────────────────────────────────
@@ -45,27 +100,30 @@ export function useCrmCampaigns() {
       const { data, error } = await supabase
         .from("crm_campaigns")
         .select(
-          "id, name, subject_line, preview_text, template_id, segment_id, status, is_archived, scheduled_at, started_at, completed_at, created_at, updated_at, crm_segments(name)",
+          "id, name, subject_line, subject_line_b, ab_enabled, preview_text, template_id, segment_id, status, is_archived, body_blocks, body_html, scheduled_at, started_at, completed_at, created_at, updated_at, crm_segments(name)",
         )
         .order("updated_at", { ascending: false });
       if (error) throw error;
 
       return (data ?? []).map((row: any) => ({
-        id:           row.id,
-        name:         row.name,
-        subject_line: row.subject_line,
-        preview_text: row.preview_text,
-        template_id:  row.template_id,
-        segment_id:   row.segment_id,
-        segment_name: row.crm_segments?.name ?? null,
-        test_email:   row.test_email,
-        status:       row.status,
-        is_archived:  row.is_archived ?? false,
-        scheduled_at: row.scheduled_at,
-        started_at:   row.started_at,
-        completed_at: row.completed_at,
-        created_at:   row.created_at,
-        updated_at:   row.updated_at,
+        id:             row.id,
+        name:           row.name,
+        subject_line:   row.subject_line,
+        subject_line_b: row.subject_line_b,
+        ab_enabled:     row.ab_enabled ?? false,
+        preview_text:   row.preview_text,
+        template_id:    row.template_id,
+        segment_id:     row.segment_id,
+        segment_name:   row.crm_segments?.name ?? null,
+        status:         row.status,
+        is_archived:    row.is_archived ?? false,
+        body_blocks:    row.body_blocks ?? [],
+        body_html:      row.body_html,
+        scheduled_at:   row.scheduled_at,
+        started_at:     row.started_at,
+        completed_at:   row.completed_at,
+        created_at:     row.created_at,
+        updated_at:     row.updated_at,
       })) as unknown as CrmCampaign[];
     },
   });
@@ -107,11 +165,15 @@ export function useUpdateCampaign() {
   return useMutation<void, Error, { id: string } & Partial<CampaignInput>>({
     mutationFn: async ({ id, ...patch }) => {
       const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
-      if (patch.name !== undefined)         update.name = patch.name;
-      if (patch.subject_line !== undefined) update.subject_line = patch.subject_line;
-      if (patch.preview_text !== undefined) update.preview_text = patch.preview_text;
-      if (patch.template_id !== undefined)  update.template_id = patch.template_id;
-      if (patch.segment_id !== undefined)   update.segment_id = patch.segment_id;
+      if (patch.name !== undefined)            update.name = patch.name;
+      if (patch.subject_line !== undefined)    update.subject_line = patch.subject_line;
+      if (patch.subject_line_b !== undefined)  update.subject_line_b = patch.subject_line_b;
+      if (patch.ab_enabled !== undefined)      update.ab_enabled = patch.ab_enabled;
+      if (patch.preview_text !== undefined)    update.preview_text = patch.preview_text;
+      if (patch.template_id !== undefined)     update.template_id = patch.template_id;
+      if (patch.segment_id !== undefined)      update.segment_id = patch.segment_id;
+      if (patch.body_blocks !== undefined)     update.body_blocks = patch.body_blocks;
+      if (patch.body_html !== undefined)       update.body_html = patch.body_html;
 
       // Only editable while still a draft — prevents editing a sent campaign.
       const { error } = await supabase

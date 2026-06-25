@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Mail, Send, Pause, Play, X, Pencil } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { useNavigate } from "react-router-dom";
 import { useCampaignSendStatus, usePauseCampaign, useResumeCampaign, useTriggerCampaignSend, useCampaignAnalytics, CampaignAnalyticsCard, CampaignWhatsAppSection } from "@/modules/crm";
 import type { CrmCampaign } from "@/modules/crm";
 import { Loader2 } from "lucide-react";
@@ -39,6 +40,7 @@ export function CampaignDetailModal({
   onTestClick,
   onEditClick,
 }: CampaignDetailModalProps) {
+  const navigate = useNavigate();
   const status = useCampaignSendStatus(campaign?.id || null);
   const pause = usePauseCampaign();
   const resume = useResumeCampaign();
@@ -158,7 +160,14 @@ export function CampaignDetailModal({
             <div className="flex flex-wrap gap-2">
               {isDraft && (
                 <>
-                  <Button size="sm" variant="outline" onClick={onEditClick}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      onClose();
+                      navigate(`/admin/crm/campaigns/${campaign!.id}/edit`);
+                    }}
+                  >
                     <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit Campaign
                   </Button>
                   <Button size="sm" variant="outline" onClick={onTestClick}>

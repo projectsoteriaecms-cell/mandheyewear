@@ -2,9 +2,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/shared/lib/utils";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Pencil } from "lucide-react";
 import type { CrmCampaign } from "@/modules/crm";
 import { memo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCampaignAnalytics } from "../hooks/useCampaignAnalytics";
 import { CampaignAnalyticsCard } from "./CampaignAnalyticsCard";
 
@@ -31,6 +32,7 @@ function CampaignListItemComponent({
   isSelected = false,
   showCheckbox = false,
 }: CampaignListItemProps) {
+  const navigate = useNavigate();
   const createdAt = new Date(campaign.created_at).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -81,7 +83,19 @@ function CampaignListItemComponent({
             </div>
           </div>
 
-          <div className="flex-none">
+          <div className="flex-none flex items-center gap-1">
+            {campaign.status === 'draft' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/admin/crm/campaigns/${campaign.id}/edit`);
+                }}
+                className="rounded p-1 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                title="Open campaign builder"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            )}
             <ChevronRight className="h-5 w-5 text-muted-foreground transition-colors" />
           </div>
         </div>

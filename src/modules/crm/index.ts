@@ -11,6 +11,8 @@ export { CampaignListItem } from "./components/CampaignListItem";
 export { CampaignBulkActionsBar } from "./components/CampaignBulkActionsBar";
 export { CampaignActionDialog } from "./components/CampaignActionDialog";
 export { CampaignEditDialog } from "./components/CampaignEditDialog";
+export { EmailBlockEditor, TokenPicker, TOKENS } from "./components/EmailBlockEditor";
+export { EmailPreviewFrame, blocksToHtml } from "./components/EmailPreviewFrame";
 export { CampaignAnalyticsCard } from "./components/CampaignAnalyticsCard";
 export { CampaignWhatsAppSection } from "./components/CampaignWhatsAppSection";
 export { useDuplicateCampaign, useArchiveCampaigns, useUnarchiveCampaigns, useDeleteCampaignsBulk } from "./hooks/useBulkCampaignActions";
@@ -81,13 +83,14 @@ export {
 } from "./hooks/useCrmSegments";
 export type { CrmSegment, SegmentInput } from "./hooks/useCrmSegments";
 export {
+  useGetCampaign,
   useCrmCampaigns,
   useCreateCampaign,
   useUpdateCampaign,
   useDeleteCampaign,
   useTestSendCampaign,
 } from "./hooks/useCrmCampaigns";
-export type { CrmCampaign, CampaignInput, TestSendOptions } from "./hooks/useCrmCampaigns";
+export type { CrmCampaign, CampaignInput, TestSendOptions, EmailBlock } from "./hooks/useCrmCampaigns";
 
 // WhatsApp channel (T20)
 export {
