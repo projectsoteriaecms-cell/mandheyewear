@@ -99,6 +99,19 @@ export type {
   WhatsAppTriggerResult,
 } from "./hooks/useWhatsAppChannel";
 
+export {
+  useWhatsAppTemplates,
+  useAllWhatsAppTemplates,
+  useCreateWhatsAppTemplate,
+  useUpdateWhatsAppTemplate,
+  useDeactivateWhatsAppTemplate,
+} from "./hooks/useWhatsAppTemplates";
+export type {
+  WhatsAppTemplate,
+  CreateWhatsAppTemplateInput,
+  UpdateWhatsAppTemplateInput,
+} from "./hooks/useWhatsAppTemplates";
+
 // LTV + cohort analytics (T19)
 export {
   LtvDashboard,
