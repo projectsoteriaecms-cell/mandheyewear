@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Mail, Send, Pause, Play, X } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { useCampaignSendStatus, usePauseCampaign, useResumeCampaign, useTriggerCampaignSend, useCampaignAnalytics, CampaignAnalyticsCard } from "@/modules/crm";
+import { useCampaignSendStatus, usePauseCampaign, useResumeCampaign, useTriggerCampaignSend, useCampaignAnalytics, CampaignAnalyticsCard, CampaignWhatsAppSection } from "@/modules/crm";
 import type { CrmCampaign } from "@/modules/crm";
 import { Loader2 } from "lucide-react";
 
@@ -117,6 +117,9 @@ export function CampaignDetailModal({
               isCompact={false}
             />
           )}
+
+          {/* WhatsApp Channel Section */}
+          <CampaignWhatsAppSection campaign={campaign} />
 
           {/* Progress Section (if running/paused/completed) */}
           {(isRunning || isPaused || campaign.status === "completed") && status.totalRecipients > 0 && (
