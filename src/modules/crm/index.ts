@@ -11,7 +11,7 @@ export { CampaignListItem } from "./components/CampaignListItem";
 export { CampaignBulkActionsBar } from "./components/CampaignBulkActionsBar";
 export { CampaignActionDialog } from "./components/CampaignActionDialog";
 export { CampaignAnalyticsCard } from "./components/CampaignAnalyticsCard";
-export { useDuplicateCampaign, useArchiveCampaigns, useDeleteCampaignsBulk } from "./hooks/useBulkCampaignActions";
+export { useDuplicateCampaign, useArchiveCampaigns, useUnarchiveCampaigns, useDeleteCampaignsBulk } from "./hooks/useBulkCampaignActions";
 export { useCampaignAnalytics, useCampaignMetrics, type CampaignAnalytics } from "./hooks/useCampaignAnalytics";
 
 // Rule tree builder UI (T16)

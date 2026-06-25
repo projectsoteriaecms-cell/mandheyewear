@@ -71,6 +71,31 @@ export function useArchiveCampaigns() {
   });
 }
 
+export function useUnarchiveCampaigns() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (campaignIds: string[]) => {
+      const { error } = await supabase
+        .from("crm_campaigns")
+        .update({ is_archived: false })
+        .in("id", campaignIds);
+
+      if (error) throw error;
+    },
+
+    onSuccess: (_, campaignIds) => {
+      toast.success(`${campaignIds.length} campaign(s) restored`);
+      qc.invalidateQueries({ queryKey: ["crm_campaigns"] });
+    },
+
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : "Failed to restore campaigns";
+      toast.error(message);
+    },
+  });
+}
+
 export function useDeleteCampaignsBulk() {
   const qc = useQueryClient();
 

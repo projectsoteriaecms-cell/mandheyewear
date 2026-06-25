@@ -14,6 +14,7 @@ export interface CrmCampaign {
   segment_id:    string | null;
   segment_name:  string | null;
   status:        CampaignStatus;
+  is_archived:   boolean;
   scheduled_at:  string | null;
   started_at:    string | null;
   completed_at:  string | null;
@@ -44,7 +45,7 @@ export function useCrmCampaigns() {
       const { data, error } = await supabase
         .from("crm_campaigns")
         .select(
-          "id, name, subject_line, preview_text, template_id, segment_id, status, scheduled_at, started_at, completed_at, created_at, updated_at, crm_segments(name)",
+          "id, name, subject_line, preview_text, template_id, segment_id, status, is_archived, scheduled_at, started_at, completed_at, created_at, updated_at, crm_segments(name)",
         )
         .order("updated_at", { ascending: false });
       if (error) throw error;
@@ -59,6 +60,7 @@ export function useCrmCampaigns() {
         segment_name: row.crm_segments?.name ?? null,
         test_email:   row.test_email,
         status:       row.status,
+        is_archived:  row.is_archived ?? false,
         scheduled_at: row.scheduled_at,
         started_at:   row.started_at,
         completed_at: row.completed_at,

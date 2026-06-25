@@ -29,12 +29,13 @@ import {
   CampaignBulkActionsBar,
   useDuplicateCampaign,
   useArchiveCampaigns,
+  useUnarchiveCampaigns,
   useDeleteCampaignsBulk,
   type CrmCampaign,
 } from '@/modules/crm';
 import { CrmTabs } from './CrmTabs';
 
-type TabType = 'drafts' | 'active' | 'completed' | 'templates' | 'triggers';
+type TabType = 'drafts' | 'active' | 'completed' | 'archived' | 'templates' | 'triggers';
 type DateFilterType = 'all' | 'week' | 'month';
 
 // Send Control Bar
@@ -138,13 +139,17 @@ function CreateCampaign({ onClose }: { onClose: () => void }) {
 // Filter campaigns helper
 function filterAndSearchCampaigns(
   campaigns: CrmCampaign[] | undefined,
-  status: 'draft' | 'active' | 'completed',
+  status: 'draft' | 'active' | 'completed' | 'archived',
   searchQuery: string,
   dateFilter: DateFilterType,
 ) {
   if (!campaigns) return [];
 
   let filtered = campaigns.filter((c) => {
+    // Archived campaigns only appear under the Archived tab; everywhere else
+    // they are hidden regardless of their underlying status.
+    if (status === 'archived') return c.is_archived === true;
+    if (c.is_archived) return false;
     if (status === 'draft') return c.status === 'draft';
     if (status === 'active') return c.status === 'running' || c.status === 'scheduled';
     if (status === 'completed') return c.status === 'completed';
@@ -180,6 +185,7 @@ const CrmCampaigns = () => {
   const del = useDeleteCampaign();
   const duplicateCampaign = useDuplicateCampaign();
   const archiveCampaigns = useArchiveCampaigns();
+  const unarchiveCampaigns = useUnarchiveCampaigns();
   const deleteBulk = useDeleteCampaignsBulk();
 
   const [currentTab, setCurrentTab] = useState<TabType>('drafts');
@@ -202,6 +208,10 @@ const CrmCampaigns = () => {
   );
   const completedCampaigns = useMemo(
     () => filterAndSearchCampaigns(campaigns, 'completed', searchQuery, dateFilter),
+    [campaigns, searchQuery, dateFilter],
+  );
+  const archivedCampaigns = useMemo(
+    () => filterAndSearchCampaigns(campaigns, 'archived', searchQuery, dateFilter),
     [campaigns, searchQuery, dateFilter],
   );
 
@@ -230,6 +240,11 @@ const CrmCampaigns = () => {
 
   const handleArchiveSelected = () => {
     archiveCampaigns.mutate(Array.from(selectedIds));
+    setSelectedIds(new Set());
+  };
+
+  const handleUnarchiveSelected = () => {
+    unarchiveCampaigns.mutate(Array.from(selectedIds));
     setSelectedIds(new Set());
   };
 
@@ -281,6 +296,7 @@ const CrmCampaigns = () => {
                 { id: 'drafts' as const, label: 'Drafts', icon: '📝' },
                 { id: 'active' as const, label: 'Active', icon: '📤' },
                 { id: 'completed' as const, label: 'Completed', icon: '✅' },
+                { id: 'archived' as const, label: 'Archived', icon: '📦' },
                 { id: 'templates' as const, label: 'Templates', icon: '🧪' },
                 { id: 'triggers' as const, label: 'Triggers', icon: '⚡' },
               ].map((tab) => (
@@ -306,7 +322,7 @@ const CrmCampaigns = () => {
             {/* Content Area */}
             <div className="space-y-4">
               {/* Search/Filter Bar */}
-              {(currentTab === 'drafts' || currentTab === 'active' || currentTab === 'completed') && (
+              {(currentTab === 'drafts' || currentTab === 'active' || currentTab === 'completed' || currentTab === 'archived') && (
                 <CampaignSearchFilter
                   searchQuery={searchQuery}
                   onSearchChange={setSearchQuery}
@@ -317,15 +333,18 @@ const CrmCampaigns = () => {
               )}
 
               {/* Bulk Actions Bar */}
-              {selectedIds.size > 0 && (currentTab === 'drafts' || currentTab === 'active' || currentTab === 'completed') && (
+              {selectedIds.size > 0 && (currentTab === 'drafts' || currentTab === 'active' || currentTab === 'completed' || currentTab === 'archived') && (
                 <CampaignBulkActionsBar
                   selectedCount={selectedIds.size}
+                  variant={currentTab === 'archived' ? 'archived' : 'default'}
                   onDuplicate={handleDuplicateSelected}
                   onArchive={handleArchiveSelected}
+                  onUnarchive={handleUnarchiveSelected}
                   onDelete={handleDeleteSelected}
                   onClearSelection={handleClearSelection}
                   isDuplicating={duplicateCampaign.isPending}
                   isArchiving={archiveCampaigns.isPending}
+                  isUnarchiving={unarchiveCampaigns.isPending}
                   isDeleting={deleteBulk.isPending}
                 />
               )}
@@ -362,6 +381,19 @@ const CrmCampaigns = () => {
                   campaigns={completedCampaigns}
                   isLoading={isLoading}
                   emptyMessage="No completed campaigns yet."
+                  onCampaignClick={setSelectedCampaign}
+                  selectedIds={selectedIds}
+                  onSelectionChange={handleSelectionChange}
+                  showCheckboxes={true}
+                />
+              )}
+
+              {/* Archived Tab */}
+              {currentTab === 'archived' && (
+                <CampaignsTabContent
+                  campaigns={archivedCampaigns}
+                  isLoading={isLoading}
+                  emptyMessage="No archived campaigns. Archived campaigns appear here and can be restored."
                   onCampaignClick={setSelectedCampaign}
                   selectedIds={selectedIds}
                   onSelectionChange={handleSelectionChange}
