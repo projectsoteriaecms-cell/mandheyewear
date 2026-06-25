@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Mail, Send, Pause, Play, X } from "lucide-react";
+import { Mail, Send, Pause, Play, X, Pencil } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useCampaignSendStatus, usePauseCampaign, useResumeCampaign, useTriggerCampaignSend, useCampaignAnalytics, CampaignAnalyticsCard, CampaignWhatsAppSection } from "@/modules/crm";
 import type { CrmCampaign } from "@/modules/crm";
@@ -20,6 +20,7 @@ interface CampaignDetailModalProps {
   onClose: () => void;
   onSendClick: () => void;
   onTestClick: () => void;
+  onEditClick?: () => void;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -36,6 +37,7 @@ export function CampaignDetailModal({
   onClose,
   onSendClick,
   onTestClick,
+  onEditClick,
 }: CampaignDetailModalProps) {
   const status = useCampaignSendStatus(campaign?.id || null);
   const pause = usePauseCampaign();
@@ -156,6 +158,9 @@ export function CampaignDetailModal({
             <div className="flex flex-wrap gap-2">
               {isDraft && (
                 <>
+                  <Button size="sm" variant="outline" onClick={onEditClick}>
+                    <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit Campaign
+                  </Button>
                   <Button size="sm" variant="outline" onClick={onTestClick}>
                     <Mail className="mr-1.5 h-3.5 w-3.5" /> Test Email
                   </Button>

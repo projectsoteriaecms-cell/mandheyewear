@@ -10,6 +10,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Loader2, ShieldAlert, Gauge, Zap, Mail, Megaphone } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   CrmAccessGate,
   TriggerCard,
   useCrmCampaigns,
@@ -24,6 +31,7 @@ import {
   EmailTemplateTester,
   CampaignDetailModal,
   CampaignActionDialog,
+  CampaignEditDialog,
   CampaignSearchFilter,
   CampaignsTabContent,
   CampaignBulkActionsBar,
@@ -102,11 +110,13 @@ function CreateCampaign({ onClose }: { onClose: () => void }) {
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>New campaign</DialogTitle>
+          <DialogTitle>New Campaign</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium">Name</label>
+            <label className="mb-1 block text-sm font-medium">
+              Campaign Name <span className="text-destructive">*</span>
+            </label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -114,12 +124,42 @@ function CreateCampaign({ onClose }: { onClose: () => void }) {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Subject line</label>
+            <label className="mb-1 block text-sm font-medium">
+              Recipients (Segment) <span className="text-destructive">*</span>
+            </label>
+            <Select value={segmentId} onValueChange={setSegmentId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose who receives this…" />
+              </SelectTrigger>
+              <SelectContent>
+                {(segments ?? []).map((seg) => (
+                  <SelectItem key={seg.id} value={seg.id}>
+                    <span className="font-medium">{seg.name}</span>
+                    {seg.member_count > 0 && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        · {seg.member_count.toLocaleString()} contacts
+                      </span>
+                    )}
+                  </SelectItem>
+                ))}
+                {(segments ?? []).length === 0 && (
+                  <SelectItem value="__none__" disabled>
+                    No segments yet — create one in the Segments tab
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Subject Line</label>
             <Input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="Shown in the inbox"
+              placeholder="e.g. Exclusive offer just for you 🎁"
             />
+            <p className="mt-1 text-xs text-muted-foreground">
+              You can edit this and all other fields after creating the draft.
+            </p>
           </div>
         </div>
         <DialogFooter>
@@ -128,7 +168,7 @@ function CreateCampaign({ onClose }: { onClose: () => void }) {
           </Button>
           <Button onClick={save} disabled={!name.trim() || !segmentId || create.isPending}>
             {create.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create draft
+            Create Draft
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -192,6 +232,7 @@ const CrmCampaigns = () => {
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<CrmCampaign | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<CrmCampaign | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<CrmCampaign | null>(null);
   const [actionCampaign, setActionCampaign] = useState<CrmCampaign | null>(null);
   const [actionType, setActionType] = useState<'send' | 'test' | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -258,15 +299,25 @@ const CrmCampaigns = () => {
   };
 
   const openAction = (type: 'send' | 'test') => {
-    // selectedCampaign is the one shown in the modal; carry it into the action dialog
-    setActionCampaign(selectedCampaign);
+    // carry selectedCampaign or editingCampaign into the action dialog
+    setActionCampaign(selectedCampaign ?? editingCampaign);
     setActionType(type);
-    setSelectedCampaign(null); // close the detail modal
+    setSelectedCampaign(null);
+    setEditingCampaign(null);
   };
 
   const closeAction = () => {
     setActionCampaign(null);
     setActionType(null);
+  };
+
+  const openEdit = () => {
+    setEditingCampaign(selectedCampaign);
+    setSelectedCampaign(null);
+  };
+
+  const closeEdit = () => {
+    setEditingCampaign(null);
   };
 
   return (
@@ -433,6 +484,16 @@ const CrmCampaigns = () => {
           campaign={selectedCampaign}
           isOpen={!!selectedCampaign}
           onClose={() => setSelectedCampaign(null)}
+          onSendClick={() => openAction('send')}
+          onTestClick={() => openAction('test')}
+          onEditClick={openEdit}
+        />
+
+        {/* Campaign Edit Dialog (draft builder) */}
+        <CampaignEditDialog
+          campaign={editingCampaign}
+          isOpen={!!editingCampaign}
+          onClose={closeEdit}
           onSendClick={() => openAction('send')}
           onTestClick={() => openAction('test')}
         />

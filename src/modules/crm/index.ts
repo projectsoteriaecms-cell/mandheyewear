@@ -10,6 +10,7 @@ export { CampaignsTabContent } from "./components/CampaignsTabContent";
 export { CampaignListItem } from "./components/CampaignListItem";
 export { CampaignBulkActionsBar } from "./components/CampaignBulkActionsBar";
 export { CampaignActionDialog } from "./components/CampaignActionDialog";
+export { CampaignEditDialog } from "./components/CampaignEditDialog";
 export { CampaignAnalyticsCard } from "./components/CampaignAnalyticsCard";
 export { CampaignWhatsAppSection } from "./components/CampaignWhatsAppSection";
 export { useDuplicateCampaign, useArchiveCampaigns, useUnarchiveCampaigns, useDeleteCampaignsBulk } from "./hooks/useBulkCampaignActions";
