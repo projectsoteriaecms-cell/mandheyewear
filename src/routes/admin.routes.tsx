@@ -46,6 +46,7 @@ const CrmCustomers = lazyRetry(() => import("@/pages/admin/crm/Customers"));
 const CrmSegments = lazyRetry(() => import("@/pages/admin/crm/Segments"));
 const CrmCampaigns = lazyRetry(() => import("@/pages/admin/crm/Campaigns"));
 const CrmAnalytics = lazyRetry(() => import("@/pages/admin/crm/Analytics"));
+const CrmCompliance = lazyRetry(() => import("@/pages/admin/crm/Compliance"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -87,4 +88,5 @@ export const adminRoutes = [
   <Route key="/admin/crm/segments" path="/admin/crm/segments" element={withSuspense(CrmSegments)} />,
   <Route key="/admin/crm/campaigns" path="/admin/crm/campaigns" element={withSuspense(CrmCampaigns)} />,
   <Route key="/admin/crm/analytics" path="/admin/crm/analytics" element={withSuspense(CrmAnalytics)} />,
+  <Route key="/admin/crm/compliance" path="/admin/crm/compliance" element={withSuspense(CrmCompliance)} />,
 ];
