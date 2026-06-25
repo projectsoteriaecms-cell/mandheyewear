@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Users, Target, Megaphone, ChartLine, Lock } from "lucide-react";
+import { Users, Target, Megaphone, ChartLine, Lock, Zap } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 const TABS = [
@@ -7,6 +7,7 @@ const TABS = [
   { to: "/admin/crm/segments",  label: "Segments",  icon: Target },
   { to: "/admin/crm/campaigns", label: "Campaigns", icon: Megaphone },
   { to: "/admin/crm/analytics", label: "Analytics", icon: ChartLine },
+  { to: "/admin/crm/behavioral", label: "Behavioral", icon: Zap },
   { to: "/admin/crm/compliance", label: "Compliance", icon: Lock },
 ];
 
