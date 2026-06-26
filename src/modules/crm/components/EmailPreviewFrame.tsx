@@ -131,7 +131,7 @@ ${previewText}
           <td style="background:#f9fafb;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb;">
             <p style="margin:0;font-size:12px;color:#6b7280;font-family:sans-serif;">
               ${meta.fromName ?? 'M&H Eyewear'} ·
-              <a href="#" style="color:#6b7280;">Unsubscribe</a> ·
+              <a href="{{unsubscribe_link}}" style="color:#6b7280;">Unsubscribe</a> ·
               <a href="#" style="color:#6b7280;">View in browser</a>
             </p>
           </td>

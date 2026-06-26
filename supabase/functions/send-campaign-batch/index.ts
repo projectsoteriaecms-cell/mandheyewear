@@ -66,10 +66,31 @@ interface ClaimedCampaign {
   is_new_run:    boolean;
 }
 
+interface CampaignExtra {
+  body_html:      string | null;
+  subject_line_b: string | null;
+  ab_enabled:     boolean;
+}
+
 interface Recipient {
   email:            string;
   full_name:        string | null;
   preference_token: string | null;
+}
+
+// ── Token replacement ─────────────────────────────────────────────────────────
+
+function replaceTokens(html: string, r: Recipient, prefUrl: string): string {
+  const firstName = r.full_name?.split(" ")[0] ?? "Customer";
+  const lastName  = r.full_name?.split(" ").slice(1).join(" ") ?? "";
+  const fullName  = r.full_name ?? "Valued Customer";
+  return html
+    .replaceAll("{{first_name}}",      escapeHtml(firstName))
+    .replaceAll("{{last_name}}",       escapeHtml(lastName))
+    .replaceAll("{{full_name}}",       escapeHtml(fullName))
+    .replaceAll("{{email}}",           escapeHtml(r.email))
+    .replaceAll("{{store_name}}",      "M&amp;H Eyewear")
+    .replaceAll("{{unsubscribe_link}}", prefUrl);
 }
 
 // ── Resend batch send ─────────────────────────────────────────────────────────
@@ -80,23 +101,30 @@ async function sendBatch(
   campaignName: string,
   campaignId: string,
   runId: string,
+  bodyHtml: string | null,
 ): Promise<{ messageIds: (string | null)[]; error?: string }> {
   const apiKey = Deno.env.get("RESEND_API_KEY");
   if (!apiKey) return { messageIds: [], error: "RESEND_API_KEY not configured" };
 
-  const payload = recipients.map((r) => ({
-    from:    FROM_EMAIL,
-    to:      [r.email],
-    subject,
-    html:    buildEmailHtml(r, campaignName, subject),
-    text:    buildEmailText(r, campaignName),
-    // Tags are passed through in Resend webhooks — lets crm_handle_email_event
-    // look up the campaign without needing to parse the email address alone.
-    tags: [
-      { name: "campaign_id",     value: campaignId },
-      { name: "campaign_run_id", value: runId },
-    ],
-  }));
+  const payload = recipients.map((r) => {
+    const prefUrl = preferenceUrl(r);
+    const html = bodyHtml
+      ? replaceTokens(bodyHtml, r, prefUrl)
+      : buildEmailHtml(r, campaignName, subject);
+    return {
+      from:    FROM_EMAIL,
+      to:      [r.email],
+      subject,
+      html,
+      text:    buildEmailText(r, campaignName),
+      // Tags are passed through in Resend webhooks — lets crm_handle_email_event
+      // look up the campaign without needing to parse the email address alone.
+      tags: [
+        { name: "campaign_id",     value: campaignId },
+        { name: "campaign_run_id", value: runId },
+      ],
+    };
+  });
 
   const res = await fetch(RESEND_URL, {
     method: "POST",
@@ -237,6 +265,21 @@ const handler = async (req: Request): Promise<Response> => {
       `[send-campaign] claimed ${campaign_id} (run ${run_id}, new=${is_new_run})`,
     );
 
+    // Fetch extra fields not returned by the claim RPC
+    const { data: extra } = await supabase
+      .from("crm_campaigns")
+      .select("body_html, subject_line_b, ab_enabled")
+      .eq("id", campaign_id)
+      .single();
+
+    const bodyHtml  = (extra as CampaignExtra | null)?.body_html      ?? null;
+    const subjectB  = (extra as CampaignExtra | null)?.subject_line_b ?? null;
+    const abEnabled = (extra as CampaignExtra | null)?.ab_enabled      ?? false;
+
+    console.log(
+      `[send-campaign] body_html=${bodyHtml ? "yes" : "no"} ab_enabled=${abEnabled}`,
+    );
+
     // ── Step 2: Set total_recipients on new run ───────────────────────────────
     if (is_new_run) {
       const { data: countData } = await supabase
@@ -340,14 +383,45 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      // Send via Resend batch API (tags carry campaign_id + run_id for webhook correlation)
-      const { messageIds, error: sendErr } = await sendBatch(
-        recipients,
-        subject,
-        campaign_name,
-        campaign_id,
-        run_id,
-      );
+      // Send via Resend — split for A/B if enabled
+      let sendErr: string | undefined;
+      let ledgerRecipients: Recipient[];
+      let ledgerMessageIds: (string | null)[];
+
+      if (abEnabled && subjectB) {
+        // Split batch 50/50 by index — even → Subject A, odd → Subject B
+        const groupA = recipients.filter((_, i) => i % 2 === 0);
+        const groupB = recipients.filter((_, i) => i % 2 !== 0);
+
+        const [resA, resB] = await Promise.all([
+          groupA.length > 0
+            ? sendBatch(groupA, subject, campaign_name, campaign_id, run_id, bodyHtml)
+            : Promise.resolve({ messageIds: [] as (string | null)[] }),
+          groupB.length > 0
+            ? sendBatch(groupB, subjectB, campaign_name, campaign_id, run_id, bodyHtml)
+            : Promise.resolve({ messageIds: [] as (string | null)[] }),
+        ]);
+
+        sendErr = resA.error ?? resB.error;
+        ledgerRecipients = [...groupA, ...groupB];
+        ledgerMessageIds = [...resA.messageIds, ...resB.messageIds];
+
+        console.log(
+          `[send-campaign] A/B batch: A=${groupA.length} B=${groupB.length}`,
+        );
+      } else {
+        const result = await sendBatch(
+          recipients,
+          subject,
+          campaign_name,
+          campaign_id,
+          run_id,
+          bodyHtml,
+        );
+        sendErr = result.error;
+        ledgerRecipients = recipients;
+        ledgerMessageIds = result.messageIds;
+      }
 
       if (sendErr) {
         await recordFailure("resend");
@@ -361,7 +435,7 @@ const handler = async (req: Request): Promise<Response> => {
       await recordSuccess("resend");
 
       // Write to ledger (ON CONFLICT DO NOTHING = extra double-send protection)
-      await writeLedger(supabase, run_id, recipients, messageIds);
+      await writeLedger(supabase, run_id, ledgerRecipients, ledgerMessageIds);
 
       totalSent += recipients.length;
 

@@ -349,10 +349,10 @@ serve(async (req) => {
 
     const supabase = db();
 
-    // Fetch campaign
+    // Fetch campaign (include body_html for block-editor campaigns)
     const { data: campaign, error: campError } = await supabase
       .from("crm_campaigns")
-      .select("id, name, subject_line, template_id")
+      .select("id, name, subject_line, template_id, body_html")
       .eq("id", campaign_id)
       .single();
 
@@ -371,11 +371,31 @@ serve(async (req) => {
       );
     }
 
-    const emailHtml = buildCampaignEmailHtml(
-      campaign.name,
-      campaign.subject_line || "Campaign Test",
-      test_email
-    );
+    // If body_html exists (block builder), inject a TEST PREVIEW banner and
+    // resolve personalisation tokens with sample values.
+    // Otherwise fall back to the generic branded template.
+    let emailHtml: string;
+    if (campaign.body_html) {
+      const testBanner = `
+        <div style="background:#f59e0b;color:#000;text-align:center;padding:10px 20px;font-family:sans-serif;font-size:13px;font-weight:600;">
+          ✉️ TEST PREVIEW — This is how your campaign will look to recipients
+        </div>`;
+      const withTokens = campaign.body_html
+        .replaceAll("{{first_name}}",       "Amaka")
+        .replaceAll("{{last_name}}",        "Okonkwo")
+        .replaceAll("{{full_name}}",        "Amaka Okonkwo")
+        .replaceAll("{{email}}",            test_email)
+        .replaceAll("{{store_name}}",       "M&amp;H Eyewear")
+        .replaceAll("{{unsubscribe_link}}", "https://mandheyewear.com/unsubscribe");
+      // Inject the banner just after <body …>
+      emailHtml = withTokens.replace(/<body[^>]*>/, (match) => match + testBanner);
+    } else {
+      emailHtml = buildCampaignEmailHtml(
+        campaign.name,
+        campaign.subject_line || "Campaign Test",
+        test_email
+      );
+    }
 
     const emailResponse = await fetch("https://api.resend.com/emails/batch", {
       method: "POST",
