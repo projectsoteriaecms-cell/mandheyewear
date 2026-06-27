@@ -16,15 +16,20 @@ export function useDuplicateCampaign() {
 
       if (fetchError || !original) throw new Error("Campaign not found");
 
-      // Create a copy
+      // Create a copy — preserve all content fields
       const { data: duplicate, error: insertError } = await supabase
         .from("crm_campaigns")
         .insert({
-          name: `${original.name} (Copy)`,
-          subject_line: original.subject_line,
-          segment_id: original.segment_id,
-          template_id: original.template_id,
-          status: "draft",
+          name:           `${original.name} (Copy)`,
+          subject_line:   original.subject_line,
+          subject_line_b: original.subject_line_b ?? null,
+          ab_enabled:     original.ab_enabled ?? false,
+          preview_text:   original.preview_text ?? null,
+          segment_id:     original.segment_id,
+          template_id:    original.template_id,
+          body_blocks:    original.body_blocks ?? [],
+          body_html:      original.body_html ?? null,
+          status:         "draft",
         })
         .select()
         .single();

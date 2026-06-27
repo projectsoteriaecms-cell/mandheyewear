@@ -12,8 +12,8 @@ import { Search, X } from "lucide-react";
 interface CampaignSearchFilterProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  dateFilter: "all" | "week" | "month" | "custom";
-  onDateFilterChange: (filter: "all" | "week" | "month" | "custom") => void;
+  dateFilter: "all" | "week" | "month";
+  onDateFilterChange: (filter: "all" | "week" | "month") => void;
   onClearFilters: () => void;
 }
 
@@ -47,7 +47,6 @@ export function CampaignSearchFilter({
             <SelectItem value="all">All Time</SelectItem>
             <SelectItem value="week">This Week</SelectItem>
             <SelectItem value="month">This Month</SelectItem>
-            <SelectItem value="custom">Custom Range</SelectItem>
           </SelectContent>
         </Select>
 

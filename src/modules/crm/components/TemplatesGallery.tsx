@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, ArrowRight } from 'lucide-react';
-import { useCreateCampaign, useUpdateCampaign, useCrmSegments, blocksToHtml } from '@/modules/crm';
-import type { EmailBlock } from '@/modules/crm';
+import { useCreateCampaign, useUpdateCampaign } from '../hooks/useCrmCampaigns';
+import { useCrmSegments } from '../hooks/useCrmSegments';
+import { blocksToHtml } from './EmailPreviewFrame';
+import type { EmailBlock } from '../hooks/useCrmCampaigns';
 
 interface StarterTemplate {
   id: string;
