@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Plus, Loader2, ShieldAlert, Gauge, Zap, ArrowRight } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -28,10 +27,8 @@ import {
   useSendQuotaStatus,
   useGlobalKillSwitch,
   useReengagementTriggers,
-  useTestSendCampaign,
   CampaignDetailModal,
   CampaignActionDialog,
-  CampaignEditDialog,
   CampaignSearchFilter,
   CampaignsTabContent,
   CampaignBulkActionsBar,
@@ -224,7 +221,6 @@ function filterAndSearchCampaigns(
 const CrmCampaigns = () => {
   const { data: campaigns, isLoading } = useCrmCampaigns();
   const { data: triggers } = useReengagementTriggers();
-  const del = useDeleteCampaign();
   const duplicateCampaign = useDuplicateCampaign();
   const archiveCampaigns = useArchiveCampaigns();
   const unarchiveCampaigns = useUnarchiveCampaigns();
@@ -233,9 +229,7 @@ const CrmCampaigns = () => {
   const [currentTab, setCurrentTab] = useState<TabType>('drafts');
   const [creating, setCreating] = useState(false);
   const [creatingTrigger, setCreatingTrigger] = useState(false);
-  const [deleting, setDeleting] = useState<CrmCampaign | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<CrmCampaign | null>(null);
-  const [editingCampaign, setEditingCampaign] = useState<CrmCampaign | null>(null);
   const [actionCampaign, setActionCampaign] = useState<CrmCampaign | null>(null);
   const [actionType, setActionType] = useState<'send' | 'test' | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -313,25 +307,14 @@ const CrmCampaigns = () => {
   };
 
   const openAction = (type: 'send' | 'test') => {
-    // carry selectedCampaign or editingCampaign into the action dialog
-    setActionCampaign(selectedCampaign ?? editingCampaign);
+    setActionCampaign(selectedCampaign);
     setActionType(type);
     setSelectedCampaign(null);
-    setEditingCampaign(null);
   };
 
   const closeAction = () => {
     setActionCampaign(null);
     setActionType(null);
-  };
-
-  const openEdit = () => {
-    setEditingCampaign(selectedCampaign);
-    setSelectedCampaign(null);
-  };
-
-  const closeEdit = () => {
-    setEditingCampaign(null);
   };
 
   return (
@@ -533,16 +516,6 @@ const CrmCampaigns = () => {
           onClose={() => setSelectedCampaign(null)}
           onSendClick={() => openAction('send')}
           onTestClick={() => openAction('test')}
-          onEditClick={openEdit}
-        />
-
-        {/* Campaign Edit Dialog (draft builder) */}
-        <CampaignEditDialog
-          campaign={editingCampaign}
-          isOpen={!!editingCampaign}
-          onClose={closeEdit}
-          onSendClick={() => openAction('send')}
-          onTestClick={() => openAction('test')}
         />
 
         {/* Send / Test Action Dialog */}
@@ -552,28 +525,6 @@ const CrmCampaigns = () => {
           onClose={closeAction}
         />
 
-        {/* Delete Confirmation */}
-        <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete {deleting?.name}?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Only draft campaigns can be deleted. This cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => {
-                  if (deleting) del.mutate(deleting.id, { onSuccess: () => setDeleting(null) });
-                }}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </AdminLayout>
     </RoleGuard>
   );

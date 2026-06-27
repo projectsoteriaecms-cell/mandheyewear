@@ -21,7 +21,6 @@ interface CampaignDetailModalProps {
   onClose: () => void;
   onSendClick: () => void;
   onTestClick: () => void;
-  onEditClick?: () => void;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -38,7 +37,6 @@ export function CampaignDetailModal({
   onClose,
   onSendClick,
   onTestClick,
-  onEditClick,
 }: CampaignDetailModalProps) {
   const navigate = useNavigate();
   const status = useCampaignSendStatus(campaign?.id || null);
