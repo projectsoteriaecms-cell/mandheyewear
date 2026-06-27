@@ -193,11 +193,13 @@ async function writeLedger(
   runId: string,
   recipients: Recipient[],
   messageIds: (string | null)[],
+  abVariants?: ('a' | 'b' | null)[],
 ): Promise<void> {
   const rows = recipients.map((r, i) => ({
     campaign_run_id:   runId,
     contact_email:     r.email.toLowerCase().trim(),
     resend_message_id: messageIds[i] ?? null,
+    ab_variant:        abVariants?.[i] ?? null,
   }));
 
   // ON CONFLICT DO NOTHING = second-layer double-send guard
@@ -388,6 +390,8 @@ const handler = async (req: Request): Promise<Response> => {
       let ledgerRecipients: Recipient[];
       let ledgerMessageIds: (string | null)[];
 
+      let ledgerVariants: ('a' | 'b' | null)[] | undefined;
+
       if (abEnabled && subjectB) {
         // Split batch 50/50 by index — even → Subject A, odd → Subject B
         const groupA = recipients.filter((_, i) => i % 2 === 0);
@@ -405,6 +409,10 @@ const handler = async (req: Request): Promise<Response> => {
         sendErr = resA.error ?? resB.error;
         ledgerRecipients = [...groupA, ...groupB];
         ledgerMessageIds = [...resA.messageIds, ...resB.messageIds];
+        ledgerVariants   = [
+          ...groupA.map(() => 'a' as const),
+          ...groupB.map(() => 'b' as const),
+        ];
 
         console.log(
           `[send-campaign] A/B batch: A=${groupA.length} B=${groupB.length}`,
@@ -435,7 +443,7 @@ const handler = async (req: Request): Promise<Response> => {
       await recordSuccess("resend");
 
       // Write to ledger (ON CONFLICT DO NOTHING = extra double-send protection)
-      await writeLedger(supabase, run_id, ledgerRecipients, ledgerMessageIds);
+      await writeLedger(supabase, run_id, ledgerRecipients, ledgerMessageIds, ledgerVariants);
 
       totalSent += recipients.length;
 

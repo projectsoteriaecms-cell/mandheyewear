@@ -94,6 +94,10 @@ export {
 } from "./hooks/useCrmCampaigns";
 export type { CrmCampaign, CampaignInput, TestSendOptions, EmailBlock } from "./hooks/useCrmCampaigns";
 
+// A/B winner resolution
+export { useAbStats, useResolveAbWinner } from "./hooks/useAbWinner";
+export type { AbStats } from "./hooks/useAbWinner";
+
 // WhatsApp channel (T20)
 export {
   useWhatsAppChannel,

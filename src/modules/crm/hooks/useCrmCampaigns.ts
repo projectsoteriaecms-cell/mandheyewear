@@ -17,6 +17,7 @@ export interface CrmCampaign {
   subject_line:     string | null;
   subject_line_b:   string | null;
   ab_enabled:       boolean;
+  ab_winner:        'a' | 'b' | null;
   preview_text:     string | null;
   template_id:      string | null;
   segment_id:       string | null;
@@ -55,7 +56,7 @@ export function useGetCampaign(id: string | null) {
       const { data, error } = await supabase
         .from("crm_campaigns")
         .select(
-          "id, name, subject_line, subject_line_b, ab_enabled, preview_text, template_id, segment_id, status, is_archived, body_blocks, body_html, scheduled_at, started_at, completed_at, created_at, updated_at, crm_segments(name)",
+          "id, name, subject_line, subject_line_b, ab_enabled, ab_winner, preview_text, template_id, segment_id, status, is_archived, body_blocks, body_html, scheduled_at, started_at, completed_at, created_at, updated_at, crm_segments(name)",
         )
         .eq("id", id!)
         .single();
@@ -67,6 +68,7 @@ export function useGetCampaign(id: string | null) {
         subject_line:   row.subject_line,
         subject_line_b: row.subject_line_b,
         ab_enabled:     row.ab_enabled ?? false,
+        ab_winner:      row.ab_winner ?? null,
         preview_text:   row.preview_text,
         template_id:    row.template_id,
         segment_id:     row.segment_id,
@@ -100,7 +102,7 @@ export function useCrmCampaigns() {
       const { data, error } = await supabase
         .from("crm_campaigns")
         .select(
-          "id, name, subject_line, subject_line_b, ab_enabled, preview_text, template_id, segment_id, status, is_archived, body_blocks, body_html, scheduled_at, started_at, completed_at, created_at, updated_at, crm_segments(name)",
+          "id, name, subject_line, subject_line_b, ab_enabled, ab_winner, preview_text, template_id, segment_id, status, is_archived, body_blocks, body_html, scheduled_at, started_at, completed_at, created_at, updated_at, crm_segments(name)",
         )
         .order("updated_at", { ascending: false });
       if (error) throw error;
@@ -111,6 +113,7 @@ export function useCrmCampaigns() {
         subject_line:   row.subject_line,
         subject_line_b: row.subject_line_b,
         ab_enabled:     row.ab_enabled ?? false,
+        ab_winner:      row.ab_winner ?? null,
         preview_text:   row.preview_text,
         template_id:    row.template_id,
         segment_id:     row.segment_id,

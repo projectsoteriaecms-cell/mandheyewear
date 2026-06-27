@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Mail, Send, Pause, Play, X, Pencil } from "lucide-react";
+import { Mail, Send, Pause, Play, X, Pencil, Trophy, FlaskConical, Clock } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useCampaignSendStatus, usePauseCampaign, useResumeCampaign, useTriggerCampaignSend, useCampaignAnalytics, CampaignAnalyticsCard, CampaignWhatsAppSection } from "@/modules/crm";
 import type { CrmCampaign } from "@/modules/crm";
+import { useAbStats, useResolveAbWinner } from "../hooks/useAbWinner";
 import { Loader2 } from "lucide-react";
 
 interface CampaignDetailModalProps {
@@ -30,6 +31,128 @@ const STATUS_STYLES: Record<string, string> = {
   paused:    "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
   completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
 };
+
+// ── A/B Test Results Panel ────────────────────────────────────────────────────
+
+function AbTestPanel({ campaign }: { campaign: CrmCampaign }) {
+  const stats = useAbStats(campaign.id);
+  const resolve = useResolveAbWinner();
+
+  const hoursElapsed = campaign.started_at
+    ? (Date.now() - new Date(campaign.started_at).getTime()) / (1000 * 60 * 60)
+    : 0;
+  const testWindowPassed = hoursElapsed >= 4;
+
+  const winner = stats.data?.ab_winner ?? campaign.ab_winner;
+  const s = stats.data;
+
+  const VariantBar = ({ label, subject, opens, sent, rate, isWinner }: {
+    label: string; subject: string; opens: number; sent: number; rate: number; isWinner: boolean;
+  }) => (
+    <div className={cn(
+      "rounded-lg border p-3 space-y-2",
+      isWinner
+        ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20"
+        : "border-border bg-muted/30",
+    )}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold uppercase text-muted-foreground">
+            {label}
+          </span>
+          {isWinner && (
+            <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
+              <Trophy className="h-3 w-3" /> Winner
+            </span>
+          )}
+        </div>
+        <span className="text-sm font-bold tabular-nums">
+          {rate}% opens
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground italic line-clamp-1">"{subject}"</p>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span>{opens} unique opens</span>
+        <span>·</span>
+        <span>{sent} sent</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <Card className="p-4 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <FlaskConical className="h-4 w-4 text-violet-500" />
+          <p className="text-sm font-medium">A/B Subject Line Test</p>
+        </div>
+        {!winner && !testWindowPassed && campaign.started_at && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            <span>
+              {hoursElapsed < 1
+                ? "< 1 hr elapsed"
+                : `${Math.floor(hoursElapsed)}h elapsed`}
+              {" · resolves after 4h"}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {stats.isLoading ? (
+        <div className="text-xs text-muted-foreground">Loading stats…</div>
+      ) : s?.ok ? (
+        <div className="space-y-2">
+          <VariantBar
+            label="Subject A"
+            subject={campaign.subject_line ?? ""}
+            opens={s.opens_a}
+            sent={s.sent_a}
+            rate={s.open_rate_a}
+            isWinner={winner === 'a'}
+          />
+          <VariantBar
+            label="Subject B"
+            subject={campaign.subject_line_b ?? ""}
+            opens={s.opens_b}
+            sent={s.sent_b}
+            rate={s.open_rate_b}
+            isWinner={winner === 'b'}
+          />
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          {s?.reason === 'ab_not_enabled'
+            ? "A/B not enabled on this campaign."
+            : "Stats not available yet — data arrives via Resend webhooks after emails are opened."}
+        </p>
+      )}
+
+      {!winner && (testWindowPassed || !campaign.started_at) && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => resolve.mutate(campaign.id)}
+          disabled={resolve.isPending}
+          className="w-full"
+        >
+          {resolve.isPending
+            ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Resolving…</>
+            : <><Trophy className="mr-1.5 h-3.5 w-3.5" /> Resolve winner now</>}
+        </Button>
+      )}
+
+      {winner && (
+        <p className="text-xs text-muted-foreground text-center">
+          Winner locked: Subject {winner.toUpperCase()} with{' '}
+          {winner === 'a' ? s?.open_rate_a : s?.open_rate_b}% open rate.
+        </p>
+      )}
+    </Card>
+  );
+}
+
+// ── Main modal ────────────────────────────────────────────────────────────────
 
 export function CampaignDetailModal({
   campaign,
@@ -118,6 +241,11 @@ export function CampaignDetailModal({
               isLoading={analytics.isLoading}
               isCompact={false}
             />
+          )}
+
+          {/* A/B Test Results */}
+          {campaign.ab_enabled && campaign.subject_line_b && (
+            <AbTestPanel campaign={campaign} />
           )}
 
           {/* WhatsApp Channel Section */}
