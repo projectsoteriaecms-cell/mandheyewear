@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Play, Clock, Users, ToggleLeft, ToggleRight, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Play, Clock, Users, ToggleLeft, ToggleRight, AlertCircle, CheckCircle2, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type {
   ReengagementTrigger,
   FireTriggerResult,
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function TriggerCard({ trigger }: Props) {
+  const navigate = useNavigate();
   const { fire, isPending } = useFireTrigger();
   const toggle = useToggleTrigger();
   const [lastResult, setLastResult] = useState<FireTriggerResult | null>(null);
@@ -122,11 +124,40 @@ export function TriggerCard({ trigger }: Props) {
           {lastResult.contact_count === 0 ? (
             <span>No matching contacts — nothing to send.</span>
           ) : (
-            <span>
-              Campaign created for{" "}
-              <strong>{lastResult.contact_count.toLocaleString()}</strong>{" "}
-              contacts and set to <em>scheduled</em>.
+            <span className="flex flex-col gap-1">
+              <span>
+                Campaign created for{" "}
+                <strong>{lastResult.contact_count.toLocaleString()}</strong>{" "}
+                contacts and set to <em>scheduled</em>.
+              </span>
+              {lastResult.campaign_id && (
+                <button
+                  type="button"
+                  onClick={() => navigate("/admin/crm/campaigns")}
+                  className="flex items-center gap-1 underline underline-offset-2 hover:opacity-80"
+                >
+                  <ExternalLink className="h-3 w-3" /> View in Active tab
+                </button>
+              )}
             </span>
+          )}
+        </div>
+      )}
+
+      {/* Link to last fired campaign */}
+      {!lastResult && trigger.last_campaign_id && trigger.last_campaign_name && (
+        <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+          <span>Last campaign:</span>
+          <button
+            type="button"
+            onClick={() => navigate("/admin/crm/campaigns")}
+            className="flex items-center gap-0.5 text-primary underline underline-offset-2 hover:opacity-80"
+          >
+            {trigger.last_campaign_name}
+            <ExternalLink className="h-3 w-3" />
+          </button>
+          {trigger.last_campaign_status && (
+            <span className="ml-1 capitalize">· {trigger.last_campaign_status}</span>
           )}
         </div>
       )}

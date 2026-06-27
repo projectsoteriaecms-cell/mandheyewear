@@ -4,6 +4,8 @@ export { RankBadge, RankBadgeWithDetail } from "./components/RankBadge";
 export { TestEmailDialog } from "./components/TestEmailDialog";
 export { SendScheduleDialog, type SendScheduleOptions } from "./components/SendScheduleDialog";
 export { EmailTemplateTester } from "./components/EmailTemplateTester";
+export { TemplatesGallery } from "./components/TemplatesGallery";
+export { CreateTriggerDialog } from "./components/CreateTriggerDialog";
 export { CampaignDetailModal } from "./components/CampaignDetailModal";
 export { CampaignSearchFilter } from "./components/CampaignSearchFilter";
 export { CampaignsTabContent } from "./components/CampaignsTabContent";

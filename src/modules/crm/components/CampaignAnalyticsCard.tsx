@@ -1,7 +1,7 @@
-import { Card } from '@/components/ui/card';
+﻿import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Send, Eye, Click } from 'lucide-react';
+import { Send, Eye, MousePointerClick } from 'lucide-react';
 import { memo } from 'react';
 import type { CampaignAnalytics } from '../hooks/useCampaignAnalytics';
 
@@ -36,7 +36,7 @@ function CampaignAnalyticsCardComponent({
           <span className="font-medium">{analytics.estimatedOpenRate}%</span>
         </div>
         <div className="flex items-center gap-1">
-          <Click className="h-3.5 w-3.5 text-green-500" />
+          <MousePointerClick className="h-3.5 w-3.5 text-green-500" />
           <span className="font-medium">{analytics.estimatedClickRate}%</span>
         </div>
       </div>
@@ -74,7 +74,7 @@ function CampaignAnalyticsCardComponent({
 
           <div>
             <div className="flex items-center gap-1 mb-1">
-              <Click className="h-3.5 w-3.5 text-green-500" />
+              <MousePointerClick className="h-3.5 w-3.5 text-green-500" />
               <span className="text-xs font-medium">Click Rate</span>
             </div>
             <div className="text-lg font-bold text-green-600">{analytics.estimatedClickRate}%</div>

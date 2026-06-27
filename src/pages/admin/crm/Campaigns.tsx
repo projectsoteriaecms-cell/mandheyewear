@@ -5,9 +5,10 @@ import { useIsSuperAdmin } from '@/modules/auth/hooks/useUserRole';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Plus, Loader2, ShieldAlert, Gauge, Zap, Mail, Megaphone } from 'lucide-react';
+import { Plus, Loader2, ShieldAlert, Gauge, Zap, ArrowRight } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import {
   Select,
@@ -28,7 +29,6 @@ import {
   useGlobalKillSwitch,
   useReengagementTriggers,
   useTestSendCampaign,
-  EmailTemplateTester,
   CampaignDetailModal,
   CampaignActionDialog,
   CampaignEditDialog,
@@ -41,6 +41,8 @@ import {
   useDeleteCampaignsBulk,
   type CrmCampaign,
 } from '@/modules/crm';
+import { TemplatesGallery } from '@/modules/crm/components/TemplatesGallery';
+import { CreateTriggerDialog } from '@/modules/crm/components/CreateTriggerDialog';
 import { CrmTabs } from './CrmTabs';
 
 type TabType = 'drafts' | 'active' | 'completed' | 'archived' | 'templates' | 'triggers';
@@ -191,7 +193,7 @@ function filterAndSearchCampaigns(
     if (status === 'archived') return c.is_archived === true;
     if (c.is_archived) return false;
     if (status === 'draft') return c.status === 'draft';
-    if (status === 'active') return c.status === 'running' || c.status === 'scheduled';
+    if (status === 'active') return c.status === 'running' || c.status === 'scheduled' || c.status === 'paused';
     if (status === 'completed') return c.status === 'completed';
     return false;
   });
@@ -230,6 +232,7 @@ const CrmCampaigns = () => {
 
   const [currentTab, setCurrentTab] = useState<TabType>('drafts');
   const [creating, setCreating] = useState(false);
+  const [creatingTrigger, setCreatingTrigger] = useState(false);
   const [deleting, setDeleting] = useState<CrmCampaign | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<CrmCampaign | null>(null);
   const [editingCampaign, setEditingCampaign] = useState<CrmCampaign | null>(null);
@@ -238,6 +241,17 @@ const CrmCampaigns = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Tab counts (raw, ignoring search/date filter)
+  const tabCounts = useMemo(() => {
+    const all = campaigns ?? [];
+    return {
+      drafts:    all.filter((c) => !c.is_archived && c.status === 'draft').length,
+      active:    all.filter((c) => !c.is_archived && (c.status === 'running' || c.status === 'scheduled' || c.status === 'paused')).length,
+      completed: all.filter((c) => !c.is_archived && c.status === 'completed').length,
+      archived:  all.filter((c) => c.is_archived).length,
+    };
+  }, [campaigns]);
 
   const draftCampaigns = useMemo(
     () => filterAndSearchCampaigns(campaigns, 'draft', searchQuery, dateFilter),
@@ -341,15 +355,26 @@ const CrmCampaigns = () => {
           <CrmAccessGate>
             <SendControlBar />
 
+            {/* Lifecycle banner */}
+            <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-4 py-2.5 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Campaign lifecycle:</span>
+              <span className="rounded-full bg-muted px-2 py-0.5 font-medium">📝 Draft</span>
+              <ArrowRight className="h-3 w-3 flex-none" />
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">📤 Active</span>
+              <ArrowRight className="h-3 w-3 flex-none" />
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">✅ Completed</span>
+              <span className="ml-3 hidden sm:block">Build in Draft · Send to make Active · Paused campaigns also live here · Completed = all emails delivered</span>
+            </div>
+
             {/* Tab Navigation */}
-            <div className="flex gap-2 border-b">
+            <div className="flex gap-1 border-b overflow-x-auto">
               {[
-                { id: 'drafts' as const, label: 'Drafts', icon: '📝' },
-                { id: 'active' as const, label: 'Active', icon: '📤' },
-                { id: 'completed' as const, label: 'Completed', icon: '✅' },
-                { id: 'archived' as const, label: 'Archived', icon: '📦' },
-                { id: 'templates' as const, label: 'Templates', icon: '🧪' },
-                { id: 'triggers' as const, label: 'Triggers', icon: '⚡' },
+                { id: 'drafts'    as const, label: 'Drafts',    icon: '📝', count: tabCounts.drafts    },
+                { id: 'active'    as const, label: 'Active',    icon: '📤', count: tabCounts.active    },
+                { id: 'completed' as const, label: 'Completed', icon: '✅', count: tabCounts.completed },
+                { id: 'archived'  as const, label: 'Archived',  icon: '📦', count: tabCounts.archived  },
+                { id: 'templates' as const, label: 'Templates', icon: '🗂️', count: null                },
+                { id: 'triggers'  as const, label: 'Triggers',  icon: '⚡', count: null                },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -359,13 +384,18 @@ const CrmCampaigns = () => {
                     setDateFilter('all');
                   }}
                   className={cn(
-                    'px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors',
+                    'flex items-center gap-1.5 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors',
                     currentTab === tab.id
                       ? 'border-primary text-primary'
                       : 'border-transparent text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {tab.icon} {tab.label}
+                  {tab.count !== null && tab.count > 0 && (
+                    <Badge className="h-4 min-w-4 px-1 text-[10px] font-semibold bg-primary/15 text-primary border-0">
+                      {tab.count}
+                    </Badge>
+                  )}
                 </button>
               ))}
             </div>
@@ -453,11 +483,19 @@ const CrmCampaigns = () => {
               )}
 
               {/* Templates Tab */}
-              {currentTab === 'templates' && <EmailTemplateTester />}
+              {currentTab === 'templates' && <TemplatesGallery />}
 
               {/* Triggers Tab */}
               {currentTab === 'triggers' && (
-                <div className="space-y-3">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm text-muted-foreground">
+                      Triggers automatically create and send campaigns when contacts meet a behavioural condition.
+                    </p>
+                    <Button size="sm" onClick={() => setCreatingTrigger(true)} className="flex-none">
+                      <Zap className="mr-1.5 h-3.5 w-3.5" /> New Trigger
+                    </Button>
+                  </div>
                   {triggers && triggers.length > 0 ? (
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {triggers.map((t) => (
@@ -468,6 +506,12 @@ const CrmCampaigns = () => {
                     <Card className="flex flex-col items-center justify-center py-16 text-center">
                       <Zap className="mb-3 h-10 w-10 text-muted-foreground/50" />
                       <p className="font-medium">No triggers set up yet</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Create a trigger to automatically re-engage inactive customers.
+                      </p>
+                      <Button className="mt-4" size="sm" onClick={() => setCreatingTrigger(true)}>
+                        <Zap className="mr-1.5 h-3.5 w-3.5" /> Create First Trigger
+                      </Button>
                     </Card>
                   )}
                 </div>
@@ -478,6 +522,9 @@ const CrmCampaigns = () => {
 
         {/* Create Campaign Dialog */}
         {creating && <CreateCampaign onClose={() => setCreating(false)} />}
+
+        {/* Create Trigger Dialog */}
+        <CreateTriggerDialog open={creatingTrigger} onClose={() => setCreatingTrigger(false)} />
 
         {/* Campaign Detail Modal */}
         <CampaignDetailModal

@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/shared/lib/utils";
-import { ChevronRight, Pencil } from "lucide-react";
+import { ChevronRight, Pencil, Clock, PauseCircle } from "lucide-react";
 import type { CrmCampaign } from "@/modules/crm";
 import { memo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +24,15 @@ const STATUS_STYLES: Record<string, string> = {
   paused:    "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
   completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
 };
+
+function formatScheduled(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
 
 function CampaignListItemComponent({
   campaign,
@@ -76,10 +85,28 @@ function CampaignListItemComponent({
             <p className="text-sm text-muted-foreground truncate mb-2">
               {campaign.subject_line || "No subject"}
             </p>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span>{campaign.segment_name || "No segment"}</span>
               <span>•</span>
               <span>Created {createdAt}</span>
+              {campaign.status === "scheduled" && campaign.scheduled_at && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium">
+                    <Clock className="h-3 w-3" />
+                    Sends {formatScheduled(campaign.scheduled_at)}
+                  </span>
+                </>
+              )}
+              {campaign.status === "paused" && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400 font-medium">
+                    <PauseCircle className="h-3 w-3" />
+                    Paused — click to resume
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
