@@ -13,7 +13,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Search, ChevronLeft, ChevronRight, Users, Eye, Mail, Sparkles, UserCheck, ShoppingBag, Ban, Plus,
+  Search, ChevronLeft, ChevronRight, Users, Eye, Mail, Sparkles, UserCheck, ShoppingBag, Ban, Plus, Upload,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import {
@@ -30,6 +30,7 @@ import {
 } from "@/modules/crm";
 import { CrmTabs } from "./CrmTabs";
 import { AddCustomerDialog } from "./AddCustomerDialog";
+import { CsvImportDialog } from "./CsvImportDialog";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────────
 
@@ -179,7 +180,8 @@ const CrmCustomers = () => {
   const [filter, setFilter]   = useState<ContactFilter>("all");
   const [page, setPage]       = useState(0);
   const [selected, setSelected] = useState<CrmContact | null>(null);
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen]     = useState(false);
+  const [csvImportOpen, setCsvImportOpen]     = useState(false);
 
   const { data, isLoading, isFetching } = useCrmContacts({ search, filter, page });
 
@@ -227,14 +229,23 @@ const CrmCustomers = () => {
                       {f.label}
                     </button>
                   ))}
-                  <Button
-                    onClick={() => setAddDialogOpen(true)}
-                    size="sm"
-                    className="ml-auto"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Customer
-                  </Button>
+                  <div className="ml-auto flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCsvImportOpen(true)}
+                    >
+                      <Upload className="h-4 w-4 mr-1" />
+                      Import CSV
+                    </Button>
+                    <Button
+                      onClick={() => setAddDialogOpen(true)}
+                      size="sm"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Customer
+                    </Button>
+                  </div>
                 </div>
               </div>
 
@@ -302,6 +313,7 @@ const CrmCustomers = () => {
 
         <ContactDetail contact={selected} onClose={() => setSelected(null)} />
         <AddCustomerDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} />
+        <CsvImportDialog open={csvImportOpen} onOpenChange={setCsvImportOpen} />
       </AdminLayout>
     </RoleGuard>
   );
