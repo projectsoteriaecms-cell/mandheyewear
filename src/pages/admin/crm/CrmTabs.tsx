@@ -1,15 +1,16 @@
 import { NavLink } from "react-router-dom";
-import { Users, Target, Megaphone, ChartLine, Lock, Zap, MessageCircle } from "lucide-react";
+import { Users, Target, Megaphone, ChartLine, Lock, Zap, MessageCircle, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 const TABS = [
-  { to: "/admin/crm/customers", label: "Customers", icon: Users },
-  { to: "/admin/crm/segments",  label: "Segments",  icon: Target },
-  { to: "/admin/crm/campaigns", label: "Campaigns", icon: Megaphone },
-  { to: "/admin/crm/analytics", label: "Analytics", icon: ChartLine },
-  { to: "/admin/crm/behavioral", label: "Behavioral", icon: Zap },
-  { to: "/admin/crm/whatsapp", label: "WhatsApp", icon: MessageCircle },
-  { to: "/admin/crm/compliance", label: "Compliance", icon: Lock },
+  { to: "/admin/crm/customers",    label: "Customers",    icon: Users },
+  { to: "/admin/crm/segments",     label: "Segments",     icon: Target },
+  { to: "/admin/crm/campaigns",    label: "Campaigns",    icon: Megaphone },
+  { to: "/admin/crm/analytics",    label: "Analytics",    icon: ChartLine },
+  { to: "/admin/crm/behavioral",   label: "Behavioral",   icon: Zap },
+  { to: "/admin/crm/preferences",  label: "Preferences",  icon: SlidersHorizontal },
+  { to: "/admin/crm/whatsapp",     label: "WhatsApp",     icon: MessageCircle },
+  { to: "/admin/crm/compliance",   label: "Compliance",   icon: Lock },
 ];
 
 /** Shared sub-navigation across the four CRM admin tabs. */

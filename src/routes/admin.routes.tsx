@@ -49,6 +49,7 @@ const CrmAnalytics = lazyRetry(() => import("@/pages/admin/crm/Analytics"));
 const CrmBehavioralInsights = lazyRetry(() => import("@/pages/admin/crm/BehavioralInsights"));
 const CrmWhatsAppTemplates = lazyRetry(() => import("@/pages/admin/crm/WhatsAppTemplates"));
 const CrmCompliance = lazyRetry(() => import("@/pages/admin/crm/Compliance"));
+const CrmPreferences = lazyRetry(() => import("@/pages/admin/crm/Preferences"));
 const CrmCampaignBuilder = lazyRetry(() => import("@/pages/admin/crm/CampaignBuilder"));
 
 const PageLoader = () => (
@@ -93,6 +94,7 @@ export const adminRoutes = [
   <Route key="/admin/crm/analytics" path="/admin/crm/analytics" element={withSuspense(CrmAnalytics)} />,
   <Route key="/admin/crm/behavioral" path="/admin/crm/behavioral" element={withSuspense(CrmBehavioralInsights)} />,
   <Route key="/admin/crm/whatsapp" path="/admin/crm/whatsapp" element={withSuspense(CrmWhatsAppTemplates)} />,
+  <Route key="/admin/crm/preferences" path="/admin/crm/preferences" element={withSuspense(CrmPreferences)} />,
   <Route key="/admin/crm/compliance" path="/admin/crm/compliance" element={withSuspense(CrmCompliance)} />,
   <Route key="/admin/crm/campaigns/:id/edit" path="/admin/crm/campaigns/:id/edit" element={withSuspense(CrmCampaignBuilder)} />,
 ];
