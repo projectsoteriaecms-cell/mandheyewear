@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, RefreshCw, ExternalLink, CheckCircle2, XCircle } from "lucide-react";
+import { Search, RefreshCw, Copy, Check, CheckCircle2, XCircle } from "lucide-react";
 import { AdminLayout } from "@/shared/layouts/admin";
 import { RoleGuard } from "@/modules/auth/components/RoleGuard";
 import {
@@ -13,6 +13,26 @@ import {
 import { CrmTabs } from "./CrmTabs";
 
 const EF_BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email-preference-page`;
+
+function EfUrlCopier() {
+  const [copied, setCopied] = useState(false);
+  async function handleCopy() {
+    await navigator.clipboard.writeText(EF_BASE_URL);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      title={EF_BASE_URL}
+      className="flex items-center gap-1.5 rounded border border-input px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? "Copied" : "Copy EF URL"}
+    </button>
+  );
+}
 
 const CATEGORY_LABELS: Record<string, string> = {
   marketing:             "Marketing emails",
@@ -34,7 +54,10 @@ function ContactPreferenceLookup() {
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     const val = inputEmail.toLowerCase().trim();
-    if (val.includes("@")) setSearchEmail(val);
+    if (val.includes("@")) {
+      rotate.reset();
+      setSearchEmail(val);
+    }
   }
 
   async function handleRotate() {
@@ -177,15 +200,7 @@ const CrmPreferences = () => {
                 Track category opt-in rates and manage preference links for contacts.
               </p>
             </div>
-            <a
-              href={EF_BASE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded border border-input px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              Public preference page
-            </a>
+            <EfUrlCopier />
           </div>
 
           <CrmTabs />
