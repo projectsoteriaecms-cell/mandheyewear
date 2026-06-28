@@ -18,6 +18,7 @@ export interface ReengagementTrigger {
   threshold_days: number;
   template_subject: string | null;
   is_active: boolean;
+  schedule_daily: boolean;
   last_run_at: string | null;
   last_contact_count: number;
   last_campaign_id: string | null;
@@ -130,6 +131,7 @@ export function useUpdateTrigger() {
           | "threshold_days"
           | "template_subject"
           | "is_active"
+          | "schedule_daily"
         >
       >;
     }) => {

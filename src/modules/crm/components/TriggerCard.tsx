@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Play, Clock, Users, ToggleLeft, ToggleRight, AlertCircle, CheckCircle2, ExternalLink } from "lucide-react";
+import { Play, Clock, Users, ToggleLeft, ToggleRight, AlertCircle, CheckCircle2, ExternalLink, CalendarClock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type {
   ReengagementTrigger,
@@ -8,6 +8,7 @@ import type {
 import {
   useFireTrigger,
   useToggleTrigger,
+  useUpdateTrigger,
   triggerTypeLabel,
 } from "../hooks/useReengagementTriggers";
 
@@ -19,6 +20,7 @@ export function TriggerCard({ trigger }: Props) {
   const navigate = useNavigate();
   const { fire, isPending } = useFireTrigger();
   const toggle = useToggleTrigger();
+  const update = useUpdateTrigger();
   const [lastResult, setLastResult] = useState<FireTriggerResult | null>(null);
   const [fireError, setFireError] = useState<string | null>(null);
 
@@ -108,6 +110,29 @@ export function TriggerCard({ trigger }: Props) {
             {trigger.last_campaign_status}
           </span>
         )}
+      </div>
+
+      {/* Auto-schedule toggle */}
+      <div className="mt-3 flex items-center justify-between rounded-md border border-border/60 bg-muted/30 px-3 py-2">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <CalendarClock className="h-3.5 w-3.5 text-blue-500" />
+          <span>Run daily automatically (9 AM WAT)</span>
+        </div>
+        <button
+          type="button"
+          onClick={() =>
+            update.mutate({ id: trigger.id, patch: { schedule_daily: !trigger.schedule_daily } })
+          }
+          disabled={update.isPending}
+          title={trigger.schedule_daily ? "Disable auto-schedule" : "Enable auto-schedule"}
+          className="flex-none text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+        >
+          {trigger.schedule_daily ? (
+            <ToggleRight className="h-5 w-5 text-blue-500" />
+          ) : (
+            <ToggleLeft className="h-5 w-5" />
+          )}
+        </button>
       </div>
 
       {/* Fire result banner */}
