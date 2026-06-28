@@ -291,14 +291,14 @@ BEGIN
     PERFORM cron.schedule(
       'crm-auto-fire-triggers',
       '0 8 * * *',
-      $$SELECT net.http_post(
+      $cmd$SELECT net.http_post(
           url     := 'https://znhrwzxthusqtqreawwq.supabase.co/functions/v1/fire-scheduled-triggers',
           headers := jsonb_build_object(
             'Content-Type',  'application/json',
             'X-Cron-Secret', current_setting('app.cron_secret', true)
           ),
           body    := '{}'::jsonb
-        ) AS request_id$$
+        ) AS request_id$cmd$
     );
 
     RAISE NOTICE 'pg_cron schedule "crm-auto-fire-triggers" registered (08:00 UTC daily).';
