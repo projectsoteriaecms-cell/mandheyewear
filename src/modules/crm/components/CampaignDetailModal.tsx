@@ -12,6 +12,7 @@ import { Mail, Send, Pause, Play, X, Pencil, Trophy, FlaskConical, Clock } from 
 import { cn } from "@/shared/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useCampaignSendStatus, usePauseCampaign, useResumeCampaign, useTriggerCampaignSend, useCampaignAnalytics, CampaignAnalyticsCard, CampaignWhatsAppSection } from "@/modules/crm";
+import { CampaignTimeSeriesChart } from "./CampaignTimeSeriesChart";
 import type { CrmCampaign } from "@/modules/crm";
 import { useAbStats, useResolveAbWinner } from "../hooks/useAbWinner";
 import { Loader2 } from "lucide-react";
@@ -241,6 +242,11 @@ export function CampaignDetailModal({
               isLoading={analytics.isLoading}
               isCompact={false}
             />
+          )}
+
+          {/* Engagement time-series chart */}
+          {(isRunning || isPaused || campaign.status === "completed") && (
+            <CampaignTimeSeriesChart campaignId={campaign.id} />
           )}
 
           {/* A/B Test Results */}

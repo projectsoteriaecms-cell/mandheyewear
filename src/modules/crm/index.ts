@@ -18,7 +18,8 @@ export { EmailPreviewFrame, blocksToHtml } from "./components/EmailPreviewFrame"
 export { CampaignAnalyticsCard } from "./components/CampaignAnalyticsCard";
 export { CampaignWhatsAppSection } from "./components/CampaignWhatsAppSection";
 export { useDuplicateCampaign, useArchiveCampaigns, useUnarchiveCampaigns, useDeleteCampaignsBulk } from "./hooks/useBulkCampaignActions";
-export { useCampaignAnalytics, useCampaignMetrics, type CampaignAnalytics } from "./hooks/useCampaignAnalytics";
+export { useCampaignAnalytics, useCampaignMetrics, useCampaignTimeSeries, type CampaignAnalytics, type TimeSeriesBucket } from "./hooks/useCampaignAnalytics";
+export { CampaignTimeSeriesChart } from "./components/CampaignTimeSeriesChart";
 
 // Rule tree builder UI (T16)
 export { RuleTreeBuilder } from "./components/RuleTreeBuilder/index";

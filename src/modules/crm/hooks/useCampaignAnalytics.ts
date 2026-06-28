@@ -69,3 +69,34 @@ export function useCampaignMetrics(campaignId: string | null) {
     error: analytics.error,
   };
 }
+
+// ── Time-series ───────────────────────────────────────────────────────────────
+
+export interface TimeSeriesBucket {
+  bucket_start: string;   // ISO timestamp
+  opens:        number;
+  clicks:       number;
+  bounces:      number;
+  unsubscribes: number;
+}
+
+export function useCampaignTimeSeries(
+  campaignId: string | null,
+  bucket: 'hour' | 'day' = 'hour',
+) {
+  return useQuery<TimeSeriesBucket[]>({
+    queryKey: ['campaign_timeseries', campaignId, bucket],
+    enabled: !!campaignId,
+    staleTime: 5 * 60_000,
+    refetchInterval: 2 * 60_000,
+    queryFn: async () => {
+      if (!campaignId) return [];
+      const { data, error } = await supabase.rpc(
+        'crm_campaign_events_timeseries',
+        { p_campaign_id: campaignId, p_bucket: bucket },
+      );
+      if (error) throw error;
+      return (data ?? []) as TimeSeriesBucket[];
+    },
+  });
+}
