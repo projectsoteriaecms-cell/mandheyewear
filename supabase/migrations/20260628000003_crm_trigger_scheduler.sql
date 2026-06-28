@@ -232,7 +232,10 @@ GRANT EXECUTE ON FUNCTION public.crm_claim_campaign_for_send(UUID) TO authentica
 
 -- ---------------------------------------------------------------------------
 -- 4. Update crm_list_triggers() to expose schedule_daily
+--    Must DROP first — PostgreSQL won't replace a function whose return type changed.
 -- ---------------------------------------------------------------------------
+
+DROP FUNCTION IF EXISTS public.crm_list_triggers();
 
 CREATE OR REPLACE FUNCTION public.crm_list_triggers()
 RETURNS TABLE(
