@@ -291,15 +291,15 @@ BEGIN
       NULL; -- job didn't exist yet
     END;
 
+    -- Note: replace CRON_SECRET_PLACEHOLDER with your actual CRON_SECRET value
+    -- (same value set in Edge Function secrets). Embedded directly because
+    -- ALTER DATABASE requires superuser privileges on Supabase.
     PERFORM cron.schedule(
       'crm-auto-fire-triggers',
       '0 8 * * *',
       $cmd$SELECT net.http_post(
           url     := 'https://znhrwzxthusqtqreawwq.supabase.co/functions/v1/fire-scheduled-triggers',
-          headers := jsonb_build_object(
-            'Content-Type',  'application/json',
-            'X-Cron-Secret', current_setting('app.cron_secret', true)
-          ),
+          headers := '{"Content-Type": "application/json", "X-Cron-Secret": "CRON_SECRET_PLACEHOLDER"}'::jsonb,
           body    := '{}'::jsonb
         ) AS request_id$cmd$
     );
