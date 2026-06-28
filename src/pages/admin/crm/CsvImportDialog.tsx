@@ -151,6 +151,7 @@ export function CsvImportDialog({ open, onOpenChange }: Props) {
     setStage("idle");
     setRows([]);
     setResult(null);
+    if (ref.current) ref.current.value = "";
     onOpenChange(false);
   }
 
@@ -407,7 +408,7 @@ export function CsvImportDialog({ open, onOpenChange }: Props) {
           )}
           {stage === "preview" && (
             <>
-              <Button variant="outline" onClick={() => { setStage("idle"); setRows([]); }}>
+              <Button variant="outline" onClick={() => { setStage("idle"); setRows([]); if (ref.current) ref.current.value = ""; }}>
                 <X className="mr-1.5 h-3.5 w-3.5" /> Choose different file
               </Button>
               <Button onClick={startImport} disabled={validCount === 0}>

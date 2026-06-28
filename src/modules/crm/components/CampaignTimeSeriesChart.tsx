@@ -52,8 +52,9 @@ function CampaignTimeSeriesChartComponent({ campaignId }: Props) {
   }));
 
   const hasData = chartData.length > 0;
-  const totalOpens  = data?.reduce((s, r) => s + r.opens,  0) ?? 0;
-  const totalClicks = data?.reduce((s, r) => s + r.clicks, 0) ?? 0;
+  const totalOpens   = data?.reduce((s, r) => s + r.opens,   0) ?? 0;
+  const totalClicks  = data?.reduce((s, r) => s + r.clicks,  0) ?? 0;
+  const totalBounces = data?.reduce((s, r) => s + r.bounces, 0) ?? 0;
 
   return (
     <div className="rounded-lg border bg-card shadow-sm">
@@ -64,6 +65,7 @@ function CampaignTimeSeriesChartComponent({ campaignId }: Props) {
           {hasData && (
             <p className="text-xs text-muted-foreground mt-0.5">
               {totalOpens.toLocaleString()} opens · {totalClicks.toLocaleString()} clicks
+              {totalBounces > 0 && ` · ${totalBounces.toLocaleString()} bounces`}
             </p>
           )}
         </div>
@@ -111,6 +113,10 @@ function CampaignTimeSeriesChartComponent({ campaignId }: Props) {
                 <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor="#10b981" stopOpacity={0.25} />
                   <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="colorBounces" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#ef4444" stopOpacity={0.20} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                 </linearGradient>
               </defs>
 
@@ -170,6 +176,16 @@ function CampaignTimeSeriesChartComponent({ campaignId }: Props) {
                 stroke="#10b981"
                 strokeWidth={2}
                 fill="url(#colorClicks)"
+                dot={false}
+                activeDot={{ r: 4 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="bounces"
+                name="Bounces"
+                stroke="#ef4444"
+                strokeWidth={1.5}
+                fill="url(#colorBounces)"
                 dot={false}
                 activeDot={{ r: 4 }}
               />

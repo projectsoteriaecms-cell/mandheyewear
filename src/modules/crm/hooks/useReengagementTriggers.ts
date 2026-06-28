@@ -17,6 +17,7 @@ export interface ReengagementTrigger {
   trigger_type: TriggerType;
   threshold_days: number;
   template_subject: string | null;
+  template_html: string | null;
   is_active: boolean;
   schedule_daily: boolean;
   last_run_at: string | null;
@@ -130,6 +131,7 @@ export function useUpdateTrigger() {
           | "description"
           | "threshold_days"
           | "template_subject"
+          | "template_html"
           | "is_active"
           | "schedule_daily"
         >

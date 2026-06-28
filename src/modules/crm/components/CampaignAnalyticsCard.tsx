@@ -69,7 +69,7 @@ function CampaignAnalyticsCardComponent({
               <span className="text-xs font-medium">Open Rate</span>
             </div>
             <div className="text-lg font-bold text-purple-600">{analytics.estimatedOpenRate}%</div>
-            <p className="text-xs text-muted-foreground">Estimated</p>
+            <p className="text-xs text-muted-foreground">via webhooks</p>
           </div>
 
           <div>
@@ -78,7 +78,7 @@ function CampaignAnalyticsCardComponent({
               <span className="text-xs font-medium">Click Rate</span>
             </div>
             <div className="text-lg font-bold text-green-600">{analytics.estimatedClickRate}%</div>
-            <p className="text-xs text-muted-foreground">Estimated</p>
+            <p className="text-xs text-muted-foreground">via webhooks</p>
           </div>
         </div>
       </div>

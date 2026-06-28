@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Play, Clock, Users, ToggleLeft, ToggleRight, AlertCircle, CheckCircle2, ExternalLink, CalendarClock } from "lucide-react";
+import { Play, Clock, Users, ToggleLeft, ToggleRight, AlertCircle, CheckCircle2, ExternalLink, CalendarClock, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type {
   ReengagementTrigger,
@@ -89,6 +89,23 @@ export function TriggerCard({ trigger }: Props) {
         <p className="mt-2 text-xs text-muted-foreground line-clamp-2">
           {trigger.description}
         </p>
+      )}
+
+      {/* Subject / body preview */}
+      {(trigger.template_subject || trigger.template_html) && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {trigger.template_subject && (
+            <span className="inline-flex items-center gap-1 rounded border bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground">
+              <Mail className="h-3 w-3" />
+              {trigger.template_subject}
+            </span>
+          )}
+          {trigger.template_html && (
+            <span className="inline-flex items-center gap-1 rounded border border-green-500/30 bg-green-500/5 px-2 py-0.5 text-xs text-green-700 dark:text-green-400">
+              Custom email body
+            </span>
+          )}
+        </div>
       )}
 
       {/* Stats row */}

@@ -45,6 +45,7 @@ export function CreateTriggerDialog({ open, onClose }: CreateTriggerDialogProps)
   const [triggerType, setTriggerType] = useState<TriggerType>('inactive_days');
   const [thresholdDays, setThresholdDays] = useState('30');
   const [templateSubject, setTemplateSubject] = useState('');
+  const [templateHtml, setTemplateHtml] = useState('');
 
   const selectedType = TRIGGER_TYPES.find((t) => t.value === triggerType);
 
@@ -60,6 +61,7 @@ export function CreateTriggerDialog({ open, onClose }: CreateTriggerDialogProps)
           trigger_type: triggerType,
           threshold_days: days,
           template_subject: templateSubject.trim() || null,
+          template_html: templateHtml.trim() || null,
           is_active: false,
         });
       if (error) throw error;
@@ -78,6 +80,7 @@ export function CreateTriggerDialog({ open, onClose }: CreateTriggerDialogProps)
     setTriggerType('inactive_days');
     setThresholdDays('30');
     setTemplateSubject('');
+    setTemplateHtml('');
   }
 
   function handleClose() {
@@ -166,6 +169,20 @@ export function CreateTriggerDialog({ open, onClose }: CreateTriggerDialogProps)
               placeholder="e.g. We miss you at M&H Eyewear!"
               disabled={create.isPending}
             />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">Email Body</label>
+            <Textarea
+              value={templateHtml}
+              onChange={(e) => setTemplateHtml(e.target.value)}
+              placeholder="Optional — plain text or HTML. Leave blank to use the default transactional email."
+              rows={4}
+              disabled={create.isPending}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Supports HTML. If blank, a generic branded email is sent.
+            </p>
           </div>
 
           <div>
