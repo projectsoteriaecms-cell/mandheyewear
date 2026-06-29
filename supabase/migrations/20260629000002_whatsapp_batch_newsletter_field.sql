@@ -6,9 +6,10 @@
 -- =============================================================================
 
 -- Drop existing function to change return type signature
-DROP FUNCTION IF EXISTS public.crm_get_unsent_whatsapp_batch(UUID, JSONB, INT);
+-- CASCADE is needed in case any views depend on it
+DROP FUNCTION IF EXISTS public.crm_get_unsent_whatsapp_batch(UUID, JSONB, INT) CASCADE;
 
-CREATE FUNCTION public.crm_get_unsent_whatsapp_batch(
+CREATE OR REPLACE FUNCTION public.crm_get_unsent_whatsapp_batch(
   p_campaign_id UUID,
   p_rules_json  JSONB,
   p_batch_size  INT DEFAULT 50
