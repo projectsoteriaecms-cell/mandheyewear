@@ -1,0 +1,12 @@
+{
+  "enableAllProjectMcpServers": true,
+  "mcpServers": {
+    "lens-studio": {
+      "headers": {
+        "Authorization": "Bearer 95UoPpOMbVsr6w4QL04KAHHDV3dB5GV6bwuVZT9QwqqWyWAKfr92608dq0xd9nau"
+      },
+      "type": "http",
+      "url": "http://localhost:50040/mcp"
+    }
+  }
+}
