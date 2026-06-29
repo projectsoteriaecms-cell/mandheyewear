@@ -5,7 +5,10 @@
 -- so the send-campaign-whatsapp EF can gate sends to opted-in contacts only.
 -- =============================================================================
 
-CREATE OR REPLACE FUNCTION public.crm_get_unsent_whatsapp_batch(
+-- Drop existing function to change return type signature
+DROP FUNCTION IF EXISTS public.crm_get_unsent_whatsapp_batch(UUID, JSONB, INT);
+
+CREATE FUNCTION public.crm_get_unsent_whatsapp_batch(
   p_campaign_id UUID,
   p_rules_json  JSONB,
   p_batch_size  INT DEFAULT 50
