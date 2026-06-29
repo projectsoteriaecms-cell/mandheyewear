@@ -4,10 +4,14 @@
  * T20: Optional per-campaign WhatsApp channel via Twilio.
  *
  * A campaign with whatsapp_enabled=true delivers its whatsapp_body to every
- * segment member that has a phone number — in PARALLEL with the email send,
- * not as a bounce fallback. Fully decoupled from the email state machine:
- * its own ledger (crm_campaign_whatsapp_ledger) is the double-send guard and
- * its own counters live on crm_campaigns.
+ * segment member that has a phone number AND is opted in to newsletters —
+ * in PARALLEL with the email send, not as a bounce fallback.
+ * Fully decoupled from the email state machine: its own ledger
+ * (crm_campaign_whatsapp_ledger) is the double-send guard and its own
+ * counters live on crm_campaigns.
+ *
+ * Opt-in gating: Only newsletter subscribers receive WhatsApp messages.
+ * Non-subscribers are recorded as "not a newsletter subscriber" and skipped.
  *
  * POST body:
  *   { campaign_id: string }   — required (explicit trigger from admin UI)
@@ -18,9 +22,11 @@
  *   2. If Twilio not configured → no-op {whatsappDisabled} (channel ships dark).
  *   3. Loop until no unsent phones remain:
  *        a. crm_get_unsent_whatsapp_batch(campaign_id, rules, N)
- *        b. send each via Twilio Messages API (no batch endpoint → sequential)
- *        c. INSERT ledger rows (sent + failed) ON CONFLICT DO NOTHING
- *        d. bump whatsapp_sent_count / whatsapp_failed_count + heartbeat
+ *        b. For each recipient:
+ *           - GATE: skip if !is_newsletter_subscriber
+ *           - send via Twilio Messages API (sequential)
+ *           - INSERT ledger rows (sent/failed/skipped) ON CONFLICT DO NOTHING
+ *        c. bump whatsapp_sent_count / whatsapp_failed_count + heartbeat
  *   4. crm_complete_whatsapp()
  *
  * Resumable: ledger NOT IN means a crashed/re-invoked run never re-sends.
@@ -54,8 +60,9 @@ interface WaConfig {
 }
 
 interface WaRecipient {
-  phone:     string;
-  full_name: string | null;
+  phone:                    string;
+  full_name:                string | null;
+  is_newsletter_subscriber: boolean;
 }
 
 interface SendOutcome {
@@ -228,6 +235,13 @@ const handler = async (req: Request): Promise<Response> => {
 
       const outcomes: SendOutcome[] = [];
       for (const r of recipients) {
+        // Gate: only send to newsletter subscribers
+        if (!r.is_newsletter_subscriber) {
+          // Record as skipped so we don't reconsider this contact every run.
+          outcomes.push({ phone: r.phone, sid: null, ok: false, error: "not a newsletter subscriber" });
+          continue;
+        }
+
         const normalized = normalizePhone(r.phone);
         if (!normalized) {
           // Record as failed so we don't reconsider this phone every run.
