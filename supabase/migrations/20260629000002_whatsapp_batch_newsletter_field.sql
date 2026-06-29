@@ -3,11 +3,10 @@
 --
 -- Update crm_get_unsent_whatsapp_batch to return is_newsletter_subscriber
 -- so the send-campaign-whatsapp EF can gate sends to opted-in contacts only.
+--
+-- NOTE: The function was dropped in migration 20260629000002a_drop_whatsapp_batch.sql
+-- This migration recreates it with the new signature.
 -- =============================================================================
-
--- Drop existing function to change return type signature
--- CASCADE is needed in case any views depend on it
-DROP FUNCTION IF EXISTS public.crm_get_unsent_whatsapp_batch(UUID, JSONB, INT) CASCADE;
 
 CREATE OR REPLACE FUNCTION public.crm_get_unsent_whatsapp_batch(
   p_campaign_id UUID,
