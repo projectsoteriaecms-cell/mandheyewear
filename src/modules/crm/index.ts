@@ -117,6 +117,8 @@ export {
   useCreateWhatsAppTemplate,
   useUpdateWhatsAppTemplate,
   useDeactivateWhatsAppTemplate,
+  useApproveWhatsAppTemplate,
+  useRejectWhatsAppTemplate,
 } from "./hooks/useWhatsAppTemplates";
 export type {
   WhatsAppTemplate,

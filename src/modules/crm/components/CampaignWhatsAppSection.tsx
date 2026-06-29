@@ -78,18 +78,48 @@ export function CampaignWhatsAppSection({ campaign }: CampaignWhatsAppSectionPro
                   {templates.isLoading ? (
                     <Skeleton className="h-6 w-32" />
                   ) : (
-                    <p className="text-sm text-muted-foreground">
+                    <>
                       {channel.data?.contentSid ? (
-                        <>
+                        <p className="text-sm text-muted-foreground">
                           <span className="font-mono text-xs">{channel.data.contentSid}</span>
                           <span className="ml-2">
                             (${channel.data.cost_per_message?.toFixed(4) ?? '0.0039'} per message)
                           </span>
-                        </>
+                        </p>
                       ) : (
-                        'No template configured — configure in WhatsApp Templates section'
+                        <>
+                          {templates.data && templates.data.length > 0 ? (
+                            <div className="space-y-2">
+                              <p className="text-sm text-muted-foreground">Select a template:</p>
+                              <select
+                                value=""
+                                onChange={(e) => {
+                                  const selectedTemplate = templates.data?.find(t => t.id === e.target.value);
+                                  if (selectedTemplate) {
+                                    updateChannel.mutate({
+                                      campaignId: campaign.id,
+                                      contentSid: selectedTemplate.twilio_content_sid,
+                                    });
+                                  }
+                                }}
+                                className="w-full rounded border px-2 py-1 text-sm"
+                              >
+                                <option value="">Choose a template...</option>
+                                {templates.data
+                                  ?.filter(t => t.approval_state === 'approved')
+                                  .map(t => (
+                                    <option key={t.id} value={t.id}>
+                                      {t.name} (${t.cost_per_message.toFixed(4)})
+                                    </option>
+                                  ))}
+                              </select>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">No approved templates available. Create one in WhatsApp Templates.</p>
+                          )}
+                        </>
                       )}
-                    </p>
+                    </>
                   )}
                 </div>
 

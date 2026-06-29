@@ -11,6 +11,10 @@ export interface WhatsAppTemplate {
   variables: string[];
   cost_per_message: number;
   active: boolean;
+  approval_state: "pending" | "approved" | "rejected";
+  approval_notes: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -162,6 +166,58 @@ export function useDeactivateWhatsAppTemplate() {
       qc.invalidateQueries({ queryKey: ["crm_whatsapp_templates"] });
       qc.invalidateQueries({ queryKey: ["crm_whatsapp_templates_all"] });
       toast.success("Template deactivated");
+    },
+
+    onError: (err) => {
+      toast.error(String(err));
+    },
+  });
+}
+
+// Approve a template
+export function useApproveWhatsAppTemplate() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ templateId, notes }: { templateId: string; notes?: string }) => {
+      const { error } = await supabase.rpc("crm_approve_whatsapp_template", {
+        p_template_id: templateId,
+        p_notes: notes || null,
+      });
+
+      if (error) throw error;
+    },
+
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["crm_whatsapp_templates"] });
+      qc.invalidateQueries({ queryKey: ["crm_whatsapp_templates_all"] });
+      toast.success("Template approved");
+    },
+
+    onError: (err) => {
+      toast.error(String(err));
+    },
+  });
+}
+
+// Reject a template
+export function useRejectWhatsAppTemplate() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ templateId, notes }: { templateId: string; notes?: string }) => {
+      const { error } = await supabase.rpc("crm_reject_whatsapp_template", {
+        p_template_id: templateId,
+        p_notes: notes || null,
+      });
+
+      if (error) throw error;
+    },
+
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["crm_whatsapp_templates"] });
+      qc.invalidateQueries({ queryKey: ["crm_whatsapp_templates_all"] });
+      toast.success("Template rejected");
     },
 
     onError: (err) => {

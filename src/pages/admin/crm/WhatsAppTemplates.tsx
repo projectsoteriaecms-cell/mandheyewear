@@ -14,7 +14,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Plus, Edit2, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   CrmAccessGate,
@@ -22,6 +22,8 @@ import {
   useCreateWhatsAppTemplate,
   useUpdateWhatsAppTemplate,
   useDeactivateWhatsAppTemplate,
+  useApproveWhatsAppTemplate,
+  useRejectWhatsAppTemplate,
   type WhatsAppTemplate,
 } from '@/modules/crm';
 import { CrmTabs } from './CrmTabs';
@@ -49,12 +51,17 @@ export default function WhatsAppTemplates() {
   const createTemplate = useCreateWhatsAppTemplate();
   const updateTemplate = useUpdateWhatsAppTemplate();
   const deactivateTemplate = useDeactivateWhatsAppTemplate();
+  const approveTemplate = useApproveWhatsAppTemplate();
+  const rejectTemplate = useRejectWhatsAppTemplate();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showApprovalDialog, setShowApprovalDialog] = useState(false);
+  const [approvalTemplateId, setApprovalTemplateId] = useState<string | null>(null);
+  const [approvalNotes, setApprovalNotes] = useState('');
   const [form, setForm] = useState<TemplateForm>(emptyForm);
 
   const handleCreateOpen = () => {
@@ -174,6 +181,7 @@ export default function WhatsAppTemplates() {
                       <TableCell>Body Preview</TableCell>
                       <TableCell>Variables</TableCell>
                       <TableCell>Cost</TableCell>
+                      <TableCell>Approval</TableCell>
                       <TableCell>Status</TableCell>
                       <TableCell>Actions</TableCell>
                     </TableRow>
@@ -198,11 +206,49 @@ export default function WhatsAppTemplates() {
                         </TableCell>
                         <TableCell className="text-sm font-mono">${template.cost_per_message.toFixed(4)}</TableCell>
                         <TableCell>
+                          {template.approval_state === 'approved' && (
+                            <Badge variant="default" className="bg-green-600">Approved</Badge>
+                          )}
+                          {template.approval_state === 'rejected' && (
+                            <Badge variant="destructive">Rejected</Badge>
+                          )}
+                          {template.approval_state === 'pending' && (
+                            <Badge variant="secondary">Pending</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <Badge variant={template.active ? 'default' : 'secondary'}>
                             {template.active ? 'Active' : 'Inactive'}
                           </Badge>
                         </TableCell>
                         <TableCell className="flex gap-2">
+                          {template.approval_state === 'pending' && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 w-8 p-0"
+                                title="Approve"
+                                onClick={() => approveTemplate.mutate({ templateId: template.id })}
+                                disabled={approveTemplate.isPending}
+                              >
+                                <Check className="h-3.5 w-3.5 text-green-600" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 w-8 p-0"
+                                title="Reject"
+                                onClick={() => {
+                                  setApprovalTemplateId(template.id);
+                                  setApprovalNotes('');
+                                  setShowApprovalDialog(true);
+                                }}
+                              >
+                                <X className="h-3.5 w-3.5 text-red-600" />
+                              </Button>
+                            </>
+                          )}
                           <Button
                             size="sm"
                             variant="outline"
@@ -403,6 +449,52 @@ export default function WhatsAppTemplates() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Approval Dialog (rejection) */}
+        <Dialog open={showApprovalDialog} onOpenChange={setShowApprovalDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Reject Template?</DialogTitle>
+              <DialogDescription>
+                Provide optional notes explaining why you're rejecting this template.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Textarea
+                placeholder="e.g., Missing unsubscribe link, uses prohibited language, etc."
+                value={approvalNotes}
+                onChange={(e) => setApprovalNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowApprovalDialog(false)}>
+                Keep Pending
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (approvalTemplateId) {
+                    rejectTemplate.mutate(
+                      { templateId: approvalTemplateId, notes: approvalNotes || undefined },
+                      {
+                        onSuccess: () => {
+                          setShowApprovalDialog(false);
+                          setApprovalTemplateId(null);
+                          setApprovalNotes('');
+                        },
+                      }
+                    );
+                  }
+                }}
+                disabled={rejectTemplate.isPending}
+              >
+                {rejectTemplate.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Reject
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </AdminLayout>
     </RoleGuard>
   );
