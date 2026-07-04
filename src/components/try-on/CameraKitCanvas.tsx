@@ -9,18 +9,20 @@ import { useCameraKit } from "@/shared/hooks/useCameraKit";
 interface CameraKitCanvasProps {
   onInitialized?: () => void;
   onError?: (error: string) => void;
-  onCapture?: (imageData: string) => void;
+  /** Called once the session is live, with a function that captures the current frame as a base64 data URL. */
+  onCaptureReady?: (capture: () => Promise<string | null>) => void;
   className?: string;
 }
 
 export const CameraKitCanvas = ({
   onInitialized,
   onError,
+  onCaptureReady,
   className = "",
 }: CameraKitCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [initAttempted, setInitAttempted] = useState(false);
-  
+
   const {
     isInitialized,
     isLoading,
@@ -28,6 +30,7 @@ export const CameraKitCanvas = ({
     isSupported,
     permissionStatus,
     initialize,
+    captureFrame,
     requestPermission,
   } = useCameraKit();
 
@@ -35,17 +38,18 @@ export const CameraKitCanvas = ({
   useEffect(() => {
     const initCamera = async () => {
       if (!canvasRef.current || initAttempted || isInitialized) return;
-      
+
       setInitAttempted(true);
       const success = await initialize(canvasRef.current);
-      
+
       if (success) {
         onInitialized?.();
+        onCaptureReady?.(captureFrame);
       }
     };
 
     initCamera();
-  }, [initialize, initAttempted, isInitialized, onInitialized]);
+  }, [initialize, initAttempted, isInitialized, onInitialized, onCaptureReady, captureFrame]);
 
   // Report errors to parent
   useEffect(() => {

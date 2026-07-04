@@ -1,10 +1,11 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Camera, ArrowLeft, Sparkles, Smile, Box } from "lucide-react";
 import { toast } from "sonner";
 import { FaceMeshCanvas } from "./FaceMeshCanvas";
+import { CameraKitCanvas } from "./CameraKitCanvas";
 import { ARFrameSelector } from "./ARFrameSelector";
 import { pickAROverlayImage } from "@/shared/lib/ar-image-utils";
 import { useFrameAttributes, has3DMeasurements } from "@/shared/hooks/useFrameAttributes";
@@ -45,11 +46,18 @@ export const LiveARTryOn = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [smileCaptureEnabled, setSmileCaptureEnabled] = useState(false);
 
-  // Fetch frame attributes for 3D rendering
+  // Snap Camera Kit mode: the published carousel Lens renders photoreal 3D
+  // frames on the live camera feed; users switch frames via the Lens's own
+  // on-screen carousel. The MediaPipe path below is the fallback when Camera
+  // Kit credentials are not configured.
+  const snapReady = isCameraKitConfigured();
+  const ckCaptureRef = useRef<(() => Promise<string | null>) | null>(null);
+
+  // Fetch frame attributes for 3D rendering (MediaPipe fallback mode)
   const { data: frameAttrs } = useFrameAttributes(selectedProduct?.id || null);
   const is3DReady = has3DMeasurements(frameAttrs);
 
-  // Fetch ar_overlay_url for the selected product
+  // Fetch ar_overlay_url for the selected product (MediaPipe fallback mode)
   const { data: overlayData } = useQuery({
     queryKey: ["ar-overlay", selectedProduct?.id],
     queryFn: async () => {
@@ -61,7 +69,7 @@ export const LiveARTryOn = ({
         .maybeSingle();
       return data?.ar_overlay_url as string | null;
     },
-    enabled: !!selectedProduct?.id,
+    enabled: !!selectedProduct?.id && !snapReady,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -77,7 +85,7 @@ export const LiveARTryOn = ({
     );
   }, [selectedProduct, overlayData]);
 
-  // Derive frame color from product color
+  // Derive frame color from product color (MediaPipe fallback mode)
   const frameColor = useMemo(() => {
     const color = selectedProduct?.color?.toLowerCase() || "";
     if (color.includes("gold")) return "#b8860b";
@@ -95,17 +103,23 @@ export const LiveARTryOn = ({
     setIsCapturing(true);
 
     try {
-      // For 3D mode, capture from the Three.js canvas
-      const arCanvas = document.querySelector<HTMLCanvasElement>("[data-ar-canvas] canvas");
-      const fallbackCanvas = document.querySelector<HTMLCanvasElement>("[data-ar-canvas]");
-      const canvas = arCanvas || fallbackCanvas;
+      let imageData: string | null = null;
 
-      if (!canvas) {
+      if (snapReady && ckCaptureRef.current) {
+        // Camera Kit mode: capture the rendered Lens frame
+        imageData = await ckCaptureRef.current();
+      } else {
+        // MediaPipe mode: capture from the Three.js / overlay canvas
+        const arCanvas = document.querySelector<HTMLCanvasElement>("[data-ar-canvas] canvas");
+        const fallbackCanvas = document.querySelector<HTMLCanvasElement>("[data-ar-canvas]");
+        const canvas = arCanvas || fallbackCanvas;
+        imageData = canvas ? canvas.toDataURL("image/png") : null;
+      }
+
+      if (!imageData) {
         toast.error("Canvas not ready");
         return;
       }
-
-      const imageData = canvas.toDataURL("image/png");
 
       const result: TryOnResultType = {
         success: true,
@@ -131,7 +145,7 @@ export const LiveARTryOn = ({
     } finally {
       setIsCapturing(false);
     }
-  }, [selectedProduct, onCapture, isCapturing]);
+  }, [selectedProduct, onCapture, isCapturing, snapReady]);
 
   const handleSmileCapture = useCallback(() => {
     if (smileCaptureEnabled && selectedProduct && !isCapturing) {
@@ -140,7 +154,11 @@ export const LiveARTryOn = ({
     }
   }, [smileCaptureEnabled, selectedProduct, isCapturing, handleCapture]);
 
-  const snapReady = isCameraKitConfigured();
+  // In Camera Kit mode, capture works without a product selection (frames are
+  // switched inside the Lens); selecting a product only tags the capture.
+  const captureDisabled = snapReady
+    ? !isInitialized || isCapturing
+    : !isInitialized || isCapturing || !selectedProduct;
 
   return (
     <div className="space-y-6">
@@ -161,38 +179,60 @@ export const LiveARTryOn = ({
 
       <Card className="overflow-hidden border-0 shadow-lg">
         <CardContent className="p-0">
-          <FaceMeshCanvas
-            frameImageUrl={arImage?.url || null}
-            arWarning={arImage && !arImage.arReady ? arImage.reason : null}
-            onInitialized={() => {
-              setArError(null);
-              setIsInitialized(true);
-            }}
-            onError={(error) => setArError(error)}
-            onSmileDetected={handleSmileCapture}
-            className="w-full"
-            use3D={is3DReady}
-            frameAttributes={frameAttrs}
-            frameColor={frameColor}
-          />
+          {snapReady ? (
+            <CameraKitCanvas
+              onInitialized={() => {
+                setArError(null);
+                setIsInitialized(true);
+              }}
+              onError={(error) => setArError(error)}
+              onCaptureReady={(capture) => {
+                ckCaptureRef.current = capture;
+              }}
+              className="w-full"
+            />
+          ) : (
+            <FaceMeshCanvas
+              frameImageUrl={arImage?.url || null}
+              arWarning={arImage && !arImage.arReady ? arImage.reason : null}
+              onInitialized={() => {
+                setArError(null);
+                setIsInitialized(true);
+              }}
+              onError={(error) => setArError(error)}
+              onSmileDetected={handleSmileCapture}
+              className="w-full"
+              use3D={is3DReady}
+              frameAttributes={frameAttrs}
+              frameColor={frameColor}
+            />
+          )}
         </CardContent>
       </Card>
 
       {/* Mode indicator */}
-      {selectedProduct && is3DReady && (
+      {snapReady && isInitialized && (
+        <div className="flex items-center justify-center gap-2 text-sm">
+          <Box className="h-4 w-4 text-accent" />
+          <span className="text-accent font-medium">Snap AR Try-On Active</span>
+          <span className="text-muted-foreground">— Swipe the carousel on camera to switch frames</span>
+        </div>
+      )}
+      {!snapReady && selectedProduct && is3DReady && (
         <div className="flex items-center justify-center gap-2 text-sm">
           <Box className="h-4 w-4 text-accent" />
           <span className="text-accent font-medium">3D Try-On Active</span>
           <span className="text-muted-foreground">— Frame rotates with your head</span>
         </div>
       )}
-      {selectedProduct && !is3DReady && overlayData && (
+      {!snapReady && selectedProduct && !is3DReady && overlayData && (
         <div className="flex items-center justify-center gap-2 text-sm">
           <Sparkles className="h-4 w-4 text-accent" />
           <span className="text-accent font-medium">AI-Segmented Overlay</span>
         </div>
       )}
 
+      {/* Frame selector: drives the overlay in MediaPipe mode; tags the capture in Camera Kit mode */}
       <ARFrameSelector
         products={products}
         selectedProductId={selectedProduct?.id || null}
@@ -209,24 +249,26 @@ export const LiveARTryOn = ({
             size="lg"
             className="flex-1"
             onClick={handleCapture}
-            disabled={!isInitialized || isCapturing || !selectedProduct}
+            disabled={captureDisabled}
           >
             <Camera className="h-5 w-5 mr-2" />
             {isCapturing ? "Capturing..." : "Capture & Save"}
           </Button>
 
-          <Button
-            variant={smileCaptureEnabled ? "default" : "outline"}
-            size="lg"
-            onClick={() => setSmileCaptureEnabled(!smileCaptureEnabled)}
-            disabled={!isInitialized || !selectedProduct}
-            title="Toggle smile-to-capture"
-          >
-            <Smile className={`h-5 w-5 ${smileCaptureEnabled ? "text-primary-foreground" : "text-muted-foreground"}`} />
-          </Button>
+          {!snapReady && (
+            <Button
+              variant={smileCaptureEnabled ? "default" : "outline"}
+              size="lg"
+              onClick={() => setSmileCaptureEnabled(!smileCaptureEnabled)}
+              disabled={!isInitialized || !selectedProduct}
+              title="Toggle smile-to-capture"
+            >
+              <Smile className={`h-5 w-5 ${smileCaptureEnabled ? "text-primary-foreground" : "text-muted-foreground"}`} />
+            </Button>
+          )}
         </div>
 
-        {smileCaptureEnabled && (
+        {smileCaptureEnabled && !snapReady && (
           <p className="text-xs text-center text-accent font-medium">
             😄 Smile to auto-capture is ON
           </p>
@@ -245,12 +287,13 @@ export const LiveARTryOn = ({
 
       {isInitialized && (
         <p className="text-xs text-center text-muted-foreground">
-          Select a frame above to see it on your face in real-time.
-          Tap capture to save to your try-on history.
+          {snapReady
+            ? "Swipe the carousel on the camera to try different frames. Tap capture to save to your try-on history."
+            : "Select a frame above to see it on your face in real-time. Tap capture to save to your try-on history."}
         </p>
       )}
 
-      {isInitialized && !selectedProduct && (
+      {isInitialized && !snapReady && !selectedProduct && (
         <div className="text-center">
           <div className="inline-flex items-center gap-2 text-accent text-sm font-medium">
             <Sparkles className="h-4 w-4" />
