@@ -1,6 +1,7 @@
 import { Camera, Sparkles } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { isCameraKitConfigured } from "@/config/snap-lenses";
 
 export type TryOnMode = "photo" | "ar";
 
@@ -33,12 +34,14 @@ export const TryOnModeToggle = ({ mode, onModeChange, disabled = false }: TryOnM
         >
           <Sparkles className="h-4 w-4" />
           <span>Live AR</span>
-          <Badge
-            variant="outline"
-            className="absolute -top-2 -right-1 text-[10px] px-1.5 py-0 h-4 bg-muted text-muted-foreground border-border"
-          >
-            Coming Soon
-          </Badge>
+          {!isCameraKitConfigured() && (
+            <Badge
+              variant="outline"
+              className="absolute -top-2 -right-1 text-[10px] px-1.5 py-0 h-4 bg-muted text-muted-foreground border-border"
+            >
+              Coming Soon
+            </Badge>
+          )}
         </TabsTrigger>
       </TabsList>
     </Tabs>
