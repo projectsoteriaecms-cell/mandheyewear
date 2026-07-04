@@ -1,19 +1,19 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { SNAP_CONFIG, isCameraKitConfigured, type SnapLensConfig } from "@/config/snap-lenses";
+import { SNAP_CONFIG, isCameraKitConfigured } from "@/config/snap-lenses";
+import type { CameraKit, CameraKitSession } from "@snap/camera-kit";
 
 interface CameraKitState {
   isInitialized: boolean;
   isLoading: boolean;
   error: string | null;
-  currentLens: SnapLensConfig | null;
-  availableLenses: SnapLensConfig[];
+  /** True once the carousel Lens is applied and rendering. */
+  isLensApplied: boolean;
   isSupported: boolean;
   permissionStatus: "prompt" | "granted" | "denied" | "unknown";
 }
 
 interface UseCameraKitReturn extends CameraKitState {
   initialize: (canvasElement: HTMLCanvasElement) => Promise<boolean>;
-  switchLens: (lensId: string) => Promise<void>;
   captureFrame: () => Promise<string | null>;
   cleanup: () => Promise<void>;
   requestPermission: () => Promise<boolean>;
@@ -39,22 +39,24 @@ const checkBrowserSupport = (): { supported: boolean; reason?: string } => {
 };
 
 /**
- * Hook for managing Snapchat Camera Kit session lifecycle
+ * Hook for managing the Snapchat Camera Kit session lifecycle.
+ *
+ * Applies the single published carousel Lens (all frame models live inside it;
+ * users switch frames via the Lens's own carousel UI on the camera feed).
  */
 export const useCameraKit = (): UseCameraKitReturn => {
   const [state, setState] = useState<CameraKitState>({
     isInitialized: false,
     isLoading: false,
     error: null,
-    currentLens: null,
-    availableLenses: SNAP_CONFIG.lenses,
+    isLensApplied: false,
     isSupported: true,
     permissionStatus: "unknown",
   });
 
   // Store references to SDK objects
-  const cameraKitRef = useRef<any>(null);
-  const sessionRef = useRef<any>(null);
+  const cameraKitRef = useRef<CameraKit | null>(null);
+  const sessionRef = useRef<CameraKitSession | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
   // Check browser support on mount
@@ -77,10 +79,10 @@ export const useCameraKit = (): UseCameraKitReturn => {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user" },
       });
-      
+
       // Stop the test stream immediately
       stream.getTracks().forEach(track => track.stop());
-      
+
       setState(prev => ({ ...prev, permissionStatus: "granted" }));
       return true;
     } catch (error) {
@@ -95,7 +97,7 @@ export const useCameraKit = (): UseCameraKitReturn => {
   }, []);
 
   /**
-   * Initialize Camera Kit with canvas element
+   * Initialize Camera Kit with canvas element and apply the carousel Lens
    */
   const initialize = useCallback(async (canvasElement: HTMLCanvasElement): Promise<boolean> => {
     // Check if already initialized
@@ -118,7 +120,7 @@ export const useCameraKit = (): UseCameraKitReturn => {
     if (!isCameraKitConfigured()) {
       setState(prev => ({
         ...prev,
-        error: "Camera Kit not configured. Please add your Snap API Token and Lens IDs.",
+        error: "Camera Kit not configured. Please add your Snap API Token and Lens Group ID.",
         isLoading: false,
       }));
       return false;
@@ -128,12 +130,11 @@ export const useCameraKit = (): UseCameraKitReturn => {
 
     try {
       // Dynamically import Camera Kit to avoid issues if package not installed
-      const { bootstrapCameraKit, createMediaStreamSource } = await import("@snap/camera-kit");
+      const { bootstrapCameraKit, createMediaStreamSource, Transform2D } = await import("@snap/camera-kit");
 
       // Bootstrap Camera Kit
       const cameraKit = await bootstrapCameraKit({
         apiToken: SNAP_CONFIG.apiToken,
-        lensGroups: [SNAP_CONFIG.lensGroupId],
       });
 
       cameraKitRef.current = cameraKit;
@@ -156,21 +157,37 @@ export const useCameraKit = (): UseCameraKitReturn => {
 
       mediaStreamRef.current = mediaStream;
 
-      // Create source from media stream (mirrored for front camera)
-      const source = await createMediaStreamSource(mediaStream, {
-        transform: { mirrorX: true },
-        cameraType: "front",
+      // Create source from media stream. cameraType "user" = front-facing;
+      // Transform2D.MirrorX flips it so the preview matches a mirror (Camera Kit
+      // requires the Transform2D class, not a plain { mirrorX: true } object).
+      const source = createMediaStreamSource(mediaStream, {
+        transform: Transform2D.MirrorX,
+        cameraType: "user",
       });
 
       // Set source and start rendering
       await session.setSource(source);
-      session.setFPSLimit(30);
+      await session.setFPSLimit(30);
       await session.play("live");
+
+      // Apply the carousel Lens (contains all frame models)
+      const lens = await cameraKit.lensRepository.loadLens(
+        SNAP_CONFIG.carouselLensId,
+        SNAP_CONFIG.lensGroupId
+      );
+      // NOTE: applyLens has an overload — (lens) alone resolves to Promise<void>,
+      // shadowing the documented (lens, launchData?) => Promise<boolean> overload.
+      // Pass launchData explicitly (even as undefined) to get the boolean result.
+      const applied = await session.applyLens(lens, undefined);
+      if (!applied) {
+        throw new Error("Lens could not be applied to the session");
+      }
 
       setState(prev => ({
         ...prev,
         isInitialized: true,
         isLoading: false,
+        isLensApplied: true,
         permissionStatus: "granted",
         error: null,
       }));
@@ -179,7 +196,7 @@ export const useCameraKit = (): UseCameraKitReturn => {
     } catch (error) {
       console.error("Camera Kit initialization failed:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to initialize Camera Kit";
-      
+
       setState(prev => ({
         ...prev,
         isLoading: false,
@@ -189,55 +206,6 @@ export const useCameraKit = (): UseCameraKitReturn => {
       return false;
     }
   }, [state.isInitialized]);
-
-  /**
-   * Switch to a different lens
-   */
-  const switchLens = useCallback(async (lensId: string): Promise<void> => {
-    const session = sessionRef.current;
-    const cameraKit = cameraKitRef.current;
-
-    if (!session || !cameraKit) {
-      setState(prev => ({ ...prev, error: "Camera Kit not initialized" }));
-      return;
-    }
-
-    const lensConfig = SNAP_CONFIG.lenses.find(l => l.id === lensId);
-    if (!lensConfig || !lensConfig.snapLensId) {
-      setState(prev => ({ ...prev, error: "Lens not found or not configured" }));
-      return;
-    }
-
-    try {
-      setState(prev => ({ ...prev, isLoading: true }));
-
-      // Get lenses from repository
-      const lensGroups = await cameraKit.lensRepository.getLensGroups();
-      const lenses = lensGroups.flatMap((group: any) => group.lenses || []);
-      
-      // Find the matching lens
-      const snapLens = lenses.find((l: any) => l.id === lensConfig.snapLensId);
-      
-      if (snapLens) {
-        await session.applyLens(snapLens);
-        setState(prev => ({
-          ...prev,
-          currentLens: lensConfig,
-          isLoading: false,
-          error: null,
-        }));
-      } else {
-        throw new Error("Lens not found in Snap repository");
-      }
-    } catch (error) {
-      console.error("Failed to switch lens:", error);
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : "Failed to switch lens",
-      }));
-    }
-  }, []);
 
   /**
    * Capture current frame as base64 image
@@ -251,19 +219,10 @@ export const useCameraKit = (): UseCameraKitReturn => {
     }
 
     try {
-      // Capture the current frame
-      const blob = await session.capture();
-      
-      // Convert blob to base64
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = reader.result as string;
-          resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
+      // CameraKitSession has no capture() method; the SDK instead exposes two
+      // canvases via session.output — "capture" is the one designed for saving/
+      // sharing (as opposed to "live", which may include lens-only UI chrome).
+      return session.output.capture.toDataURL("image/png");
     } catch (error) {
       console.error("Failed to capture frame:", error);
       setState(prev => ({
@@ -296,7 +255,7 @@ export const useCameraKit = (): UseCameraKitReturn => {
       setState(prev => ({
         ...prev,
         isInitialized: false,
-        currentLens: null,
+        isLensApplied: false,
         error: null,
       }));
     } catch (error) {
@@ -314,7 +273,6 @@ export const useCameraKit = (): UseCameraKitReturn => {
   return {
     ...state,
     initialize,
-    switchLens,
     captureFrame,
     cleanup,
     requestPermission,
