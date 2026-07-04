@@ -167,6 +167,13 @@ export const useVirtualTryOn = () => {
     setSavedTryOns((prev) => prev.filter((r) => r.timestamp !== timestamp));
   }, []);
 
+  // Add an externally produced result (e.g. a Live AR capture) to the shared history
+  const addToHistory = useCallback((result: TryOnResult) => {
+    if (result.success && result.compositeImage) {
+      setSavedTryOns((prev) => [result, ...prev].slice(0, 10));
+    }
+  }, []);
+
   return {
     isGenerating,
     currentResult,
@@ -182,5 +189,6 @@ export const useVirtualTryOn = () => {
     clearHistory,
     setPhoto,
     removeFromHistory,
+    addToHistory,
   };
 };

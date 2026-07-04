@@ -8,16 +8,18 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Camera, Sparkles, ArrowLeft, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  PhotoUpload, 
-  FramePicker, 
-  TryOnResult, 
+import {
+  PhotoUpload,
+  FramePicker,
+  TryOnResult,
   TryOnHistory,
   TryOnModeToggle,
   LiveARComingSoon,
+  LiveARTryOn,
   TryOnTour,
-  type TryOnMode 
+  type TryOnMode
 } from "@/components/try-on";
+import { isCameraKitConfigured } from "@/config/snap-lenses";
 import { useVirtualTryOn, type FrameDetails, type TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
 import { useProducts, useProduct } from "@/modules/products/hooks/useProducts";
 import { useCart } from "@/modules/orders/hooks/useCart";
@@ -59,16 +61,15 @@ const TryOn = () => {
     clearHistory,
     setPhoto,
     removeFromHistory,
+    addToHistory,
   } = useVirtualTryOn();
 
   const [selectedFrame, setSelectedFrame] = useState<FrameDetails | null>(null);
-  
-  // Add AR captures to the shared history
+
+  // Add AR captures to the shared try-on history
   const handleARCapture = useCallback((result: TryOnResultType) => {
-    // The savedTryOns state is managed by useVirtualTryOn, but we can't directly add to it
-    // For now, we'll just set the current result which will also add to history
-    // This works because the AR capture format matches TryOnResult
-  }, []);
+    addToHistory(result);
+  }, [addToHistory]);
 
   // Switch back to photo mode
   const handleSwitchToPhoto = useCallback(() => {
@@ -212,9 +213,19 @@ const TryOn = () => {
 
           {/* Conditional Content Based on Mode */}
           {tryOnMode === "ar" ? (
-            /* Live AR — Coming Soon */
+            /* Live AR: real Camera Kit experience once credentials are configured, Coming Soon until then */
             <div className="max-w-2xl mx-auto mb-8">
-              <LiveARComingSoon onSwitchToPhoto={handleSwitchToPhoto} />
+              {isCameraKitConfigured() ? (
+                <LiveARTryOn
+                  products={frameProducts}
+                  productsLoading={productsLoading}
+                  onCapture={handleARCapture}
+                  onSwitchToPhoto={handleSwitchToPhoto}
+                  totalFrameCount={frameProducts.length}
+                />
+              ) : (
+                <LiveARComingSoon onSwitchToPhoto={handleSwitchToPhoto} />
+              )}
             </div>
           ) : (
             /* Photo Mode (existing AI VTO) */
