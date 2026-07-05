@@ -146,14 +146,43 @@ export const useCameraKit = (): UseCameraKitReturn => {
 
       sessionRef.current = session;
 
-      // Get camera stream
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "user",
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-      });
+      // Get camera stream. Permission failures are detected by error name so
+      // the UI can show the dedicated "Camera Access Required" screen instead
+      // of a generic error — a blocked camera can only be re-enabled by the
+      // user via browser settings, so they need instructions, not a retry.
+      let mediaStream: MediaStream;
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+        });
+      } catch (err) {
+        const name = err instanceof DOMException ? err.name : "";
+        const isPermissionError =
+          name === "NotAllowedError" || name === "PermissionDeniedError" || name === "SecurityError";
+
+        // Free the session created above so a later retry starts clean
+        await sessionRef.current?.destroy().catch(() => undefined);
+        sessionRef.current = null;
+        cameraKitRef.current = null;
+
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          permissionStatus: isPermissionError ? "denied" : prev.permissionStatus,
+          error: isPermissionError
+            ? "Camera access is blocked for this site"
+            : name === "NotFoundError"
+              ? "No camera was found on this device"
+              : err instanceof Error
+                ? err.message
+                : "Could not access the camera",
+        }));
+        return false;
+      }
 
       mediaStreamRef.current = mediaStream;
 
