@@ -85,9 +85,17 @@ export const CameraKitCanvas = ({
         <h3 className="text-lg font-medium text-foreground mb-2">
           Camera Access Required
         </h3>
-        <p className="text-sm text-muted-foreground text-center max-w-sm mb-4">
-          To use Live AR try-on, please allow camera access in your browser settings.
+        <p className="text-sm text-muted-foreground text-center max-w-sm mb-2">
+          Live AR try-on needs your camera, but this site is currently blocked from using it.
         </p>
+        <div className="text-sm text-muted-foreground text-left max-w-sm mb-4 space-y-1">
+          <p>To enable it:</p>
+          <ol className="list-decimal list-inside space-y-1">
+            <li>Tap the <strong>lock or camera icon</strong> in your browser&apos;s address bar</li>
+            <li>Set <strong>Camera</strong> to <strong>Allow</strong></li>
+            <li>Come back and tap Try Again</li>
+          </ol>
+        </div>
         <Button
           variant="outline"
           onClick={() => {
