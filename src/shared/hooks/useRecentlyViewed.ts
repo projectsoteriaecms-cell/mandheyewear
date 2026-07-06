@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { PUBLIC_PRODUCT_COLUMNS } from "@/modules/products/hooks/useProducts";
 
 export const useRecentlyViewed = (limit = 8) => {
   const { user } = useAuth();
@@ -38,7 +39,7 @@ export const useRecentlyViewed = (limit = 8) => {
       // Fetch the products
       const { data: products, error: pErr } = await supabase
         .from("products")
-        .select("*")
+        .select(PUBLIC_PRODUCT_COLUMNS)
         .in("id", uniqueProductIds)
         .eq("is_active", true);
 
