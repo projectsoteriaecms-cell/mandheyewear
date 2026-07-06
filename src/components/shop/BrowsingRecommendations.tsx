@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { PUBLIC_PRODUCT_COLUMNS, type Product } from "@/modules/products/hooks/useProducts";
 import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
 import { Sparkles } from "lucide-react";
 
@@ -42,7 +43,7 @@ export const BrowsingRecommendations = () => {
       // Find similar products not yet viewed
       let query = supabase
         .from("products")
-        .select("*")
+        .select(PUBLIC_PRODUCT_COLUMNS)
         .eq("is_active", true)
         .eq("brand_line", "m_and_h_fashion")
         .not("id", "in", `(${viewedIds.join(",")})`)
@@ -60,16 +61,17 @@ export const BrowsingRecommendations = () => {
       if (!recommended?.length) {
         const { data: fallback } = await supabase
           .from("products")
-          .select("*")
+          .select(PUBLIC_PRODUCT_COLUMNS)
           .eq("is_active", true)
           .eq("brand_line", "m_and_h_fashion")
           .not("id", "in", `(${viewedIds.join(",")})`)
           .limit(8);
 
-        return fallback || [];
+        // Rows exclude admin-only columns (cost_price etc.) which the storefront never renders
+        return (fallback || []) as Product[];
       }
 
-      return recommended;
+      return recommended as Product[];
     },
     enabled: !!user,
     staleTime: 120_000,

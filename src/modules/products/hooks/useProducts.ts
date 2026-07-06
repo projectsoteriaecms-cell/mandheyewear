@@ -5,6 +5,16 @@ import { HIDE_MH_FRAMES, MH_FRAME_CATEGORY_KEYS } from "../lib/catalog-flags";
 
 export type Product = Tables<"products">;
 
+/**
+ * Columns the `anon`/`authenticated` roles are granted SELECT on.
+ * The products table uses column-level grants to hide wholesale/ERP data
+ * (cost_price, supplier_id, zoho_item_id, reorder_*, etc.), so `select("*")`
+ * fails with 401 "permission denied" — storefront queries must list columns
+ * explicitly. Keep in sync with the DB grants.
+ */
+export const PUBLIC_PRODUCT_COLUMNS =
+  "additional_images, brand, brand_line, bridge_size, category_id, color, created_at, currency, description, description_html, description_raw, frame_width, gender, id, image_url, is_active, is_prescription_compatible, item_type, material, name, price, price_tier, primary_image_locked, record_type, sku, style, tagline, temple_length, unit, updated_at";
+
 export interface ProductFilters {
   brandLine?: "soteria_medical" | "m_and_h_fashion";
   withImagesOnly?: boolean;
@@ -42,7 +52,7 @@ export const useProducts = (brandLine?: "soteria_medical" | "m_and_h_fashion", w
     queryFn: async () => {
       let query = supabase
         .from("products")
-        .select("*")
+        .select(PUBLIC_PRODUCT_COLUMNS)
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
@@ -106,7 +116,7 @@ export const useFeaturedProducts = (limit = 4) => {
       // Get products with images, ordered by price desc (luxury first)
       let q = supabase
         .from("products")
-        .select("*")
+        .select(PUBLIC_PRODUCT_COLUMNS)
         .eq("is_active", true)
         .eq("brand_line", "m_and_h_fashion")
         .not("image_url", "is", null)
@@ -146,7 +156,7 @@ export const useProduct = (productId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select(PUBLIC_PRODUCT_COLUMNS)
         .eq("id", productId)
         .maybeSingle();
 
