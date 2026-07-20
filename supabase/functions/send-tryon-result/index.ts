@@ -214,7 +214,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Soteria Eye Clinic <noreply@notify.mandheyewear.com>",
+        from: "M&H Eyewear <noreply@notify.mandheyewear.com>",
         to: [email],
         subject: `Your Virtual Try-On: ${frameName} 🕶️`,
         html: emailHtml,

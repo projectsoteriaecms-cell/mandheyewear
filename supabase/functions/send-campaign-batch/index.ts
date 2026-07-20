@@ -45,7 +45,7 @@ const CORS = {
 const BATCH_SIZE   = 50;
 const RESEND_URL   = "https://api.resend.com/emails/batch";
 const FROM_EMAIL   = Deno.env.get("CAMPAIGN_FROM_EMAIL") ??
-                     "Soteria Eye Clinic <campaigns@soteriaeyeclinic.com>";
+                     "M&H Eyewear <campaigns@mandheyewear.com>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 
 function db() {
