@@ -55,6 +55,28 @@ export const useAuth = () => {
     return { data, error };
   };
 
+  // Confirm a new account by entering the code from the email. On success the
+  // user is signed in immediately (verifyOtp returns a session), so there is no
+  // redirect, no cross-device break, and no link-scanner consuming the token.
+  const verifyEmailOtp = async (email: string, token: string) => {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token: token.trim(),
+      type: "signup",
+    });
+    return { data, error };
+  };
+
+  // Re-send the confirmation email (new code + link) to an unconfirmed account.
+  const resendConfirmation = async (email: string) => {
+    const { data, error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/verify-email` },
+    });
+    return { data, error };
+  };
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     // Always clear local state — "session_not_found" means already signed out server-side
@@ -72,6 +94,8 @@ export const useAuth = () => {
     loading,
     signUp,
     signIn,
+    verifyEmailOtp,
+    resendConfirmation,
     signOut,
     isAuthenticated: !!user,
   };

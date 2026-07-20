@@ -59,9 +59,20 @@ const Login = () => {
 
     setIsLoading(true);
     const { error, data } = await signIn(email, password);
-    
+
     if (error) {
       setIsLoading(false);
+      // An unconfirmed account isn't a failure — it just needs verifying.
+      // Route the user to the verify screen (which can resend a code) instead
+      // of showing a dead-end error.
+      if (error.message?.toLowerCase().includes("not confirmed")) {
+        toast({
+          title: "One more step",
+          description: "Confirm your email to finish signing in — enter the code we sent you.",
+        });
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
       toast({
         title: "Login Failed",
         description: error.message,

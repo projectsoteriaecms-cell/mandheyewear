@@ -21,6 +21,7 @@ interface SignupEmailProps {
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  token?: string
 }
 
 export const SignupEmail = ({
@@ -28,17 +29,18 @@ export const SignupEmail = ({
   siteUrl,
   recipient,
   confirmationUrl,
+  token,
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Welcome to M&H Eyewear — confirm your email</Preview>
+    <Preview>Your M&H Eyewear verification code{token ? `: ${token}` : ''}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
           <Img
-            src="https://ispizamxlrukxmysgyjv.supabase.co/storage/v1/object/public/email-assets/mh-logo.png"
-            width="140"
-            height="auto"
+            src="https://www.mandheyewear.com/pwa-192x192.png"
+            width="72"
+            height="72"
             alt="M&H Eyewear"
             style={logo}
           />
@@ -49,14 +51,17 @@ export const SignupEmail = ({
           <Link href={siteUrl} style={link}>
             <strong>M&H Eyewear</strong>
           </Link>
-          . We're thrilled to have you.
+          . Enter this code on the verification screen to activate your account:
         </Text>
+
+        {token ? (
+          <Section style={codeSection}>
+            <Text style={codeText}>{token}</Text>
+          </Section>
+        ) : null}
+
         <Text style={text}>
-          Please confirm your email address (
-          <Link href={`mailto:${recipient}`} style={link}>
-            {recipient}
-          </Link>
-          ) to get started:
+          Or simply tap the button below — it does the same thing:
         </Text>
         <Section style={buttonSection}>
           <Button style={button} href={confirmationUrl}>
@@ -64,7 +69,8 @@ export const SignupEmail = ({
           </Button>
         </Section>
         <Text style={footer}>
-          If you didn't create an account, you can safely ignore this email.
+          This code expires in 24 hours. If you didn't create an account, you can safely ignore
+          this email.
         </Text>
         <Text style={brand}>
           M&H Eyewear — See Better. Look Better.
@@ -94,6 +100,21 @@ const text = {
   margin: '0 0 20px',
 }
 const link = { color: 'hsl(210, 85%, 40%)', textDecoration: 'underline' }
+const codeSection = {
+  textAlign: 'center' as const,
+  margin: '24px 0',
+  padding: '20px',
+  backgroundColor: 'hsl(210, 40%, 96%)',
+  borderRadius: '12px',
+}
+const codeText = {
+  fontFamily: "'Courier New', monospace",
+  fontSize: '34px',
+  fontWeight: '700' as const,
+  letterSpacing: '10px',
+  color: 'hsl(210, 25%, 12%)',
+  margin: '0',
+}
 const buttonSection = { textAlign: 'center' as const, margin: '32px 0' }
 const button = {
   backgroundColor: 'hsl(210, 85%, 40%)',
