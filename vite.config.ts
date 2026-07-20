@@ -46,6 +46,11 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Take over stale clients immediately: new SW activates without
+        // waiting, claims all open tabs, and deletes caches from old builds.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         // Enable background sync for offline queue
         runtimeCaching: [
           {
