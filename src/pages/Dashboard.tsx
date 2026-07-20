@@ -16,6 +16,7 @@ import {
   EmailVerificationBanner,
   PrescriptionsSection,
 } from "@/components/dashboard";
+import { isPast, isToday } from "date-fns";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useWishlist } from "@/modules/orders/hooks/useWishlist";
 import { useOrders } from "@/modules/orders/hooks/useOrders";
@@ -57,9 +58,11 @@ const Dashboard = () => {
   const allowedStaffTabs = ["profile", "settings", "addresses", "frame-profile", "prescriptions"];
   const isStaffViewingAllowedTab = allowedStaffTabs.includes(defaultTab);
 
-  const upcomingAppointments = appointments?.filter(
-    (a) => a.status !== "cancelled" && a.status !== "completed" && new Date(a.scheduled_date) >= new Date()
-  ).length || 0;
+  const upcomingAppointments = appointments?.filter((a) => {
+    if (a.status === "cancelled" || a.status === "completed") return false;
+    const date = new Date(a.scheduled_date);
+    return isToday(date) || !isPast(date);
+  }).length || 0;
 
   // Check if user is unverified
   const isUnverified = isUnverifiedUser(role ?? null);

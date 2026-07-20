@@ -20,7 +20,9 @@ export const useUserRole = () => {
         .maybeSingle();
 
       if (error) throw error;
-      return data?.role as AppRole | null;
+      // Coalesce to null — React Query rejects an undefined result, which is
+      // what `data?.role` yields for a user with no role row.
+      return (data?.role ?? null) as AppRole | null;
     },
     enabled: !!user?.id,
   });
