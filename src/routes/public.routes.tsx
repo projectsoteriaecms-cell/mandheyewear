@@ -35,6 +35,7 @@ const Terms = lazyRetry(() => import("@/pages/Terms"));
 const Returns = lazyRetry(() => import("@/pages/Returns"));
 const Login = lazyRetry(() => import("@/pages/Login"));
 const Signup = lazyRetry(() => import("@/pages/Signup"));
+const VerifyEmail = lazyRetry(() => import("@/pages/VerifyEmail"));
 const ForgotPassword = lazyRetry(() => import("@/pages/ForgotPassword"));
 const Dashboard = lazyRetry(() => import("@/pages/Dashboard"));
 const ProductDetail = lazyRetry(() => import("@/pages/ProductDetail"));
@@ -75,6 +76,7 @@ export const publicRoutes = [
   <Route key="/returns" path="/returns" element={withSuspense(Returns)} />,
   <Route key="/login" path="/login" element={withSuspense(Login)} />,
   <Route key="/signup" path="/signup" element={withSuspense(Signup)} />,
+  <Route key="/verify-email" path="/verify-email" element={withSuspense(VerifyEmail)} />,
   <Route key="/forgot-password" path="/forgot-password" element={withSuspense(ForgotPassword)} />,
   <Route key="/dashboard" path="/dashboard" element={withSuspense(Dashboard)} />,
   <Route key="/product" path="/product/:productId" element={withSuspense(ProductDetail)} />,

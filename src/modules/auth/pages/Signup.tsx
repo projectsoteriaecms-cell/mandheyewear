@@ -119,7 +119,10 @@ const Signup = () => {
         navigate("/onboarding");
       }
     } else {
-      toast({ title: "Account Created!", description: "Please check your email to confirm your account." });
+      // No session yet means email confirmation is required. Send the user
+      // straight to the verify screen (pre-filled with their email) instead of
+      // leaving them on the form to guess what to do next.
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     }
   };
 
