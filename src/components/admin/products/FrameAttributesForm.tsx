@@ -1,1 +1,1 @@
-export { FrameAttributesForm } from "@/modules/products/components/FrameAttributesForm";
+export { FrameAttributesForm } from "@/modules/products";

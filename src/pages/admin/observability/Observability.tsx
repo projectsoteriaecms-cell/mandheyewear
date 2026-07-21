@@ -1,5 +1,5 @@
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, CheckCircle2, Clock, Users, Mail, TrendingUp } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { RoleGuard } from "@/modules/auth";
 import {
   useLiveActivity,
   useErrorFeed,

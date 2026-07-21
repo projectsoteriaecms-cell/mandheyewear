@@ -1,1 +1,1 @@
-export { SortableCategoryRow } from "@/modules/categories/components/SortableCategoryRow";
+export { SortableCategoryRow } from "@/modules/categories";

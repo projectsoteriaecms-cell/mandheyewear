@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { AdminLayout } from '@/shared/layouts/admin';
-import { RoleGuard } from '@/modules/auth/components/RoleGuard';
+
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,6 +18,7 @@ import {
   useVtoConversionAnalysis,
 } from '@/modules/crm';
 import { CrmTabs } from './CrmTabs';
+import { RoleGuard } from "@/modules/auth";
 
 const fmtPct = (n: number) => `${Math.round(n * 100)}%`;
 const fmtCurrency = (n: number) => `₦${(n / 1_000_000).toFixed(1)}M`;

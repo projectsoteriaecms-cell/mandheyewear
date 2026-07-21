@@ -1,24 +1,12 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import { useZohoSync } from "@/modules/integrations";
-import { useIsAdmin } from "@/modules/auth/hooks/useUserRole";
-import { useAdminProducts, useAdminProductsPaged } from "@/modules/products";
+
+import { useAdminProducts, useAdminProductsPaged, CreateProductDialog, BulkUploadDialog, EditProductDialog, BulkImageUploadDialog, ECMSImportDialog, ImportHistoryPanel, ZohoSyncHistoryPanel, QuickImageUploadModal, LinkToZohoDialog, DataCleanupDialog, NameCleanupDialog, SeedDescriptionsDialog, SeedImagesDialog } from "@/modules/products";
 import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
 import { Button } from "@/components/ui/button";
-import { CreateProductDialog } from "@/modules/products/components/CreateProductDialog";
-import { BulkUploadDialog } from "@/modules/products/components/BulkUploadDialog";
-import { EditProductDialog } from "@/modules/products/components/EditProductDialog";
-import { BulkImageUploadDialog } from "@/modules/products/components/BulkImageUploadDialog";
-import { ECMSImportDialog } from "@/modules/products/components/ECMSImportDialog";
-import { ImportHistoryPanel } from "@/modules/products/components/ImportHistoryPanel";
-import { ZohoSyncHistoryPanel } from "@/modules/products/components/ZohoSyncHistoryPanel";
-import { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
-import { LinkToZohoDialog } from "@/modules/products/components/LinkToZohoDialog";
-import { DataCleanupDialog } from "@/modules/products/components/DataCleanupDialog";
-import { NameCleanupDialog } from "@/modules/products/components/NameCleanupDialog";
-import { SeedDescriptionsDialog } from "@/modules/products/components/SeedDescriptionsDialog";
-import { SeedImagesDialog } from "@/modules/products/components/SeedImagesDialog";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import type { Database } from "@/integrations/supabase/types";
 import { ProductsToolbar, ProductsFilterBar, ProductsTable, useEnrichProducts } from "./products/index";
+import { RoleGuard, useIsAdmin } from "@/modules/auth";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 type ViewMode = "grid" | "list";

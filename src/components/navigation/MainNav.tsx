@@ -10,13 +10,13 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { CartDrawer } from "@/components/cart/CartDrawer";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+
 import { hasAdminAccess } from "@/shared/lib/permissions";
 import { useToast } from "@/shared/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import mhLogo from "@/assets/mh-logo.png";
 import mhLogoGold from "@/assets/mh-logo-gold.png";
+import { useAuth, useUserRole } from "@/modules/auth";
 
 // Highlighted feature links
 const highlightedLinks = [

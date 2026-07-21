@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, XCircle, RefreshCw, Loader2, Database } from "lucide-react";
+import { RoleGuard } from "@/modules/auth";
 
 const PROJECT_REF = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;
 const PROJECT_URL = import.meta.env.VITE_SUPABASE_URL as string;

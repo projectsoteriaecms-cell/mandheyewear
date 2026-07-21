@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AdminLayout } from "@/shared/layouts/admin";
 import { supabase } from "@/integrations/supabase/client";
-import { useZohoSync } from "@/modules/integrations/hooks/useZohoSync";
-import { useUpdateOrderStatus } from "@/modules/orders/hooks/useUpdateOrderStatus";
+
 import { OrderDetailSheet } from "./orders/OrderDetailSheet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +52,8 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
+import { useZohoSync } from "@/modules/integrations";
+import { useUpdateOrderStatus } from "@/modules/orders";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 

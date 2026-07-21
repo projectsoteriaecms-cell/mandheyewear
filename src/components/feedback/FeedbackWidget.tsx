@@ -7,8 +7,8 @@
 import { useState } from "react";
 import { MessageSquarePlus, X, Send, Star, CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useProfile } from "@/modules/personalization/hooks/useProfile";
+import { useAuth } from "@/modules/auth";
+import { useProfile } from "@/modules/personalization";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

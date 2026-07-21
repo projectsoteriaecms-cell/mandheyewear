@@ -1,7 +1,8 @@
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import { CrmAccessGate, LtvDashboard, PreferenceCenterStats } from "@/modules/crm";
 import { CrmTabs } from "./CrmTabs";
+import { RoleGuard } from "@/modules/auth";
 
 const CrmAnalytics = () => {
   return (

@@ -20,12 +20,12 @@ import {
   type TryOnMode
 } from "@/components/try-on";
 import { isCameraKitConfigured } from "@/config/snap-lenses";
-import { useVirtualTryOn, type FrameDetails, type TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
-import { useProducts, useProduct } from "@/modules/products/hooks/useProducts";
-import { useCart } from "@/modules/orders/hooks/useCart";
-import { useWishlist } from "@/modules/orders/hooks/useWishlist";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { toast } from "sonner";
+import { useVirtualTryOn, type FrameDetails, type TryOnResult as TryOnResultType } from "@/modules/personalization";
+import { useProducts, useProduct } from "@/modules/products";
+import { useCart, useWishlist } from "@/modules/orders";
+import { useAuth } from "@/modules/auth";
 
 const TryOn = () => {
   useSEO({

@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useProfile, useUpdateProfile } from "@/modules/personalization/hooks/useProfile";
+
 import { useToast } from "@/shared/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, User, ShieldCheck, ShieldAlert } from "lucide-react";
-import { useEmailVerification } from "@/modules/auth/hooks/useEmailVerification";
+
 import { EmailVerificationStatusDialog } from "./EmailVerificationStatusDialog";
+import { useProfile, useUpdateProfile } from "@/modules/personalization";
+import { useEmailVerification } from "@/modules/auth";
 
 interface ProfileSectionProps {
   userId: string;

@@ -23,8 +23,8 @@ import { cn } from "@/lib/utils";
 import { EmailCaptureModal } from "./EmailCaptureModal";
 import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
 import { TryOnGenerationExperience } from "./TryOnGenerationExperience";
-import { useVTOEmailCapture } from "@/modules/personalization/hooks/useVTOEmailCapture";
-import type { TryOnResult as TryOnResultType, MultiAngleResults } from "@/modules/personalization/hooks/useVirtualTryOn";
+import { useVTOEmailCapture } from "@/modules/personalization";
+import type { TryOnResult as TryOnResultType, MultiAngleResults } from "@/modules/personalization";
 
 interface TryOnResultProps {
   result: TryOnResultType | null;

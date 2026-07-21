@@ -9,10 +9,11 @@ import { CameraKitCanvas } from "./CameraKitCanvas";
 import { ARFrameSelector } from "./ARFrameSelector";
 import { pickAROverlayImage } from "@/shared/lib/ar-image-utils";
 import { useFrameAttributes, has3DMeasurements } from "@/shared/hooks/useFrameAttributes";
-import type { TryOnResult as TryOnResultType } from "@/modules/personalization/hooks/useVirtualTryOn";
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { isCameraKitConfigured } from "@/config/snap-lenses";
+import type { TryOnResult as TryOnResultType } from "@/modules/personalization";
 
 interface FrameProduct {
   id: string;

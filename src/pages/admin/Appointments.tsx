@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+import { RoleGuard } from "@/modules/auth";
+
 import {
   useAdminAppointments,
   AppointmentStats,

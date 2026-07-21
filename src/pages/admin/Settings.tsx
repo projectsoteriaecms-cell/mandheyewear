@@ -1,5 +1,5 @@
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import {
   Palette,
 } from "@phosphor-icons/react";
 import { WarehouseMappingCard } from "@/modules/integrations";
+import { RoleGuard } from "@/modules/auth";
 
 const Settings = () => {
   return (

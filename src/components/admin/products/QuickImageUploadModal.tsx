@@ -1,1 +1,1 @@
-export { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
+export { QuickImageUploadModal } from "@/modules/products";

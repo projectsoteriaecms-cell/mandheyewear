@@ -3,7 +3,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, ImageOff, X, Box, Image as ImageIcon, Loader2 } from "lucide-react";
-import { getDisplayImages } from "@/modules/products/lib/image-utils";
+import { getDisplayImages } from "@/modules/products";
 
 const ProductFrame3DViewer = lazy(() =>
   import("./ProductFrame3DViewer").then((m) => ({ default: m.ProductFrame3DViewer }))
@@ -208,8 +208,6 @@ export const ProductImageCarousel = ({
           )}
           </>
           )}
-
-
 
           {/* Image counter — 2D only */}
           {view === "2d" && (

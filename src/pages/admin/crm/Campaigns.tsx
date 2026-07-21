@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { AdminLayout } from '@/shared/layouts/admin';
-import { RoleGuard } from '@/modules/auth/components/RoleGuard';
-import { useIsSuperAdmin } from '@/modules/auth/hooks/useUserRole';
+
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,9 +37,10 @@ import {
   useDeleteCampaignsBulk,
   type CrmCampaign,
 } from '@/modules/crm';
-import { TemplatesGallery } from '@/modules/crm/components/TemplatesGallery';
-import { CreateTriggerDialog } from '@/modules/crm/components/CreateTriggerDialog';
+
 import { CrmTabs } from './CrmTabs';
+import { RoleGuard, useIsSuperAdmin } from "@/modules/auth";
+import { TemplatesGallery, CreateTriggerDialog } from "@/modules/crm";
 
 type TabType = 'drafts' | 'active' | 'completed' | 'archived' | 'templates' | 'triggers';
 type DateFilterType = 'all' | 'week' | 'month';

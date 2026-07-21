@@ -6,10 +6,9 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { useToast } from "@/shared/hooks/use-toast";
-import { useUpdateProfile } from "@/modules/personalization/hooks/useProfile";
-import { usePersonalizedProducts } from "@/modules/personalization/hooks/usePersonalizedProducts";
+
 import {
   Sparkle,
   ArrowRight,
@@ -20,6 +19,8 @@ import {
 import { SkipForward } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FaceShapeIllustration, FrameStyleIllustration } from "@/components/onboarding/illustrations";
+import { useAuth } from "@/modules/auth";
+import { useUpdateProfile, usePersonalizedProducts } from "@/modules/personalization";
 import {
   FACE_SHAPES,
   FRAME_SHAPES,

@@ -1,5 +1,5 @@
 import { MapPin, Eye } from "lucide-react";
-import type { Branch } from "@/modules/branches/types";
+import type { Branch } from "@/modules/branches";
 
 interface BranchCardProps {
   branch: Branch;

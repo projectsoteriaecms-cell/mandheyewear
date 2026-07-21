@@ -1,1 +1,1 @@
-export { CreatePurchaseOrderDialog } from "@/modules/inventory/components/CreatePurchaseOrderDialog";
+export { CreatePurchaseOrderDialog } from "@/modules/inventory";

@@ -3,8 +3,8 @@ import { Package, Warning, TrendUp, Users, Buildings, EnvelopeSimple, FileText, 
 import { useInventoryStats, useLowStockAlerts } from "@/modules/inventory";
 import { usePurchaseOrders, useStockTransfers } from "@/modules/inventory";
 import { useProductImageStats } from "@/modules/products";
-import { useBranchAssignments } from "@/modules/branches";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+import { useBranchAssignments, WelcomeBranchDialog } from "@/modules/branches";
+
 import { isAtLeast } from "@/shared/lib/permissions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,9 @@ import {
   LowStockAlertsCard,
   QuickActionsCard,
 } from "@/shared/layouts/admin/dashboard";
-import { WelcomeBranchDialog } from "@/modules/branches/components/WelcomeBranchDialog";
+
 import { Link } from "react-router-dom";
+import { useUserRole } from "@/modules/auth";
 
 const NoBranchAssignmentCard = () => (
   <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">

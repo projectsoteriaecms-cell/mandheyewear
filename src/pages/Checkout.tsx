@@ -20,12 +20,7 @@ import { OrderSummary } from "@/components/checkout/OrderSummary";
 import { ShippingZoneIndicator } from "@/components/checkout/ShippingZoneIndicator";
 import { PriceLockBadge } from "@/components/checkout/PriceLockBadge";
 import { PaymentRetryPrompt } from "@/components/checkout/PaymentRetryPrompt";
-import { useCart } from "@/modules/orders/hooks/useCart";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useProfile } from "@/modules/personalization/hooks/useProfile";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
-import { usePrescriptions } from "@/modules/prescriptions/hooks/usePrescriptions";
-import { PrescriptionForm } from "@/modules/prescriptions/components/PrescriptionForm";
+
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { usePaystackMode } from "@/shared/hooks/usePaystackMode";
 import { canPurchase } from "@/shared/lib/permissions";
@@ -41,6 +36,10 @@ import { useToast } from "@/shared/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, ShoppingBag, Loader2, CreditCard, Shield, User, CheckCircle, CheckCircle2, Clock, Phone, Mail, ClipboardList, AlertTriangle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useCart } from "@/modules/orders";
+import { useAuth, useUserRole } from "@/modules/auth";
+import { useProfile } from "@/modules/personalization";
+import { usePrescriptions, PrescriptionForm } from "@/modules/prescriptions";
 
 // Paystack key is resolved at runtime via usePaystackMode (see below)
 

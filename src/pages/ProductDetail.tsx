@@ -15,26 +15,28 @@ import { ProductSpecifications } from "@/components/product/ProductSpecification
 import { ProductDescription } from "@/components/product/ProductDescription";
 import { AddToCartSection } from "@/components/product/AddToCartSection";
 import { SocialProofBadge } from "@/components/product/SocialProofBadge";
-import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
+
 import { MobileActionBar } from "@/components/mobile";
 import { InlineTryOnModal } from "@/components/try-on";
-import { useProduct, useProducts } from "@/modules/products/hooks/useProducts";
-import { useCart } from "@/modules/orders/hooks/useCart";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
-import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
+
 import { useTrackActivity } from "@/shared/hooks/useTrackActivity";
 import { setCurrentProduct } from "@/shared/hooks/useCurrentProduct";
 import { useFrameAttributes } from "@/shared/hooks/useFrameAttributes";
 import { ArrowLeft, Star, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProductCard } from "@/modules/storefront";
+import { useProduct, useProducts } from "@/modules/products";
+import { useCart } from "@/modules/orders";
+import { useAuth } from "@/modules/auth";
+import { useInlineTryOn } from "@/modules/personalization";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
 
 /** Inline short description with read-more toggle */
 function DescriptionSnippet({ description }: { description: string }) {

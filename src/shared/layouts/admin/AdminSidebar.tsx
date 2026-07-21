@@ -2,8 +2,9 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Package, ArrowsLeftRight } from "@phosphor-icons/react";
 import { cn } from "@/shared/lib/utils";
-import { useIsManager, useIsAdmin, useIsSuperAdmin } from "@/modules/auth/hooks/useUserRole";
+
 import { NavMenuItem, navItems, filterNavItems } from "./sidebar";
+import { useIsManager, useIsAdmin, useIsSuperAdmin } from "@/modules/auth";
 
 export const AdminSidebar = () => {
   const { isManager } = useIsManager();

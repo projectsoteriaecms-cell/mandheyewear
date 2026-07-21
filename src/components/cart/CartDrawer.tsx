@@ -10,10 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useCart } from "@/modules/orders/hooks/useCart";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { usePrescriptions } from "@/modules/prescriptions/hooks/usePrescriptions";
-import { LensConfigurator, type LensConfig } from "@/modules/lens/components/LensConfigurator";
+
 import { Bag, Minus, Plus, Trash, CircleNotch, Eyeglasses, Warning, PencilSimple } from "@phosphor-icons/react";
 
 // Import placeholder images
@@ -21,6 +18,10 @@ import frame1 from "@/assets/frame-1.jpg";
 import frame2 from "@/assets/frame-2.jpg";
 import frame3 from "@/assets/frame-3.jpg";
 import frame4 from "@/assets/frame-4.jpg";
+import { useCart } from "@/modules/orders";
+import { useAuth } from "@/modules/auth";
+import { usePrescriptions } from "@/modules/prescriptions";
+import { LensConfigurator, type LensConfig } from "@/modules/lens";
 
 const placeholderImages = [frame1, frame2, frame3, frame4];
 

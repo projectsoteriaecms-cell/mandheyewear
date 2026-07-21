@@ -2,8 +2,7 @@ import { useState } from "react";
 import { format, addDays, isBefore, startOfToday } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { useBranches } from "@/modules/branches/hooks/useBranches";
-import { useCreateAppointment } from "@/modules/appointments/hooks/useAppointments";
+
 import {
   Dialog,
   DialogContent,
@@ -31,6 +30,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useBranches } from "@/modules/branches";
+import { useCreateAppointment } from "@/modules/appointments";
 
 // ── constants ─────────────────────────────────────────────────────────────────
 

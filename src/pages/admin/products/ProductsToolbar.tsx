@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { BulkPackagingFixButton } from "@/modules/products";
 import {
   Plus,
   Upload,
@@ -11,8 +12,6 @@ import {
   Database,
   TextAa,
 } from "@phosphor-icons/react";
-
-import { BulkPackagingFixButton } from "@/modules/products/components/BulkPackagingFixButton";
 
 interface ProductsToolbarProps {
   isAdmin: boolean;

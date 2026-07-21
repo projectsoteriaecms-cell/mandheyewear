@@ -17,15 +17,14 @@ import {
   PrescriptionsSection,
 } from "@/components/dashboard";
 import { isPast, isToday } from "date-fns";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useWishlist } from "@/modules/orders/hooks/useWishlist";
-import { useOrders } from "@/modules/orders/hooks/useOrders";
-import { useAppointments } from "@/modules/appointments/hooks/useAppointments";
-import { usePrescriptions } from "@/modules/prescriptions/hooks/usePrescriptions";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
-import { useOnboardingStatus } from "@/modules/personalization/hooks/useOnboardingStatus";
+
 import { hasAdminAccess, isUnverifiedUser } from "@/shared/lib/permissions";
 import { useToast } from "@/shared/hooks/use-toast";
+import { useAuth, useUserRole } from "@/modules/auth";
+import { useWishlist, useOrders } from "@/modules/orders";
+import { useAppointments } from "@/modules/appointments";
+import { usePrescriptions } from "@/modules/prescriptions";
+import { useOnboardingStatus } from "@/modules/personalization";
 import {
   Loader2,
   LogOut,

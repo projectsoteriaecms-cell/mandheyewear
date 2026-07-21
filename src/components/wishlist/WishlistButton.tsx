@@ -1,9 +1,10 @@
 import { Heart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useWishlist } from "@/modules/orders/hooks/useWishlist";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useWishlist } from "@/modules/orders";
+import { useAuth } from "@/modules/auth";
 
 interface WishlistButtonProps {
   productId: string;

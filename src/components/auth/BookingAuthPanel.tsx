@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { useToast } from "@/shared/hooks/use-toast";
 import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
+import { useAuth } from "@/modules/auth";
 
 const PHONE_REGEX = /^\+?[0-9\s\-()]{7,20}$/;
 

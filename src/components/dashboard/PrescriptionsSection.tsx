@@ -16,10 +16,7 @@ import {
   AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  usePrescriptions, isPrescriptionValid, type Prescription,
-} from "@/modules/prescriptions/hooks/usePrescriptions";
-import { PrescriptionForm } from "@/modules/prescriptions/components/PrescriptionForm";
+import { usePrescriptions, isPrescriptionValid, type Prescription, PrescriptionForm } from "@/modules/prescriptions";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 

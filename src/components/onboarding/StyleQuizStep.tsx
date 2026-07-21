@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useUpdateProfile } from "@/modules/personalization/hooks/useProfile";
+
 import { useToast } from "@/shared/hooks/use-toast";
 import { ArrowLeft, ArrowRight, Check, Loader2, SkipForward } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FrameStyleIllustration } from "./illustrations";
+import { useAuth } from "@/modules/auth";
+import { useUpdateProfile } from "@/modules/personalization";
 import {
   FRAME_SHAPES,
   GENDER_OPTIONS,

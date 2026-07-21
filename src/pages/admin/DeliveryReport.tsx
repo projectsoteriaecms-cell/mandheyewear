@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { FileArrowDown } from "@phosphor-icons/react";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+import { RoleGuard } from "@/modules/auth";
+
 import {
   Table,
   TableBody,

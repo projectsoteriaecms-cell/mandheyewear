@@ -1,12 +1,12 @@
 import { Separator } from "@/components/ui/separator";
 import { Eyeglasses } from "@phosphor-icons/react";
-import type { CartItem } from "@/modules/orders/hooks/useCart";
 
 // Import placeholder images
 import frame1 from "@/assets/frame-1.jpg";
 import frame2 from "@/assets/frame-2.jpg";
 import frame3 from "@/assets/frame-3.jpg";
 import frame4 from "@/assets/frame-4.jpg";
+import type { CartItem } from "@/modules/orders";
 
 const placeholderImages = [frame1, frame2, frame3, frame4];
 

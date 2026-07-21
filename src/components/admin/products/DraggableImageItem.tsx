@@ -1,1 +1,1 @@
-export { DraggableImageItem } from "@/modules/products/components/DraggableImageItem";
+export { DraggableImageItem } from "@/modules/products";

@@ -4,11 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOrders } from "@/modules/orders/hooks/useOrders";
-import { EmptyState } from "@/modules/storefront/components/shared";
+
 import { Package, ShoppingBag, Truck, ExternalLink, Wrench } from "lucide-react";
 import { format } from "date-fns";
 import { FittingBookingDialog } from "@/components/fitting/FittingBookingDialog";
+import { useOrders } from "@/modules/orders";
+import { EmptyState } from "@/modules/storefront";
 
 interface OrderHistorySectionProps {
   userId: string;

@@ -1,25 +1,2 @@
 // Personalization module public API
-export {
-  useProfile,
-  useUpdateProfile,
-  useOnboardingStatus,
-  useFaceMeasurement,
-  useVirtualTryOn,
-  useVTOEmailCapture,
-  useTryOnTour,
-  tourSteps,
-  useStylePolls,
-  usePollResponses,
-  useSubmitPollResponse,
-  useSubmitAllPollResponses,
-  usePersonalizedProducts,
-  useInlineTryOn,
-  type Profile,
-  type FaceDimensions,
-  type FrameDetails,
-  type TryOnResult,
-  type TourStep,
-  type StylePoll,
-  type PollResponse,
-  type ScoredProduct,
-} from "./hooks";
+export * from "./hooks";

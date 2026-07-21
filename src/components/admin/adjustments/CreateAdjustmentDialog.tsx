@@ -1,1 +1,1 @@
-export { CreateAdjustmentDialog } from "@/modules/inventory/components/CreateAdjustmentDialog";
+export { CreateAdjustmentDialog } from "@/modules/inventory";

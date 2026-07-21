@@ -31,8 +31,9 @@ import {
   List,
   SquaresFour,
 } from "@phosphor-icons/react";
-import { ProductListView } from "@/modules/products/components/ProductListView";
+
 import type { Database } from "@/integrations/supabase/types";
+import { ProductListView } from "@/modules/products";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 type ViewMode = "grid" | "list";

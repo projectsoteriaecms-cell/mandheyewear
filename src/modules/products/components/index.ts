@@ -19,3 +19,6 @@ export { QuickImageUploadModal } from "./QuickImageUploadModal";
 export { SeedDescriptionsDialog } from "./SeedDescriptionsDialog";
 export { SeedImagesDialog } from "./SeedImagesDialog";
 export { ZohoSyncHistoryPanel } from "./ZohoSyncHistoryPanel";
+export { BulkPackagingFixButton } from "./BulkPackagingFixButton";
+export { DataCleanupDialog } from "./DataCleanupDialog";
+export { NameCleanupDialog } from "./NameCleanupDialog";

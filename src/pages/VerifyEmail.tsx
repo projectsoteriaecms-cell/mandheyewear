@@ -1,2 +1,2 @@
 // Re-export shim — actual component lives in modules/auth
-export { default } from "@/modules/auth/pages/VerifyEmail";
+export { VerifyEmail as default } from "@/modules/auth";

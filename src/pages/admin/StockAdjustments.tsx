@@ -19,13 +19,14 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, AlertTriangle, PackageMinus, RotateCcw, Trash2, HelpCircle } from "lucide-react";
-import { useStockAdjustments } from "@/modules/inventory";
+import { useStockAdjustments, CreateAdjustmentDialog } from "@/modules/inventory";
 import { useBranches } from "@/modules/branches";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+
 import { canCreateStockAdjustment } from "@/shared/lib/permissions";
-import { CreateAdjustmentDialog } from "@/modules/inventory/components/CreateAdjustmentDialog";
+
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserRole } from "@/modules/auth";
 
 const adjustmentTypeConfig = {
   count_correction: {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AdminLayout } from '@/shared/layouts/admin';
-import { RoleGuard } from '@/modules/auth/components/RoleGuard';
+
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ import {
   useGdprDelete,
 } from '@/modules/crm';
 import { CrmTabs } from './CrmTabs';
+import { RoleGuard } from "@/modules/auth";
 
 const fmtDate = (s: string | null) =>
   s ? new Date(s).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';

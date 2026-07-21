@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Phone, Loader2 } from "lucide-react";
-import type { TryOnResult } from "@/modules/personalization/hooks/useVirtualTryOn";
+
 import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
+import type { TryOnResult } from "@/modules/personalization";
 
 type ContactTab = "email" | "phone";
 
