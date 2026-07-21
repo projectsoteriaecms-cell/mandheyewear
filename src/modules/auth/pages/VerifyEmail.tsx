@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { hasAdminAccess } from "@/shared/lib/permissions";
 import type { Database } from "@/integrations/supabase/types";
 import { Loader2, MailCheck, CheckCircle2 } from "lucide-react";
+import { track, trackError } from "@/shared/lib/telemetry";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -88,6 +89,7 @@ const VerifyEmail = () => {
       } else {
         setError(verifyError.message || "We couldn’t verify that code. Please try again.");
       }
+      void trackError("email.verify_failed", verifyError, { reason: msg.slice(0, 60) });
       setCode("");
       inputRef.current?.focus();
       return;
@@ -95,6 +97,7 @@ const VerifyEmail = () => {
 
     // success-feedback: confirm visually before moving on.
     setSucceeded(true);
+    void track("email.verify_succeeded");
     toast({ title: "Email verified 🎉", description: "Your account is now active." });
     setTimeout(routeAfterVerify, 900);
   };
@@ -106,8 +109,10 @@ const VerifyEmail = () => {
     setIsResending(false);
     if (resendError) {
       toast({ title: "Couldn’t resend", description: resendError.message, variant: "destructive" });
+      void trackError("email.resend_failed", resendError);
       return;
     }
+    void track("email.resend_succeeded");
     setCooldown(RESEND_COOLDOWN);
     setError("");
     toast({ title: "Code sent", description: `A new code is on its way to ${email}.` });
