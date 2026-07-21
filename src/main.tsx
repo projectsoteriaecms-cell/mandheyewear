@@ -1,3 +1,6 @@
+// Must be first — backfills runtime APIs missing on older Safari before any
+// dependency code runs.
+import "./shared/lib/polyfills";
 import { createRoot } from "react-dom/client";
 import { registerSW } from "virtual:pwa-register";
 import App from "./App.tsx";
