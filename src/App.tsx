@@ -11,12 +11,23 @@ import { useMetaPixelPageView } from "@/shared/hooks/useMetaPixel";
 import { TourProvider, TourTooltip } from "@/components/tour";
 import { FeedbackWidget } from "@/components/feedback";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
+import { track } from "@/shared/lib/telemetry";
 
 const queryClient = new QueryClient();
 
 // Component to handle Meta Pixel page view tracking within Router context
 const MetaPixelTracker = () => {
   useMetaPixelPageView();
+  return null;
+};
+
+// Records every route change so a visitor's journey can be replayed end to end,
+// including for logged-out visitors.
+const PageViewTracker = () => {
+  const location = useLocation();
+  useEffect(() => {
+    void track("page.view", { path: location.pathname, search: location.search });
+  }, [location.pathname, location.search]);
   return null;
 };
 
@@ -46,6 +57,7 @@ const App = () => {
           <FeedbackWidget />
           <BrowserRouter>
             <MetaPixelTracker />
+            <PageViewTracker />
             <AppRoutes />
             <WhatsAppButton />
           </BrowserRouter>

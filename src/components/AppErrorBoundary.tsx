@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { trackError } from "@/shared/lib/telemetry";
 
 interface Props {
   children: ReactNode;
@@ -27,6 +28,10 @@ export class AppErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("App crashed", { error, componentStack: info.componentStack });
+    // Record the crash so we see it without waiting for a customer to report it.
+    void trackError("client.render_crash", error, {
+      componentStack: info.componentStack?.slice(0, 1000),
+    });
   }
 
   private handleReset = async () => {
