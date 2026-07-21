@@ -11,17 +11,17 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BottomSheet } from "@/components/mobile/BottomSheet";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
-import { StockBadge } from "@/modules/storefront/components/eyewear/StockBadge";
-import { RequestItemDialog } from "@/modules/storefront/components/eyewear/RequestItemDialog";
+import { StockBadge } from "../eyewear/StockBadge";
+import { RequestItemDialog } from "../eyewear/RequestItemDialog";
 import { InlineTryOnModal } from "@/components/try-on";
 import { ProductImageCarousel } from "@/components/product/ProductImageCarousel";
-import { useProduct } from "@/modules/products/hooks/useProducts";
-import { useCart } from "@/modules/orders/hooks/useCart";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
+import { useProduct } from "@/modules/products";
+import { useCart } from "@/modules/orders";
+import { useAuth } from "@/modules/auth";
+import { useInlineTryOn } from "@/modules/personalization";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { StockStatus } from "@/modules/storefront/components/eyewear/StockBadge";
+import type { StockStatus } from "../eyewear/StockBadge";
 import {
   ShoppingBag,
   ExternalLink,

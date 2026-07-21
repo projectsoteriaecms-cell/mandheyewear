@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, ShoppingCart } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { useCart } from "@/modules/orders/hooks/useCart";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useCart } from "@/modules/orders";
+import { useAuth } from "@/modules/auth";
 import { useNavigate } from "react-router-dom";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
-import type { Product } from "@/modules/products/hooks/useProducts";
-import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
+import type { Product } from "@/modules/products";
+import { useInlineTryOn } from "@/modules/personalization";
 import { InlineTryOnModal } from "@/components/try-on";
 import { setCurrentProduct } from "@/shared/hooks/useCurrentProduct";
 

@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowsClockwise, Package, Trash } from "@phosphor-icons/react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { LUXURY_BRANDS } from "@/modules/products/lib/brand-classification";
+import { LUXURY_BRANDS } from "../lib/brand-classification";
 import {
   AlertDialog,
   AlertDialogAction,

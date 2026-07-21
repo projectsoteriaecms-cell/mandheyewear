@@ -14,3 +14,4 @@ export {
   type PollResponse,
 } from "./useStylePolls";
 export { usePersonalizedProducts, type ScoredProduct } from "./usePersonalizedProducts";
+export { useInlineTryOn } from "./useInlineTryOn";

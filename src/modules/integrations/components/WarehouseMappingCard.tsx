@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowsClockwise, MapPin, Check, Package } from "@phosphor-icons/react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAllBranches } from "@/modules/branches/hooks/useBranches";
+import { useAllBranches } from "@/modules/branches";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 

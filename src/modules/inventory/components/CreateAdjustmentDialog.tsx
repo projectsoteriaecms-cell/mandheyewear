@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useBranches } from "@/modules/branches";
-import { useProducts } from "@/modules/products/hooks/useProducts";
+import { useProducts } from "@/modules/products";
 import { useStockAdjustments } from "@/modules/inventory";
 import { Loader2 } from "lucide-react";
 

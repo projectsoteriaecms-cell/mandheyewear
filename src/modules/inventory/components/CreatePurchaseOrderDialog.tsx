@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useSuppliers } from "@/modules/suppliers";
 import { useBranches } from "@/modules/branches";
-import { useProducts } from "@/modules/products/hooks/useProducts";
+import { useProducts } from "@/modules/products";
 import { useCreatePurchaseOrder } from "@/modules/inventory";
 import { Plus, Trash2 } from "lucide-react";
 

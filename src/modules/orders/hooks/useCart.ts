@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useAuth } from "@/modules/auth";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import type { Tables } from "@/integrations/supabase/types";
-import type { LensConfig } from "@/modules/lens/components/LensConfigurator";
+import type { LensConfig } from "@/modules/lens";
 
 export type CartItem = Tables<"cart_items"> & {
   product: Tables<"products"> | null;
