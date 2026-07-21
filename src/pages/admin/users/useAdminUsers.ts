@@ -5,6 +5,23 @@ import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
+// Most-privileged first. A user can hold several roles (e.g. branch_manager
+// *and* branch_staff); the admin list shows one row per person using their
+// highest role, otherwise the same person appears once per role row.
+const ROLE_RANK: AppRole[] = [
+  "super_admin",
+  "admin",
+  "branch_manager",
+  "branch_staff",
+  "customer",
+  "user",
+];
+
+const rankOf = (role: AppRole) => {
+  const i = ROLE_RANK.indexOf(role);
+  return i === -1 ? ROLE_RANK.length : i;
+};
+
 export const useAdminUsers = () => {
   const queryClient = useQueryClient();
 
@@ -26,7 +43,16 @@ export const useAdminUsers = () => {
 
       const profilesMap = new Map(profilesData.map(p => [p.user_id, p]));
 
-      return rolesData.map(role => ({
+      // Collapse to one entry per user, keeping their highest-ranked role.
+      const byUser = new Map<string, typeof rolesData[number]>();
+      for (const row of rolesData) {
+        const existing = byUser.get(row.user_id);
+        if (!existing || rankOf(row.role as AppRole) < rankOf(existing.role as AppRole)) {
+          byUser.set(row.user_id, row);
+        }
+      }
+
+      return Array.from(byUser.values()).map(role => ({
         ...role,
         profile: profilesMap.get(role.user_id) || null,
       }));
