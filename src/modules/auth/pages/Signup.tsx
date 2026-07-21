@@ -16,6 +16,7 @@ import { lovable } from "@/integrations/lovable";
 import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
 import { GoogleLogo } from "@phosphor-icons/react";
 import type { AppRole } from "../hooks/useUserRole";
+import { track, trackError } from "@/shared/lib/telemetry";
 
 const PHONE_REGEX = /^\+?[0-9\s\-()]{7,20}$/;
 
@@ -89,12 +90,15 @@ const Signup = () => {
     }
     setConsentError("");
 
+    void track("signup.submitted");
+
     setIsLoading(true);
     const { data, error } = await signUp(email, password, fullName, phoneNumber.trim());
     setIsLoading(false);
 
     if (error) {
       toast({ title: "Signup Failed", description: error.message, variant: "destructive" });
+      void trackError("signup.failed", error);
       return;
     }
 
@@ -107,10 +111,12 @@ const Signup = () => {
         title: "You already have an account",
         description: `${email} is already registered. Please sign in instead.`,
       });
+      void track("signup.already_registered");
       navigate(`/login?email=${encodeURIComponent(email)}`);
       return;
     }
 
+    void track("signup.succeeded", { requiresVerification: !data?.session });
     trackCompleteRegistration();
 
     const STAFF_ROLES: AppRole[] = ["branch_staff", "branch_manager", "admin", "super_admin"];

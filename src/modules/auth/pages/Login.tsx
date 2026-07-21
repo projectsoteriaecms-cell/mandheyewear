@@ -15,6 +15,7 @@ import { lovable } from "@/integrations/lovable";
 import { hasAdminAccess } from "@/shared/lib/permissions";
 import type { Database } from "@/integrations/supabase/types";
 import { GoogleLogo } from "@phosphor-icons/react";
+import { track, trackError } from "@/shared/lib/telemetry";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -71,6 +72,7 @@ const Login = () => {
           title: "One more step",
           description: "Confirm your email to finish signing in — enter the code we sent you.",
         });
+        void track("login.unconfirmed_redirect");
         navigate(`/verify-email?email=${encodeURIComponent(email)}`);
         return;
       }
@@ -79,7 +81,9 @@ const Login = () => {
         description: error.message,
         variant: "destructive",
       });
+      void trackError("login.failed", error);
     } else {
+      void track("login.succeeded");
       const userId = data?.user?.id;
       if (userId) {
         const [{ data: roleData }, { data: profileData }] = await Promise.all([
