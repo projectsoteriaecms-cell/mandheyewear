@@ -16,6 +16,7 @@ import {
   Megaphone,
   Slideshow,
   UsersThree,
+  Eye,
 } from "@phosphor-icons/react";
 
 export interface NavItem {
@@ -106,6 +107,12 @@ export const navItems: NavItem[] = [
     title: "Reports",
     href: "/admin/reports",
     icon: ChartBar,
+    requiresManager: true,
+  },
+  {
+    title: "Observability",
+    href: "/admin/observability",
+    icon: Eye,
     requiresManager: true,
   },
   {
