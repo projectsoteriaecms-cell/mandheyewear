@@ -12,7 +12,7 @@ import { TourProvider, TourTooltip } from "@/components/tour";
 import { FeedbackWidget } from "@/components/feedback";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 import { track } from "@/shared/lib/telemetry";
-import { useWelcomeNotification } from "@/modules/notifications";
+import { useWelcomeNotification, useOrderConfirmationNotification } from "@/modules/notifications";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +36,7 @@ const PageViewTracker = () => {
 // without importing hooks from the modules that emit them — see MODULE_CONTRACTS.md.
 const PlatformEventSubscribers = () => {
   useWelcomeNotification();
+  useOrderConfirmationNotification();
   return null;
 };
 

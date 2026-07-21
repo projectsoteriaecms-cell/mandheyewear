@@ -26,6 +26,7 @@ import { useState } from "react";
 import { useToast } from "@/shared/hooks/use-toast";
 import { FittingBookingDialog } from "@/components/fitting/FittingBookingDialog";
 import { useAuth } from "@/modules/auth";
+import { emit } from "@/shared/lib/events";
 
 const OrderConfirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -73,6 +74,18 @@ const OrderConfirmation = () => {
     },
     enabled: !!orderId && isAuthenticated,
   });
+
+  // Fires once the order confirms as loaded here for the first time. The
+  // notifications subscriber dedupes on order_id, so re-visiting this page
+  // (or a re-render firing this again) never creates a duplicate.
+  useEffect(() => {
+    if (!order) return;
+    emit("orders.order_created", {
+      orderId: order.id,
+      userId: order.user_id,
+      total: Number(order.total_amount),
+    });
+  }, [order]);
 
   const handleCopyOrderNumber = async () => {
     if (order?.order_number) {
