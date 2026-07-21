@@ -90,11 +90,24 @@ const Signup = () => {
     setConsentError("");
 
     setIsLoading(true);
-    const { error } = await signUp(email, password, fullName, phoneNumber.trim());
+    const { data, error } = await signUp(email, password, fullName, phoneNumber.trim());
     setIsLoading(false);
 
     if (error) {
       toast({ title: "Signup Failed", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    // Supabase hides "email already registered" behind an obfuscated response
+    // (a user object with an empty identities array) to prevent email
+    // enumeration. Detect it so we send the user to sign in instead of a
+    // verify screen whose code will never arrive.
+    if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      toast({
+        title: "You already have an account",
+        description: `${email} is already registered. Please sign in instead.`,
+      });
+      navigate(`/login?email=${encodeURIComponent(email)}`);
       return;
     }
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSEO } from "@/shared/hooks/useSEO";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,8 @@ type AppRole = Database["public"]["Enums"]["app_role"];
 
 const Login = () => {
   useSEO({ title: "Sign In | M&H Eyewear", description: "Sign in to your M&H Eyewear account.", noindex: true });
-  const [email, setEmail] = useState("");
+  const [searchParams] = useSearchParams();
+  const [email, setEmail] = useState(searchParams.get("email") || "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
