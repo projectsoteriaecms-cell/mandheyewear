@@ -285,24 +285,45 @@ async function handleWebhook(req: Request): Promise<Response> {
 
   // Best-effort audit log. Never let a logging failure block the actual send —
   // that used to turn a minor DB hiccup into a full signup failure.
-  const logStatus = async (status: string, errorMessage?: string) => {
+  // NB: email_send_log has no unique index on message_id, so upsert/onConflict
+  // silently fails here — insert once, then update that row by message_id.
+  const auditClient = () => {
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (!serviceKey) return null
+    return createClient(Deno.env.get('SUPABASE_URL')!, serviceKey)
+  }
+
+  const logPending = async () => {
     try {
-      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      if (!serviceKey) return
-      const supabase = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey)
-      await supabase.from('email_send_log').upsert({
+      const supabase = auditClient()
+      if (!supabase) return
+      const { error } = await supabase.from('email_send_log').insert({
         message_id: messageId,
         template_name: emailType,
         recipient_email: recipientEmail,
-        status,
-        error_message: errorMessage ?? null,
-      }, { onConflict: 'message_id' })
+        status: 'pending',
+      })
+      if (error) console.warn('email_send_log insert failed (non-fatal)', { error: error.message })
     } catch (e) {
-      console.warn('email_send_log write failed (non-fatal)', { error: String(e) })
+      console.warn('email_send_log insert threw (non-fatal)', { error: String(e) })
     }
   }
 
-  await logStatus('pending')
+  const logStatus = async (status: string, errorMessage?: string) => {
+    try {
+      const supabase = auditClient()
+      if (!supabase) return
+      const { error } = await supabase
+        .from('email_send_log')
+        .update({ status, error_message: errorMessage ?? null })
+        .eq('message_id', messageId)
+      if (error) console.warn('email_send_log update failed (non-fatal)', { error: error.message })
+    } catch (e) {
+      console.warn('email_send_log update threw (non-fatal)', { error: String(e) })
+    }
+  }
+
+  await logPending()
 
   // Send directly through Resend. This replaces the previous queue +
   // dispatcher chain (enqueue_email RPC → process-email-queue → Resend), which
