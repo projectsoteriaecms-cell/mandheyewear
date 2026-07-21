@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { emit } from "@/shared/lib/events";
 import type { User, Session } from "@supabase/supabase-js";
 
 export const useAuth = () => {
@@ -11,9 +12,24 @@ export const useAuth = () => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        const prevUser = user;
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Emit events on auth state changes
+        if (session?.user && !prevUser) {
+          // User just logged in
+          emit("auth.login_completed", {
+            userId: session.user.id,
+            email: session.user.email || "",
+          });
+        } else if (!session?.user && prevUser) {
+          // User just logged out
+          emit("auth.logout", {
+            userId: prevUser.id,
+          });
+        }
       }
     );
 
@@ -44,6 +60,14 @@ export const useAuth = () => {
         },
       },
     });
+
+    if (!error && data.user) {
+      emit("auth.signup_completed", {
+        userId: data.user.id,
+        email: data.user.email || email,
+      });
+    }
+
     return { data, error };
   };
 
@@ -64,6 +88,14 @@ export const useAuth = () => {
       token: token.trim(),
       type: "signup",
     });
+
+    if (!error && data.user) {
+      emit("auth.email_verified", {
+        userId: data.user.id,
+        email: data.user.email || email,
+      });
+    }
+
     return { data, error };
   };
 
