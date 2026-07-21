@@ -51,6 +51,7 @@ const CrmWhatsAppTemplates = lazyRetry(() => import("@/pages/admin/crm/WhatsAppT
 const CrmCompliance = lazyRetry(() => import("@/pages/admin/crm/Compliance"));
 const CrmPreferences = lazyRetry(() => import("@/pages/admin/crm/Preferences"));
 const CrmCampaignBuilder = lazyRetry(() => import("@/pages/admin/crm/CampaignBuilder"));
+const Observability = lazyRetry(() => import("@/pages/admin/observability/Observability"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -80,6 +81,7 @@ export const adminRoutes = [
   <Route key="/admin/branches" path="/admin/branches" element={withSuspense(AdminBranches)} />,
   <Route key="/admin/users" path="/admin/users" element={withSuspense(AdminUsers)} />,
   <Route key="/admin/reports" path="/admin/reports" element={withSuspense(Reports)} />,
+  <Route key="/admin/observability" path="/admin/observability" element={withSuspense(Observability)} />,
   <Route key="/admin/settings" path="/admin/settings" element={withSuspense(Settings)} />,
   <Route key="/admin/categories" path="/admin/categories" element={withSuspense(Categories)} />,
   <Route key="/admin/delivery-report" path="/admin/delivery-report" element={withSuspense(DeliveryReport)} />,
