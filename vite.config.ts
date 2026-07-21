@@ -124,6 +124,13 @@ export default defineConfig(({ mode }) => ({
       },
     }),
   ].filter(Boolean),
+  build: {
+    // Pin the supported browsers explicitly instead of relying on Vite's
+    // shifting default, so the matrix we test against can't drift silently.
+    // Note: this transpiles syntax only — missing runtime APIs still need a
+    // polyfill (see src/shared/lib/polyfills.ts).
+    target: ["es2020", "safari14", "chrome87", "firefox78", "edge88"],
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
