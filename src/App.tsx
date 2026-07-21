@@ -10,6 +10,7 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { useMetaPixelPageView } from "@/shared/hooks/useMetaPixel";
 import { TourProvider, TourTooltip } from "@/components/tour";
 import { FeedbackWidget } from "@/components/feedback";
+import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => {
   }, []);
 
   return (
+    <AppErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <TourProvider>
@@ -50,6 +52,7 @@ const App = () => {
         </TourProvider>
       </TooltipProvider>
     </QueryClientProvider>
+    </AppErrorBoundary>
   );
 };
 
