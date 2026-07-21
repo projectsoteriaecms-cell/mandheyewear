@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useProfile } from "@/modules/personalization/hooks/useProfile";
+import { useAuth } from "@/modules/auth";
+import { useProfile } from "./useProfile";
 
 export const useInlineTryOn = () => {
   const [modalOpen, setModalOpen] = useState(false);

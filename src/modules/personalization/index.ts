@@ -13,6 +13,7 @@ export {
   useSubmitPollResponse,
   useSubmitAllPollResponses,
   usePersonalizedProducts,
+  useInlineTryOn,
   type Profile,
   type FaceDimensions,
   type FrameDetails,

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+import { useAuth, useUserRole } from "@/modules/auth";
 import type { BranchAssignment } from "../types";
 
 export const useBranchAssignments = () => {

@@ -25,9 +25,12 @@ import {
   type LensType, type LensCoating, type LensIndex, type LensTier,
 } from "../constants";
 import { evaluateLensGate, type PrescriptionStatus } from "../lib/lensGate";
-import { usePrescriptions, isPrescriptionValid } from "@/modules/prescriptions/hooks/usePrescriptions";
-import { PrescriptionForm } from "@/modules/prescriptions/components/PrescriptionForm";
-import type { PrescriptionInsert } from "@/modules/prescriptions/hooks/usePrescriptions";
+import {
+  usePrescriptions,
+  isPrescriptionValid,
+  PrescriptionForm,
+  type PrescriptionInsert,
+} from "@/modules/prescriptions";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface LensConfig {

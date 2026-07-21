@@ -34,18 +34,18 @@ import { ImagePreviewLightbox } from "./ImagePreviewLightbox";
 import { IMAGE_POSITION_LABELS } from "./ProductImageUpload";
 import { PromptEditorPanel } from "./PromptEditorPanel";
 import { supabase } from "@/integrations/supabase/client";
-import { useAdminProducts } from "@/modules/products/hooks/useAdminProducts";
+import { useAdminProducts } from "../hooks/useAdminProducts";
 import {
   isKnownBrand,
   MIN_REFERENCE_PHOTOS,
   MIN_REFERENCE_PHOTOS_KNOWN,
-} from "@/modules/products/lib/brand-classification";
+} from "../lib/brand-classification";
 import {
   getProductPrompts,
   SHOT_SLUGS,
   type ShotPrompt,
   type ProductForPrompt,
-} from "@/modules/products/lib/prompt-builders";
+} from "../lib/prompt-builders";
 
 const MAX_IMAGES = 6;
 

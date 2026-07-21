@@ -11,7 +11,7 @@ import {
   getImageReadiness,
   READINESS_LABELS,
   READINESS_COLORS,
-} from "@/modules/products/lib/brand-classification";
+} from "../lib/brand-classification";
 
 interface ProductImageCardProps {
   product: {

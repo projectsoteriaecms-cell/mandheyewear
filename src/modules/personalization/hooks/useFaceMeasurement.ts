@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useAuth } from "@/modules/auth";
 import { useToast } from "@/shared/hooks/use-toast";
 
 export interface FaceDimensions {

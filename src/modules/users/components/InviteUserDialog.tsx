@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+import { useAuth, useUserRole } from "@/modules/auth";
 import {
   Dialog,
   DialogContent,

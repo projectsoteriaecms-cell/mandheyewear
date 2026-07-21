@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useAuth } from "@/modules/auth";
 import { useProfile } from "./useProfile";
-import { useProducts, Product } from "@/modules/products/hooks/useProducts";
+import { useProducts, type Product } from "@/modules/products";
 import type { QuizPreferences } from "@/components/onboarding/quiz-constants";
 
 interface FaceDimensions {

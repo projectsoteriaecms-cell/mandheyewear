@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Bell } from "@phosphor-icons/react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useAuth } from "@/modules/auth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
