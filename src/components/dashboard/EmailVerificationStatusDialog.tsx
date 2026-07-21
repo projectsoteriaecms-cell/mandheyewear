@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useEmailVerification } from "@/modules/auth";
 import {
   ShieldCheck,
   MailWarning,
@@ -17,7 +18,6 @@ import {
   RefreshCw,
   PencilLine,
 } from "lucide-react";
-import { useEmailVerification } from "@/modules/auth/hooks/useEmailVerification";
 
 const formatCooldown = (seconds: number) => {
   const m = Math.floor(seconds / 60);

@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { navItems, filterNavItems, type NavItem } from "./sidebar/nav-config";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+
 import { cn } from "@/lib/utils";
+import { useUserRole } from "@/modules/auth";
 
 export const AdminMobileNav = () => {
   const [open, setOpen] = useState(false);

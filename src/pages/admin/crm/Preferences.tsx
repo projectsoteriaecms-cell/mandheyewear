@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Search, RefreshCw, Copy, Check, CheckCircle2, XCircle } from "lucide-react";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import {
   CrmAccessGate,
   PreferenceCenterStats,
@@ -11,6 +11,7 @@ import {
   useRotatePreferenceToken,
 } from "@/modules/crm";
 import { CrmTabs } from "./CrmTabs";
+import { RoleGuard } from "@/modules/auth";
 
 const EF_BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email-preference-page`;
 

@@ -24,6 +24,7 @@ export {
   useProduct,
   useFeaturedProducts,
   useProductCategoryCounts,
+  PUBLIC_PRODUCT_COLUMNS,
   type Product,
   type ProductFilters,
   type CategoryCount,

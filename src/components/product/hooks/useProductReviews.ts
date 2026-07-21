@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { toast } from "sonner";
+import { useAuth } from "@/modules/auth";
 
 export interface ProductReview {
   id: string;

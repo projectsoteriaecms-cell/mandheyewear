@@ -4,16 +4,11 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useTour, SHOP_TOUR, TOUR_IDS, TourFloatingButton } from "@/components/tour";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
-import { ProductListCard } from "@/modules/storefront/components/eyewear/ProductListCard";
-import { ShopCategoryBar } from "@/modules/storefront/components/eyewear/ShopCategoryBar";
-import { ShopSidebar } from "@/modules/storefront/components/eyewear/ShopSidebar";
-import { MobileFilterDrawer } from "@/modules/storefront/components/eyewear/MobileFilterDrawer";
-import { VirtualTryOnBanner } from "@/modules/storefront/components/eyewear/VirtualTryOnBanner";
+
 import { RecentlyViewed } from "@/components/shop/RecentlyViewed";
-import { useProducts, useProductCategoryCounts } from "@/modules/products/hooks/useProducts";
+
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState, Pagination, ProductQuickView } from "@/modules/storefront/components/shared";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,6 +19,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { House, Eye, SquaresFour, List } from "@phosphor-icons/react";
+import { ProductCard, ProductListCard, ShopCategoryBar, ShopSidebar, MobileFilterDrawer, VirtualTryOnBanner, EmptyState, Pagination, ProductQuickView } from "@/modules/storefront";
+import { useProducts, useProductCategoryCounts } from "@/modules/products";
 
 const PRODUCTS_PER_PAGE = 12;
 

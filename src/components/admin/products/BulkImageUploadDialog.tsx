@@ -1,1 +1,1 @@
-export { BulkImageUploadDialog } from "@/modules/products/components/BulkImageUploadDialog";
+export { BulkImageUploadDialog } from "@/modules/products";

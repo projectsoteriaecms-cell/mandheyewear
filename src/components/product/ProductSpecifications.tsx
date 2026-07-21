@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Ruler, Palette, Layers, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Product } from "@/modules/products/hooks/useProducts";
+import type { Product } from "@/modules/products";
 
 interface ProductSpecificationsProps {
   product: Product;

@@ -32,10 +32,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useCategories, type Category } from "@/modules/categories";
-import { SortableCategoryRow } from "@/modules/categories/components/SortableCategoryRow";
-import { CreateCategoryDialog } from "@/modules/categories/components/CreateCategoryDialog";
-import { EditCategoryDialog } from "@/modules/categories/components/EditCategoryDialog";
+import { useCategories, type Category, SortableCategoryRow, CreateCategoryDialog, EditCategoryDialog } from "@/modules/categories";
+
 import { CircleNotch } from "@phosphor-icons/react";
 
 interface CategoryTreeNode extends Category {

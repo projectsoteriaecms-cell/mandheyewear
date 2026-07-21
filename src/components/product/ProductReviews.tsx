@@ -5,7 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useAuth } from "@/modules/auth";
+
 import {
   useProductReviews,
   useReviewStats,

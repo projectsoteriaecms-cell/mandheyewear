@@ -2,7 +2,7 @@
 export { useProfile, useUpdateProfile, type Profile } from "./useProfile";
 export { useOnboardingStatus } from "./useOnboardingStatus";
 export { useFaceMeasurement, type FaceDimensions } from "./useFaceMeasurement";
-export { useVirtualTryOn, type FrameDetails, type TryOnResult } from "./useVirtualTryOn";
+export { useVirtualTryOn, type FrameDetails, type TryOnResult, type MultiAngleResults } from "./useVirtualTryOn";
 export { useVTOEmailCapture } from "./useVTOEmailCapture";
 export { useTryOnTour, tourSteps, type TourStep } from "./useTryOnTour";
 export {

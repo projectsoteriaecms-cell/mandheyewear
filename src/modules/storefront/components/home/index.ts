@@ -9,3 +9,4 @@ export { QuizPromo } from "./QuizPromo";
 export { VirtualTryOn } from "./VirtualTryOn";
 export { QuickDiscovery } from "./QuickDiscovery";
 export { PromoSlideshow } from "./PromoSlideshow";
+export { ScrollProgress } from "./ScrollProgress";

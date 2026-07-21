@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CheckCircle2, Circle, ExternalLink, RefreshCw } from "lucide-react";
+import { RoleGuard } from "@/modules/auth";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

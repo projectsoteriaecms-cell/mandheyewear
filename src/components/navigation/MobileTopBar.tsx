@@ -5,15 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+
 import { hasAdminAccess } from "@/shared/lib/permissions";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "@/modules/orders/hooks/useCart";
+
 import { cn } from "@/lib/utils";
 import mhLogo from "@/assets/mh-logo.png";
 import mhLogoGold from "@/assets/mh-logo-gold.png";
+import { useAuth, useUserRole } from "@/modules/auth";
+import { useCart } from "@/modules/orders";
 
 const menuItems = [{
   name: "Style Quiz",

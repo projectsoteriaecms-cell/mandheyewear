@@ -25,11 +25,7 @@ import {
   LogIn,
   Clock,
 } from "lucide-react";
-import { useBranches } from "@/modules/branches/hooks/useBranches";
-import { useCreateAppointment, type Appointment } from "@/modules/appointments/hooks/useAppointments";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useProfile } from "@/modules/personalization/hooks/useProfile";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { canBookAppointments } from "@/shared/lib/permissions";
 import { format } from "date-fns";
@@ -39,6 +35,10 @@ import { BookingAuthPanel } from "@/components/auth/BookingAuthPanel";
 import { useToast } from "@/shared/hooks/use-toast";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { buildBookingWhatsAppUrl } from "@/shared/lib/whatsappBooking";
+import { useBranches } from "@/modules/branches";
+import { useCreateAppointment, type Appointment } from "@/modules/appointments";
+import { useAuth, useUserRole } from "@/modules/auth";
+import { useProfile } from "@/modules/personalization";
 
 const SERVICES = [
   { value: "basic_eye_test",          label: "Basic Eye Test (FREE)",          duration: 20, free: true },

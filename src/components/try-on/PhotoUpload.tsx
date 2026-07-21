@@ -3,9 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Camera, Upload, X, RefreshCw, Save, Check, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useUpdateProfile } from "@/modules/personalization/hooks/useProfile";
+
 import { toast } from "sonner";
+import { useAuth } from "@/modules/auth";
+import { useUpdateProfile } from "@/modules/personalization";
 
 interface PhotoUploadProps {
   photo: string | null;

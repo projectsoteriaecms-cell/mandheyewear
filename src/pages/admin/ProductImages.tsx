@@ -1,12 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
-import { useAdminProducts, useProductImageStats } from "@/modules/products";
-import { isKnownBrand, isHouseBrand } from "@/modules/products/lib/brand-classification";
-import { ProductImageCard } from "@/modules/products/components/ProductImageCard";
-import { ProductImageListView } from "@/modules/products/components/ProductImageListView";
-import { QuickImageUploadModal } from "@/modules/products/components/QuickImageUploadModal";
-import { GenerateImagesDialog } from "@/modules/products/components/GenerateImagesDialog";
+
+import { useAdminProducts, useProductImageStats, isKnownBrand, isHouseBrand, ProductImageCard, ProductImageListView, QuickImageUploadModal, GenerateImagesDialog } from "@/modules/products";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +13,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageStatsCards, ImageFilterBar, SelectionActionBar } from "./product-images";
 import { ShotGalleryModal } from "@/components/admin/products/ShotGalleryModal";
+import { RoleGuard } from "@/modules/auth";
 
 const ITEM_TYPE_LABELS: Record<string, string> = {
   frames: "Frames",
@@ -259,7 +255,6 @@ const ProductImages = () => {
       .filter((p) => selectedIds.has(p.id))
       .map((p) => ({ id: p.id, name: p.name, sku: p.sku, item_type: p.item_type, brand: p.brand }));
   }, [products, selectedIds]);
-
 
   const selectionSummary = useMemo(() => {
     const selected = products.filter((p) => selectedIds.has(p.id));

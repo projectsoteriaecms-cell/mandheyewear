@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useBranches } from "@/modules/branches";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RoleGuard } from "@/modules/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,

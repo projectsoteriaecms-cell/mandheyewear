@@ -1,1 +1,1 @@
-export { LensAttributesForm } from "@/modules/products/components/LensAttributesForm";
+export { LensAttributesForm } from "@/modules/products";

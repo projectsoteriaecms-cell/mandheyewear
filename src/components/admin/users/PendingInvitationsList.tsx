@@ -1,1 +1,1 @@
-export { PendingInvitationsList } from "@/modules/users/components/PendingInvitationsList";
+export { PendingInvitationsList } from "@/modules/users";

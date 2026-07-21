@@ -1,1 +1,1 @@
-export { ImagePreviewLightbox } from "@/modules/products/components/ImagePreviewLightbox";
+export { ImagePreviewLightbox } from "@/modules/products";

@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { supabase } from "@/integrations/supabase/client";
-import { PUBLIC_PRODUCT_COLUMNS, type Product } from "@/modules/products/hooks/useProducts";
-import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
+
 import { Sparkles } from "lucide-react";
+import { useAuth } from "@/modules/auth";
+import { PUBLIC_PRODUCT_COLUMNS, type Product } from "@/modules/products";
+import { ProductCard } from "@/modules/storefront";
 
 export const BrowsingRecommendations = () => {
   const { user } = useAuth();

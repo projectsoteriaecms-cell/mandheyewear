@@ -1,6 +1,7 @@
 import { useCallback } from "react";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/modules/auth";
 
 type ActivityType = "product_view" | "category_view" | "search" | "add_to_cart" | "wishlist_add";
 

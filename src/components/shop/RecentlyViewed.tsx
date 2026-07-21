@@ -1,6 +1,7 @@
 import { useRecentlyViewed } from "@/shared/hooks/useRecentlyViewed";
-import { ProductCard } from "@/modules/storefront/components/eyewear/ProductCard";
+
 import { Clock } from "lucide-react";
+import { ProductCard } from "@/modules/storefront";
 
 export const RecentlyViewed = () => {
   const { data: products, isLoading } = useRecentlyViewed(8);

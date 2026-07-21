@@ -3,8 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Product } from "@/modules/products/hooks/useProducts";
-import type { FrameDetails } from "@/modules/personalization/hooks/useVirtualTryOn";
+import type { Product } from "@/modules/products";
+import type { FrameDetails } from "@/modules/personalization";
 
 interface FramePickerProps {
   products: Product[];

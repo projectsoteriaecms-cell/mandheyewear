@@ -39,7 +39,7 @@ import {
   GripVertical,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
-import { RoleGuard } from '@/modules/auth/components/RoleGuard';
+
 import {
   useGetCampaign,
   useUpdateCampaign,
@@ -55,6 +55,7 @@ import {
 import { CampaignActionDialog } from '@/modules/crm';
 import type { CrmCampaign } from '@/modules/crm';
 import { toast } from 'sonner';
+import { RoleGuard } from "@/modules/auth";
 
 // ── Checklist ─────────────────────────────────────────────────────────────────
 

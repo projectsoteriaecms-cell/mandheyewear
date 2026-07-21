@@ -1,1 +1,1 @@
-export { LinkToZohoDialog } from "@/modules/products/components/LinkToZohoDialog";
+export { LinkToZohoDialog } from "@/modules/products";

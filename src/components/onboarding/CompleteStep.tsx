@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useProfile } from "@/modules/personalization/hooks/useProfile";
-import { usePersonalizedProducts } from "@/modules/personalization/hooks/usePersonalizedProducts";
+
 import { CheckCircle2, Sparkles, Glasses, Target } from "lucide-react";
 import type { QuizPreferences } from "./quiz-constants";
+import { useAuth } from "@/modules/auth";
+import { useProfile, usePersonalizedProducts } from "@/modules/personalization";
 
 interface CompleteStepProps {
   onComplete: () => void;

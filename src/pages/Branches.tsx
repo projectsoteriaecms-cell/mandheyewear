@@ -6,10 +6,11 @@ import { BranchCard } from "@/components/branches/BranchCard";
 import { BranchDetailDialog } from "@/components/branches/BranchDetailDialog";
 import { BranchMap } from "@/components/branches/BranchMap";
 import { BranchExpansionCTA } from "@/components/branches/BranchExpansionCTA";
-import { useBranches } from "@/modules/branches/hooks/useBranches";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { JsonLd } from "@/components/seo";
-import type { Branch } from "@/modules/branches/types";
+import { useBranches } from "@/modules/branches";
+import type { Branch } from "@/modules/branches";
 
 const DAY_MAP: Record<"weekdays" | "saturday" | "sunday", string[]> = {
   weekdays: ["Mo", "Tu", "We", "Th", "Fr"],
@@ -113,7 +114,6 @@ const Branches = () => {
     <div className="min-h-screen bg-background">
       {branchesJsonLd && <JsonLd data={branchesJsonLd} />}
       <Navigation />
-
 
       <div className="pt-36 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import { useAdminProducts } from "@/modules/products";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RoleGuard } from "@/modules/auth";
 
 const PER_PAGE = 12;
 

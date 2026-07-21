@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useWishlist } from "@/modules/orders/hooks/useWishlist";
-import { useCart } from "@/modules/orders/hooks/useCart";
+
 import { Heart, ShoppingBag, Trash2, Loader2 } from "lucide-react";
 
 // Import placeholder images
@@ -10,6 +9,7 @@ import frame1 from "@/assets/frame-1.jpg";
 import frame2 from "@/assets/frame-2.jpg";
 import frame3 from "@/assets/frame-3.jpg";
 import frame4 from "@/assets/frame-4.jpg";
+import { useWishlist, useCart } from "@/modules/orders";
 
 const placeholderImages = [frame1, frame2, frame3, frame4];
 

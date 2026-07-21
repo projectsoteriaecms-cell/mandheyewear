@@ -1,1 +1,1 @@
-export { GenerateImagesDialog } from "@/modules/products/components/GenerateImagesDialog";
+export { GenerateImagesDialog } from "@/modules/products";

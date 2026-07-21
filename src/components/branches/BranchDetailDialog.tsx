@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, Clock, Navigation as NavIcon } from "lucide-react";
-import type { Branch } from "@/modules/branches/types";
+import type { Branch } from "@/modules/branches";
 
 interface BranchDetailDialogProps {
   branch: Branch | null;

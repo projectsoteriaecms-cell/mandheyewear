@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,7 @@ import {
 import { CrmTabs } from "./CrmTabs";
 import { AddCustomerDialog } from "./AddCustomerDialog";
 import { CsvImportDialog } from "./CsvImportDialog";
+import { RoleGuard } from "@/modules/auth";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────────
 

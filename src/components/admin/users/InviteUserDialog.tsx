@@ -1,1 +1,1 @@
-export { InviteUserDialog } from "@/modules/users/components/InviteUserDialog";
+export { InviteUserDialog } from "@/modules/users";

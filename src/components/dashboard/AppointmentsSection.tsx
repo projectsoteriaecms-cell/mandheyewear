@@ -2,9 +2,10 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAppointments, useCancelAppointment } from "@/modules/appointments/hooks/useAppointments";
+
 import { Calendar, Clock, MapPin, Loader2, X } from "lucide-react";
 import { format, isPast, isToday } from "date-fns";
+import { useAppointments, useCancelAppointment } from "@/modules/appointments";
 
 const SERVICES: Record<string, string> = {
   comprehensive_eye_exam: "Comprehensive Eye Exam",

@@ -1,1 +1,1 @@
-export { CreateServiceDialog } from "@/modules/services/components/CreateServiceDialog";
+export { CreateServiceDialog } from "@/modules/services";

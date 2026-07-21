@@ -1,2 +1,2 @@
 // Re-export shim — actual component lives in modules/auth
-export { default } from "@/modules/auth/pages/Login";
+export { Login as default } from "@/modules/auth";

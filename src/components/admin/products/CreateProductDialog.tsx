@@ -1,1 +1,1 @@
-export { CreateProductDialog } from "@/modules/products/components/CreateProductDialog";
+export { CreateProductDialog } from "@/modules/products";

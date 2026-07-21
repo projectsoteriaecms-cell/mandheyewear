@@ -8,15 +8,14 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, ShoppingBag, Heart, Camera, ExternalLink, Download } from "lucide-react";
-import { useProduct } from "@/modules/products/hooks/useProducts";
-import { useVirtualTryOn, type FrameDetails } from "@/modules/personalization/hooks/useVirtualTryOn";
-import { useVTOEmailCapture } from "@/modules/personalization/hooks/useVTOEmailCapture";
-import { useCart } from "@/modules/orders/hooks/useCart";
-import { useWishlist } from "@/modules/orders/hooks/useWishlist";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
 import { TryOnGenerationExperience } from "./TryOnGenerationExperience";
 import { EmailCaptureModal } from "./EmailCaptureModal";
+import { useProduct } from "@/modules/products";
+import { useVirtualTryOn, type FrameDetails, useVTOEmailCapture } from "@/modules/personalization";
+import { useCart, useWishlist } from "@/modules/orders";
+import { useAuth } from "@/modules/auth";
 
 interface InlineTryOnModalProps {
   productId: string | null;

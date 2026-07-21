@@ -1,1 +1,1 @@
-export { ProductListView } from "@/modules/products/components/ProductListView";
+export { ProductListView } from "@/modules/products";

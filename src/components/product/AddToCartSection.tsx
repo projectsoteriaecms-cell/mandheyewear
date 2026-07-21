@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/modules/orders/hooks/useCart";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { ShoppingBag, Minus, Plus, Camera, Loader2, LogIn, Zap, Glasses, ChevronRight, Check } from "lucide-react";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { StockBadge } from "@/modules/storefront/components/eyewear/StockBadge";
-import { RequestItemDialog } from "@/modules/storefront/components/eyewear/RequestItemDialog";
+
 import { InlineTryOnModal } from "@/components/try-on";
-import { useInlineTryOn } from "@/modules/personalization/hooks/useInlineTryOn";
-import { LensConfigurator, type LensConfig } from "@/modules/lens/components/LensConfigurator";
-import { LensSummaryChip } from "@/modules/lens/components/LensSummaryChip";
-import type { StockStatus } from "@/modules/storefront/components/eyewear/StockBadge";
-import type { Product } from "@/modules/products/hooks/useProducts";
+import { useCart } from "@/modules/orders";
+import { useAuth } from "@/modules/auth";
+import { StockBadge, RequestItemDialog } from "@/modules/storefront";
+import { useInlineTryOn } from "@/modules/personalization";
+import { LensConfigurator, type LensConfig, LensSummaryChip } from "@/modules/lens";
+import type { StockStatus } from "@/modules/storefront";
+import type { Product } from "@/modules/products";
 
 interface AddToCartSectionProps {
   product: Product;

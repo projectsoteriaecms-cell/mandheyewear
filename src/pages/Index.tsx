@@ -1,22 +1,12 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { FeaturedFrames } from "@/modules/storefront/components/shared";
-import {
-  HeroSection,
-  MarqueeTicker,
-  EditorialGrid,
-  CategoryCards,
-  TestimonialSection,
-  DualCtaSection,
-  TrustBadges,
-  
-} from "@/modules/storefront/components/home";
-import { ScrollProgress } from "@/modules/storefront/components/home/ScrollProgress";
+
 import { useSEO } from "@/shared/hooks/useSEO";
 import { JsonLd } from "@/components/seo";
 import { RecentlyViewed } from "@/components/shop/RecentlyViewed";
 import { BrowsingRecommendations } from "@/components/shop/BrowsingRecommendations";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { FeaturedFrames, HeroSection, MarqueeTicker, EditorialGrid, CategoryCards, TestimonialSection, DualCtaSection, TrustBadges, ScrollProgress } from "@/modules/storefront";
+import { useAuth } from "@/modules/auth";
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
@@ -61,7 +51,6 @@ const Index = () => {
       <FeaturedFrames />
       <DualCtaSection />
       <TrustBadges />
-
 
       <Footer />
     </div>

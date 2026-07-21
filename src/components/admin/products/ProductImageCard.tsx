@@ -1,1 +1,1 @@
-export { ProductImageCard } from "@/modules/products/components/ProductImageCard";
+export { ProductImageCard } from "@/modules/products";

@@ -8,12 +8,12 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/shared/hooks/use-toast";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
-import { useProfile, useUpdateProfile } from "@/modules/personalization/hooks/useProfile";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+
 import { usePaystackMode } from "@/shared/hooks/usePaystackMode";
 import { isAtLeast } from "@/shared/lib/permissions";
 import { Loader2, Save, Key, Monitor, Moon, Sun, CreditCard, FlaskConical, Zap, AlertTriangle } from "lucide-react";
+import { useAuth, useUserRole } from "@/modules/auth";
+import { useProfile, useUpdateProfile } from "@/modules/personalization";
 
 export const SettingsSection = () => {
   const { user } = useAuth();

@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
-import { InviteUserDialog } from "@/modules/users/components/InviteUserDialog";
-import { PendingInvitationsList } from "@/modules/users/components/PendingInvitationsList";
-import { BranchAssignmentDialog } from "@/modules/users/components/BranchAssignmentDialog";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { getInvitableRoles, isAtLeast } from "@/shared/lib/permissions";
 import type { Database } from "@/integrations/supabase/types";
+import { RoleGuard, useUserRole, useAuth } from "@/modules/auth";
+import { InviteUserDialog, PendingInvitationsList, BranchAssignmentDialog } from "@/modules/users";
 import {
   useAdminUsers,
   UserStatsCards,

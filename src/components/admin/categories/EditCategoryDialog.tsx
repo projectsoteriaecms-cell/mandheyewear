@@ -1,1 +1,1 @@
-export { EditCategoryDialog } from "@/modules/categories/components/EditCategoryDialog";
+export { EditCategoryDialog } from "@/modules/categories";

@@ -15,6 +15,7 @@ export {
   useProduct,
   useFeaturedProducts,
   useProductCategoryCounts,
+  PUBLIC_PRODUCT_COLUMNS,
 } from "./hooks";
 
 // Types
@@ -44,41 +45,7 @@ export type {
 export type { ProductFilters, CategoryCount } from "./hooks/useProducts";
 
 // Lib utilities
-export {
-  ECMS_COLUMN_MAPPINGS,
-  DATABASE_FIELDS,
-  detectColumnMappings,
-  parseDimensions,
-  normalizeBrandLine,
-  normalizeItemType,
-  parsePrice,
-  validateProduct,
-  transformRowToProduct,
-  generateECMSTemplate,
-  getHeroImage,
-  getDisplayImages,
-} from "./lib";
+export * from "./lib";
 
 // Components
-export {
-  BulkImageUploadDialog,
-  BulkUploadDialog,
-  CreateProductDialog,
-  DraggableImageItem,
-  ECMSImportDialog,
-  EditProductDialog,
-  FrameAttributesForm,
-  GenerateImagesDialog,
-  ImagePreviewLightbox,
-  ImportHistoryPanel,
-  LensAttributesForm,
-  LinkToZohoDialog,
-  ProductImageCard,
-  ProductImageListView,
-  ProductImageUpload,
-  IMAGE_POSITION_LABELS,
-  ProductListView,
-  QuickImageUploadModal,
-  ZohoSyncHistoryPanel,
-} from "./components";
-export type { ImagePosition } from "./components";
+export * from "./components";

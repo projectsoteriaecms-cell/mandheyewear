@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
-import type { Branch } from "@/modules/branches/types";
+import type { Branch } from "@/modules/branches";
 
 interface BranchMapProps {
   branch: Branch | null;

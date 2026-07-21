@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminHeader } from "./AdminHeader";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+import { RoleGuard } from "@/modules/auth";
 
 interface AdminLayoutProps {
   children: ReactNode;

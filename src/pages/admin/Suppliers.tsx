@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { RoleGuard } from "@/modules/auth/components/RoleGuard";
+
 import {
   useSuppliers,
   useCreateSupplier,
@@ -29,6 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { SupplierForm, SuppliersTable } from "./suppliers/index";
+import { RoleGuard } from "@/modules/auth";
 
 const Suppliers = () => {
   const [showDialog, setShowDialog] = useState(false);

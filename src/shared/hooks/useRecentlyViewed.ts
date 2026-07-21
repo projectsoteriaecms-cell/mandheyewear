@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { supabase } from "@/integrations/supabase/client";
-import { PUBLIC_PRODUCT_COLUMNS } from "@/modules/products/hooks/useProducts";
+import { useAuth } from "@/modules/auth";
+import { PUBLIC_PRODUCT_COLUMNS } from "@/modules/products";
 
 export const useRecentlyViewed = (limit = 8) => {
   const { user } = useAuth();

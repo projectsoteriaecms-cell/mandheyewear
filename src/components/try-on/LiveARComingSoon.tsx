@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
 import { toast } from "sonner";
+import { useAuth } from "@/modules/auth";
 
 interface LiveARComingSoonProps {
   onSwitchToPhoto: () => void;

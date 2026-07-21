@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { usePurchaseOrders, useUpdatePurchaseOrderStatus } from "@/modules/inventory";
-import { useUserRole } from "@/modules/auth/hooks/useUserRole";
+import { usePurchaseOrders, useUpdatePurchaseOrderStatus, CreatePurchaseOrderDialog } from "@/modules/inventory";
+
 import { canApprovePurchaseOrder, canReceivePurchaseOrder } from "@/shared/lib/permissions";
 import {
   Table,
@@ -40,8 +40,9 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";
-import { CreatePurchaseOrderDialog } from "@/modules/inventory/components/CreatePurchaseOrderDialog";
+
 import type { Database } from "@/integrations/supabase/types";
+import { useUserRole } from "@/modules/auth";
 
 type PurchaseOrderStatus = Database["public"]["Enums"]["purchase_order_status"];
 

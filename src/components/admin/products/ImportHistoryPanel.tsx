@@ -1,1 +1,1 @@
-export { ImportHistoryPanel } from "@/modules/products/components/ImportHistoryPanel";
+export { ImportHistoryPanel } from "@/modules/products";

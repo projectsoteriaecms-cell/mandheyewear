@@ -1,1 +1,1 @@
-export { ECMSImportDialog } from "@/modules/products/components/ECMSImportDialog";
+export { ECMSImportDialog } from "@/modules/products";

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AdminLayout } from "@/shared/layouts/admin";
-import { useInventoryOverview, useInventoryStats } from "@/modules/inventory";
+import { useInventoryOverview, useInventoryStats, BulkStockImportDialog } from "@/modules/inventory";
 import { useBranches } from "@/modules/branches";
-import { useZohoSync } from "@/modules/integrations/hooks/useZohoSync";
+
 import { supabase } from "@/integrations/supabase/client";
 import { StatCard } from "@/shared/layouts/admin/dashboard/StatCard";
 import { InventoryFilters } from "./inventory/InventoryFilters";
@@ -27,8 +27,9 @@ import {
   Cube,
   XCircle,
 } from "@phosphor-icons/react";
-import { BulkStockImportDialog } from "@/modules/inventory/components";
+
 import { formatDistanceToNow } from "date-fns";
+import { useZohoSync } from "@/modules/integrations";
 
 const getStockStatus = (quantity: number, threshold: number) => {
   if (quantity === 0) return { label: "Out of Stock", variant: "destructive" as const };

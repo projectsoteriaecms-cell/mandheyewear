@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/modules/auth/hooks/useAuth";
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -25,6 +25,7 @@ import {
 import { useState } from "react";
 import { useToast } from "@/shared/hooks/use-toast";
 import { FittingBookingDialog } from "@/components/fitting/FittingBookingDialog";
+import { useAuth } from "@/modules/auth";
 
 const OrderConfirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();
