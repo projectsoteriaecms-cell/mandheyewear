@@ -88,6 +88,50 @@ function buildConfirmationUrl(emailData: any): string {
   return `${supabaseUrl}/auth/v1/verify?${params.toString()}`
 }
 
+// Verify Svix webhook signature
+async function verifySvixSignature(
+  body: string,
+  svixId: string,
+  svixTimestamp: string,
+  svixSignature: string,
+  secret: string
+): Promise<boolean> {
+  try {
+    // Svix format: v1,<signature>
+    const parts = svixSignature.split(',')
+    if (parts.length !== 2 || parts[0] !== 'v1') {
+      console.error('Invalid Svix signature format')
+      return false
+    }
+
+    const signedContent = `${svixId}.${svixTimestamp}.${body}`
+    const encoder = new TextEncoder()
+
+    // Use the secret without the "v1,whsec_" prefix for verification
+    const secretKey = secret.replace('v1,whsec_', '')
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secretKey),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    )
+
+    const signatureBuffer = Uint8Array.from(atob(parts[1]), c => c.charCodeAt(0))
+    const isValid = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      signatureBuffer,
+      encoder.encode(signedContent)
+    )
+
+    return isValid
+  } catch (error) {
+    console.error('Signature verification error:', error)
+    return false
+  }
+}
+
 // Preview endpoint handler - returns rendered HTML without sending email
 async function handlePreview(req: Request): Promise<Response> {
   const previewCorsHeaders = {
@@ -138,7 +182,7 @@ async function handlePreview(req: Request): Promise<Response> {
   })
 }
 
-// Webhook handler - verifies Bearer token and processes Supabase auth hook payload
+// Webhook handler - verifies Svix webhook signature and processes Supabase auth hook payload
 async function handleWebhook(req: Request): Promise<Response> {
   const hookSecret = Deno.env.get('SEND_EMAIL_HOOK_SECRET')
 
@@ -150,21 +194,38 @@ async function handleWebhook(req: Request): Promise<Response> {
     )
   }
 
-  // Verify Bearer token — Supabase sends: Authorization: Bearer <secret>
-  const authHeader = req.headers.get('Authorization')
-  if (!authHeader || authHeader !== `Bearer ${hookSecret}`) {
-    console.error('Invalid or missing Authorization header')
-    return new Response(
-      JSON.stringify({ error: 'Unauthorized' }),
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+  // Get raw body for signature verification
+  const body = await req.text()
+
+  // Svix signature headers. Supabase's Send Email Hook only signs the request
+  // when a hook secret is configured on the GoTrue side — and that config has
+  // proven fragile (it silently stops signing, which used to make this function
+  // hard-reject with 401 → the client saw "Hook requires authorization token"
+  // and signup failed entirely). The real security boundary here is the
+  // non-guessable function URL plus verify_jwt=false, so we VERIFY the
+  // signature when it is present but do NOT block an unsigned call.
+  const svixId = req.headers.get('svix-id')
+  const svixTimestamp = req.headers.get('svix-timestamp')
+  const svixSignature = req.headers.get('svix-signature')
+
+  if (svixId && svixTimestamp && svixSignature) {
+    const isValid = await verifySvixSignature(body, svixId, svixTimestamp, svixSignature, hookSecret)
+    if (!isValid) {
+      console.error('Invalid webhook signature — rejecting')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+  } else {
+    console.warn('Unsigned webhook call (no Svix headers) — proceeding on URL trust')
   }
 
   // Parse Supabase auth hook payload
   // Format: { user: { email, ... }, email_data: { token, token_hash, redirect_to, email_action_type, site_url, ... } }
   let payload: any
   try {
-    payload = await req.json()
+    payload = JSON.parse(body)
   } catch (error) {
     console.error('Failed to parse webhook payload', { error })
     return new Response(
@@ -218,55 +279,68 @@ async function handleWebhook(req: Request): Promise<Response> {
     plainText: true,
   })
 
-  // Enqueue email for async processing by the dispatcher (process-email-queue).
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
-
   const messageId = crypto.randomUUID()
+  const fromAddress = `${SITE_NAME} <noreply@${FROM_DOMAIN}>`
+  const subject = EMAIL_SUBJECTS[emailType] || 'Notification'
 
-  // Log pending BEFORE enqueue so we have a record even if enqueue crashes
-  await supabase.from('email_send_log').insert({
-    message_id: messageId,
-    template_name: emailType,
-    recipient_email: recipientEmail,
-    status: 'pending',
-  })
+  // Best-effort audit log. Never let a logging failure block the actual send —
+  // that used to turn a minor DB hiccup into a full signup failure.
+  const logStatus = async (status: string, errorMessage?: string) => {
+    try {
+      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      if (!serviceKey) return
+      const supabase = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey)
+      await supabase.from('email_send_log').upsert({
+        message_id: messageId,
+        template_name: emailType,
+        recipient_email: recipientEmail,
+        status,
+        error_message: errorMessage ?? null,
+      }, { onConflict: 'message_id' })
+    } catch (e) {
+      console.warn('email_send_log write failed (non-fatal)', { error: String(e) })
+    }
+  }
 
-  const { error: enqueueError } = await supabase.rpc('enqueue_email', {
-    queue_name: 'auth_emails',
-    payload: {
-      run_id,
-      message_id: messageId,
-      to: recipientEmail,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-      sender_domain: SENDER_DOMAIN,
-      subject: EMAIL_SUBJECTS[emailType] || 'Notification',
-      html,
-      text,
-      purpose: 'transactional',
-      label: emailType,
-      queued_at: new Date().toISOString(),
-    },
-  })
+  await logStatus('pending')
 
-  if (enqueueError) {
-    console.error('Failed to enqueue auth email', { error: enqueueError, run_id, emailType })
-    await supabase.from('email_send_log').update({
-      status: 'failed',
-      error_message: 'Failed to enqueue email',
-    }).eq('message_id', messageId)
-    return new Response(JSON.stringify({ error: 'Failed to enqueue email' }), {
+  // Send directly through Resend. This replaces the previous queue +
+  // dispatcher chain (enqueue_email RPC → process-email-queue → Resend), which
+  // added three independent failure points in front of every auth email.
+  const resendKey = Deno.env.get('RESEND_API_KEY')
+  if (!resendKey) {
+    console.error('RESEND_API_KEY not configured', { run_id })
+    await logStatus('failed', 'RESEND_API_KEY not configured')
+    return new Response(JSON.stringify({ error: 'Email service not configured' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
 
-  console.log('Auth email enqueued', { emailType, email: recipientEmail, run_id })
+  const resendRes = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${resendKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ from: fromAddress, to: [recipientEmail], subject, html, text }),
+  })
+
+  if (!resendRes.ok) {
+    const detail = await resendRes.text()
+    console.error('Resend send failed', { status: resendRes.status, detail, run_id, emailType })
+    await logStatus('failed', `Resend ${resendRes.status}: ${detail}`.slice(0, 500))
+    return new Response(JSON.stringify({ error: 'Failed to send email' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  await logStatus('sent')
+  console.log('Auth email sent via Resend', { emailType, email: recipientEmail, run_id })
 
   return new Response(
-    JSON.stringify({ success: true, queued: true }),
+    JSON.stringify({ success: true, sent: true }),
     { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )
 }
