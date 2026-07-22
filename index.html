@@ -2,7 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+    <!-- interactive-widget=resizes-content: without it, Chrome Android leaves
+         the layout viewport (and dvh units) unchanged when the on-screen
+         keyboard opens -- the keyboard just overlays the bottom of the page
+         instead of the page shrinking to fit above it. A fixed-position
+         dialog sized off dvh then has no idea part of its computed height is
+         hidden behind the keyboard, so its lower fields/buttons can end up
+         rendered underneath it. This makes the viewport (and dvh) actually
+         shrink when the keyboard opens, so dialogs resize and scroll correctly. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1A1A2E" media="(prefers-color-scheme: dark)" />
     <meta name="google-site-verification" content="MOx3ifqmmuaE0MKzfFf8NrVjKk0_ZptfPQA-MRRVMIw" />
