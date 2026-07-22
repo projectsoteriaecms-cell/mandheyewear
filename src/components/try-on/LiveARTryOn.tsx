@@ -13,7 +13,7 @@ import { useFrameAttributes, has3DMeasurements } from "@/shared/hooks/useFrameAt
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { isCameraKitConfigured } from "@/config/snap-lenses";
-import { recordTryOn, type TryOnResult as TryOnResultType } from "@/modules/personalization";
+import { recordTryOn, applyTryOnWatermark, type TryOnResult as TryOnResultType } from "@/modules/personalization";
 
 interface FrameProduct {
   id: string;
@@ -122,9 +122,14 @@ export const LiveARTryOn = ({
         return;
       }
 
+      // Same funnel rule as the photo flow: on-screen/history copies carry the
+      // brand watermark; the clean capture only leaves via a captured contact.
+      const watermarked = await applyTryOnWatermark(imageData);
+
       const result: TryOnResultType = {
         success: true,
-        compositeImage: imageData,
+        compositeImage: watermarked,
+        cleanImage: imageData,
         frameDetails: selectedProduct
           ? {
               id: selectedProduct.id,
