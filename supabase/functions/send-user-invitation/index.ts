@@ -2,7 +2,10 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ?? "M&H Eyewear <noreply@notify.mandheyewear.com>";
+// Fallback only -- an explicit RESEND_FROM_EMAIL env var still wins. The
+// fallback itself pointed at notify.mandheyewear.com, an unverified domain
+// that fails every Resend send with a 403; mandheyewear.com is verified.
+const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ?? "M&H Eyewear <noreply@mandheyewear.com>";
 const RESEND_RESTRICTED_MODE_FRAGMENTS = [
   "You can only send testing emails to your own email address",
   "domain is not verified",

@@ -142,7 +142,14 @@ export const EmailCaptureModal = ({
   };
 
   const handleDownloadInstead = () => {
-    const source = result?.cleanImage ?? result?.compositeImage;
+    // Watermarked, deliberately -- this is a raw client-side download with no
+    // server mediation. The clean image is what the contact was traded for;
+    // it only ever leaves via a server-mediated channel (email attachment,
+    // WhatsApp share) that actually confirms delivery. An email that FAILED
+    // to send is not a confirmed delivery, so this must not become a
+    // no-strings-attached way to get the clean file by just letting the
+    // send fail.
+    const source = result?.compositeImage;
     if (!source) return;
     const link = document.createElement("a");
     link.href = source;
