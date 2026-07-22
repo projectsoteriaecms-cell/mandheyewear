@@ -1,24 +1,25 @@
 import { Link, useLocation } from "react-router-dom";
-import { House, Storefront, Calendar, MagnifyingGlass, User } from "@phosphor-icons/react";
+import { House, Storefront, Calendar, Camera, User } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { getIconWeight } from "@/components/ui/icon";
-import { useState } from "react";
-import { SearchDialog } from "@/components/search/SearchDialog";
+import { track } from "@/shared/lib/telemetry";
 
+// Search dropped from the tab bar -- SearchStrip already sits under the
+// header on every page, so the slot was duplicate real estate. Try-On takes
+// it instead: raised out of the bar like a camera-shutter button, the single
+// highest-visibility way to put the feature one thumb-tap from any screen.
 const bottomNavItems = [
   { name: "Home", path: "/", icon: House },
   { name: "Shop", path: "/shop", icon: Storefront },
+  { name: "Try-On", path: "/try-on", icon: Camera, elevated: true },
   { name: "Book", path: "/booking", icon: Calendar },
-  { name: "Search", path: "search", icon: MagnifyingGlass },
   { name: "Account", path: "/dashboard", icon: User },
 ];
 
 export const MobileBottomNav = () => {
   const location = useLocation();
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const isActive = (path: string) => {
-    if (path === "search") return false;
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path.split("?")[0]);
   };
@@ -29,27 +30,35 @@ export const MobileBottomNav = () => {
         <div className="flex items-center justify-around h-16 px-1 safe-area-x">
           {bottomNavItems.map((item) => {
             const Icon = item.icon;
-            const isSearch = item.path === "search";
             const active = isActive(item.path);
-            
-            if (isSearch) {
+
+            if (item.elevated) {
               return (
-                <button
+                <Link
                   key={item.name}
-                  onClick={() => setSearchOpen(true)}
-                  className={cn(
-                    "flex flex-col items-center justify-center gap-0.5 py-2 px-2 rounded-xl transition-all touch-target touch-feedback no-select",
-                    "min-w-[56px]",
-                    "text-muted-foreground active:text-foreground"
-                  )}
+                  to={item.path}
+                  onClick={() => track("tryon.nav_button_tapped", { source: "bottom_nav" })}
+                  className="flex flex-col items-center justify-center gap-1 -mt-6 touch-target touch-feedback no-select"
+                  aria-label="Virtual Try-On"
                 >
-                  <div className="relative p-1.5 rounded-xl transition-all">
-                    <Icon weight="regular" className="h-5 w-5 transition-all" />
+                  <div
+                    className={cn(
+                      "flex items-center justify-center h-12 w-12 rounded-full shadow-gold transition-all",
+                      "bg-mh-gold text-ink",
+                      active ? "scale-105 shadow-lg" : "hover:scale-105"
+                    )}
+                  >
+                    <Icon weight="fill" className="h-6 w-6" />
                   </div>
-                  <span className="text-[10px] font-medium transition-all leading-tight text-muted-foreground">
+                  <span
+                    className={cn(
+                      "text-[10px] font-semibold leading-tight",
+                      active ? "text-mh-gold" : "text-muted-foreground"
+                    )}
+                  >
                     {item.name}
                   </span>
-                </button>
+                </Link>
               );
             }
 
@@ -91,7 +100,6 @@ export const MobileBottomNav = () => {
           })}
         </div>
       </nav>
-      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </>
   );
 };
