@@ -126,8 +126,30 @@ export const useVTOEmailCapture = () => {
           } else {
             toast.success("Your try-on result is on its way to your inbox!");
           }
-        } else {
-          toast.success("Got it! We'll follow up on WhatsApp with your result.");
+        } else if (phone) {
+          // Previously this branch only showed a toast -- nothing was ever
+          // sent, so WhatsApp leads were promised a follow-up that never came.
+          const { data: waData, error: waError } = await supabase.functions.invoke(
+            "send-tryon-whatsapp",
+            {
+              body: {
+                phone,
+                // The function signs this itself; anon cannot sign a private object.
+                imagePath: stored?.path ?? null,
+                frameName: result.frameDetails?.name ?? null,
+                leadId: null,
+              },
+            },
+          );
+
+          if (waError || (waData as { error?: string } | null)?.error) {
+            console.error("Error sending VTO WhatsApp:", waError ?? waData);
+            // The lead and consent are already saved, so this is recoverable
+            // by a human following up -- say so rather than implying failure.
+            toast.success("Got it! We'll follow up on WhatsApp with your result.");
+          } else {
+            toast.success("Sent! Check WhatsApp for your try-on result.");
+          }
         }
 
         return { success: true };
