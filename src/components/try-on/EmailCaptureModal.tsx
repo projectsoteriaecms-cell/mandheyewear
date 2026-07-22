@@ -10,7 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Phone, Loader2, Send, X, Download } from "lucide-react";
+import { Mail, Phone, Loader2, Send, X, Download, Check } from "lucide-react";
+import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
@@ -342,31 +343,50 @@ export const EmailCaptureModal = ({
           </div>
         ) : (
           <>
-            {/* Channel toggle */}
-            <div className="flex rounded-lg border border-border p-0.5 gap-0.5 bg-muted/40">
+            {/* Channel choice -- two full-size cards, not a subtle pill toggle.
+                WhatsApp is framed around sharing/virality (its actual strength
+                here: a delivered result is one tap from being forwarded to a
+                friend or posted to Status), email around saving the result. */}
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => switchTab("email")}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-sm rounded-md transition-colors ${
+                className={`relative flex flex-col items-center gap-1.5 rounded-xl border-2 px-3 py-4 text-center transition-all ${
                   tab === "email"
-                    ? "bg-background text-foreground font-medium shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/40"
                 }`}
               >
-                <Mail className="h-3.5 w-3.5" />
-                Email
+                {tab === "email" && (
+                  <span className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Check className="h-2.5 w-2.5" />
+                  </span>
+                )}
+                <Mail className="h-6 w-6 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Email</span>
+                <span className="text-[11px] leading-tight text-muted-foreground">
+                  Save your result
+                </span>
               </button>
               <button
                 type="button"
                 onClick={() => switchTab("phone")}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-sm rounded-md transition-colors ${
+                className={`relative flex flex-col items-center gap-1.5 rounded-xl border-2 px-3 py-4 text-center transition-all ${
                   tab === "phone"
-                    ? "bg-background text-foreground font-medium shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "border-green-600 bg-green-600/5"
+                    : "border-border hover:border-green-600/40"
                 }`}
               >
-                <Phone className="h-3.5 w-3.5" />
-                WhatsApp
+                {tab === "phone" && (
+                  <span className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-green-600 text-white">
+                    <Check className="h-2.5 w-2.5" />
+                  </span>
+                )}
+                <WhatsappLogo weight="fill" className="h-6 w-6 text-green-600" />
+                <span className="text-sm font-semibold text-foreground">WhatsApp</span>
+                <span className="text-[11px] leading-tight text-muted-foreground">
+                  Share with friends
+                </span>
               </button>
             </div>
 
