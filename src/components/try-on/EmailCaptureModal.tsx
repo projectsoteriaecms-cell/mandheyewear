@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Dialog,
@@ -58,6 +58,28 @@ export const EmailCaptureModal = ({
   // distinct from fieldError (a validation problem) so the retry/download
   // affordance can render without touching the form the visitor already filled in.
   const [deliveryFailed, setDeliveryFailed] = useState(false);
+
+  // This component never unmounts between opens -- it's always rendered by
+  // the parent, just toggled via `isOpen`. Dismissing via the X button,
+  // backdrop click, or Escape all bypass resetForm() (that's only wired to
+  // specific in-flow buttons), so a leftover sub-view from a previous
+  // attempt -- the WhatsApp-share screen, the delivery-failed screen --
+  // could persist and reappear instead of the tab+form on the next open.
+  // Resetting whenever the dialog opens guarantees a fresh start regardless
+  // of how the last attempt ended.
+  useEffect(() => {
+    if (!isOpen) return;
+    setTab("email");
+    setFullName("");
+    setEmail("");
+    setPhone("");
+    setMarketingConsent(false);
+    setDataConsent(false);
+    setFieldError("");
+    setConsentError("");
+    setShowWhatsAppShare(false);
+    setDeliveryFailed(false);
+  }, [isOpen]);
 
   const validate = () => {
     setFieldError("");
