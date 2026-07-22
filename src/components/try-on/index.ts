@@ -14,3 +14,4 @@ export { EmailCaptureModal } from "./EmailCaptureModal";
 export { InlineTryOnModal } from "./InlineTryOnModal";
 export { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
 export { LiveARComingSoon } from "./LiveARComingSoon";
+export { TryOnPromoDialog } from "./TryOnPromoDialog";

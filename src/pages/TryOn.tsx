@@ -76,6 +76,17 @@ const TryOn = () => {
     );
   }, [tryOnMode, preselectedProductId]);
 
+  // Marks that this visitor has found the feature at least once, so the
+  // landing-page promo dialog (TryOnPromoDialog) stops offering it to people
+  // who already know it's here.
+  useEffect(() => {
+    try {
+      localStorage.setItem("mh_tryon_visited", Date.now().toString());
+    } catch {
+      // Private mode / storage disabled -- the promo just keeps offering.
+    }
+  }, []);
+
   // Viral-loop attribution: shared try-on images carry a link back here with
   // ref (the sharer's session) + utm params. Logging the landing makes
   // share → visit → new try-on chains measurable in platform_events.

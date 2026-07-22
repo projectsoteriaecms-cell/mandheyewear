@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ArrowDown, Tag, Lightning } from "@phosphor-icons/react";
+import { ArrowRight, ArrowDown, Tag, Lightning, Camera } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import heroEyewear from "@/assets/hero-eyewear.jpg";
@@ -296,11 +296,12 @@ export const HeroSection = () => {
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 pt-1">
                 <Link
-                  to="/shop"
+                  to="/try-on"
                   className={`group inline-flex items-center justify-center gap-3 px-5 sm:px-7 py-3.5 rounded-full bg-mh-gold text-ink font-display font-bold text-sm tracking-wide uppercase whitespace-nowrap hover:scale-105 hover:shadow-glow-accent transition-all duration-300 shadow-gold w-full sm:w-auto ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
                   style={{ transitionDelay: "1300ms" }}
                 >
-                  Shop Collection
+                  <Camera weight="fill" className="w-4 h-4" />
+                  Virtual Try-On
                   <ArrowRight weight="bold" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link

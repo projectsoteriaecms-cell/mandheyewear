@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/seo";
 import { RecentlyViewed } from "@/components/shop/RecentlyViewed";
 import { BrowsingRecommendations } from "@/components/shop/BrowsingRecommendations";
 import { FeaturedFrames, HeroSection, MarqueeTicker, EditorialGrid, CategoryCards, TestimonialSection, DualCtaSection, TrustBadges, ScrollProgress } from "@/modules/storefront";
+import { TryOnPromoDialog } from "@/components/try-on";
 import { useAuth } from "@/modules/auth";
 
 const Index = () => {
@@ -53,6 +54,7 @@ const Index = () => {
       <TrustBadges />
 
       <Footer />
+      <TryOnPromoDialog />
     </div>
   );
 };
