@@ -275,8 +275,8 @@ export const InlineTryOnModal = ({
     <EmailCaptureModal
       isOpen={captureState.isOpen}
       onClose={closeCaptureModal}
-      onSubmit={async (email, phone, marketing) => {
-        const res = await handleCaptureSubmit(email, phone, marketing);
+      onSubmit={async (email, phone, marketing, fullName) => {
+        const res = await handleCaptureSubmit(email, phone, marketing, fullName);
         if (res.success) performDownload();
         return res;
       }}

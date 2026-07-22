@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSEO } from "@/shared/hooks/useSEO";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -23,6 +23,7 @@ import { isCameraKitConfigured } from "@/config/snap-lenses";
 
 import { toast } from "sonner";
 import { useVirtualTryOn, recordTryOnStarted, type FrameDetails, type TryOnResult as TryOnResultType } from "@/modules/personalization";
+import { track } from "@/shared/lib/telemetry";
 import { useProducts, useProduct } from "@/modules/products";
 import { useCart, useWishlist } from "@/modules/orders";
 import { useAuth } from "@/modules/auth";
@@ -74,6 +75,40 @@ const TryOn = () => {
       preselectedProductId ?? undefined,
     );
   }, [tryOnMode, preselectedProductId]);
+
+  // Viral-loop attribution: shared try-on images carry a link back here with
+  // ref (the sharer's session) + utm params. Logging the landing makes
+  // share → visit → new try-on chains measurable in platform_events.
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    const utmSource = searchParams.get("utm_source");
+    if (ref || utmSource) {
+      void track("tryon.referral_visit", {
+        ref,
+        utmSource,
+        utmMedium: searchParams.get("utm_medium"),
+      });
+    }
+    // Once per landing, not on every param change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // The result stage is sticky above the frame grid, but on mobile a visitor
+  // who tapped a frame far down the list can miss the finished result -- the
+  // most-reported navigation pain. Bring it into view when a result lands.
+  const resultStageRef = useRef<HTMLDivElement>(null);
+  const lastScrolledImage = useRef<string | null>(null);
+  useEffect(() => {
+    const img = currentResult?.compositeImage;
+    if (currentResult?.success && img && lastScrolledImage.current !== img) {
+      lastScrolledImage.current = img;
+      const el = resultStageRef.current;
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+    }
+  }, [currentResult]);
 
   // Add AR captures to the shared try-on history
   const handleARCapture = useCallback((result: TryOnResultType) => {
@@ -262,6 +297,7 @@ const TryOn = () => {
               {/* Step 2: Sticky Try-On Stage - appears after upload */}
               {userPhoto && (
                 <div
+                  ref={resultStageRef}
                   className="sticky top-16 z-30 mb-4 -mx-4 sm:mx-0 px-3 sm:px-0 py-2 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm"
                   data-tour-step="result"
                 >

@@ -20,7 +20,23 @@ const BADGE_TEXT = "M&H EYEWEAR  •  mandheyewear.com";
  * Falls back to the ORIGINAL image on any failure -- a watermarking bug must
  * never cost a customer their result.
  */
-export const applyTryOnWatermark = async (imageSrc: string): Promise<string> => {
+export const applyTryOnWatermark = async (imageSrc: string): Promise<string> =>
+  renderMark(imageSrc, { tile: true });
+
+/**
+ * Badge-only variant for images that LEAVE the platform after contact capture
+ * (WhatsApp share, Status posts, email). No diagonal tiling -- the visitor
+ * earned the clean look -- but the bottom-right brand badge stays, so every
+ * shared image carries mandheyewear.com to whoever sees it. The share is the
+ * advertisement; this is what routes its viewers back to the site.
+ */
+export const applyTryOnBadge = async (imageSrc: string): Promise<string> =>
+  renderMark(imageSrc, { tile: false });
+
+const renderMark = async (
+  imageSrc: string,
+  opts: { tile: boolean },
+): Promise<string> => {
   try {
     const img = await loadImage(imageSrc);
 
@@ -34,25 +50,27 @@ export const applyTryOnWatermark = async (imageSrc: string): Promise<string> => 
 
     const base = Math.min(canvas.width, canvas.height);
 
-    // 1. Faint diagonal tile -- survives cropping.
-    const tileFont = Math.max(18, Math.round(base * 0.045));
-    ctx.save();
-    ctx.globalAlpha = 0.1;
-    ctx.fillStyle = "#ffffff";
-    ctx.font = `600 ${tileFont}px system-ui, sans-serif`;
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate(-Math.PI / 6);
-    const stepX = tileFont * 9;
-    const stepY = tileFont * 4;
-    const span = Math.max(canvas.width, canvas.height);
-    for (let y = -span; y <= span; y += stepY) {
-      // Offset alternate rows so crops can't slip between marks.
-      const rowOffset = (Math.round(y / stepY) % 2) * (stepX / 2);
-      for (let x = -span; x <= span; x += stepX) {
-        ctx.fillText(TILE_TEXT, x + rowOffset, y);
+    // 1. Faint diagonal tile -- survives cropping. Screen-preview only.
+    if (opts.tile) {
+      const tileFont = Math.max(18, Math.round(base * 0.045));
+      ctx.save();
+      ctx.globalAlpha = 0.1;
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `600 ${tileFont}px system-ui, sans-serif`;
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(-Math.PI / 6);
+      const stepX = tileFont * 9;
+      const stepY = tileFont * 4;
+      const span = Math.max(canvas.width, canvas.height);
+      for (let y = -span; y <= span; y += stepY) {
+        // Offset alternate rows so crops can't slip between marks.
+        const rowOffset = (Math.round(y / stepY) % 2) * (stepX / 2);
+        for (let x = -span; x <= span; x += stepX) {
+          ctx.fillText(TILE_TEXT, x + rowOffset, y);
+        }
       }
+      ctx.restore();
     }
-    ctx.restore();
 
     // 2. Crisp badge bottom-right on a soft dark pill for legibility.
     const badgeFont = Math.max(14, Math.round(base * 0.028));

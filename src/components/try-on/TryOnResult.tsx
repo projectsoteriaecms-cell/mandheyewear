@@ -25,6 +25,7 @@ import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
 import { TryOnGenerationExperience } from "./TryOnGenerationExperience";
 import { useVTOEmailCapture } from "@/modules/personalization";
 import type { TryOnResult as TryOnResultType, MultiAngleResults } from "@/modules/personalization";
+import { track, getSessionId } from "@/shared/lib/telemetry";
 
 interface TryOnResultProps {
   result: TryOnResultType | null;
@@ -114,17 +115,34 @@ export const TryOnResult = ({
       if (result) {
         initiateCapture(result, "share");
       }
-      
+
       try {
-        // Convert base64 to blob for sharing
+        // Convert base64 to blob for sharing. This path shares the
+        // WATERMARKED composite -- no contact captured yet -- so the image
+        // itself is already branded advertising.
         const response = await fetch(result.compositeImage);
         const blob = await response.blob();
-        const file = new File([blob], "try-on.png", { type: "image/png" });
-        
+        const file = new File([blob], "mh-try-on.jpg", { type: blob.type || "image/jpeg" });
+
+        // Same tracked back-link as the post-capture share, different channel
+        // tag so pre- and post-capture virality are separable in analytics.
+        const shareUrl = `${window.location.origin}/try-on?utm_source=share_sheet&utm_medium=tryon_share&ref=${getSessionId()}`;
+
+        void track("tryon.share_opened", {
+          channel: "pre_capture_share",
+          frameId: result.frameDetails?.id ?? null,
+          frameName: result.frameDetails?.name ?? null,
+        });
+
         await navigator.share({
           title: `Virtual Try-On: ${result.frameDetails?.name}`,
-          text: "Check out how these frames look on me!",
+          text: `Check out how these frames look on me! Try yours: ${shareUrl}`,
           files: [file],
+        });
+
+        void track("tryon.share_completed", {
+          channel: "pre_capture_share",
+          frameId: result.frameDetails?.id ?? null,
         });
       } catch (error) {
         console.log("Share cancelled or failed:", error);
@@ -236,8 +254,8 @@ export const TryOnResult = ({
         <EmailCaptureModal
           isOpen={captureState.isOpen}
           onClose={closeModal}
-          onSubmit={async (email, phone, marketing) => {
-            const res = await handleSubmit(email, phone, marketing);
+          onSubmit={async (email, phone, marketing, fullName) => {
+            const res = await handleSubmit(email, phone, marketing, fullName);
             if (res.success) performDownload();
             return res;
           }}

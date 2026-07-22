@@ -21,6 +21,8 @@ interface SubmitContactParams {
   marketingConsent: boolean;
   result: TryOnResult;
   source: "download" | "share";
+  /** Optional -- enriches the lead and personalizes delivery, never required. */
+  fullName?: string | null;
 }
 
 const CONSENT_TEXT_VERSION = "v1.0";
@@ -39,7 +41,7 @@ export const useVTOEmailCapture = () => {
   const userEmail = user?.email;
 
   const submitContact = useCallback(
-    async ({ email, phone, marketingConsent, result, source }: SubmitContactParams) => {
+    async ({ email, phone, marketingConsent, result, source, fullName }: SubmitContactParams) => {
       setIsSubmitting(true);
 
       try {
@@ -60,6 +62,7 @@ export const useVTOEmailCapture = () => {
         const { error: dbError } = await supabase.from("vto_email_leads").insert({
           email: email ? email.toLowerCase().trim() : null,
           phone: phone ? phone.trim() : null,
+          full_name: fullName?.trim() || null,
           marketing_consent: marketingConsent,
           frame_id: result.frameDetails?.id || null,
           frame_name: result.frameDetails?.name || null,
@@ -94,6 +97,7 @@ export const useVTOEmailCapture = () => {
             {
               body: {
                 email,
+                fullName: fullName?.trim() || null,
                 frameDetails: result.frameDetails,
                 // The clean, unwatermarked image is what the contact was
                 // traded for -- the on-screen copy stays watermarked.
@@ -127,36 +131,35 @@ export const useVTOEmailCapture = () => {
             toast.success("Your try-on result is on its way to your inbox!");
           }
         } else if (phone) {
-          // Previously this branch only showed a toast -- nothing was ever
-          // sent, so WhatsApp leads were promised a follow-up that never came.
-          const { data: waData, error: waError } = await supabase.functions.invoke(
-            "send-tryon-whatsapp",
-            {
+          // Delivery is client-side: the capture modal follows up with a share
+          // sheet that puts the clean image straight into the visitor's own
+          // WhatsApp -- no business number or Meta Cloud API setup required.
+          //
+          // The server send stays as a dormant fire-and-forget: the function
+          // returns 503 until WHATSAPP_* secrets are configured, and the day
+          // they are, business-initiated delivery starts working with no code
+          // change here. Never awaited -- it must not delay the share step.
+          supabase.functions
+            .invoke("send-tryon-whatsapp", {
               body: {
                 phone,
+                fullName: fullName?.trim() || null,
                 // The function signs this itself; anon cannot sign a private object.
                 imagePath: stored?.path ?? null,
                 frameName: result.frameDetails?.name ?? null,
                 leadId: null,
               },
-            },
-          );
+            })
+            .catch(() => {});
 
-          if (waError || (waData as { error?: string } | null)?.error) {
-            console.error("Error sending VTO WhatsApp:", waError ?? waData);
-            // The lead and consent are already saved, so this is recoverable
-            // by a human following up -- say so rather than implying failure.
-            toast.success("Got it! We'll follow up on WhatsApp with your result.");
-          } else {
-            toast.success("Sent! Check WhatsApp for your try-on result.");
-          }
+          toast.success("Contact saved!");
         }
 
-        return { success: true };
+        return { success: true, channel };
       } catch (error) {
         console.error("VTO capture error:", error);
         toast.error("Something went wrong. Please try again.");
-        return { success: false };
+        return { success: false as const };
       } finally {
         setIsSubmitting(false);
       }
@@ -192,7 +195,12 @@ export const useVTOEmailCapture = () => {
 
   // Called by the modal's onSubmit — contact is email OR phone, not both.
   const handleSubmit = useCallback(
-    async (email: string | null, phone: string | null, marketingConsent: boolean) => {
+    async (
+      email: string | null,
+      phone: string | null,
+      marketingConsent: boolean,
+      fullName?: string | null,
+    ) => {
       if (!captureState.result) return { success: false };
 
       const result = await submitContact({
@@ -201,9 +209,13 @@ export const useVTOEmailCapture = () => {
         marketingConsent,
         result: captureState.result,
         source: captureState.source,
+        fullName,
       });
 
-      if (result.success) {
+      // Email closes immediately; WhatsApp stays open so the modal can show
+      // the share step (navigator.share needs a fresh user tap -- it cannot
+      // fire from this async completion).
+      if (result.success && result.channel === "email") {
         closeModal();
       }
 
