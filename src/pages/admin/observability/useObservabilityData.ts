@@ -151,3 +151,131 @@ export const useActiveSessions24h = () =>
     },
     refetchInterval: LIVE_REFETCH_MS,
   });
+
+const SOURCE_LABELS: Record<string, string> = {
+  photo_ai: "Photo (AI)",
+  live_ar_camerakit: "Live AR (Camera Kit)",
+  live_ar_mediapipe: "Live AR (MediaPipe)",
+  inline_modal: "Inline (product card)",
+};
+
+export const labelForSource = (source: string) => SOURCE_LABELS[source] ?? source;
+
+export interface TryOnSourceStats {
+  source: string;
+  label: string;
+  /** Distinct sessions that opened this surface. */
+  sessionsStarted: number;
+  /** Successful generations. Multi-angle emits one per angle, not per user action. */
+  generations: number;
+  failures: number;
+  /** Median latency, photo flow only — live AR captures report no generation time. */
+  medianMs: number | null;
+}
+
+export interface TryOnStats {
+  bySource: TryOnSourceStats[];
+  totalGenerations: number;
+  totalFailures: number;
+  topFrames: { name: string; count: number }[];
+  recentFailures: { source: string; error: string; at: string }[];
+}
+
+/**
+ * Try-on activity across all three entry points, from the events the unified
+ * recorder writes. Aggregated client-side: volumes are low and it keeps the
+ * shape obvious rather than hiding it in a view.
+ */
+export const useTryOnStats = (days = 7) =>
+  useQuery({
+    queryKey: ["observability", "tryon", days],
+    queryFn: async (): Promise<TryOnStats> => {
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from("platform_events")
+        .select("event_type, session_id, context, created_at")
+        .like("event_type", "tryon.%")
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .limit(5000);
+      if (error) throw error;
+
+      const rows = (data ?? []) as {
+        event_type: string;
+        session_id: string;
+        context: Record<string, unknown>;
+        created_at: string;
+      }[];
+
+      const sources = new Map<
+        string,
+        { sessions: Set<string>; generations: number; failures: number; latencies: number[] }
+      >();
+      const frames = new Map<string, number>();
+      const recentFailures: TryOnStats["recentFailures"] = [];
+
+      for (const row of rows) {
+        const source = String(row.context?.source ?? "unknown");
+        if (!sources.has(source)) {
+          sources.set(source, {
+            sessions: new Set(),
+            generations: 0,
+            failures: 0,
+            latencies: [],
+          });
+        }
+        const bucket = sources.get(source)!;
+
+        if (row.event_type === "tryon.started") {
+          bucket.sessions.add(row.session_id);
+        } else if (row.event_type === "tryon.completed") {
+          bucket.generations += 1;
+          const ms = row.context?.generationTimeMs;
+          if (typeof ms === "number") bucket.latencies.push(ms);
+          const frameName = row.context?.frameName;
+          if (typeof frameName === "string" && frameName) {
+            frames.set(frameName, (frames.get(frameName) ?? 0) + 1);
+          }
+        } else if (row.event_type === "tryon.failed") {
+          bucket.failures += 1;
+          if (recentFailures.length < 10) {
+            recentFailures.push({
+              source,
+              error: String(row.context?.error ?? "Unknown error"),
+              at: row.created_at,
+            });
+          }
+        }
+      }
+
+      const median = (xs: number[]) => {
+        if (!xs.length) return null;
+        const sorted = [...xs].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+      };
+
+      const bySource = [...sources.entries()]
+        .map(([source, v]) => ({
+          source,
+          label: labelForSource(source),
+          sessionsStarted: v.sessions.size,
+          generations: v.generations,
+          failures: v.failures,
+          medianMs: median(v.latencies),
+        }))
+        .sort((a, b) => b.generations + b.sessionsStarted - (a.generations + a.sessionsStarted));
+
+      return {
+        bySource,
+        totalGenerations: bySource.reduce((s, x) => s + x.generations, 0),
+        totalFailures: bySource.reduce((s, x) => s + x.failures, 0),
+        topFrames: [...frames.entries()]
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 8),
+        recentFailures,
+      };
+    },
+    refetchInterval: LIVE_REFETCH_MS,
+  });
