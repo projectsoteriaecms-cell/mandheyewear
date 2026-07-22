@@ -112,7 +112,9 @@ Deno.serve(async (req: Request) => {
         "X-Connection-Api-Key": RESEND_API_KEY,
       },
       body: JSON.stringify({
-        from: "M&H Eyewear <noreply@notify.mandheyewear.com>",
+        // notify.mandheyewear.com was never verified in Resend -- every send
+        // from it failed with a 403. mandheyewear.com is verified.
+        from: "M&H Eyewear <noreply@mandheyewear.com>",
         to: [profile.email],
         subject: template === "browsing_digest" ? "Frames you might love 👓" : "New arrivals at M&H Eyewear",
         html: emailHtml,

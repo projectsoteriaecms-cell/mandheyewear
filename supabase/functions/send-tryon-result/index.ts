@@ -214,7 +214,11 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "M&H Eyewear <noreply@notify.mandheyewear.com>",
+        // notify.mandheyewear.com was never verified in Resend -- every send
+        // failed with a 403 domain_not_found, which is what kept tripping
+        // the circuit breaker. mandheyewear.com IS verified (auth-email-hook
+        // sends from it successfully), so this now matches that.
+        from: "M&H Eyewear <noreply@mandheyewear.com>",
         to: [email],
         subject: `Your Virtual Try-On: ${frameName} 🕶️`,
         html: emailHtml,

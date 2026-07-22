@@ -122,10 +122,20 @@ export const useVTOEmailCapture = () => {
             console.error("Error sending VTO email:", emailError);
             // Check for circuit-open 503 — show a service-issue message, not a user error
             const isCircuitOpen = (emailError as any)?.context?.circuitOpen === true;
+            // Logged-in users never see the capture modal (initiateCapture
+            // skips it and captures silently) -- for them this toast IS the
+            // entire UI, so it must describe a real next step. Guests DO see
+            // the modal, which renders its own Try Again / Download Instead
+            // buttons right there -- repeating those instructions in the
+            // toast too was confusing and, worse, described actions that
+            // don't exist for the logged-in path at all.
+            const isSilentCapture = isLoggedIn && !!userEmail;
             toast.error(
               isCircuitOpen
                 ? "Email delivery is temporarily paused. Your result is saved — please try again in 30 minutes."
-                : "Couldn't send that email. You can retry, or download your result below.",
+                : isSilentCapture
+                ? "Couldn't email your result — tap Download again to retry."
+                : "Couldn't send that email.",
             );
             // The lead is saved (success) but nothing actually landed in an
             // inbox (delivered: false) -- callers must not treat this the

@@ -9,7 +9,9 @@ const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 
 const OPERATIONS_EMAIL = "operations_businessmanger@soteriaeyeclinic.com";
-const SENDER = "M&H Eyewear <noreply@notify.mandheyewear.com>";
+// notify.mandheyewear.com was never verified in Resend -- every send from it
+// failed with a 403. mandheyewear.com is verified (auth-email-hook proves it).
+const SENDER = "M&H Eyewear <noreply@mandheyewear.com>";
 const SITE_URL = "https://soteriaeyeclinic.lovable.app";
 const WHATSAPP_NUMBER = "2348063363506";
 

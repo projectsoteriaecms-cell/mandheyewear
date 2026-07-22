@@ -80,7 +80,9 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "M&H Eyewear <noreply@notify.mandheyewear.com>",
+        // notify.mandheyewear.com was never verified in Resend -- every send
+        // from it failed with a 403. mandheyewear.com is verified.
+        from: "M&H Eyewear <noreply@mandheyewear.com>",
         to: [email],
         subject: `Appointment Confirmed - ${serviceName}`,
         html: `
