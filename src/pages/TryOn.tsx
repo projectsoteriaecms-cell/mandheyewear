@@ -22,7 +22,7 @@ import {
 import { isCameraKitConfigured } from "@/config/snap-lenses";
 
 import { toast } from "sonner";
-import { useVirtualTryOn, type FrameDetails, type TryOnResult as TryOnResultType } from "@/modules/personalization";
+import { useVirtualTryOn, recordTryOnStarted, type FrameDetails, type TryOnResult as TryOnResultType } from "@/modules/personalization";
 import { useProducts, useProduct } from "@/modules/products";
 import { useCart, useWishlist } from "@/modules/orders";
 import { useAuth } from "@/modules/auth";
@@ -65,6 +65,15 @@ const TryOn = () => {
   } = useVirtualTryOn();
 
   const [selectedFrame, setSelectedFrame] = useState<FrameDetails | null>(null);
+
+  // Funnel entry: records which surface a visitor actually lands on, so
+  // drop-off between arriving and completing a try-on is measurable per mode.
+  useEffect(() => {
+    recordTryOnStarted(
+      tryOnMode === "ar" ? "live_ar_camerakit" : "photo_ai",
+      preselectedProductId ?? undefined,
+    );
+  }, [tryOnMode, preselectedProductId]);
 
   // Add AR captures to the shared try-on history
   const handleARCapture = useCallback((result: TryOnResultType) => {

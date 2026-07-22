@@ -15,6 +15,7 @@ import {
   useEmailHealth,
   useErrorCount24h,
   useActiveSessions24h,
+  useTryOnStats,
 } from "./useObservabilityData";
 
 const Observability = () => {
@@ -24,6 +25,7 @@ const Observability = () => {
   const { data: emailHealth, isLoading: emailLoading } = useEmailHealth();
   const { data: errorCount24h, isLoading: errorCountLoading } = useErrorCount24h();
   const { data: activeSessions24h, isLoading: sessionsLoading } = useActiveSessions24h();
+  const { data: tryOn, isLoading: tryOnLoading } = useTryOnStats();
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -124,11 +126,12 @@ const Observability = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="funnel" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="funnel">Funnel</TabsTrigger>
               <TabsTrigger value="activity">Activity</TabsTrigger>
               <TabsTrigger value="errors">Errors</TabsTrigger>
               <TabsTrigger value="email">Email</TabsTrigger>
+              <TabsTrigger value="tryon">Try-On</TabsTrigger>
             </TabsList>
 
             {/* Funnel Tab */}
@@ -323,6 +326,122 @@ const Observability = () => {
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">No email data available</div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Try-On Tab */}
+            <TabsContent value="tryon">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Virtual Try-On (7 days)</CardTitle>
+                  <CardDescription>
+                    Activity across all three entry points — photo, live AR, and the inline
+                    product-card modal
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {tryOnLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(5)].map((_, i) => (
+                        <Skeleton key={i} className="h-14 w-full" />
+                      ))}
+                    </div>
+                  ) : tryOn && tryOn.bySource.length > 0 ? (
+                    <div className="space-y-6">
+                      {/* Per-source breakdown */}
+                      <div className="space-y-3">
+                        {tryOn.bySource.map((s) => {
+                          const attempts = s.generations + s.failures;
+                          const failPct = attempts > 0 ? Math.round((s.failures / attempts) * 100) : 0;
+                          return (
+                            <div key={s.source} className="border rounded-lg p-3">
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <span className="font-medium text-sm">{s.label}</span>
+                                <div className="flex items-center gap-2">
+                                  {s.medianMs !== null && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {(s.medianMs / 1000).toFixed(1)}s median
+                                    </Badge>
+                                  )}
+                                  {s.failures > 0 && (
+                                    <Badge variant="destructive" className="text-xs">
+                                      {failPct}% failed
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+                                <div>
+                                  <div className="text-lg font-bold">{s.sessionsStarted}</div>
+                                  <div className="text-[11px] text-muted-foreground">sessions</div>
+                                </div>
+                                <div>
+                                  <div className="text-lg font-bold">{s.generations}</div>
+                                  <div className="text-[11px] text-muted-foreground">generations</div>
+                                </div>
+                                <div>
+                                  <div className="text-lg font-bold">{s.failures}</div>
+                                  <div className="text-[11px] text-muted-foreground">failures</div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <p className="text-xs text-muted-foreground">
+                        A multi-angle try-on counts as three generations (front + both sides), each
+                        a separate API call — so generations exceed user actions by design.
+                      </p>
+
+                      {/* Most-tried frames */}
+                      {tryOn.topFrames.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium mb-3">Most-tried frames</h4>
+                          <div className="space-y-2">
+                            {tryOn.topFrames.map((f) => (
+                              <div
+                                key={f.name}
+                                className="flex items-center justify-between text-sm border-b pb-1 last:border-0"
+                              >
+                                <span className="truncate pr-2">{f.name}</span>
+                                <Badge variant="secondary" className="text-xs shrink-0">
+                                  {f.count}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Recent failures */}
+                      {tryOn.recentFailures.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium mb-3">Recent failures</h4>
+                          <ScrollArea className="h-40">
+                            <div className="space-y-2 pr-4">
+                              {tryOn.recentFailures.map((f, i) => (
+                                <div key={i} className="text-xs border rounded p-2 space-y-1">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="font-medium">{f.source}</span>
+                                    <span className="text-muted-foreground shrink-0">
+                                      {formatDistanceToNow(new Date(f.at), { addSuffix: true })}
+                                    </span>
+                                  </div>
+                                  <div className="text-destructive break-all">{f.error}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </ScrollArea>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No try-on activity recorded yet
+                    </div>
                   )}
                 </CardContent>
               </Card>

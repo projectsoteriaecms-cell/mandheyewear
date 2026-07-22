@@ -13,7 +13,7 @@ import { useFrameAttributes, has3DMeasurements } from "@/shared/hooks/useFrameAt
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { isCameraKitConfigured } from "@/config/snap-lenses";
-import type { TryOnResult as TryOnResultType } from "@/modules/personalization";
+import { recordTryOn, type TryOnResult as TryOnResultType } from "@/modules/personalization";
 
 interface FrameProduct {
   id: string;
@@ -138,10 +138,26 @@ export const LiveARTryOn = ({
         usedFrameReference: false,
       };
 
+      // Camera Kit switches frames inside the Lens, so selectedProduct is often
+      // absent there -- the capture is still recorded, just without a frame id.
+      void recordTryOn({
+        source: snapReady ? "live_ar_camerakit" : "live_ar_mediapipe",
+        success: true,
+        frameId: selectedProduct?.id,
+        frameName: selectedProduct?.name,
+      });
+
       onCapture(result);
       toast.success("Snapshot saved to history!");
     } catch (error) {
       console.error("Capture error:", error);
+      void recordTryOn({
+        source: snapReady ? "live_ar_camerakit" : "live_ar_mediapipe",
+        success: false,
+        frameId: selectedProduct?.id,
+        frameName: selectedProduct?.name,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
       toast.error("Failed to capture snapshot");
     } finally {
       setIsCapturing(false);

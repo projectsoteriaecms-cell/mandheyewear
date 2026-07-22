@@ -99,6 +99,13 @@ export const PlatformEvents = {
   "personalization.profile_updated": null as unknown as {
     userId: string;
   },
+  "personalization.tryon_completed": null as unknown as {
+    /** Which try-on surface produced this: photo, live AR, or the inline modal. */
+    source: string;
+    /** Absent for Camera Kit captures where the frame is chosen inside the Lens. */
+    frameId?: string;
+    frameName?: string;
+  },
 } as const;
 
 export type PlatformEventKey = keyof typeof PlatformEvents;
