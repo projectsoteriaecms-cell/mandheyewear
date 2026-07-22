@@ -31,13 +31,15 @@ export const WhatsAppButton = () => {
 
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
+  // Stacks above the Feedback pill (bottom-20 mobile / bottom-6 from sm up),
+  // which itself clears the mobile bottom nav. Keep in step with FeedbackWidget.
   return (
     <a
       href={url}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat on WhatsApp"
-      className="fixed bottom-6 right-6 z-50 flex items-center justify-center h-14 w-14 rounded-full bg-[#25D366] text-white shadow-lg hover:scale-110 hover:shadow-xl transition-all"
+      className="fixed bottom-36 right-4 sm:bottom-20 sm:right-6 z-40 flex items-center justify-center h-14 w-14 rounded-full bg-[#25D366] text-white shadow-lg hover:scale-110 hover:shadow-xl transition-all"
     >
       <WhatsappLogo weight="fill" className="h-7 w-7" />
     </a>
