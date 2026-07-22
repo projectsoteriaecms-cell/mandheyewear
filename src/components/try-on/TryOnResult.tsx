@@ -256,7 +256,10 @@ export const TryOnResult = ({
           onClose={closeModal}
           onSubmit={async (email, phone, marketing, fullName) => {
             const res = await handleSubmit(email, phone, marketing, fullName);
-            if (res.success) performDownload();
+            // Only auto-download for a genuinely delivered email -- WhatsApp
+            // has its own explicit share/download step, and an undelivered
+            // email must not look like the promised "& Download" happened.
+            if (res.channel === "email" && res.delivered) performDownload();
             return res;
           }}
           result={captureState.result}
@@ -512,9 +515,12 @@ export const TryOnResult = ({
           <EmailCaptureModal
             isOpen={captureState.isOpen}
             onClose={closeModal}
-            onSubmit={async (email, phone, marketing) => {
-              const res = await handleSubmit(email, phone, marketing);
-              if (res.success) performDownload();
+            onSubmit={async (email, phone, marketing, fullName) => {
+              const res = await handleSubmit(email, phone, marketing, fullName);
+              // Only auto-download for a genuinely delivered email -- WhatsApp
+              // has its own explicit share/download step, and an undelivered
+              // email must not look like the promised "& Download" happened.
+              if (res.channel === "email" && res.delivered) performDownload();
               return res;
             }}
             result={captureState.result}

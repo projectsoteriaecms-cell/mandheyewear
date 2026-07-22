@@ -277,7 +277,10 @@ export const InlineTryOnModal = ({
       onClose={closeCaptureModal}
       onSubmit={async (email, phone, marketing, fullName) => {
         const res = await handleCaptureSubmit(email, phone, marketing, fullName);
-        if (res.success) performDownload();
+        // Only auto-download for a genuinely delivered email -- WhatsApp
+        // has its own explicit share/download step, and an undelivered
+        // email must not look like the promised "& Download" happened.
+        if (res.channel === "email" && res.delivered) performDownload();
         return res;
       }}
       result={captureState.result}

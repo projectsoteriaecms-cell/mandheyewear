@@ -106,23 +106,30 @@ export const FeedbackWidget = () => {
 
       {/* Modal overlay */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-end sm:pr-6 sm:pb-6">
+        // z-[60]: this is a hand-rolled overlay, not the portal-based Dialog
+        // primitive, so it shares a stacking context with MobileBottomNav
+        // (z-50) rendered later in the DOM -- at equal z-index the later
+        // element wins, which was silently painting the nav bar over the
+        // bottom of this card (including the submit button) on mobile.
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center sm:justify-end sm:pr-6 sm:pb-6">
           {/* Backdrop — close on click */}
           <div
             className="absolute inset-0 bg-black/30 sm:bg-transparent"
             onClick={handleClose}
           />
 
-          {/* Card */}
+          {/* Card -- capped height + internal scroll with a non-scrolling
+              footer, so the submit button stays reachable (and visible)
+              regardless of content length or a shrunk mobile viewport. */}
           <div
-            className="relative w-full sm:w-96 bg-background rounded-t-2xl sm:rounded-2xl shadow-2xl border border-border z-10 overflow-hidden"
+            className="relative w-full sm:w-96 max-h-[85vh] max-h-[85dvh] bg-background rounded-t-2xl sm:rounded-2xl shadow-2xl border border-border z-10 overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Colour bar */}
-            <div className="h-1 w-full bg-gradient-to-r from-amber-400 to-yellow-500" />
+            <div className="h-1 w-full bg-gradient-to-r from-amber-400 to-yellow-500 shrink-0" />
 
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
               <div>
                 <h3 className="font-semibold text-sm text-foreground">Leave Feedback</h3>
                 <p className="text-xs text-muted-foreground truncate max-w-[220px]">
@@ -148,7 +155,11 @@ export const FeedbackWidget = () => {
                 </p>
               </div>
             ) : (
-              <div className="p-4 space-y-4">
+              // min-h-0 is load-bearing here: without it a flex child
+              // ignores the parent's max-height and grows to fit its
+              // content instead of scrolling, which silently defeats the
+              // overflow-y-auto above it.
+              <div className="p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
                 {/* Type selector */}
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-2">What type of feedback?</p>
@@ -221,8 +232,13 @@ export const FeedbackWidget = () => {
                     className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-400"
                   />
                 </div>
+              </div>
+            )}
 
-                {/* Submit */}
+            {/* Submit -- outside the scroll region and shrink-0, so it's
+                always visible regardless of how tall the form content gets. */}
+            {!success && (
+              <div className="p-4 pt-3 border-t border-border shrink-0">
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit}

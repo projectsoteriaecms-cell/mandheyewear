@@ -23,4 +23,21 @@ registerSW({
   },
 });
 
+// The missing half of "autoUpdate": skipWaiting + clientsClaim make the new
+// service worker take control immediately, but a tab that's already open
+// keeps running the OLD JS bundle from memory until it reloads -- the update
+// happens invisibly and nothing changes on screen until the visitor
+// manually refreshes. Reloading once when control actually changes closes
+// that gap so a deploy reaches open tabs, not just new page loads. The
+// `refreshing` guard stops a double-fire (controllerchange can fire more
+// than once) from looping.
+if ("serviceWorker" in navigator) {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+}
+
 createRoot(document.getElementById("root")!).render(<App />);
