@@ -1,12 +1,37 @@
 import { useRef, useCallback, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, X, RefreshCw, Save, Check, Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Camera, Upload, X, RefreshCw, Save, Check, Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 import { toast } from "sonner";
 import { useAuth } from "@/modules/auth";
 import { useUpdateProfile } from "@/modules/personalization";
+import { track } from "@/shared/lib/telemetry";
+
+/**
+ * Photo-usage consent, required once per session before any upload.
+ *
+ * Why it exists: a try-on photo is biometric-adjacent personal data, and we
+ * cannot verify whose face is in an upload. The self-certification checkbox
+ * ("my photo, or I have their permission") plus the tracked consent event
+ * (timestamp + session in platform_events) is the audit trail that puts
+ * responsibility for third-party photos on the uploader -- NDPA 2023 diligence
+ * without adding a second screen to the flow.
+ */
+const PHOTO_CONSENT_VERSION = "v1.0";
+const PHOTO_CONSENT_KEY = "mh_photo_consent";
+
+const hasSessionPhotoConsent = (): boolean => {
+  try {
+    return sessionStorage.getItem(PHOTO_CONSENT_KEY) === PHOTO_CONSENT_VERSION;
+  } catch {
+    return false;
+  }
+};
 
 interface PhotoUploadProps {
   photo: string | null;
@@ -26,6 +51,24 @@ export const PhotoUpload = ({
   const updateProfile = useUpdateProfile();
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [photoConsent, setPhotoConsent] = useState(hasSessionPhotoConsent);
+  const [consentError, setConsentError] = useState("");
+
+  const handleConsentChange = useCallback((checked: boolean) => {
+    setPhotoConsent(checked);
+    setConsentError("");
+    try {
+      if (checked) {
+        sessionStorage.setItem(PHOTO_CONSENT_KEY, PHOTO_CONSENT_VERSION);
+        // Audit trail: timestamp, session and page land in platform_events.
+        void track("tryon.photo_consent_given", { version: PHOTO_CONSENT_VERSION });
+      } else {
+        sessionStorage.removeItem(PHOTO_CONSENT_KEY);
+      }
+    } catch {
+      // Private mode: in-memory state still gates this visit.
+    }
+  }, []);
 
   const handleSaveAsVtoPhoto = useCallback(async () => {
     if (!user || !photo) return;
@@ -93,6 +136,11 @@ export const PhotoUpload = ({
   }, [onPhotoChange]);
 
   const triggerUpload = () => {
+    if (!photoConsent) {
+      setConsentError("Please confirm the photo consent below first.");
+      toast.error("Please tick the photo consent box to continue.");
+      return;
+    }
     fileInputRef.current?.click();
   };
 
@@ -229,9 +277,49 @@ export const PhotoUpload = ({
           For best results, use a clear front-facing photo with good lighting.
         </p>
 
+        {/* Photo-usage consent — gates the file picker, once per session */}
+        <div
+          className={`space-y-2 rounded-lg border p-3 bg-muted/30 ${
+            consentError ? "border-destructive" : "border-border"
+          }`}
+        >
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="photo-consent"
+              checked={photoConsent}
+              onCheckedChange={(c) => handleConsentChange(c === true)}
+              className="mt-0.5"
+              aria-invalid={!!consentError}
+            />
+            <Label
+              htmlFor="photo-consent"
+              className="text-xs text-muted-foreground font-normal cursor-pointer leading-relaxed"
+            >
+              <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                This photo is of me
+              </span>{" "}
+              — or I have that person's clear permission to use it. I consent to
+              M&amp;H Eyewear processing it to generate my virtual try-on preview,
+              per the{" "}
+              <Link to="/privacy" target="_blank" className="text-primary hover:underline">
+                Privacy Policy
+              </Link>
+              . Uploading someone else's photo without their consent is not permitted.
+            </Label>
+          </div>
+          {consentError && (
+            <p className="text-xs text-destructive pl-7">{consentError}</p>
+          )}
+        </div>
+
         <div
           onClick={triggerUpload}
-          className="border-2 border-dashed border-border rounded-lg p-8 sm:p-12 text-center space-y-4 hover:border-primary hover:bg-muted/50 transition-all cursor-pointer"
+          className={`border-2 border-dashed rounded-lg p-8 sm:p-12 text-center space-y-4 transition-all cursor-pointer ${
+            photoConsent
+              ? "border-border hover:border-primary hover:bg-muted/50"
+              : "border-border opacity-60"
+          }`}
         >
           <div className="w-16 h-16 rounded-full bg-muted mx-auto flex items-center justify-center">
             <Camera className="h-8 w-8 text-muted-foreground" />
