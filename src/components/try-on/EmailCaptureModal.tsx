@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Phone, Loader2, Send, X } from "lucide-react";
+import { Mail, Phone, Loader2, Send, X, Download } from "lucide-react";
 import { toast } from "sonner";
 
 import { DataProtectionConsent } from "@/components/legal/DataProtectionConsent";
@@ -28,7 +28,7 @@ interface EmailCaptureModalProps {
     phone: string | null,
     marketingConsent: boolean,
     fullName?: string | null
-  ) => Promise<{ success: boolean; channel?: "email" | "whatsapp" }>;
+  ) => Promise<{ success: boolean; channel?: "email" | "whatsapp"; delivered?: boolean }>;
   result: TryOnResult | null;
   isSubmitting: boolean;
 }
@@ -54,6 +54,10 @@ export const EmailCaptureModal = ({
   const [consentError, setConsentError] = useState("");
   const [showWhatsAppShare, setShowWhatsAppShare] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  // Set only when the lead saved but the email itself failed to send --
+  // distinct from fieldError (a validation problem) so the retry/download
+  // affordance can render without touching the form the visitor already filled in.
+  const [deliveryFailed, setDeliveryFailed] = useState(false);
 
   const validate = () => {
     setFieldError("");
@@ -79,29 +83,56 @@ export const EmailCaptureModal = ({
     setMarketingConsent(false);
     setDataConsent(false);
     setShowWhatsAppShare(false);
+    setDeliveryFailed(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+    setDeliveryFailed(false);
 
-    const { success, channel } = await onSubmit(
+    const { success, channel, delivered } = await onSubmit(
       tab === "email" ? email.trim() : null,
       tab === "phone" ? phone.trim() : null,
       marketingConsent,
       fullName.trim() || null
     );
 
-    if (success) {
-      if (channel === "whatsapp") {
-        // WhatsApp: stay open, show share step
-        setShowWhatsAppShare(true);
-      } else {
-        // Email: close immediately
-        resetForm();
-        onClose();
-      }
+    // Lead-capture failure: the hook already toasted the error. Leave the
+    // form exactly as filled in so the visitor can just hit submit again.
+    if (!success) return;
+
+    if (channel === "whatsapp") {
+      // WhatsApp: stay open, show share step
+      setShowWhatsAppShare(true);
+      return;
     }
+
+    // Email: only close on a CONFIRMED send. A saved-but-undelivered lead
+    // (delivered === false) surfaces a retry/download-instead choice
+    // instead of quietly closing as if the email had gone out.
+    if (delivered) {
+      resetForm();
+      onClose();
+    } else {
+      setDeliveryFailed(true);
+    }
+  };
+
+  const handleDownloadInstead = () => {
+    const source = result?.cleanImage ?? result?.compositeImage;
+    if (!source) return;
+    const link = document.createElement("a");
+    link.href = source;
+    link.download = `mh-try-on-${result?.frameDetails?.name || "frame"}-${Date.now()}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    void track("tryon.email_download_fallback", {
+      frameId: result?.frameDetails?.id ?? null,
+    });
+    resetForm();
+    onClose();
   };
 
   const handleWhatsAppShare = async () => {
@@ -193,6 +224,8 @@ export const EmailCaptureModal = ({
           <DialogTitle className="flex items-center gap-2">
             {showWhatsAppShare ? (
               <><Send className="h-5 w-5 text-primary" /> Share Your Try-On</>
+            ) : deliveryFailed ? (
+              <><Mail className="h-5 w-5 text-destructive" /> Email Didn't Send</>
             ) : tab === "email" ? (
               <><Mail className="h-5 w-5 text-primary" /> Get Your Try-On via Email</>
             ) : (
@@ -202,6 +235,8 @@ export const EmailCaptureModal = ({
           <DialogDescription>
             {showWhatsAppShare
               ? "Send your try-on to WhatsApp to share with friends or save to your chats."
+              : deliveryFailed
+              ? "Your details are saved — just the email itself didn't go through."
               : "Save your look and receive frame details and a direct purchase link."}
           </DialogDescription>
         </DialogHeader>
@@ -227,7 +262,22 @@ export const EmailCaptureModal = ({
           </div>
         )}
 
-        {showWhatsAppShare ? (
+        {deliveryFailed ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Your contact details were saved, but the email failed to send
+              just now. You can try again, or download your result directly.
+            </p>
+            <Button onClick={() => setDeliveryFailed(false)} className="w-full">
+              <Mail className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+            <Button onClick={handleDownloadInstead} variant="outline" className="w-full">
+              <Download className="h-4 w-4 mr-2" />
+              Download Instead
+            </Button>
+          </div>
+        ) : showWhatsAppShare ? (
           <div className="space-y-3">
             <p className="text-sm text-foreground">
               Your try-on is saved. Now share it to WhatsApp!

@@ -125,11 +125,16 @@ export const useVTOEmailCapture = () => {
             toast.error(
               isCircuitOpen
                 ? "Email delivery is temporarily paused. Your result is saved — please try again in 30 minutes."
-                : "Couldn't send email, but you can download your result below.",
+                : "Couldn't send that email. You can retry, or download your result below.",
             );
-          } else {
-            toast.success("Your try-on result is on its way to your inbox!");
+            // The lead is saved (success) but nothing actually landed in an
+            // inbox (delivered: false) -- callers must not treat this the
+            // same as a real send, or silently kick off a "your email is on
+            // its way" download as if it worked.
+            return { success: true, channel, delivered: false };
           }
+
+          toast.success("Your try-on result is on its way to your inbox!");
         } else if (phone) {
           // Delivery is client-side: the capture modal follows up with a share
           // sheet that puts the clean image straight into the visitor's own
@@ -155,7 +160,7 @@ export const useVTOEmailCapture = () => {
           toast.success("Contact saved!");
         }
 
-        return { success: true, channel };
+        return { success: true, channel, delivered: true };
       } catch (error) {
         console.error("VTO capture error:", error);
         toast.error("Something went wrong. Please try again.");
@@ -212,10 +217,12 @@ export const useVTOEmailCapture = () => {
         fullName,
       });
 
-      // Email closes immediately; WhatsApp stays open so the modal can show
-      // the share step (navigator.share needs a fresh user tap -- it cannot
-      // fire from this async completion).
-      if (result.success && result.channel === "email") {
+      // Email closes only once actually delivered -- on failure the modal
+      // stays open with a retry/download-instead option instead of
+      // vanishing as if it worked. WhatsApp always stays open so the modal
+      // can show the share step (navigator.share needs a fresh user tap --
+      // it cannot fire from this async completion).
+      if (result.success && result.channel === "email" && result.delivered) {
         closeModal();
       }
 
