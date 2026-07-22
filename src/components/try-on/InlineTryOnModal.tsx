@@ -42,7 +42,7 @@ export const InlineTryOnModal = ({
     multiAngleResults,
     isGeneratingAngles,
     clearResult,
-  } = useVirtualTryOn();
+  } = useVirtualTryOn("inline_modal");
   const {
     captureState,
     isSubmitting: captureSubmitting,

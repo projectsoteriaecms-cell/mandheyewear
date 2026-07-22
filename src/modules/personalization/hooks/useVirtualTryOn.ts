@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { recordTryOn, type TryOnSource } from "../lib/tryOnRecorder";
 
 export interface FrameDetails {
   id: string;
@@ -29,7 +30,12 @@ export interface MultiAngleResults {
   right?: string;
 }
 
-export const useVirtualTryOn = () => {
+/**
+ * @param source Which surface is driving this try-on. Defaults to the main
+ *   /try-on photo flow; the inline product-card modal passes "inline_modal" so
+ *   the two can be told apart in the activity log.
+ */
+export const useVirtualTryOn = (source: TryOnSource = "photo_ai") => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentResult, setCurrentResult] = useState<TryOnResult | null>(null);
   const [savedTryOns, setSavedTryOns] = useState<TryOnResult[]>([]);
@@ -42,6 +48,22 @@ export const useVirtualTryOn = () => {
     frameDetails: FrameDetails,
     angle: TryOnAngle = "front"
   ): Promise<TryOnResult> => {
+    // Timed so generation latency and failure rate are visible per angle --
+    // multi-angle fans out to three separate API calls, each with its own cost.
+    const startedAt = Date.now();
+
+    const logFailure = (message: string) => {
+      void recordTryOn({
+        source,
+        success: false,
+        frameId: frameDetails.id,
+        frameName: frameDetails.name,
+        angle,
+        generationTimeMs: Date.now() - startedAt,
+        errorMessage: message,
+      });
+    };
+
     try {
       const { data, error } = await supabase.functions.invoke("virtual-try-on", {
         body: {
@@ -57,20 +79,28 @@ export const useVirtualTryOn = () => {
       });
 
       if (error) {
-        return {
-          success: false,
-          error: error.message || "Failed to generate try-on.",
-          timestamp: Date.now(),
-        };
+        const message = error.message || "Failed to generate try-on.";
+        logFailure(message);
+        return { success: false, error: message, timestamp: Date.now() };
       }
 
       if (!data.success) {
-        return {
-          success: false,
-          error: data.error || "Unable to generate try-on image.",
-          timestamp: Date.now(),
-        };
+        const message = data.error || "Unable to generate try-on image.";
+        logFailure(message);
+        return { success: false, error: message, timestamp: Date.now() };
       }
+
+      void recordTryOn({
+        source,
+        success: true,
+        frameId: frameDetails.id,
+        frameName: frameDetails.name,
+        userPhotoUrl: photo,
+        generatedImageUrl: data.compositeImage,
+        angle,
+        generationTimeMs: Date.now() - startedAt,
+        usedFrameReference: data.usedFrameReference ?? false,
+      });
 
       return {
         success: true,
@@ -80,13 +110,11 @@ export const useVirtualTryOn = () => {
         usedFrameReference: data.usedFrameReference ?? false,
       };
     } catch (err) {
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "An unexpected error occurred",
-        timestamp: Date.now(),
-      };
+      const message = err instanceof Error ? err.message : "An unexpected error occurred";
+      logFailure(message);
+      return { success: false, error: message, timestamp: Date.now() };
     }
-  }, []);
+  }, [source]);
 
   const generateTryOn = useCallback(async (
     photo: string,
