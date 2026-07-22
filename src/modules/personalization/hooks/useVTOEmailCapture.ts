@@ -4,6 +4,8 @@ import { useAuth } from "@/modules/auth";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import { toast } from "sonner";
 import type { TryOnResult } from "./useVirtualTryOn";
+import { uploadTryOnResult } from "../lib/tryOnStorage";
+import { getSessionId } from "@/shared/lib/telemetry";
 
 export type ContactChannel = "email" | "whatsapp";
 
@@ -43,6 +45,18 @@ export const useVTOEmailCapture = () => {
       try {
         const channel: ContactChannel = email ? "email" : "whatsapp";
 
+        // Store the clean image and keep only a path on the row. Previously the
+        // full base64 went into try_on_image_url -- a single such row is 2.9MB.
+        // A storage failure must not cost the lead, so this degrades to null.
+        const cleanImage = result.cleanImage ?? result.compositeImage;
+        const stored = cleanImage
+          ? await uploadTryOnResult(cleanImage, {
+              userId: user?.id ?? null,
+              sessionId: getSessionId(),
+              frameId: result.frameDetails?.id ?? null,
+            })
+          : null;
+
         const { error: dbError } = await supabase.from("vto_email_leads").insert({
           email: email ? email.toLowerCase().trim() : null,
           phone: phone ? phone.trim() : null,
@@ -51,7 +65,11 @@ export const useVTOEmailCapture = () => {
           frame_name: result.frameDetails?.name || null,
           source,
           user_id: user?.id || null,
-          try_on_image_url: result.compositeImage || null,
+          // try_on_image_url is deprecated (it held megabytes of base64);
+          // the image now lives in storage and the row keeps a path.
+          try_on_image_url: null,
+          image_path: stored?.path ?? null,
+          image_expires_at: stored?.expiresAt ?? null,
           // Consent provenance — required for NDPA 2023 + Meta WhatsApp compliance
           consent_timestamp: new Date().toISOString(),
           consent_source: "vto_result_gate",
@@ -77,7 +95,15 @@ export const useVTOEmailCapture = () => {
               body: {
                 email,
                 frameDetails: result.frameDetails,
-                tryOnImageBase64: result.compositeImage,
+                // The clean, unwatermarked image is what the contact was
+                // traded for -- the on-screen copy stays watermarked.
+                // Still base64 for email. The stored copy exists (and is what
+                // the DB row points at), but switching the email to a signed
+                // URL needs the Edge Function to do the signing -- the bucket
+                // is private and anon cannot sign. Deploying that update is
+                // blocked on the CLI's _shared/ layout, so it lands with the
+                // WhatsApp work, which needs the same server-side signing.
+                tryOnImageBase64: cleanImage,
                 // Pass DB failure so the Edge Function can fire a Slack alert.
                 // The user still receives their result regardless.
                 ...(dbError && {

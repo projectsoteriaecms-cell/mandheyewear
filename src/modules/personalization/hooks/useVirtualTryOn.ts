@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { recordTryOn, type TryOnSource } from "../lib/tryOnRecorder";
+import { applyTryOnWatermark } from "../lib/watermark";
 
 export interface FrameDetails {
   id: string;
@@ -17,7 +18,14 @@ export type TryOnAngle = "front" | "three_quarter_left" | "three_quarter_right";
 
 export interface TryOnResult {
   success: boolean;
+  /** Watermarked -- safe to display, download, share. Everything client-side shows this. */
   compositeImage?: string;
+  /**
+   * Unwatermarked original. ONLY read by the email/WhatsApp delivery path
+   * after a contact is captured -- the clean image is what the visitor trades
+   * their contact for. Never render this in the UI.
+   */
+  cleanImage?: string;
   error?: string;
   frameDetails?: FrameDetails;
   timestamp: number;
@@ -102,9 +110,15 @@ export const useVirtualTryOn = (source: TryOnSource = "photo_ai") => {
         usedFrameReference: data.usedFrameReference ?? false,
       });
 
+      // Watermark the display copy; keep the clean original ONLY for the
+      // post-contact email/WhatsApp delivery. Falls back to clean on failure
+      // so a watermark bug never costs anyone their result.
+      const watermarked = await applyTryOnWatermark(data.compositeImage);
+
       return {
         success: true,
-        compositeImage: data.compositeImage,
+        compositeImage: watermarked,
+        cleanImage: data.compositeImage,
         frameDetails,
         timestamp: Date.now(),
         usedFrameReference: data.usedFrameReference ?? false,
