@@ -181,10 +181,17 @@ export const EmailCaptureModal = ({
         type: blob.type || "image/jpeg",
       });
 
-      // Tracked link back to the site: ref stitches any resulting visit to
-      // this session's journey, utm params make the channel readable in
-      // analytics. This is what turns a share into a lead-generation path.
-      const shareUrl = `${window.location.origin}/try-on?utm_source=whatsapp&utm_medium=tryon_share&ref=${getSessionId()}`;
+      // Tracked link back to the site. When we know which frame this was,
+      // deep-link straight to THAT product page (view, price, buy, and its own
+      // Try-On button) instead of the generic try-on page -- a shared image is
+      // an ad for a specific frame, so the link should land on that frame.
+      // ref stitches the resulting visit to this session's journey; utm params
+      // make the channel readable in analytics.
+      const frameId = result?.frameDetails?.id;
+      const params = `utm_source=whatsapp&utm_medium=tryon_share&ref=${getSessionId()}`;
+      const shareUrl = frameId
+        ? `${window.location.origin}/product/${frameId}?${params}`
+        : `${window.location.origin}/try-on?${params}`;
       const frameName = result?.frameDetails?.name ?? "these frames";
 
       // Desktop browsers mostly can't share files -- fall back to downloading
