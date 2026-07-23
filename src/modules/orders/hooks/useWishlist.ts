@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/modules/auth";
 import { useToast } from "@/shared/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
+import { PUBLIC_PRODUCT_COLUMNS } from "@/modules/products";
 
 export type WishlistItem = Tables<"wishlist"> & {
   product: Tables<"products"> | null;
@@ -18,11 +19,15 @@ export const useWishlist = () => {
     queryFn: async () => {
       if (!user) return [];
 
+      // product:products (*) fails outright -- the products table uses
+      // column-level grants, and a wildcard select requires a grant on every
+      // column. This threw on every call, so the wishlist silently rendered
+      // empty regardless of what was actually saved.
       const { data, error } = await supabase
         .from("wishlist")
         .select(`
           *,
-          product:products (*)
+          product:products (${PUBLIC_PRODUCT_COLUMNS})
         `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });

@@ -5,6 +5,7 @@ import { useToast } from "@/shared/hooks/use-toast";
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 import type { Tables } from "@/integrations/supabase/types";
 import type { LensConfig } from "@/modules/lens";
+import { PUBLIC_PRODUCT_COLUMNS } from "@/modules/products";
 
 export type CartItem = Tables<"cart_items"> & {
   product: Tables<"products"> | null;
@@ -20,11 +21,19 @@ export const useCart = () => {
     queryFn: async () => {
       if (!user) return [];
 
+      // product:products (*) fails outright -- the products table uses
+      // column-level grants (cost_price, supplier_id, zoho_item_id, etc. are
+      // staff-only writes with no `authenticated` SELECT grant), and a
+      // wildcard select requires a grant on EVERY column. This threw on
+      // every call: "Add to Cart" inserted the row successfully (cart_items
+      // itself has no such restriction), but this read query silently failed
+      // and cartItems fell back to [] -- the cart looked empty even though
+      // the item was sitting right there in the database.
       const { data, error } = await supabase
         .from("cart_items")
         .select(`
           *,
-          product:products (*)
+          product:products (${PUBLIC_PRODUCT_COLUMNS})
         `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
@@ -66,14 +75,21 @@ export const useCart = () => {
       const hasLens = !!lensConfig && lensConfig.lensType !== "frame_only";
 
       if (!hasLens) {
-        // Upsert: increment quantity if same product already in cart without lens config
-        const { data: existing } = await supabase
+        // Upsert: increment quantity if the same product is already in the
+        // cart in the same "no real lens" state. Frame Only writes
+        // lens_type: "frame_only" (not null) into lensColumns below, so the
+        // lookup has to match that explicitly -- matching only NULL would
+        // never find it, creating a fresh duplicate row on every single
+        // "Add to Cart" tap instead of bumping the quantity on one.
+        let existingQuery = supabase
           .from("cart_items")
           .select("id, quantity")
           .eq("user_id", user.id)
-          .eq("product_id", productId)
-          .is("lens_type", null)
-          .maybeSingle();
+          .eq("product_id", productId);
+        existingQuery = lensConfig?.lensType === "frame_only"
+          ? existingQuery.eq("lens_type", "frame_only")
+          : existingQuery.is("lens_type", null);
+        const { data: existing } = await existingQuery.maybeSingle();
 
         if (existing) {
           const { data, error } = await supabase
