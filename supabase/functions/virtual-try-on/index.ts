@@ -101,14 +101,22 @@ const getAngleInstruction = (angle: TryOnAngle): string => {
   switch (angle) {
     case "three_quarter_left":
       return `
-ANGLE INSTRUCTION: Show the person turned approximately 30 degrees to their LEFT (viewer's right). 
-This is a three-quarter left view showing how the glasses look from the left side.
-The left temple arm and left lens should be more visible. Maintain natural head proportions and lighting.`;
+🔴 MANDATORY HEAD ROTATION — READ FIRST: This is NOT a front-facing shot. You MUST rotate the
+person's head and shoulders approximately 30-40 degrees to their LEFT (viewer's right), as if they
+turned to look toward that side. A front-facing result is WRONG and unacceptable for this request —
+the pose must be visibly, unambiguously rotated, not just a subtle tilt.
+This is a three-quarter left view: the left temple arm and left lens should be more prominent, part
+of the right side of the face and right ear may be foreshortened or hidden by the turn.
+Maintain natural head proportions, perspective, and lighting consistent with a real turned pose.`;
     case "three_quarter_right":
       return `
-ANGLE INSTRUCTION: Show the person turned approximately 30 degrees to their RIGHT (viewer's left).
-This is a three-quarter right view showing how the glasses look from the right side.
-The right temple arm and right lens should be more visible. Maintain natural head proportions and lighting.`;
+🔴 MANDATORY HEAD ROTATION — READ FIRST: This is NOT a front-facing shot. You MUST rotate the
+person's head and shoulders approximately 30-40 degrees to their RIGHT (viewer's left), as if they
+turned to look toward that side. A front-facing result is WRONG and unacceptable for this request —
+the pose must be visibly, unambiguously rotated, not just a subtle tilt.
+This is a three-quarter right view: the right temple arm and right lens should be more prominent, part
+of the left side of the face and left ear may be foreshortened or hidden by the turn.
+Maintain natural head proportions, perspective, and lighting consistent with a real turned pose.`;
     case "front":
     default:
       return `
@@ -131,10 +139,11 @@ const buildPrompt = (frameDetails: TryOnRequest["frameDetails"], hasFrameReferen
 
   if (hasFrameReference) {
     return `You are an expert eyewear designer and photo editor.
+${angleInstruction}
 
 IMPORTANT: You have been provided with TWO images:
 1. FIRST IMAGE: The exact eyeglasses frame that must be applied (reference frame)
-2. SECOND IMAGE: The user's front-facing face photo
+2. SECOND IMAGE: The user's face photo (used only as the base likeness — do not copy its head pose if a rotated angle was requested above)
 
 Your task:
 - Apply the EXACT glasses from the first image onto the person in the second image
@@ -142,30 +151,29 @@ Your task:
 - Do NOT create a different frame design or modify the frame appearance
 - The glasses should be properly scaled to match the face width
 - Position the glasses correctly on the nose bridge, aligned with the eyes
-- Follow the natural perspective and lighting of the face photo
+- Follow the natural perspective and lighting of the face photo, adjusted for the required head angle above
 - The result should look like a real photograph, not a digital overlay
 - Maintain the original photo quality and background
 - Ensure the frame temples extend naturally towards the ears
-${angleInstruction}
 
 Frame details for reference: ${frameDescription}
 
-Generate a complete, photorealistic image of the person wearing the EXACT glasses from the reference image.`;
+Generate a complete, photorealistic image of the person wearing the EXACT glasses from the reference image, at the head angle mandated above.`;
   }
 
   return `You are an expert eyewear designer and photo editor.
+${angleInstruction}
 
-Given this front-facing face photo, create a photorealistic image showing the person wearing eyeglasses with these specifications:
+Given this face photo (used only as the base likeness — do not copy its head pose if a rotated angle was requested above), create a photorealistic image showing the person wearing eyeglasses with these specifications:
 - Frame: ${frameDescription}
 - The glasses should be properly scaled to match the face width
 - Position the glasses correctly on the nose bridge, aligned with the eyes
-- Follow the natural perspective and lighting of the original photo
+- Follow the natural perspective and lighting of the original photo, adjusted for the required head angle above
 - The result should look like a real photograph, not a digital overlay
 - Maintain the original photo quality and background
 - Ensure the frame temples extend naturally towards the ears
-${angleInstruction}
 
-Important: Generate a complete, photorealistic image of the person wearing the described glasses. The output should be indistinguishable from a real photo of someone wearing glasses.`;
+Important: Generate a complete, photorealistic image of the person wearing the described glasses at the head angle mandated above. The output should be indistinguishable from a real photo of someone wearing glasses.`;
 };
 
 const extractInlineBase64FromGeminiGenerateContent = (result: any) => {
@@ -184,6 +192,7 @@ const callGoogleGemini = async (opts: {
   frameImageBase64?: string;
   frameImageMimeType?: string;
   prompt: string;
+  temperature?: number;
 }): Promise<{ ok: true; data: GeneratedTryOn } | { ok: false; status: number; error: string; raw?: string }> => {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${opts.apiKey}`;
 
@@ -218,7 +227,10 @@ const callGoogleGemini = async (opts: {
       contents: [{ parts }],
       generationConfig: {
         responseModalities: ["image", "text"],
-        temperature: 0.4,
+        // Side angles need more freedom to actually rotate the head instead of
+        // reproducing the input photo's pose -- low temperature biases the model
+        // toward the safest/most literal output, which for a face photo is "front".
+        temperature: opts.temperature ?? 0.4,
       },
     }),
   });
@@ -446,6 +458,7 @@ serve(async (req) => {
       frameImageBase64: frameImage?.base64,
       frameImageMimeType: frameImage?.mimeType,
       prompt,
+      temperature: angle === "front" ? 0.4 : 0.75,
     }));
 
     if (primary.ok) {
