@@ -192,7 +192,10 @@ export const ProductCard = ({ product, onQuickView }: ProductCardProps) => {
           </div>
         </CardContent>
       </Card>
-      {savedPhotoUrl && (
+      {/* Mounted only while open -- a shop grid can have 100+ of these cards,
+          and the modal (its own hooks, its own product/generation queries)
+          has no reason to exist for cards nobody has tapped "Try On" on. */}
+      {modalOpen && (
         <InlineTryOnModal
           productId={targetProductId}
           savedPhotoUrl={savedPhotoUrl}
