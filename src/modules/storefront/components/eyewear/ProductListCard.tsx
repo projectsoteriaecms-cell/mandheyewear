@@ -156,7 +156,10 @@ export const ProductListCard = ({ product }: ProductListCardProps) => {
           </CardContent>
         </div>
       </Card>
-      {savedPhotoUrl && (
+      {/* Mounted only while open -- a list can have 100+ of these cards, and
+          the modal has no reason to exist for cards nobody has tapped
+          "Try On" on. The modal handles the no-photo case itself. */}
+      {modalOpen && (
         <InlineTryOnModal
           productId={targetProductId}
           savedPhotoUrl={savedPhotoUrl}

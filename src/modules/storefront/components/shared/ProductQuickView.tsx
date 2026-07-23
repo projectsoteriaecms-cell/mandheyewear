@@ -218,7 +218,8 @@ export const ProductQuickView = ({ productId, isOpen, onClose }: ProductQuickVie
         </div>
       </div>
 
-      {savedPhotoUrl && (
+      {/* Mounted only while open. The modal handles the no-photo case itself. */}
+      {modalOpen && (
         <InlineTryOnModal
           productId={targetProductId}
           savedPhotoUrl={savedPhotoUrl}

@@ -2,3 +2,5 @@
 export * from "./tryOnRecorder";
 export * from "./watermark";
 export * from "./tryOnStorage";
+export * from "./photoConsent";
+export * from "./sessionTryOnPhoto";

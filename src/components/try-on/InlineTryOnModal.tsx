@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -7,19 +7,29 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, ShoppingBag, Heart, Camera, ExternalLink, Download } from "lucide-react";
+import { Loader2, ShoppingBag, Heart, Camera, ExternalLink, Download, Upload } from "lucide-react";
 
 import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
 import { TryOnGenerationExperience } from "./TryOnGenerationExperience";
 import { EmailCaptureModal } from "./EmailCaptureModal";
+import { PhotoConsentCheckbox } from "./PhotoConsentCheckbox";
 import { useProduct } from "@/modules/products";
-import { useVirtualTryOn, type FrameDetails, useVTOEmailCapture } from "@/modules/personalization";
+import {
+  useVirtualTryOn,
+  type FrameDetails,
+  useVTOEmailCapture,
+  hasSessionPhotoConsent,
+  giveSessionPhotoConsent,
+  setSessionTryOnPhoto,
+} from "@/modules/personalization";
 import { useCart, useWishlist } from "@/modules/orders";
 import { useAuth } from "@/modules/auth";
 
 interface InlineTryOnModalProps {
   productId: string | null;
-  savedPhotoUrl: string;
+  /** Account photo or the shared session photo -- null means neither exists
+   *  yet, and this modal shows its own upload step instead of navigating away. */
+  savedPhotoUrl: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -55,6 +65,56 @@ export const InlineTryOnModal = ({
   const hasTriggered = useRef(false);
   const [generationStarted, setGenerationStarted] = useState(false);
 
+  // Upload step -- shown instead of the result when neither an account photo
+  // nor a session photo exists yet. Once a guest uploads here, the photo is
+  // written to the shared session store, so every OTHER product's inline
+  // modal picks it up too -- upload once per visit, not once per frame.
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photoConsent, setPhotoConsent] = useState(hasSessionPhotoConsent);
+  const [consentError, setConsentError] = useState("");
+  const [uploadError, setUploadError] = useState("");
+
+  const handleConsentChange = useCallback((checked: boolean) => {
+    setPhotoConsent(checked);
+    if (checked) {
+      setConsentError("");
+      giveSessionPhotoConsent();
+    }
+  }, []);
+
+  const triggerUpload = () => {
+    if (!photoConsent) {
+      setConsentError("Please confirm the photo consent below first.");
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (e.target) e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please choose an image file.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("Photo must be under 10MB.");
+      return;
+    }
+    setUploadError("");
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      // Reactive: every component subscribed via useSessionTryOnPhoto (i.e.
+      // every product card's useInlineTryOn) re-renders with this photo, so
+      // this modal's own savedPhotoUrl prop updates and the effect below
+      // picks it up on the very next render -- no extra plumbing needed here.
+      setSessionTryOnPhoto(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Auto-generate when modal opens with product data
   useEffect(() => {
     if (open && product && savedPhotoUrl && !hasTriggered.current && !generationStarted) {
@@ -80,6 +140,7 @@ export const InlineTryOnModal = ({
     if (!open) {
       hasTriggered.current = false;
       setGenerationStarted(false);
+      setUploadError("");
       clearResult();
     }
   }, [open, clearResult]);
@@ -105,6 +166,18 @@ export const InlineTryOnModal = ({
   };
 
   const handleUseDifferentPhoto = () => {
+    // A guest's photo lives only in the session store, so swapping it can
+    // happen right here -- clear it, re-show this modal's own upload step,
+    // no navigation needed. A signed-in user's photo is their saved account
+    // photo, which can only be replaced via the full page's "save new photo"
+    // flow, so that case still hands off to /try-on.
+    if (!isAuthenticated) {
+      hasTriggered.current = false;
+      setGenerationStarted(false);
+      clearResult();
+      setSessionTryOnPhoto(null);
+      return;
+    }
     onOpenChange(false);
     navigate(`/try-on?product=${productId}`);
   };
@@ -187,7 +260,49 @@ export const InlineTryOnModal = ({
           )}
 
           {/* Result area */}
-          {showLoading && !currentResult ? (
+          {!savedPhotoUrl ? (
+            /* No account photo, no session photo -- ask for one right here
+               instead of sending the visitor to /try-on. Once given, the
+               effect above picks it up on the next render and generates. */
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Upload a photo to try this frame on -- it'll be ready for every
+                other frame you try during this visit too.
+              </p>
+              <PhotoConsentCheckbox
+                checked={photoConsent}
+                onCheckedChange={handleConsentChange}
+                error={consentError}
+                idPrefix="inline-photo-consent"
+              />
+              <div
+                onClick={triggerUpload}
+                className={`border-2 border-dashed rounded-lg p-6 text-center space-y-3 transition-all cursor-pointer ${
+                  photoConsent
+                    ? "border-border hover:border-primary hover:bg-muted/50"
+                    : "border-border opacity-60"
+                }`}
+              >
+                <div className="w-12 h-12 rounded-full bg-muted mx-auto flex items-center justify-center">
+                  <Camera className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <Button variant="outline" type="button" size="sm">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Choose Photo
+                </Button>
+              </div>
+              {uploadError && (
+                <p className="text-xs text-destructive text-center">{uploadError}</p>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+          ) : showLoading && !currentResult ? (
             <TryOnGenerationExperience
               userPhoto={savedPhotoUrl}
               frameName={product?.name}
@@ -268,15 +383,17 @@ export const InlineTryOnModal = ({
             </div>
           )}
 
-          {/* Use different photo link */}
-          <Button
-            variant="link"
-            size="sm"
-            className="w-full text-xs text-muted-foreground"
-            onClick={handleUseDifferentPhoto}
-          >
-            Use a different photo →
-          </Button>
+          {/* Use different photo link -- nothing to swap during the upload step itself */}
+          {savedPhotoUrl && (
+            <Button
+              variant="link"
+              size="sm"
+              className="w-full text-xs text-muted-foreground"
+              onClick={handleUseDifferentPhoto}
+            >
+              Use a different photo →
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -17,7 +17,6 @@ import { AddToCartSection } from "@/components/product/AddToCartSection";
 import { SocialProofBadge } from "@/components/product/SocialProofBadge";
 
 import { MobileActionBar } from "@/components/mobile";
-import { InlineTryOnModal } from "@/components/try-on";
 
 import { useMetaPixel } from "@/shared/hooks/useMetaPixel";
 
@@ -30,7 +29,6 @@ import { ProductCard } from "@/modules/storefront";
 import { useProduct, useProducts } from "@/modules/products";
 import { useCart } from "@/modules/orders";
 import { useAuth } from "@/modules/auth";
-import { useInlineTryOn } from "@/modules/personalization";
 import {
   Accordion,
   AccordionContent,
@@ -109,7 +107,6 @@ const ProductDetail = () => {
   const { isAuthenticated } = useAuth();
   const { trackViewContent } = useMetaPixel();
   const navigate = useNavigate();
-  const { modalOpen, targetProductId, savedPhotoUrl, triggerTryOn, setModalOpen } = useInlineTryOn();
   const { track } = useTrackActivity();
   const { startTour, hasSeenTour } = useTour();
 
@@ -354,15 +351,6 @@ const ProductDetail = () => {
 
       <TourFloatingButton tourId={TOUR_IDS.PRODUCT} tourSteps={PRODUCT_TOUR} />
       <Footer />
-
-      {savedPhotoUrl && (
-        <InlineTryOnModal
-          productId={targetProductId}
-          savedPhotoUrl={savedPhotoUrl}
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-        />
-      )}
     </div>
   );
 };

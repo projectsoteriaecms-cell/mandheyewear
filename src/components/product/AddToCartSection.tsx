@@ -206,7 +206,12 @@ export const AddToCartSection = ({ product }: AddToCartSectionProps) => {
           </>
         )}
 
-        {savedPhotoUrl && (
+        {/* Mounted only while open -- the modal itself handles the no-photo
+            case with its own inline upload step, so a guest never has to
+            leave this page. Was gated on savedPhotoUrl, which meant a guest's
+            click here silently did nothing (modalOpen flipped true, but the
+            modal that would show it was never even rendered). */}
+        {modalOpen && (
           <InlineTryOnModal
             productId={targetProductId}
             savedPhotoUrl={savedPhotoUrl}
