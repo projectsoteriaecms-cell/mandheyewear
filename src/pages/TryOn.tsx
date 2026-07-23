@@ -147,6 +147,35 @@ const TryOn = () => {
     }
   }, [preselectedProduct, selectedFrame]);
 
+  // Deep-link auto-generate: someone arriving on /try-on?product=X came to see
+  // THAT frame. The moment a photo is available (already had one, or just
+  // uploaded), generate that frame automatically instead of making them hunt
+  // for it in the grid and tap again. Guarded by a ref so it fires once per
+  // frame, never loops, and never overrides a result they're already viewing.
+  const autoGenFrameRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      tryOnMode === "photo" &&
+      userPhoto &&
+      selectedFrame?.id &&
+      preselectedProductId === selectedFrame.id &&
+      !currentResult &&
+      !isGenerating &&
+      autoGenFrameRef.current !== selectedFrame.id
+    ) {
+      autoGenFrameRef.current = selectedFrame.id;
+      void generateMultiAngle(userPhoto, selectedFrame);
+    }
+  }, [
+    tryOnMode,
+    userPhoto,
+    selectedFrame,
+    preselectedProductId,
+    currentResult,
+    isGenerating,
+    generateMultiAngle,
+  ]);
+
   // Filter to only show frame products with images, sorted alphabetically
   const frameProducts = products
     ?.filter((p) => p.item_type === "frames" && p.image_url)

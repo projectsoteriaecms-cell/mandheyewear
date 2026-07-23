@@ -131,9 +131,14 @@ const handler = async (req: Request): Promise<Response> => {
       ? `₦${frameDetails.price.toLocaleString()}`
       : "";
     const frameColor = frameDetails?.color || "";
+    // Deep-link to the specific frame's product page. Was pointing at
+    // soteriaeyeclinic.lovable.app/eyewear/<id> -- both the wrong (old) domain
+    // AND a route that does not exist (the real route is /product/:id), so the
+    // "Shop This Frame" button went nowhere. Now the live domain + real route.
+    const SITE = "https://mandheyewear.com";
     const productLink = frameDetails?.id
-      ? `https://soteriaeyeclinic.lovable.app/eyewear/${frameDetails.id}`
-      : "https://soteriaeyeclinic.lovable.app/eyewear";
+      ? `${SITE}/product/${frameDetails.id}`
+      : `${SITE}/shop`;
 
     // Build email HTML
     const emailHtml = `
@@ -197,7 +202,7 @@ const handler = async (req: Request): Promise<Response> => {
     <!-- Secondary CTA -->
     <tr>
       <td style="padding: 0 20px 30px; text-align: center;">
-        <a href="https://soteriaeyeclinic.lovable.app/eyewear" style="display: inline-block; padding: 12px 30px; background-color: #ffffff; color: #1a1a2e; text-decoration: none; font-size: 14px; font-weight: 500; border: 2px solid #1a1a2e; border-radius: 8px;">
+        <a href="${SITE}/shop" style="display: inline-block; padding: 12px 30px; background-color: #ffffff; color: #1a1a2e; text-decoration: none; font-size: 14px; font-weight: 500; border: 2px solid #1a1a2e; border-radius: 8px;">
           Browse All Frames
         </a>
       </td>
@@ -206,7 +211,7 @@ const handler = async (req: Request): Promise<Response> => {
     <!-- Try Another Frame CTA -->
     <tr>
       <td style="padding: 0 20px 30px; text-align: center;">
-        <a href="https://soteriaeyeclinic.lovable.app/try-on" style="color: #d4af37; text-decoration: none; font-size: 14px; font-weight: 500;">
+        <a href="${SITE}/try-on" style="color: #d4af37; text-decoration: none; font-size: 14px; font-weight: 500;">
           ✨ Try more frames with Virtual Try-On
         </a>
       </td>
@@ -230,7 +235,7 @@ const handler = async (req: Request): Promise<Response> => {
         </p>
         <p style="margin: 16px 0 0; color: #999999; font-size: 11px;">
           This email was sent because you requested your virtual try-on result.<br>
-          <a href="https://soteriaeyeclinic.lovable.app/privacy" style="color: #999999;">Privacy Policy</a>
+          <a href="${SITE}/privacy" style="color: #999999;">Privacy Policy</a>
         </p>
       </td>
     </tr>

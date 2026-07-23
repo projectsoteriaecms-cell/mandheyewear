@@ -133,7 +133,12 @@ export const TryOnResult = ({
 
         // Same tracked back-link as the post-capture share, different channel
         // tag so pre- and post-capture virality are separable in analytics.
-        const shareUrl = `${window.location.origin}/try-on?utm_source=share_sheet&utm_medium=tryon_share&ref=${getSessionId()}`;
+        // Deep-link to the specific frame's product page when known.
+        const frameId = result.frameDetails?.id;
+        const params = `utm_source=share_sheet&utm_medium=tryon_share&ref=${getSessionId()}`;
+        const shareUrl = frameId
+          ? `${window.location.origin}/product/${frameId}?${params}`
+          : `${window.location.origin}/try-on?${params}`;
 
         void track("tryon.share_opened", {
           channel: "pre_capture_share",
