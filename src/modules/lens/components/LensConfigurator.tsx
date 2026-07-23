@@ -61,7 +61,16 @@ export function LensConfigurator({ open, onOpenChange, productName, onConfirm, i
   const navigate = useNavigate();
   const { prescriptions, latestValid, createRx } = usePrescriptions();
 
-  const [step, setStep] = useState<Step>("tier");
+  // A real navigation stack, not a fixed linear index into `steps`. Frame Only
+  // jumps straight from "tier" to "summary" -- with a plain step index, "Back"
+  // from there would land on steps[stepIndex - 1] ("coatings"), a screen for
+  // configuring a lens that this order doesn't have. The stack always knows
+  // the actual path taken, so Back is correct regardless of what was skipped.
+  const [history, setHistory] = useState<Step[]>(["tier"]);
+  const step = history[history.length - 1];
+  const goToStep = (next: Step) => setHistory((h) => [...h, next]);
+  const goBack = () => setHistory((h) => (h.length > 1 ? h.slice(0, -1) : h));
+
   const [selectedTier, setSelectedTier] = useState<LensTier | null>(null);
   const [selectedType, setSelectedType] = useState<LensType | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<LensIndex>("1.56");
@@ -86,7 +95,7 @@ export function LensConfigurator({ open, onOpenChange, productName, onConfirm, i
 
   // ── Navigation helpers ────────────────────────────────────────────────────
   const reset = () => {
-    setStep("tier");
+    setHistory(["tier"]);
     setSelectedTier(null);
     setSelectedType(null);
     setSelectedCoatings(["ar", "uv400"]);
@@ -101,28 +110,28 @@ export function LensConfigurator({ open, onOpenChange, productName, onConfirm, i
     if (!selectedTier) return;
     if (selectedTier === "none") {
       setSelectedType("frame_only");
-      setStep("summary");
+      goToStep("summary");
     } else {
-      setStep("type");
+      goToStep("type");
     }
   };
 
   const handleTypeNext = () => {
     if (!selectedType) return;
     if (gate?.action === "require_booking") {
-      setStep("prescription"); // shows the fitting gate screen
+      goToStep("prescription"); // shows the fitting gate screen
       return;
     }
     if (NEEDS_PRESCRIPTION[selectedType]) {
-      setStep("prescription");
+      goToStep("prescription");
     } else {
-      setStep("coatings");
+      goToStep("coatings");
     }
   };
 
   const handlePrescriptionNext = () => {
     if (gate?.action === "require_booking" && !fittingAcknowledged) return;
-    setStep("coatings");
+    goToStep("coatings");
   };
 
   const handleBookTest = (service: string) => {
@@ -135,7 +144,11 @@ export function LensConfigurator({ open, onOpenChange, productName, onConfirm, i
     onConfirm({
       lensType: selectedType,
       lensIndex: NEEDS_PRESCRIPTION[selectedType] ? selectedIndex : null,
-      lensCoatings: selectedCoatings,
+      // frame_only never visits the coatings step (jumps straight from tier
+      // to summary), so selectedCoatings still holds its default value here --
+      // a coating cannot apply to an order with no lens, so the persisted
+      // record must not carry it regardless of what's sitting in that state.
+      lensCoatings: selectedType === "frame_only" ? [] : selectedCoatings,
       prescriptionId: selectedRxId,
       prescriptionData: selectedRx
         ? { right_eye: selectedRx.right_eye, left_eye: selectedRx.left_eye, pd_distance: selectedRx.pd_distance }
@@ -484,7 +497,7 @@ export function LensConfigurator({ open, onOpenChange, productName, onConfirm, i
             size="sm"
             onClick={() => {
               if (step === "tier") handleClose();
-              else setStep(steps[stepIndex - 1]);
+              else goBack();
             }}
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -508,7 +521,7 @@ export function LensConfigurator({ open, onOpenChange, productName, onConfirm, i
                 if (step === "tier")         handleTierNext();
                 else if (step === "type")    handleTypeNext();
                 else if (step === "prescription") handlePrescriptionNext();
-                else if (step === "coatings") setStep("summary");
+                else if (step === "coatings") goToStep("summary");
               }}
               disabled={
                 (step === "tier" && !selectedTier) ||
