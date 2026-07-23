@@ -99,15 +99,15 @@ export const useVTOEmailCapture = () => {
                 email,
                 fullName: fullName?.trim() || null,
                 frameDetails: result.frameDetails,
-                // The clean, unwatermarked image is what the contact was
-                // traded for -- the on-screen copy stays watermarked.
-                // Still base64 for email. The stored copy exists (and is what
-                // the DB row points at), but switching the email to a signed
-                // URL needs the Edge Function to do the signing -- the bucket
-                // is private and anon cannot sign. Deploying that update is
-                // blocked on the CLI's _shared/ layout, so it lands with the
-                // WhatsApp work, which needs the same server-side signing.
-                tryOnImageBase64: cleanImage,
+                // Prefer the stored path: the Edge Function signs it and embeds
+                // a short <img src="signed-url"> plus a real download button.
+                // Embedding base64 inline made a ~hundreds-of-KB email that
+                // Gmail clipped ("Message clipped") and rendered as a broken
+                // image -- and was slow to send. A signed URL keeps the email
+                // tiny, fast, and displayable. base64 is now only a fallback
+                // for the rare case the storage upload failed.
+                imagePath: stored?.path ?? null,
+                ...(stored?.path ? {} : { tryOnImageBase64: cleanImage }),
                 // Pass DB failure so the Edge Function can fire a Slack alert.
                 // The user still receives their result regardless.
                 ...(dbError && {

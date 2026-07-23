@@ -56,6 +56,7 @@ const TryOn = () => {
     savedTryOns,
     userPhoto,
     multiAngleResults,
+    multiAngleCleanResults,
     isGeneratingAngles,
     generateMultiAngle,
     clearResult,
@@ -319,6 +320,7 @@ const TryOn = () => {
                       userPhoto={userPhoto}
                       isGenerating={isGenerating}
                       multiAngleResults={multiAngleResults}
+                      multiAngleCleanResults={multiAngleCleanResults}
                       isGeneratingAngles={isGeneratingAngles}
                       onRetry={handleRetry}
                       onAddToCart={handleAddToCart}
