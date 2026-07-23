@@ -249,7 +249,15 @@ export const EmailCaptureModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      {/* max-h + overflow-y-auto: the full stack (image + channel cards + name
+          + contact field + consent + button) is taller than a phone viewport.
+          Without a height cap the fixed, vertically-centred dialog clips its
+          top and bottom off-screen with no way to scroll -- which rendered as
+          the cards overlapping the image and the input fields vanishing.
+          Constraining height turns the body into a proper scroll region so
+          everything lays out in order and stays reachable. dvh (not vh) so it
+          tracks the shrinking viewport when the keyboard opens. */}
+      <DialogContent className="sm:max-w-md max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {showWhatsAppShare ? (
@@ -271,9 +279,15 @@ export const EmailCaptureModal = ({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Result preview */}
+        {/* Result preview. Fixed height + shrink-0, NOT aspect-[4/3]: an
+            aspect-ratio box has zero intrinsic height, so inside the dialog's
+            grid + overflow scroll container it gets compressed toward nothing
+            and the channel cards ride up over where the image should be (the
+            reported "cards on top of the image" bug). A definite height can't
+            be crushed, so the image stays put and everything below flows in
+            order. object-cover on the img crops to fill. */}
         {result?.compositeImage && (
-          <div className="relative aspect-[4/3] bg-muted rounded-lg overflow-hidden">
+          <div className="relative h-48 shrink-0 bg-muted rounded-lg overflow-hidden">
             <img
               src={result.compositeImage}
               alt="Your try-on result"
