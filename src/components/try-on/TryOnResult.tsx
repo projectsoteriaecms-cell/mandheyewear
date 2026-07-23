@@ -32,6 +32,9 @@ interface TryOnResultProps {
   userPhoto: string | null;
   isGenerating: boolean;
   multiAngleResults?: MultiAngleResults;
+  /** Watermark-free copies for post-capture downloads. Falls back to the
+   *  watermarked set only if a clean copy was never captured. */
+  multiAngleCleanResults?: MultiAngleResults;
   isGeneratingAngles?: boolean;
   onRetry?: () => void;
   onAddToCart?: () => void;
@@ -46,6 +49,7 @@ export const TryOnResult = ({
   userPhoto,
   isGenerating,
   multiAngleResults,
+  multiAngleCleanResults,
   isGeneratingAngles,
   onRetry,
   onAddToCart,
@@ -73,23 +77,26 @@ export const TryOnResult = ({
     document.body.removeChild(link);
   };
 
-  // Perform the actual download - downloads all available angles
+  // Perform the actual download - downloads all available angles.
+  // Downloads always run AFTER contact capture (the gate), so they deliver the
+  // CLEAN, watermark-free image -- the on-screen preview stays watermarked, but
+  // what the visitor traded their contact for is clean. Falls back to the
+  // watermarked copy only if a clean one was somehow never captured.
   const performDownload = () => {
-    const frameName = result?.frameDetails?.name || "frame";
     const images: { url: string; label: string }[] = [];
 
-    // Collect all available angle images
-    if (multiAngleResults?.front) {
-      images.push({ url: multiAngleResults.front, label: "front" });
-    } else if (result?.compositeImage) {
-      images.push({ url: result.compositeImage, label: "front" });
-    }
-    if (multiAngleResults?.left) {
-      images.push({ url: multiAngleResults.left, label: "left" });
-    }
-    if (multiAngleResults?.right) {
-      images.push({ url: multiAngleResults.right, label: "right" });
-    }
+    const front =
+      multiAngleCleanResults?.front ??
+      result?.cleanImage ??
+      multiAngleResults?.front ??
+      result?.compositeImage;
+    if (front) images.push({ url: front, label: "front" });
+
+    const left = multiAngleCleanResults?.left ?? multiAngleResults?.left;
+    if (left) images.push({ url: left, label: "left" });
+
+    const right = multiAngleCleanResults?.right ?? multiAngleResults?.right;
+    if (right) images.push({ url: right, label: "right" });
 
     // Download each with a small delay to avoid browser blocking
     images.forEach((img, i) => {

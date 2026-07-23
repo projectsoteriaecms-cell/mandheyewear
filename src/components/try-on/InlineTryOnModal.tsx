@@ -40,6 +40,7 @@ export const InlineTryOnModal = ({
     currentResult,
     isGenerating,
     multiAngleResults,
+    multiAngleCleanResults,
     isGeneratingAngles,
     clearResult,
   } = useVirtualTryOn("inline_modal");
@@ -109,12 +110,20 @@ export const InlineTryOnModal = ({
   };
 
   const performDownload = () => {
+    // Post-capture download -> deliver the CLEAN (unwatermarked) copies. The
+    // on-screen preview stays watermarked; the download is what the contact
+    // was traded for. Falls back to watermarked only if no clean copy exists.
     const images: { url: string; label: string }[] = [];
-    if (multiAngleResults.front || currentResult?.compositeImage) {
-      images.push({ url: multiAngleResults.front || currentResult!.compositeImage!, label: "front" });
-    }
-    if (multiAngleResults.left) images.push({ url: multiAngleResults.left, label: "left" });
-    if (multiAngleResults.right) images.push({ url: multiAngleResults.right, label: "right" });
+    const front =
+      multiAngleCleanResults.front ??
+      currentResult?.cleanImage ??
+      multiAngleResults.front ??
+      currentResult?.compositeImage;
+    if (front) images.push({ url: front, label: "front" });
+    const left = multiAngleCleanResults.left ?? multiAngleResults.left;
+    if (left) images.push({ url: left, label: "left" });
+    const right = multiAngleCleanResults.right ?? multiAngleResults.right;
+    if (right) images.push({ url: right, label: "right" });
     images.forEach((img, i) => {
       setTimeout(() => {
         const link = document.createElement("a");

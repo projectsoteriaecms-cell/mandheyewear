@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   checkCircuit,
   recordFailure,
@@ -7,6 +8,13 @@ import {
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SLACK_WEBHOOK_URL = Deno.env.get("SLACK_WEBHOOK_URL");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+// The try-on-results bucket is private, so the email needs a signed URL. A
+// generous TTL: the lead image is retained ~60 days, and an email link should
+// keep working for a good while after it lands, not go dead in an hour.
+const SIGNED_URL_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,7 +33,11 @@ interface FrameDetails {
 
 interface TryOnEmailRequest {
   email: string;
+  fullName?: string | null;
   frameDetails?: FrameDetails;
+  /** Storage path in try-on-results. Signed here into the email's <img>. */
+  imagePath?: string | null;
+  /** Fallback only, used when imagePath is absent (storage upload failed). */
   tryOnImageBase64?: string;
   /** Set by the client when the vto_email_leads DB insert failed (Gap 1). */
   dbInsertFailed?: boolean;
@@ -66,6 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
     const {
       email,
       frameDetails,
+      imagePath,
       tryOnImageBase64,
       dbInsertFailed,
       dbErrorMessage,
@@ -74,6 +87,30 @@ const handler = async (req: Request): Promise<Response> => {
     // Validate required fields
     if (!email) {
       throw new Error("Email is required");
+    }
+
+    // Sign the stored result for the email. This is the primary path: a short
+    // https link the email client fetches, instead of a giant base64 blob that
+    // Gmail clips and renders broken. base64 remains only as a fallback for
+    // when no path was provided (storage upload failed on the client).
+    let imageUrl: string | null = null;
+    if (imagePath) {
+      try {
+        const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+        const { data: signed, error: signErr } = await admin.storage
+          .from("try-on-results")
+          .createSignedUrl(imagePath, SIGNED_URL_TTL_SECONDS);
+        if (signErr) {
+          console.error("[send-tryon-result] signing failed:", signErr.message);
+        }
+        imageUrl = signed?.signedUrl ?? null;
+      } catch (err) {
+        console.error("[send-tryon-result] signing threw:", err);
+      }
+    }
+    // Fallback to inline base64 only if we could not sign a stored image.
+    if (!imageUrl && tryOnImageBase64) {
+      imageUrl = tryOnImageBase64;
     }
 
     // Gap 1 alert: DB insert failed on the client — user still gets their result
@@ -119,10 +156,10 @@ const handler = async (req: Request): Promise<Response> => {
     </tr>
 
     <!-- Hero Image (Try-On Result) -->
-    ${tryOnImageBase64 ? `
+    ${imageUrl ? `
     <tr>
       <td style="padding: 0;">
-        <img src="${tryOnImageBase64}" alt="Your Virtual Try-On" style="width: 100%; height: auto; display: block;">
+        <img src="${imageUrl}" alt="Your Virtual Try-On" style="width: 100%; height: auto; display: block;">
       </td>
     </tr>
     ` : ""}
@@ -136,10 +173,22 @@ const handler = async (req: Request): Promise<Response> => {
       </td>
     </tr>
 
+    ${imageUrl ? `
+    <!-- Download the clean image -->
+    <tr>
+      <td style="padding: 0 20px 20px; text-align: center;">
+        <a href="${imageUrl}" download="my-tryon.jpg" target="_blank" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 8px;">
+          ⬇ Download Your Try-On
+        </a>
+        <p style="margin: 10px 0 0; color: #999999; font-size: 12px;">On phone: tap and hold the image above to save it.</p>
+      </td>
+    </tr>
+    ` : ""}
+
     <!-- Primary CTA -->
     <tr>
       <td style="padding: 0 20px 20px; text-align: center;">
-        <a href="${productLink}" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 8px;">
+        <a href="${productLink}" style="display: inline-block; padding: 14px 40px; background-color: #ffffff; color: #1a1a2e; text-decoration: none; font-size: 16px; font-weight: 600; border: 2px solid #1a1a2e; border-radius: 8px;">
           Shop This Frame
         </a>
       </td>

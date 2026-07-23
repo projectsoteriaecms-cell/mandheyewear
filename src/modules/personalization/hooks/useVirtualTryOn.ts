@@ -49,6 +49,12 @@ export const useVirtualTryOn = (source: TryOnSource = "photo_ai") => {
   const [savedTryOns, setSavedTryOns] = useState<TryOnResult[]>([]);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [multiAngleResults, setMultiAngleResults] = useState<MultiAngleResults>({});
+  // Watermark-free copies of each angle, kept in parallel with the displayed
+  // (watermarked) ones. The on-screen preview must stay watermarked so a
+  // screenshot is branded, but once a visitor gives their contact the DOWNLOAD
+  // they receive should be clean -- so downloads read from here, never from
+  // multiAngleResults.
+  const [multiAngleCleanResults, setMultiAngleCleanResults] = useState<MultiAngleResults>({});
   const [isGeneratingAngles, setIsGeneratingAngles] = useState(false);
 
   const generateSingleAngle = useCallback(async (
@@ -137,6 +143,7 @@ export const useVirtualTryOn = (source: TryOnSource = "photo_ai") => {
     setIsGenerating(true);
     setCurrentResult(null);
     setMultiAngleResults({});
+    setMultiAngleCleanResults({});
 
     try {
       const result = await generateSingleAngle(photo, frameDetails, "front");
@@ -165,8 +172,11 @@ export const useVirtualTryOn = (source: TryOnSource = "photo_ai") => {
 
     if (!frontResult.success || !frontResult.compositeImage) return;
 
-    // Set front in multi-angle
+    // Set front in multi-angle -- watermarked for display, clean for download.
     setMultiAngleResults({ front: frontResult.compositeImage });
+    setMultiAngleCleanResults({
+      front: frontResult.cleanImage ?? frontResult.compositeImage,
+    });
     setIsGeneratingAngles(true);
 
     // Generate left and right in parallel (background)
@@ -174,6 +184,10 @@ export const useVirtualTryOn = (source: TryOnSource = "photo_ai") => {
       const result = await generateSingleAngle(photo, frameDetails, angle);
       if (result.success && result.compositeImage) {
         setMultiAngleResults((prev) => ({ ...prev, [key]: result.compositeImage }));
+        setMultiAngleCleanResults((prev) => ({
+          ...prev,
+          [key]: result.cleanImage ?? result.compositeImage,
+        }));
       }
     };
 
@@ -190,6 +204,7 @@ export const useVirtualTryOn = (source: TryOnSource = "photo_ai") => {
   const clearResult = useCallback(() => {
     setCurrentResult(null);
     setMultiAngleResults({});
+    setMultiAngleCleanResults({});
     setIsGeneratingAngles(false);
   }, []);
 
@@ -202,6 +217,7 @@ export const useVirtualTryOn = (source: TryOnSource = "photo_ai") => {
     if (photo !== userPhoto) {
       setCurrentResult(null);
       setMultiAngleResults({});
+      setMultiAngleCleanResults({});
     }
   }, [userPhoto]);
 
@@ -222,8 +238,9 @@ export const useVirtualTryOn = (source: TryOnSource = "photo_ai") => {
     savedTryOns,
     userPhoto,
     multiAngleResults,
+    multiAngleCleanResults,
     isGeneratingAngles,
-    
+
     generateTryOn,
     generateMultiAngle,
     generateSingleAngle,
