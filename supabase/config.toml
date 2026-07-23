@@ -37,3 +37,9 @@ project_id = "znhrwzxthusqtqreawwq"
     verify_jwt = false
   [functions.process-email-queue]
     verify_jwt = true
+  [functions.whatsapp-webhook]
+    # Twilio calls this directly with its own X-Twilio-Signature, not a
+    # Supabase JWT -- without this entry the CLI defaults verify_jwt to true
+    # and the gateway rejects every callback before signature verification
+    # in the function body ever runs.
+    verify_jwt = false
