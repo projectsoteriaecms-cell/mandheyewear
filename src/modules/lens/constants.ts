@@ -202,5 +202,12 @@ export const COATING_PRICES: Record<LensCoating, number> = {
 };
 
 export function calculateLensPrice(type: LensType, coatings: LensCoating[]): number {
+  // Frame-only means no lens at all -- a coating is a lens treatment, so it
+  // cannot apply here regardless of what's sitting in coatings state. Without
+  // this guard, the configurator's default coatings (AR + UV400) silently
+  // priced themselves into a "no lenses" order, since frame_only jumps
+  // straight from tier selection to the summary and never visits the
+  // coatings step where a visitor could see or clear them.
+  if (type === "frame_only") return 0;
   return LENS_BASE_PRICES[type] + coatings.reduce((sum, c) => sum + (COATING_PRICES[c] ?? 0), 0);
 }
