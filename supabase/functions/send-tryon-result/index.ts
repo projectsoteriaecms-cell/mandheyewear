@@ -155,8 +155,8 @@ const handler = async (req: Request): Promise<Response> => {
     <!-- Header -->
     <tr>
       <td style="padding: 30px 20px; text-align: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
-        <h1 style="margin: 0; color: #d4af37; font-size: 24px; font-weight: 600;">Soteria Eye Clinic</h1>
-        <p style="margin: 8px 0 0; color: #ffffff; font-size: 14px; opacity: 0.9;">M&H Opticians</p>
+        <h1 style="margin: 0; color: #d4af37; font-size: 24px; font-weight: 600;">M&H Eyewear</h1>
+        <p style="margin: 8px 0 0; color: #ffffff; font-size: 14px; opacity: 0.9;">Virtual Try-On</p>
       </td>
     </tr>
 
