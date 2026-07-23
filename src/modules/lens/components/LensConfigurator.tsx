@@ -106,27 +106,25 @@ export function LensConfigurator({ open, onOpenChange, productName, onConfirm, i
 
   const handleClose = () => { reset(); onOpenChange(false); };
 
+  // Every tier/type walks through all 5 steps in order -- no jump-ahead.
+  // "Frame Only" and non-prescription types genuinely have nothing to
+  // configure on the prescription/coatings screens, but skipping those
+  // screens entirely reads as a confusing jump ("step 1 straight to step 5")
+  // rather than a deliberate flow. Each step still gets visited; the steps
+  // that don't apply to the current selection render a brief "not needed"
+  // pass-through instead of their normal picker (see renderPrescription /
+  // renderCoatings) so the visitor always sees 1 → 2 → 3 → 4 → 5.
   const handleTierNext = () => {
     if (!selectedTier) return;
-    if (selectedTier === "none") {
-      setSelectedType("frame_only");
-      goToStep("summary");
-    } else {
-      goToStep("type");
-    }
+    // "Frame Only" is the sole option in its tier -- pre-select it so the
+    // Type step arrives already checked and just needs a confirming tap.
+    if (selectedTier === "none") setSelectedType("frame_only");
+    goToStep("type");
   };
 
   const handleTypeNext = () => {
     if (!selectedType) return;
-    if (gate?.action === "require_booking") {
-      goToStep("prescription"); // shows the fitting gate screen
-      return;
-    }
-    if (NEEDS_PRESCRIPTION[selectedType]) {
-      goToStep("prescription");
-    } else {
-      goToStep("coatings");
-    }
+    goToStep("prescription");
   };
 
   const handlePrescriptionNext = () => {
@@ -220,6 +218,21 @@ export function LensConfigurator({ open, onOpenChange, productName, onConfirm, i
   };
 
   const renderPrescription = () => {
+    // Frame Only and every plano type need no prescription at all -- this
+    // step still gets visited (sequential, no jump), but there's nothing to
+    // collect, so say so plainly rather than showing the Rx picker.
+    if (selectedType && !NEEDS_PRESCRIPTION[selectedType]) {
+      return (
+        <div className="rounded-lg border border-dashed p-6 text-center space-y-2">
+          <CheckCircle2 className="h-6 w-6 text-muted-foreground mx-auto" />
+          <p className="text-sm font-medium">No prescription needed</p>
+          <p className="text-xs text-muted-foreground">
+            {LENS_TYPE_LABELS[selectedType]} doesn't require a prescription. Tap Next to continue.
+          </p>
+        </div>
+      );
+    }
+
     // Hard gate: fitting required
     if (gate?.action === "require_booking") {
       return (
@@ -363,7 +376,23 @@ export function LensConfigurator({ open, onOpenChange, productName, onConfirm, i
     </div>
   );
 
-  const renderCoatings = () => (
+  const renderCoatings = () => {
+    // A coating treats a lens surface -- Frame Only has no lens, so there's
+    // nothing to coat. Still a real step (sequential, no jump); just nothing
+    // to configure here, same pattern as the prescription pass-through.
+    if (selectedType === "frame_only") {
+      return (
+        <div className="rounded-lg border border-dashed p-6 text-center space-y-2">
+          <CheckCircle2 className="h-6 w-6 text-muted-foreground mx-auto" />
+          <p className="text-sm font-medium">No coatings needed</p>
+          <p className="text-xs text-muted-foreground">
+            Coatings apply to a lens surface — with Frame Only there's no lens to coat. Tap Next to continue.
+          </p>
+        </div>
+      );
+    }
+
+    return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
         Coatings enhance lens performance. Add or remove as needed.
@@ -393,7 +422,8 @@ export function LensConfigurator({ open, onOpenChange, productName, onConfirm, i
         );
       })}
     </div>
-  );
+    );
+  };
 
   const renderSummary = () => {
     if (!selectedType) return null;
