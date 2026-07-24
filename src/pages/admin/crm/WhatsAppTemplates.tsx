@@ -91,7 +91,6 @@ export default function WhatsAppTemplates() {
     return null;
   };
 
-
   const handleSaveCreate = () => {
     if (!form.name.trim() || !form.body_preview.trim()) {
       toast.error('Name and body preview are required');
@@ -102,7 +101,6 @@ export default function WhatsAppTemplates() {
     if (sidError) {
       toast.error(sidError);
       return;
-    }
     }
 
     createTemplate.mutate(
@@ -127,8 +125,14 @@ export default function WhatsAppTemplates() {
   };
 
   const handleSaveEdit = () => {
-    if (!editingId || !form.name.trim() || !form.twilio_content_sid.trim() || !form.body_preview.trim()) {
-      toast.error('Name, Twilio SID, and body preview are required');
+    if (!editingId || !form.name.trim() || !form.body_preview.trim()) {
+      toast.error('Name and body preview are required');
+      return;
+    }
+
+    const sidError = validateContentSid(form.twilio_content_sid);
+    if (sidError) {
+      toast.error(sidError);
       return;
     }
 
@@ -192,17 +196,17 @@ export default function WhatsAppTemplates() {
             ) : templates.data?.length ? (
               <Card className="overflow-hidden">
                 <Table>
-                  <TableHead>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Body Preview</TableCell>
-                      <TableCell>Variables</TableCell>
-                      <TableCell>Cost</TableCell>
-                      <TableCell>Approval</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Actions</TableCell>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Body Preview</TableHead>
+                      <TableHead>Variables</TableHead>
+                      <TableHead>Cost</TableHead>
+                      <TableHead>Approval</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  </TableHead>
+                  </TableHeader>
                   <TableBody>
                     {templates.data.map((template) => (
                       <TableRow key={template.id}>
@@ -348,7 +352,7 @@ export default function WhatsAppTemplates() {
                   onChange={(e) => setForm({ ...form, body_preview: e.target.value })}
                   rows={3}
                 />
-                <p className="text-xs text-muted-foreground mt-1">Use {{variable}} for personalization</p>
+                <p className="text-xs text-muted-foreground mt-1">Use {"{{variable}}"} for personalization</p>
               </div>
 
               <div>
