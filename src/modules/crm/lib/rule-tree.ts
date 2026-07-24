@@ -30,6 +30,7 @@ export const ALLOWED_FIELDS = {
   is_newsletter_subscriber: { column: "is_newsletter_subscriber", type: "boolean",     label: "Newsletter Subscriber" },
   is_registered:            { column: "is_registered",            type: "boolean",     label: "Is Registered" },
   marketing_consent:        { column: "marketing_consent",        type: "boolean",     label: "Marketing Consent" },
+  whatsapp_opted_in:        { column: "whatsapp_opted_in",        type: "boolean",     label: "WhatsApp Opted In" },
   newsletter_active:        { column: "newsletter_active",        type: "boolean",     label: "Newsletter Active" },
   is_suppressed:            { column: "is_suppressed",            type: "boolean",     label: "Is Suppressed" },
   try_on_count:             { column: "try_on_count",             type: "integer",     label: "Try-On Count" },
