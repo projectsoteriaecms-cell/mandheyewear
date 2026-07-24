@@ -4,14 +4,18 @@
  * T20: Optional per-campaign WhatsApp channel via Twilio.
  *
  * A campaign with whatsapp_enabled=true delivers its whatsapp_body to every
- * segment member that has a phone number AND is opted in to newsletters —
+ * segment member that has a phone number AND holds a WhatsApp opt-in —
  * in PARALLEL with the email send, not as a bounce fallback.
  * Fully decoupled from the email state machine: its own ledger
  * (crm_campaign_whatsapp_ledger) is the double-send guard and its own
  * counters live on crm_campaigns.
  *
- * Opt-in gating: Only newsletter subscribers receive WhatsApp messages.
- * Non-subscribers are recorded as "not a newsletter subscriber" and skipped.
+ * Opt-in gating: a recipient must hold EITHER newsletter subscription (the
+ * email-keyed opt-in) OR whatsapp_opted_in — WhatsApp-channel marketing consent
+ * captured at the try-on gate (marketing_consent AND consent_channel='whatsapp').
+ * Phone-only leads have no email, so newsletter subscription is impossible for
+ * them and the WhatsApp consent is their only valid basis. Recipients holding
+ * neither are recorded as "no whatsapp opt-in" and skipped.
  *
  * POST body:
  *   { campaign_id: string }   — required (explicit trigger from admin UI)
@@ -23,7 +27,7 @@
  *   3. Loop until no unsent phones remain:
  *        a. crm_get_unsent_whatsapp_batch(campaign_id, rules, N)
  *        b. For each recipient:
- *           - GATE: skip if !is_newsletter_subscriber
+ *           - GATE: skip if !is_newsletter_subscriber && !whatsapp_opted_in
  *           - send via Twilio Messages API (sequential)
  *           - INSERT ledger rows (sent/failed/skipped) ON CONFLICT DO NOTHING
  *        c. bump whatsapp_sent_count / whatsapp_failed_count + heartbeat
@@ -63,6 +67,10 @@ interface WaRecipient {
   phone:                    string;
   full_name:                string | null;
   is_newsletter_subscriber: boolean;
+  /** WhatsApp-channel marketing consent captured at the try-on gate
+   *  (marketing_consent AND consent_channel='whatsapp'). The opt-in basis for
+   *  phone-only leads, who can never be newsletter subscribers. */
+  whatsapp_opted_in:        boolean;
 }
 
 interface SendOutcome {
@@ -235,10 +243,14 @@ const handler = async (req: Request): Promise<Response> => {
 
       const outcomes: SendOutcome[] = [];
       for (const r of recipients) {
-        // Gate: only send to newsletter subscribers
-        if (!r.is_newsletter_subscriber) {
+        // Gate: require a real opt-in on SOME channel. Newsletter subscription
+        // is email-keyed, so a phone-only WhatsApp lead can never satisfy it --
+        // for them the opt-in basis is WhatsApp-channel marketing consent given
+        // at the try-on gate. Either one is a genuine, auditable consent record;
+        // contacts with neither are still skipped.
+        if (!r.is_newsletter_subscriber && !r.whatsapp_opted_in) {
           // Record as skipped so we don't reconsider this contact every run.
-          outcomes.push({ phone: r.phone, sid: null, ok: false, error: "not a newsletter subscriber" });
+          outcomes.push({ phone: r.phone, sid: null, ok: false, error: "no whatsapp opt-in" });
           continue;
         }
 
