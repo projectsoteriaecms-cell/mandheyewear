@@ -32,6 +32,7 @@ export const ALLOWED_FIELDS = {
   marketing_consent:        { column: "marketing_consent",        type: "boolean",     label: "Marketing Consent" },
   whatsapp_opted_in:        { column: "whatsapp_opted_in",        type: "boolean",     label: "WhatsApp Opted In" },
   newsletter_active:        { column: "newsletter_active",        type: "boolean",     label: "Newsletter Active" },
+  current_rank:             { column: "current_rank",             type: "integer",     label: "Customer Rank (1-5)",    nullable: true },
   is_suppressed:            { column: "is_suppressed",            type: "boolean",     label: "Is Suppressed" },
   try_on_count:             { column: "try_on_count",             type: "integer",     label: "Try-On Count" },
   lifetime_value:           { column: "lifetime_value",           type: "numeric",     label: "Lifetime Value (₦)" },
