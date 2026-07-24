@@ -83,10 +83,26 @@ export default function WhatsAppTemplates() {
     setShowEditDialog(true);
   };
 
+  const validateContentSid = (sid: string): string | null => {
+    if (!sid.trim()) return 'Twilio Content SID is required';
+    if (!/^Ht[a-zA-Z0-9]{32}$/.test(sid.trim())) {
+      return 'Invalid Content SID format. Must start with "Ht" followed by 32 alphanumeric characters (e.g., HtXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)';
+    }
+    return null;
+  };
+
+
   const handleSaveCreate = () => {
-    if (!form.name.trim() || !form.twilio_content_sid.trim() || !form.body_preview.trim()) {
-      toast.error('Name, Twilio SID, and body preview are required');
+    if (!form.name.trim() || !form.body_preview.trim()) {
+      toast.error('Name and body preview are required');
       return;
+    }
+
+    const sidError = validateContentSid(form.twilio_content_sid);
+    if (sidError) {
+      toast.error(sidError);
+      return;
+    }
     }
 
     createTemplate.mutate(
@@ -311,10 +327,17 @@ export default function WhatsAppTemplates() {
               <div>
                 <label className="block text-sm font-medium mb-1">Twilio Content SID</label>
                 <Input
-                  placeholder="e.g., HXxxx..."
+                  placeholder="e.g., HtXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                   value={form.twilio_content_sid}
                   onChange={(e) => setForm({ ...form, twilio_content_sid: e.target.value })}
+                  className={form.twilio_content_sid ? !/^Ht[a-zA-Z0-9]{32}$/.test(form.twilio_content_sid.trim()) ? 'border-destructive' : 'border-green-600' : ''}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Format: Ht + 32 alphanumeric characters (e.g., HtA1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6)
+                </p>
+                {form.twilio_content_sid && !/^Ht[a-zA-Z0-9]{32}$/.test(form.twilio_content_sid.trim()) && (
+                  <p className="text-xs text-destructive mt-1">Invalid format</p>
+                )}
               </div>
 
               <div>
@@ -389,7 +412,14 @@ export default function WhatsAppTemplates() {
                 <Input
                   value={form.twilio_content_sid}
                   onChange={(e) => setForm({ ...form, twilio_content_sid: e.target.value })}
+                  className={form.twilio_content_sid ? !/^Ht[a-zA-Z0-9]{32}$/.test(form.twilio_content_sid.trim()) ? 'border-destructive' : 'border-green-600' : ''}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Format: Ht + 32 alphanumeric characters
+                </p>
+                {form.twilio_content_sid && !/^Ht[a-zA-Z0-9]{32}$/.test(form.twilio_content_sid.trim()) && (
+                  <p className="text-xs text-destructive mt-1">Invalid format</p>
+                )}
               </div>
 
               <div>
