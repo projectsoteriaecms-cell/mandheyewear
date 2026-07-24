@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, ShoppingBag, Heart, Camera, ExternalLink, Download, Upload } from "lucide-react";
+import { WhatsappLogo } from "@phosphor-icons/react";
 
 import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
 import { TryOnGenerationExperience } from "./TryOnGenerationExperience";
@@ -57,6 +58,7 @@ export const InlineTryOnModal = ({
   const {
     captureState,
     isSubmitting: captureSubmitting,
+    userEmail,
     initiateCapture,
     closeModal: closeCaptureModal,
     handleSubmit: handleCaptureSubmit,
@@ -216,6 +218,15 @@ export const InlineTryOnModal = ({
     }
   };
 
+  // Open the channel-choice modal straight on the WhatsApp tab — for everyone,
+  // signed-in users included (they'd otherwise be silently auto-emailed on
+  // download and never reach the WhatsApp share path). Captures the lead.
+  const handleWhatsAppShare = () => {
+    if (currentResult) {
+      initiateCapture(currentResult, "share", { forceModal: true, channel: "whatsapp" });
+    }
+  };
+
   const showLoading = productLoading || isGenerating || (!currentResult && generationStarted);
 
   // Build carousel slides
@@ -364,6 +375,15 @@ export const InlineTryOnModal = ({
                 >
                   <Download className="h-4 w-4" />
                 </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="text-green-600 hover:text-green-700"
+                  onClick={handleWhatsAppShare}
+                  title="Share to WhatsApp"
+                >
+                  <WhatsappLogo weight="fill" className="h-4 w-4" />
+                </Button>
               </div>
 
               {product && (
@@ -411,6 +431,8 @@ export const InlineTryOnModal = ({
       }}
       result={captureState.result}
       isSubmitting={captureSubmitting}
+      initialChannel={captureState.initialChannel}
+      prefillEmail={userEmail}
     />
     </>
   );

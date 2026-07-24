@@ -13,6 +13,9 @@ interface EmailCaptureState {
   isOpen: boolean;
   source: "download" | "share";
   result: TryOnResult | null;
+  /** Which channel tab the modal opens on. Lets a "Share to WhatsApp"
+   *  entry point land the visitor straight on the WhatsApp tab. */
+  initialChannel: ContactChannel;
 }
 
 interface SubmitContactParams {
@@ -34,6 +37,7 @@ export const useVTOEmailCapture = () => {
     isOpen: false,
     source: "download",
     result: null,
+    initialChannel: "email",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -187,11 +191,17 @@ export const useVTOEmailCapture = () => {
   }, []);
 
   // Called when a gated action (download, share) is triggered.
-  // Logged-in users are captured silently via their account email.
-  // Guests see the gate modal — no skip path.
+  // Logged-in users are captured silently via their account email — EXCEPT
+  // when forceModal is set (e.g. a "Share to WhatsApp" tap), which opens the
+  // channel-choice modal so they can pick WhatsApp instead of auto-email.
+  // Guests always see the gate modal — no skip path.
   const initiateCapture = useCallback(
-    (result: TryOnResult, source: "download" | "share") => {
-      if (isLoggedIn && userEmail) {
+    (
+      result: TryOnResult,
+      source: "download" | "share",
+      opts?: { forceModal?: boolean; channel?: ContactChannel },
+    ) => {
+      if (isLoggedIn && userEmail && !opts?.forceModal) {
         submitContact({
           email: userEmail,
           phone: null,
@@ -202,7 +212,12 @@ export const useVTOEmailCapture = () => {
         return { shouldShowModal: false };
       }
 
-      setCaptureState({ isOpen: true, source, result });
+      setCaptureState({
+        isOpen: true,
+        source,
+        result,
+        initialChannel: opts?.channel ?? "email",
+      });
       return { shouldShowModal: true };
     },
     [isLoggedIn, userEmail, submitContact]

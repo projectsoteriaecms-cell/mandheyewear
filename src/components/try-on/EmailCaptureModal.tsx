@@ -32,6 +32,12 @@ interface EmailCaptureModalProps {
   ) => Promise<{ success: boolean; channel?: "email" | "whatsapp"; delivered?: boolean }>;
   result: TryOnResult | null;
   isSubmitting: boolean;
+  /** Which channel tab to open on. "whatsapp" lands on the phone tab —
+   *  used by the "Share to WhatsApp" entry point. Defaults to email. */
+  initialChannel?: "email" | "whatsapp";
+  /** Pre-fills the email field (e.g. a signed-in user's account email) so
+   *  they don't retype it if they switch to the Email tab. */
+  prefillEmail?: string | null;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,6 +50,8 @@ export const EmailCaptureModal = ({
   onSubmit,
   result,
   isSubmitting,
+  initialChannel = "email",
+  prefillEmail,
 }: EmailCaptureModalProps) => {
   const [tab, setTab] = useState<ContactTab>("email");
   const [fullName, setFullName] = useState("");
@@ -70,9 +78,9 @@ export const EmailCaptureModal = ({
   // of how the last attempt ended.
   useEffect(() => {
     if (!isOpen) return;
-    setTab("email");
+    setTab(initialChannel === "whatsapp" ? "phone" : "email");
     setFullName("");
-    setEmail("");
+    setEmail(prefillEmail ?? "");
     setPhone("");
     setMarketingConsent(false);
     setDataConsent(false);
@@ -80,7 +88,7 @@ export const EmailCaptureModal = ({
     setConsentError("");
     setShowWhatsAppShare(false);
     setDeliveryFailed(false);
-  }, [isOpen]);
+  }, [isOpen, initialChannel, prefillEmail]);
 
   const validate = () => {
     setFieldError("");

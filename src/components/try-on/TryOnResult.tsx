@@ -19,6 +19,7 @@ import {
   AlertCircle,
   CheckCircle2
 } from "lucide-react";
+import { WhatsappLogo } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { EmailCaptureModal } from "./EmailCaptureModal";
 import { TryOnCarousel, type CarouselSlide } from "./TryOnCarousel";
@@ -62,10 +63,21 @@ export const TryOnResult = ({
   const {
     captureState,
     isSubmitting,
+    userEmail,
     initiateCapture,
     closeModal,
     handleSubmit,
   } = useVTOEmailCapture();
+
+  // "Share to WhatsApp": force the channel-choice modal open on the WhatsApp
+  // tab for EVERYONE — including signed-in users, who otherwise get a silent
+  // auto-email on download and never see the WhatsApp path. Captures the lead
+  // (into the CRM) and hands off to the share sheet with the clean image.
+  const handleWhatsAppShare = () => {
+    if (result) {
+      initiateCapture(result, "share", { forceModal: true, channel: "whatsapp" });
+    }
+  };
 
   // Download a single image
   const downloadImage = (url: string, label: string) => {
@@ -232,6 +244,15 @@ export const TryOnResult = ({
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDownload} aria-label="Download">
                   <Download className="h-4 w-4" />
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-green-600 hover:text-green-700"
+                  onClick={handleWhatsAppShare}
+                  aria-label="Share to WhatsApp"
+                >
+                  <WhatsappLogo weight="fill" className="h-4 w-4" />
+                </Button>
                 {onAddToCart && (
                   <Button variant="gold" size="icon" className="h-8 w-8" onClick={onAddToCart} aria-label="Add to cart">
                     <ShoppingCart className="h-4 w-4" />
@@ -276,6 +297,8 @@ export const TryOnResult = ({
           }}
           result={captureState.result}
           isSubmitting={isSubmitting}
+          initialChannel={captureState.initialChannel}
+          prefillEmail={userEmail}
         />
       </>
     );
@@ -507,7 +530,17 @@ export const TryOnResult = ({
                 Share
               </Button>
             )}
-            
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-green-600 hover:text-green-700"
+              onClick={handleWhatsAppShare}
+            >
+              <WhatsappLogo weight="fill" className="h-4 w-4 mr-2" />
+              Share to WhatsApp
+            </Button>
+
             {onAddToWishlist && (
               <Button variant="outline" size="sm" onClick={onAddToWishlist}>
                 <Heart className="h-4 w-4 mr-2" />
@@ -537,6 +570,8 @@ export const TryOnResult = ({
             }}
             result={captureState.result}
             isSubmitting={isSubmitting}
+            initialChannel={captureState.initialChannel}
+            prefillEmail={userEmail}
           />
         </CardContent>
       </Card>
