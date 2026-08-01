@@ -13,10 +13,12 @@ interface CameraKitState {
 }
 
 interface UseCameraKitReturn extends CameraKitState {
-  initialize: (canvasElement: HTMLCanvasElement) => Promise<boolean>;
+  initialize: (canvasElement: HTMLCanvasElement, frameIndex?: number | null) => Promise<boolean>;
   captureFrame: () => Promise<string | null>;
   cleanup: () => Promise<void>;
   requestPermission: () => Promise<boolean>;
+  /** Switch the Lens to another carousel slot without tearing down the camera. */
+  showFrame: (frameIndex: number) => Promise<boolean>;
 }
 
 /**
@@ -58,6 +60,9 @@ export const useCameraKit = (): UseCameraKitReturn => {
   const cameraKitRef = useRef<CameraKit | null>(null);
   const sessionRef = useRef<CameraKitSession | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  // Kept so showFrame() can re-apply the same Lens with different launch params
+  // instead of re-downloading it.
+  const lensRef = useRef<Awaited<ReturnType<CameraKit["lensRepository"]["loadLens"]>> | null>(null);
 
   // Check browser support on mount
   useEffect(() => {
@@ -99,7 +104,10 @@ export const useCameraKit = (): UseCameraKitReturn => {
   /**
    * Initialize Camera Kit with canvas element and apply the carousel Lens
    */
-  const initialize = useCallback(async (canvasElement: HTMLCanvasElement): Promise<boolean> => {
+  const initialize = useCallback(async (
+    canvasElement: HTMLCanvasElement,
+    frameIndex?: number | null,
+  ): Promise<boolean> => {
     // Check if already initialized
     if (state.isInitialized) {
       return true;
@@ -129,6 +137,19 @@ export const useCameraKit = (): UseCameraKitReturn => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
+      // Fire the camera permission prompt immediately, in parallel with the
+      // SDK import/bootstrap below. It doesn't depend on Camera Kit at all,
+      // and the prompt's user-reaction time is often the single slowest step
+      // in this whole flow -- it shouldn't sit behind a network round-trip
+      // to Snap's servers first.
+      const mediaStreamPromise = navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      });
+
       // Dynamically import Camera Kit to avoid issues if package not installed
       const { bootstrapCameraKit, createMediaStreamSource, Transform2D } = await import("@snap/camera-kit");
 
@@ -146,19 +167,24 @@ export const useCameraKit = (): UseCameraKitReturn => {
 
       sessionRef.current = session;
 
-      // Get camera stream. Permission failures are detected by error name so
+      // The Lens bundle (3D frame models/textures) is the largest network
+      // fetch in this whole flow. It only depends on `cameraKit`, not on the
+      // media stream or session source -- start it now so it downloads in
+      // the background while we wait on camera permission below, instead of
+      // waiting until after the camera is fully set up to even begin.
+      const lensPromise = cameraKit.lensRepository.loadLens(
+        SNAP_CONFIG.carouselLensId,
+        SNAP_CONFIG.lensGroupId
+      );
+
+      // Await the camera stream (the prompt has been showing since the top
+      // of this function). Permission failures are detected by error name so
       // the UI can show the dedicated "Camera Access Required" screen instead
       // of a generic error — a blocked camera can only be re-enabled by the
       // user via browser settings, so they need instructions, not a retry.
       let mediaStream: MediaStream;
       try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: "user",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-        });
+        mediaStream = await mediaStreamPromise;
       } catch (err) {
         const name = err instanceof DOMException ? err.name : "";
         const isPermissionError =
@@ -168,6 +194,7 @@ export const useCameraKit = (): UseCameraKitReturn => {
         await sessionRef.current?.destroy().catch(() => undefined);
         sessionRef.current = null;
         cameraKitRef.current = null;
+        lensRef.current = null;
 
         setState(prev => ({
           ...prev,
@@ -199,15 +226,25 @@ export const useCameraKit = (): UseCameraKitReturn => {
       await session.setFPSLimit(30);
       await session.play("live");
 
-      // Apply the carousel Lens (contains all frame models)
-      const lens = await cameraKit.lensRepository.loadLens(
-        SNAP_CONFIG.carouselLensId,
-        SNAP_CONFIG.lensGroupId
-      );
+      // Pick up the Lens fetch that's been running in the background since
+      // before we even awaited the camera stream above -- this resolves
+      // immediately if the download already finished, instead of starting a
+      // fresh wait now.
+      const lens = await lensPromise;
+      lensRef.current = lens;
+
+      // `frameIndex` opens the Lens directly on one carousel slot, which is what
+      // makes a per-product "Try in AR" button work. Omitting it leaves the Lens
+      // on its own first frame, with the user swiping to choose — the behaviour
+      // when we don't know which product they came from.
+      //
       // NOTE: applyLens has an overload — (lens) alone resolves to Promise<void>,
       // shadowing the documented (lens, launchData?) => Promise<boolean> overload.
       // Pass launchData explicitly (even as undefined) to get the boolean result.
-      const applied = await session.applyLens(lens, undefined);
+      const applied = await session.applyLens(
+        lens,
+        typeof frameIndex === "number" ? { launchParams: { frameIndex } } : undefined,
+      );
       if (!applied) {
         throw new Error("Lens could not be applied to the session");
       }
@@ -235,6 +272,29 @@ export const useCameraKit = (): UseCameraKitReturn => {
       return false;
     }
   }, [state.isInitialized]);
+
+  /**
+   * Re-applies the already-downloaded Lens with a different `frameIndex`, so the
+   * user can jump between products without the camera restarting. Falls back to
+   * doing nothing (returning false) if the session isn't live yet — callers
+   * should pass the index to initialize() in that case instead.
+   */
+  const showFrame = useCallback(async (frameIndex: number): Promise<boolean> => {
+    const session = sessionRef.current;
+    const lens = lensRef.current;
+    if (!session || !lens) return false;
+
+    try {
+      const applied = await session.applyLens(lens, { launchParams: { frameIndex } });
+      if (!applied) {
+        console.warn(`Camera Kit: could not switch to frame ${frameIndex}`);
+      }
+      return applied;
+    } catch (error) {
+      console.error("Failed to switch AR frame:", error);
+      return false;
+    }
+  }, []);
 
   /**
    * Capture current frame as base64 image
@@ -280,6 +340,7 @@ export const useCameraKit = (): UseCameraKitReturn => {
       }
 
       cameraKitRef.current = null;
+      lensRef.current = null;
 
       setState(prev => ({
         ...prev,
@@ -305,6 +366,7 @@ export const useCameraKit = (): UseCameraKitReturn => {
     captureFrame,
     cleanup,
     requestPermission,
+    showFrame,
   };
 };
 

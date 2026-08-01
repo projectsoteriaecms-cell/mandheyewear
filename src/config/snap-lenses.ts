@@ -51,6 +51,39 @@ export interface SnapLensConfig {
 }
 
 /**
+ * Which slot each frame occupies in the published Lens's carousel.
+ *
+ * The Lens contains every frame as one carousel; Camera Kit selects which one
+ * opens by passing `frameIndex` as a launch param (see useCameraKit). The site
+ * owns this mapping so the Lens never needs a SKU table baked into it —
+ * reordering the carousel is a republish here, not a Lens change.
+ *
+ * Keep in sync with `SetActiveItem.tryOnItems` in the Lens Studio project.
+ * Once the catalogue outgrows a hand-maintained map this should move to the
+ * `ar_frame_3d_models` table (already designed for it, keyed by product_id).
+ */
+const CAROUSEL_SLOT_BY_SKU: Record<string, number> = {
+  "MH-506": 0,  // Dario Martini DM 796 COL.2 — black acetate cat-eye
+  "MH-107": 1,  // Ray-Ban RB3025 Aviator — metal
+  "MH-1780": 2, // Cartier 30104 — metal rimless
+};
+
+/**
+ * Resolves a product's carousel slot, or null when that frame isn't in the Lens
+ * yet. Callers should treat null as "open the Lens on its default frame" rather
+ * than blocking the try-on — most of the catalogue has no 3D model yet.
+ */
+export const getCarouselSlotForSku = (sku?: string | null): number | null => {
+  if (!sku) return null;
+  const slot = CAROUSEL_SLOT_BY_SKU[sku];
+  return typeof slot === "number" ? slot : null;
+};
+
+/** True when the given product has a 3D frame in the published Lens. */
+export const hasArFrame = (sku?: string | null): boolean =>
+  getCarouselSlotForSku(sku) !== null;
+
+/**
  * Check if Camera Kit is properly configured
  */
 export const isCameraKitConfigured = (): boolean => {

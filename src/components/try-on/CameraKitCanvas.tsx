@@ -11,6 +11,12 @@ interface CameraKitCanvasProps {
   onError?: (error: string) => void;
   /** Called once the session is live, with a function that captures the current frame as a base64 data URL. */
   onCaptureReady?: (capture: () => Promise<string | null>) => void;
+  /**
+   * Carousel slot to open the Lens on, for a per-product "Try in AR" entry.
+   * Null/undefined leaves the Lens on its own first frame and lets the user
+   * swipe to choose — the right behaviour when no specific product was picked.
+   */
+  frameIndex?: number | null;
   className?: string;
 }
 
@@ -18,6 +24,7 @@ export const CameraKitCanvas = ({
   onInitialized,
   onError,
   onCaptureReady,
+  frameIndex,
   className = "",
 }: CameraKitCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -32,6 +39,7 @@ export const CameraKitCanvas = ({
     initialize,
     captureFrame,
     requestPermission,
+    showFrame,
   } = useCameraKit();
 
   // Initialize when canvas is available
@@ -40,7 +48,7 @@ export const CameraKitCanvas = ({
       if (!canvasRef.current || initAttempted || isInitialized) return;
 
       setInitAttempted(true);
-      const success = await initialize(canvasRef.current);
+      const success = await initialize(canvasRef.current, frameIndex);
 
       if (success) {
         onInitialized?.();
@@ -49,7 +57,18 @@ export const CameraKitCanvas = ({
     };
 
     initCamera();
+    // frameIndex is deliberately not a dependency: it's the value the session
+    // STARTS on. Changing it afterwards is handled by the effect below, which
+    // swaps frames without restarting the camera.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialize, initAttempted, isInitialized, onInitialized, onCaptureReady, captureFrame]);
+
+  // Switch frames on an already-running session (e.g. the user picked a
+  // different product without leaving AR mode).
+  useEffect(() => {
+    if (!isInitialized || typeof frameIndex !== "number") return;
+    void showFrame(frameIndex);
+  }, [frameIndex, isInitialized, showFrame]);
 
   // Report errors to parent
   useEffect(() => {

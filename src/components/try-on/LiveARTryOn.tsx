@@ -12,7 +12,7 @@ import { useFrameAttributes, has3DMeasurements } from "@/shared/hooks/useFrameAt
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { isCameraKitConfigured } from "@/config/snap-lenses";
+import { isCameraKitConfigured, getCarouselSlotForSku } from "@/config/snap-lenses";
 import { recordTryOn, applyTryOnWatermark, type TryOnResult as TryOnResultType } from "@/modules/personalization";
 
 interface FrameProduct {
@@ -53,6 +53,12 @@ export const LiveARTryOn = ({
   // Kit credentials are not configured.
   const snapReady = isCameraKitConfigured();
   const ckCaptureRef = useRef<(() => Promise<string | null>) | null>(null);
+
+  // Which carousel slot the selected product maps to. Null means this product
+  // has no 3D model in the Lens yet (most of the catalogue) -- the Lens then
+  // opens on its default frame and the user swipes, rather than us blocking
+  // the try-on entirely.
+  const selectedSlot = getCarouselSlotForSku(selectedProduct?.sku);
 
   // Fetch frame attributes for 3D rendering (MediaPipe fallback mode)
   const { data: frameAttrs } = useFrameAttributes(selectedProduct?.id || null);
@@ -203,6 +209,7 @@ export const LiveARTryOn = ({
         <CardContent className="p-0">
           {snapReady ? (
             <CameraKitCanvas
+              frameIndex={selectedSlot}
               onInitialized={() => {
                 setArError(null);
                 setIsInitialized(true);

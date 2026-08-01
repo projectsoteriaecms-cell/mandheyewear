@@ -77,6 +77,25 @@ const TryOn = () => {
     );
   }, [tryOnMode, preselectedProductId]);
 
+  // Warm the Camera Kit SDK's JS chunk as soon as this page loads, regardless
+  // of which mode is selected -- landing on /try-on is already a strong signal
+  // the visitor may switch to Live AR. Without this, the dynamic import inside
+  // useCameraKit only fires (and blocks) the moment they tap into AR mode.
+  // Idle-scheduled so it never competes with this page's own render/data
+  // fetches; only the JS module is pre-warmed here (a same-origin static
+  // asset), not the Snap bootstrap handshake, so it costs nothing against
+  // Camera Kit's own API quota for visitors who never open AR mode.
+  useEffect(() => {
+    if (!isCameraKitConfigured()) return;
+    const idleWindow = window as typeof window & {
+      requestIdleCallback?: (cb: () => void) => number;
+    };
+    const schedule = idleWindow.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200));
+    schedule(() => {
+      void import("@snap/camera-kit");
+    });
+  }, []);
+
   // Marks that this visitor has found the feature at least once, so the
   // landing-page promo dialog (TryOnPromoDialog) stops offering it to people
   // who already know it's here.

@@ -38,5 +38,9 @@ import_products.py
 upload_images_new.py
 frame_images_converted/
 frame_images_converted.zip
+
+# Meshy AI 3D generation staging output (binary GLBs, not source of truth —
+# the Lens Studio project is; manifest.json here tracks conversion progress)
+ar-3d-staging/
 supabase/.temp/
 .env*
