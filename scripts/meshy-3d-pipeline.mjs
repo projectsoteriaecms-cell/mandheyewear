@@ -199,38 +199,51 @@ function pickSourceImage(product) {
 /**
  * Images for multi-image-to-3d.
  *
- * ⚠️ TESTED AND FOUND HARMFUL ON THIS CATALOG (MH-506, 2026-07-30).
- * Multi-image reconstruction needs the SAME OBJECT FROM DIFFERENT VIEWPOINTS.
- * This catalog's additional_images are not that:
- *   front.png        - isolated product shot          ✅ usable
- *   mannequin.png    - frame WORN on a mannequin head ❌ frame mostly occluded
- *   lifestyle_*.png  - frame WORN by a model          ❌ frame mostly occluded
- *   spec_diagram.png - measurement drawing            ❌ not a photograph
+ * Two things learned the hard way on this catalog:
  *
- * Feeding the worn shots alongside the product shot made Meshy reconcile a
- * clean frame against three images where a head hides most of it; the result
- * collapsed to just the brow tips -- far worse than front.png alone. Until the
- * catalog has genuine alternate-angle product shots (side/three-quarter/back
- * of an isolated frame), single-image is the better path.
+ * 1. WORN/LIFESTYLE SHOTS HURT (MH-506, 2026-07-30). Multi-image reconstruction
+ *    needs the SAME OBJECT FROM DIFFERENT VIEWPOINTS, unoccluded. This catalog's
+ *    additional_images mix isolated product shots with shots of the frame WORN
+ *    on a mannequin head or model (mannequin.png, lifestyle_*.png) and measurement
+ *    drawings (spec_diagram.png) -- none of those are a second clean view of the
+ *    frame itself. Feeding the worn shots alongside a clean product shot made
+ *    Meshy reconcile a clean frame against images where a head hides most of
+ *    it; the result collapsed to just the brow tips, far worse than a single
+ *    clean image alone. These are excluded unconditionally.
  *
- * So this deliberately excludes worn/diagram shots. If that leaves only one
- * image, it warns and the caller should just use the single-image endpoint.
+ * 2. `image_url` ("anchor.jpg") IS A GENUINE SECOND VIEW, and should always be
+ *    paired with front.png when both exist (MH-1780, 2026-08-01). front.png is
+ *    dead-on and gives Meshy almost no depth cue for temple arms, which is
+ *    exactly why MH-1780's front-only generation scored 15% of its catalog
+ *    temple length -- effectively no temples at all. anchor.jpg is a clean,
+ *    unoccluded three-quarter studio shot with the temples clearly visible, the
+ *    same kind of view multi-image reconstruction actually needs. Unlike the
+ *    worn shots, it's isolated product photography, not a face wearing the
+ *    frame -- so this is the STANDARD source pair going forward, not a one-off.
  */
 const WORN_OR_NON_PHOTO = /mannequin|lifestyle|spec_diagram/i;
 
 function pickSourceImages(product) {
   const isolated = (product.additional_images || []).filter((u) => !WORN_OR_NON_PHOTO.test(u));
-  const ordered = [
-    isolated.find((u) => /front/i.test(u)),
-    ...isolated.filter((u) => !/front/i.test(u)),
-  ].filter(Boolean);
-  if (!ordered.length && product.image_url) ordered.push(product.image_url);
+  const front = isolated.find((u) => /front/i.test(u));
+  const anchor = product.image_url || null;
+
+  // front + anchor is the standard pair: a dead-on shot plus a genuine
+  // three-quarter view. De-duped in case a product happens to reuse one URL
+  // for both fields.
+  const ordered = [...new Set([front, anchor].filter(Boolean))];
+
+  if (!ordered.length) {
+    // Neither of the standard pair exists -- fall back to whatever isolated
+    // shots remain rather than failing outright.
+    ordered.push(...isolated);
+  }
   if (!ordered.length) fail(`Product "${product.name}" has no usable images.`);
   if (ordered.length === 1) {
     console.log(
-      "  ⚠️  Only ONE isolated product shot available (worn/mannequin/diagram shots are\n" +
-      "      excluded -- they degrade reconstruction). --multi-image gives no benefit here;\n" +
-      "      this will behave like a single-image run."
+      "  ⚠️  Only ONE usable image available (front/anchor pair incomplete, and\n" +
+      "      worn/mannequin/diagram shots are excluded -- they degrade reconstruction).\n" +
+      "      --multi-image gives no benefit here; this will behave like a single-image run."
     );
   }
   return ordered.slice(0, 4);
