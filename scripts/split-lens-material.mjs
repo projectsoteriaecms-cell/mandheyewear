@@ -278,7 +278,7 @@ function main() {
     const dataBuf = Buffer.alloc(idxArray.length * sz);
     idxArray.forEach((v, i) => (useShort ? dataBuf.writeUInt16LE(v, i*sz) : dataBuf.writeUInt32LE(v, i*sz)));
     const bvIndex = json.bufferViews.length;
-    json.bufferViews.push({ buffer: 0, byteOffset: cursor, byteLength: dataBuf.length });
+    json.bufferViews.push({ buffer: 0, byteOffset: cursor, byteLength: dataBuf.length, target: 34963 });
     parts.push(dataBuf);
     cursor += dataBuf.length;
     const padLen = pad4(cursor);
